@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ This file is part of Breezy Weather.
+  ~
+  ~ Breezy Weather is free software: you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as published by the
+  ~ Free Software Foundation, version 3 of the License.
+  ~
+  ~ Breezy Weather is distributed in the hope that it will be useful, but
+  ~ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  ~ or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+  ~ License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with Breezy Weather. If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<resources>
+
+    <style name="Weather.TextAppearance.MainBlock.NumberDigit" parent="@style/TextAppearance.Material3.DisplaySmall">
+        <item name="android:textSize">45sp</item>
+        <item name="android:lineHeight">52sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+    <style name="Weather.TextAppearance.MainBlock.Clock" parent="@style/TextAppearance.Material3.DisplaySmall">
+        <item name="android:fontFamily">@font/robotoflex_family</item>
+        <item name="android:fontVariationSettings">"'wght' 700, 'XOPQ' 175, 'XTRA' 603"</item>
+        <item name="android:textSize">50sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+</resources>

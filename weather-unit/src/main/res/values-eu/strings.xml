@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ONLY values changed from the original file are included -->
+    <!-- Based on https://www.unicode.org/cldr/charts/47/summary/eu.html -->
+    <!-- If you believe there is an error, please open a discussion -->
+
+    <!-- Temperature units -->
+
+    <!-- Degree Celsius -->
+    <string name="temperature_c_display_name_long">Celsius graduak</string>
+    <string name="temperature_c_nominative_long">%s Celsius gradu</string>
+
+    <!-- Degree Fahrenheit -->
+    <string name="temperature_f_display_name_long">Fahrenheit graduak</string>
+    <string name="temperature_f_nominative_long">%s Fahrenheit gradu</string>
+
+    <!-- Kelvin -->
+    <string name="temperature_k_display_name_long">kelvin graduak</string>
+    <string name="temperature_k_nominative_long">%s kelvin gradu</string>
+
+    <!-- Length units -->
+
+    <!-- Micrometer -->
+    <string name="length_microm_display_name_long">mikrometro</string>
+    <string name="length_microm_nominative_long">%s mikrometro</string>
+
+    <!-- Millimeter -->
+    <string name="length_mm_display_name_long">milimetro</string>
+    <string name="length_mm_nominative_long">%s milimetro</string>
+
+    <!-- Centimeter -->
+    <string name="length_cm_display_name_long">zentimetro</string>
+    <string name="length_cm_nominative_long">%s zentimetro</string>
+
+    <!-- Meter -->
+    <string name="length_m_display_name_long">metro</string>
+    <string name="length_m_nominative_long">%s metro</string>
+
+    <!-- Kilometer -->
+    <string name="length_km_display_name_long">kilometro</string>
+    <string name="length_km_nominative_long">%s kilometro</string>
+
+    <!-- Inch -->
+    <string name="length_in_display_name_long">hazbete</string>
+    <string name="length_in_nominative_long">%s hazbete</string>
+
+    <!-- Foot -->
+    <string name="length_ft_display_name_long">oin</string>
+    <string name="length_ft_nominative_long">%s oin</string>
+
+    <!-- Mile -->
+    <string name="length_mi_display_name_long">milia</string>
+    <string name="length_mi_nominative_long">%s milia</string>
+
+    <!-- Nautical mile -->
+    <string name="length_nmi_display_name_long">milia nautiko</string>
+    <string name="length_nmi_nominative_long">%s milia nautiko</string>
+
+    <!-- Area units -->
+
+    <!-- Square meter -->
+    <string name="area_m2_per_long">%s metro karratu bakoitzeko</string>
+
+    <!-- Speed units -->
+
+    <!-- Knot -->
+    <string name="speed_kn_display_name_long">korapilo</string>
+    <string name="speed_kn_nominative_long">%s korapilo</string>
+
+    <!-- Beaufort scale -->
+    <string name="speed_bf_display_name_short">BFT</string>
+    <string name="speed_bf_display_name_long">Beaufort</string>
+    <string name="speed_bf_nominative_long">Beaufort %s</string>
+
+    <!-- Volume units -->
+
+    <!-- Cubic meter -->
+    <string name="volume_m3_per_long">%s metro kubiko bakoitzeko</string>
+
+    <!-- Liter -->
+    <string name="volume_l_display_name_long">litro</string>
+    <string name="volume_l_nominative_long">%s litro</string>
+
+    <!-- Weight units -->
+
+    <!-- Microgram -->
+    <string name="weight_microg_display_name_long">mikrogramoak</string>
+    <string name="weight_microg_nominative_long">%s mikrogramo</string>
+
+    <!-- Milligram -->
+    <string name="weight_mg_display_name_long">miligramoak</string>
+    <string name="weight_mg_nominative_long">%s miligramo</string>
+
+    <!-- Pressure units -->
+
+    <!-- Pascal -->
+    <string name="pressure_pa_display_name_long">pascal</string>
+    <string name="pressure_pa_nominative_long">%s pascal</string>
+
+    <!-- Hectopascal -->
+    <string name="pressure_hpa_display_name_long">hektopascalak</string>
+    <string name="pressure_hpa_nominative_long">%s hektopascal</string>
+
+    <!-- Kilopascal -->
+    <string name="pressure_kpa_display_name_long">kilopascal</string>
+    <string name="pressure_kpa_nominative_long">%s kilopascal</string>
+
+    <!-- Millibar -->
+    <string name="pressure_mbar_display_name_short">mb</string>
+    <string name="pressure_mbar_display_name_long">milibarrak</string>
+    <string name="pressure_mbar_nominative_short">%s mb</string>
+    <string name="pressure_mbar_nominative_long">%s milibar</string>
+
+    <!-- Atmosphere -->
+    <!-- The two below are marked for short, but I believe this is an error -->
+    <string name="pressure_atm_display_name_long">atmosfera</string>
+    <string name="pressure_atm_nominative_long">%s atmosfera</string>
+
+    <!-- Millimeter of mercury -->
+    <string name="pressure_mmhg_display_name_short">mm Hg</string>
+    <string name="pressure_mmhg_display_name_long">merkurio-milimetroak</string>
+    <string name="pressure_mmhg_nominative_short">%s mm Hg</string>
+    <string name="pressure_mmhg_nominative_long">%s merkurio-milimetro</string>
+
+    <!-- Inch of mercury -->
+    <string name="pressure_inhg_display_name_long">merkurio-hazbeteak</string>
+    <string name="pressure_inhg_nominative_long">%s merkurio-hazbete</string>
+
+    <!-- Duration units -->
+
+    <!-- Hours -->
+    <string name="duration_hr_nominative_long">%s ordu</string>
+    <string name="duration_hr_per_long">%s ordu bakoitzeko</string>
+
+    <!-- Minutes -->
+    <string name="duration_min_nominative_long">%s minutu</string>
+
+    <!-- Seconds -->
+    <string name="duration_sec_nominative_long">%s segundo</string>
+    <string name="duration_sec_per_long">%s segundo bakoitzeko</string>
+
+</resources>

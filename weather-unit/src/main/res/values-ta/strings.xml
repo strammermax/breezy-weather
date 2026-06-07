@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ONLY values changed from the original file are included -->
+    <!-- Based on https://www.unicode.org/cldr/charts/47/summary/ta.html -->
+    <!-- If you believe there is an error, please open a discussion -->
+
+    <!-- Temperature units -->
+
+    <!-- Degree Celsius -->
+    <string name="temperature_c_display_name_short">°செ</string>
+    <string name="temperature_c_display_name_long">டிகிரி செல்சியஸ்</string>
+    <string name="temperature_c_nominative_short">%s°செ.</string>
+    <string name="temperature_c_nominative_long">%s டிகிரி செல்சியஸ்</string>
+
+    <!-- Degree Fahrenheit -->
+    <string name="temperature_f_display_name_short">°ஃபா</string>
+    <string name="temperature_f_display_name_long">டிகிரி ஃபாரன்ஹீட்</string>
+    <string name="temperature_f_nominative_short">%s°ஃபா.</string>
+    <string name="temperature_f_nominative_long">%s டிகிரி ஃபாரன்ஹீட்</string>
+
+    <!-- Kelvin -->
+    <string name="temperature_k_display_name_short">கெல்.</string>
+    <string name="temperature_k_display_name_long">கெல்வின்</string>
+    <string name="temperature_k_nominative_short">%s கெல்.</string>
+    <string name="temperature_k_nominative_long">%s கெல்வின்ஸ்</string>
+
+    <!-- Length units -->
+
+    <!-- Micrometer -->
+    <string name="length_microm_display_name_short">μமீ.</string>
+    <string name="length_microm_display_name_long">மைக்ரோமீட்டர்கள்</string>
+    <string name="length_microm_nominative_short">%s μமீ.</string>
+    <string name="length_microm_nominative_long">%s மைக்ரோமீட்டர்கள்</string>
+
+    <!-- Millimeter -->
+    <string name="length_mm_display_name_short">மி.மீ.</string>
+    <string name="length_mm_display_name_long">மில்லிமீட்டர்கள்</string>
+    <string name="length_mm_nominative_short">%s மி.மீ.</string>
+    <string name="length_mm_nominative_long">%s மில்லிமீட்டர்கள்</string>
+
+    <!-- Centimeter -->
+    <string name="length_cm_display_name_short">செ.மீ.</string>
+    <string name="length_cm_display_name_long">சென்டிமீட்டர்கள்</string>
+    <string name="length_cm_nominative_short">%s செ.மீ.</string>
+    <string name="length_cm_nominative_long">%s சென்டிமீட்டர்கள்</string>
+
+    <!-- Meter -->
+    <string name="length_m_display_name_short">மீ.</string>
+    <string name="length_m_display_name_long">மீட்டர்கள்</string>
+    <string name="length_m_nominative_short">%s மீ.</string>
+    <string name="length_m_nominative_long">%s மீட்டர்கள்</string>
+
+    <!-- Kilometer -->
+    <string name="length_km_display_name_short">கி.மீ.</string>
+    <string name="length_km_display_name_long">கிலோமீட்டர்கள்</string>
+    <string name="length_km_nominative_short">%s கி.மீ.</string>
+    <string name="length_km_nominative_long">%s கிலோமீட்டர்கள்</string>
+
+    <!-- Inch -->
+    <string name="length_in_display_name_short">அங்.</string>
+    <string name="length_in_display_name_long">அங்குலங்கள்</string>
+    <string name="length_in_nominative_short">%s அங்.</string>
+    <string name="length_in_nominative_long">%s அங்குலங்கள்</string>
+
+    <!-- Foot -->
+    <string name="length_ft_display_name_short">அடி</string>
+    <string name="length_ft_nominative_short">%s அடி</string>
+
+    <!-- Mile -->
+    <string name="length_mi_display_name_short">மை.</string>
+    <string name="length_mi_display_name_long">மைல்கள்</string>
+    <string name="length_mi_nominative_short">%s மை.</string>
+    <string name="length_mi_nominative_long">%s மைல்கள்</string>
+
+    <!-- Nautical mile -->
+    <string name="length_nmi_display_name_short">க.மை.</string>
+    <string name="length_nmi_display_name_long">கடல் மைல்கள்</string>
+    <string name="length_nmi_nominative_short">%s க.மை.s</string>
+    <string name="length_nmi_nominative_long">%s கடல் மைல்கள்</string>
+
+    <!-- Area units -->
+
+    <!-- Square meter -->
+    <string name="area_m2_per_short">%s/மீ²</string>
+    <string name="area_m2_per_long">%s/சதுர மீட்டர்</string>
+
+    <!-- Speed units -->
+
+    <!-- Knot -->
+    <string name="speed_kn_display_name_short">நா.</string>
+    <string name="speed_kn_display_name_long">நாட்</string>
+    <string name="speed_kn_nominative_short">%s நா.</string>
+    <string name="speed_kn_nominative_long">%s நாட்</string>
+
+    <!-- Beaufort scale -->
+    <string name="speed_bf_display_name_short">பியூ.</string>
+    <string name="speed_bf_display_name_long">பியூஃபோர்ட்</string>
+    <string name="speed_bf_nominative_short">பியூ. %s</string>
+    <string name="speed_bf_nominative_long">பியூஃபோர்ட் %s</string>
+
+    <!-- Volume units -->
+
+    <!-- Cubic meter -->
+    <string name="volume_m3_per_short">%s/மீ³</string>
+    <string name="volume_m3_per_long">%s/கன மீட்டர்</string>
+
+    <!-- Liter -->
+    <string name="volume_l_display_name_short">லி.</string>
+    <string name="volume_l_display_name_long">லிட்டர்கள்</string>
+    <string name="volume_l_nominative_short">%s லி.</string>
+    <string name="volume_l_nominative_long">%s லிட்டர்கள்</string>
+
+    <!-- Weight units -->
+
+    <!-- Microgram -->
+    <string name="weight_microg_display_name_short">μகி</string>
+    <string name="weight_microg_display_name_long">மைக்ரோ கிராம்கள்</string>
+    <string name="weight_microg_nominative_short">%s μகி</string>
+    <string name="weight_microg_nominative_long">%s மைக்ரோ கிராம்கள்</string>
+
+    <!-- Milligram -->
+    <string name="weight_mg_display_name_short">மி.கி.</string>
+    <string name="weight_mg_display_name_long">மில்லி கிராம்கள்</string>
+    <string name="weight_mg_nominative_short">%s மி.கி.</string>
+    <string name="weight_mg_nominative_long">%s மில்லி கிராம்கள்</string>
+
+    <!-- Pressure units -->
+
+    <!-- Pascal -->
+    <string name="pressure_pa_display_name_short">பா.</string>
+    <string name="pressure_pa_display_name_long">பாஸ்கல்கள்</string>
+    <string name="pressure_pa_nominative_short">%s பா.</string>
+    <string name="pressure_pa_nominative_long">%s பாஸ்கல்கள்</string>
+
+    <!-- Hectopascal -->
+    <string name="pressure_hpa_display_name_short">ஹெ.பாஸ்.</string>
+    <string name="pressure_hpa_display_name_long">ஹெக்டோபாஸ்கல்</string>
+    <string name="pressure_hpa_nominative_short">%s ஹெ.பாஸ்.</string>
+    <string name="pressure_hpa_nominative_long">%s ஹெக்டோபாஸ்கல்</string>
+
+    <!-- Kilopascal -->
+    <string name="pressure_kpa_display_name_short">கிபா</string>
+    <string name="pressure_kpa_display_name_long">கிலோபாஸ்கல்ஸ்</string>
+    <string name="pressure_kpa_nominative_short">%s கிபா</string>
+    <string name="pressure_kpa_nominative_long">%s கிலோபாஸ்கல்ஸ்</string>
+
+    <!-- Millibar -->
+    <string name="pressure_mbar_display_name_short">மி.பா.</string>
+    <string name="pressure_mbar_display_name_long">மில்லிபார்கள்</string>
+    <string name="pressure_mbar_nominative_short">%s மி.பா.</string>
+    <string name="pressure_mbar_nominative_long">%s மில்லிபார்கள்</string>
+
+    <!-- Atmosphere -->
+    <string name="pressure_atm_display_name_long">வளிமண்டலம்</string>
+    <string name="pressure_atm_nominative_long">%s வளிமண்டலம்</string>
+
+    <!-- Millimeter of mercury -->
+    <string name="pressure_mmhg_display_name_short">பாத. மி.மீ.</string>
+    <string name="pressure_mmhg_display_name_long">பாதரச மில்லிமீட்டர்கள்</string>
+    <string name="pressure_mmhg_nominative_short">%s பாத. மி.மீ.</string>
+    <string name="pressure_mmhg_nominative_long">%s பாதரச மில்லிமீட்டர்கள்</string>
+
+    <!-- Inch of mercury -->
+    <string name="pressure_inhg_display_name_short">பாத. அங்.</string>
+    <string name="pressure_inhg_display_name_long">பாதரச அங்குலங்கள்</string>
+    <string name="pressure_inhg_nominative_short">%s பாத. அங்.</string>
+    <string name="pressure_inhg_nominative_long">%s பாதரச அங்குலங்கள்</string>
+
+    <!-- Duration units -->
+
+    <!-- Hours -->
+    <string name="duration_hr_nominative_short">%s மணிநேர.</string>
+    <string name="duration_hr_nominative_long">%s மணிநேரங்கள்</string>
+    <string name="duration_hr_per_short">%s/ம.நே</string>
+    <string name="duration_hr_per_long">%s/மணிநேரம்</string>
+
+    <!-- Minutes -->
+    <string name="duration_min_nominative_short">%s நிமிட.</string>
+    <string name="duration_min_nominative_long">%s நிமிடங்கள்</string>
+
+    <!-- Seconds -->
+    <string name="duration_sec_nominative_short">%s விநாடி</string>
+    <string name="duration_sec_nominative_long">%s விநாடிகள்</string>
+    <string name="duration_sec_per_short">%s/வி.</string>
+    <string name="duration_sec_per_long">%s/விநாடி</string>
+
+</resources>

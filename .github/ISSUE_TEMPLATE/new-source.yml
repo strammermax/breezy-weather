@@ -1,0 +1,68 @@
+name: New source
+description: Suggest a new source for the app (weather source, location search, IP location, etc).
+labels: New source, Needs review
+body:
+  - type: input
+    id: api-documentation-link
+    attributes:
+      label: Link to publicly available documentation of the API
+      placeholder: |
+        Example: "https://api.xxxxx.xx"
+    validations:
+      required: true
+
+  - type: textarea
+    id: source-available-data
+    attributes:
+      label: Available and not available data
+      description: Be as precise as possible. You can add a location with AccuWeather to check all data that the app currently handles, or you can have a look at the `Weather` object if you are a developer.
+      placeholder: |
+        Example:
+          "Available: daily and hourly temperature, precipitation. Not available: air quality"
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        **[Contribution guide](https://github.com/breezy-weather/breezy-weather/blob/main/CONTRIBUTE.md)**
+
+  - type: input
+    id: development
+    attributes:
+      label: Are you going to develop yourself the new source for the app?
+      description: Developers of the app don’t have the time to implement all sources that exist in the world. If you don’t plan on doing it yourself, a tag “open to contributions” will be added to your issue, and you will have to wait for someone to pick it up.
+      placeholder: |
+        Example: "Yes, but I am a novice so I might need help"
+    validations:
+      required: true
+
+  - type: textarea
+    id: source-description
+    attributes:
+      label: Give a bit more details or context about this source
+      description: For example, what this source brings compared to already existing ones (doesn’t require an API key, is the national source of your country, etc)
+      placeholder: |
+        Example:
+          "Here is the reason why I would prefer to have this source than the existing ones: …"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Acknowledgements
+      description: Your issue will be closed if you don’t read this carefully.
+      options:
+        - label: I have searched [the existing sources](https://github.com/breezy-weather/breezy-weather/blob/main/docs/SOURCES.md) and [the existing new source requests](https://github.com/breezy-weather/breezy-weather/issues?q=is%3Aissue+label%3A%22New+source%22+no%3Amilestone+-label%3ADuplicate) and this is a new source, **NOT** a duplicate or related to another open OR closed issue.
+          required: true
+        - label: This source has a free-tier available (not a trial period), and if it is a main weather source, it includes free hourly forecast
+          required: true
+        - label: This source does not require sensitive information (billing info, phone number, etc) to subscribe to the free-tier
+          required: true
+        - label: I understand there may be technical limitations that may prevent implementing this source (for example, the lack of coordinates information)
+          required: true
+        - label: I wrote my request in English. I can write in my native language under the English text, if necessary.
+          required: true
+        - label: I understand that this app is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY, so I may not get a positive reply to my request, if any at all.
+          required: true

@@ -1,0 +1,11 @@
+<resources>
+
+    <string name="pollen_mold">Mould</string>
+
+    <string name="settings_color_grey">Grey</string>
+
+    <string name="widget_label_show_widget_card">Background colour</string>
+    <string name="widget_label_text_color">Text colour</string>
+    <string name="widget_clock_font_analog">Analogue</string>
+
+</resources>

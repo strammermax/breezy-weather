@@ -1,0 +1,20 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "schedule": [
+    "on saturday"
+  ],
+  "ignoreDeps": [
+    "dagger.hilt.android.plugin"
+  ],
+  "packageRules": [
+    {
+      "allowedVersions": "<3.0",
+      "matchPackageNames": [
+        "org.shredzone.commons:commons-suncalc"
+      ]
+    }
+  ]
+}

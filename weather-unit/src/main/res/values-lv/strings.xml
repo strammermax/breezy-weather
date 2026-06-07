@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ONLY values changed from the original file are included -->
+    <!-- Based on https://www.unicode.org/cldr/charts/47/summary/lv.html -->
+    <!-- If you believe there is an error, please open a discussion -->
+
+    <!-- Temperature units -->
+
+    <!-- Degree Celsius -->
+    <string name="temperature_c_display_name_long">Celsija grādi</string>
+    <string name="temperature_c_nominative_long">%s Celsija grādi</string>
+
+    <!-- Degree Fahrenheit -->
+    <string name="temperature_f_display_name_long">Fārenheita grādi</string>
+    <string name="temperature_f_nominative_long">%s Fārenheita grādi</string>
+
+    <!-- Kelvin -->
+    <string name="temperature_k_display_name_long">kelvini</string>
+    <string name="temperature_k_nominative_long">%s kelvini</string>
+
+    <!-- Length units -->
+
+    <!-- Micrometer -->
+    <string name="length_microm_display_name_long">mikrometri</string>
+    <string name="length_microm_nominative_long">%s mikrometri</string>
+
+    <!-- Millimeter -->
+    <string name="length_mm_display_name_long">milimetri</string>
+    <string name="length_mm_nominative_long">%s milimetri</string>
+
+    <!-- Centimeter -->
+    <string name="length_cm_display_name_long">centimetri</string>
+    <string name="length_cm_nominative_long">%s centimetri</string>
+
+    <!-- Meter -->
+    <string name="length_m_display_name_long">metri</string>
+    <string name="length_m_nominative_long">%s metri</string>
+
+    <!-- Kilometer -->
+    <string name="length_km_display_name_long">kilometri</string>
+    <string name="length_km_nominative_long">%s kilometri</string>
+
+    <!-- Inch -->
+    <string name="length_in_display_name_long">collas</string>
+    <string name="length_in_nominative_long">%s collas</string>
+
+    <!-- Foot -->
+    <string name="length_ft_display_name_long">pēdas</string>
+    <string name="length_ft_nominative_long">%s pēdas</string>
+
+    <!-- Mile -->
+    <string name="length_mi_display_name_long">jūdzes</string>
+    <string name="length_mi_nominative_long">%s jūdzes</string>
+
+    <!-- Nautical mile -->
+    <string name="length_nmi_display_name_long">jūras jūdzes</string>
+    <string name="length_nmi_nominative_long">%s jūras jūdzes</string>
+
+    <!-- Area units -->
+
+    <!-- Square meter -->
+    <string name="area_m2_per_long">%s per square meter</string>
+
+    <!-- Speed units -->
+
+    <!-- Knot -->
+    <string name="speed_kn_display_name_long">mezgls</string>
+    <string name="speed_kn_nominative_long">%s mezgli</string>
+
+    <!-- Beaufort scale -->
+    <string name="speed_bf_display_name_long">Beaufort</string>
+    <string name="speed_bf_nominative_long">Beaufort %s</string>
+
+    <!-- Volume units -->
+
+    <!-- Cubic meter -->
+    <string name="volume_m3_per_long">%s per cubic meter</string>
+
+    <!-- Liter -->
+    <string name="volume_l_display_name_long">liters</string>
+    <string name="volume_l_nominative_long">%s liters</string>
+
+    <!-- Weight units -->
+
+    <!-- Microgram -->
+    <string name="weight_microg_display_name_long">mikrogrami</string>
+    <string name="weight_microg_nominative_long">%s mikrogrami</string>
+
+    <!-- Milligram -->
+    <string name="weight_mg_display_name_long">miligrami</string>
+    <string name="weight_mg_nominative_long">%s miligrami</string>
+
+    <!-- Pressure units -->
+
+    <!-- Pascal -->
+    <string name="pressure_pa_display_name_long">paskāli</string>
+    <string name="pressure_pa_nominative_long">%s paskāli</string>
+
+    <!-- Hectopascal -->
+    <string name="pressure_hpa_display_name_long">hektopaskāli</string>
+    <string name="pressure_hpa_nominative_long">%s hektopaskāli</string>
+
+    <!-- Kilopascal -->
+    <string name="pressure_kpa_display_name_long">kilopaskāli</string>
+    <string name="pressure_kpa_nominative_long">%s kilopaskāli</string>
+
+    <!-- Millibar -->
+    <string name="pressure_mbar_display_name_long">milibāri</string>
+    <string name="pressure_mbar_nominative_long">%s milibāri</string>
+
+    <!-- Atmosphere -->
+    <string name="pressure_atm_display_name_long">atmosfēras</string>
+    <string name="pressure_atm_nominative_long">%s atmosfēras</string>
+
+    <!-- Millimeter of mercury -->
+    <string name="pressure_mmhg_display_name_long">dzīvsudraba stabiņa milimetri</string>
+    <string name="pressure_mmhg_nominative_long">%s dzīvsudraba stabiņa milimetri</string>
+
+    <!-- Inch of mercury -->
+    <string name="pressure_inhg_display_name_long">dzīvsudraba stabiņa collas</string>
+    <string name="pressure_inhg_nominative_long">%s dzīvsudraba stabiņa collas</string>
+
+    <!-- Duration units -->
+
+    <!-- Hours -->
+    <string name="duration_hr_nominative_short">%s st.</string>
+    <string name="duration_hr_nominative_long">%s stundas</string>
+    <string name="duration_hr_per_long">%s stundā</string>
+
+    <!-- Minutes -->
+    <string name="duration_min_nominative_long">%s minūtes</string>
+
+    <!-- Seconds -->
+    <string name="duration_sec_nominative_short">%s sek.</string>
+    <string name="duration_sec_nominative_long">%s sekundes</string>
+    <string name="duration_sec_per_long">%s sekundē</string>
+
+</resources>

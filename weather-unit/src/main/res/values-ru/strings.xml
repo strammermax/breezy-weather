@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ONLY values changed from the original file are included -->
+    <!-- Based on https://www.unicode.org/cldr/charts/47/summary/ru.html -->
+    <!-- If you believe there is an error, please open a discussion -->
+
+    <!-- Temperature units -->
+
+    <!-- Degree Celsius -->
+    <string name="temperature_c_display_name_long">градусы Цельсия</string>
+    <string name="temperature_c_nominative_long">%s градуса Цельсия</string>
+
+    <!-- Degree Fahrenheit -->
+    <string name="temperature_f_display_name_long">градусы Фаренгейта</string>
+    <string name="temperature_f_nominative_long">%s градуса Фаренгейта</string>
+
+    <!-- Kelvin -->
+    <string name="temperature_k_display_name_long">кельвины</string>
+    <string name="temperature_k_nominative_long">%s кельвина</string>
+
+    <!-- Length units -->
+
+    <!-- Micrometer -->
+    <string name="length_microm_display_name_short">мкм</string>
+    <string name="length_microm_display_name_long">микрометры</string>
+    <string name="length_microm_nominative_short">%s мкм</string>
+    <string name="length_microm_nominative_long">%s микрометра</string>
+
+    <!-- Millimeter -->
+    <string name="length_mm_display_name_short">мм</string>
+    <string name="length_mm_display_name_long">миллиметры</string>
+    <string name="length_mm_nominative_short">%s мм</string>
+    <string name="length_mm_nominative_long">%s миллиметра</string>
+
+    <!-- Centimeter -->
+    <string name="length_cm_display_name_short">см</string>
+    <string name="length_cm_display_name_long">сантиметры</string>
+    <string name="length_cm_nominative_short">%s см</string>
+    <string name="length_cm_nominative_long">%s сантиметра</string>
+
+    <!-- Meter -->
+    <string name="length_m_display_name_short">м</string>
+    <string name="length_m_display_name_long">метры</string>
+    <string name="length_m_nominative_short">%s м</string>
+    <string name="length_m_nominative_long">%s метра</string>
+
+    <!-- Kilometer -->
+    <string name="length_km_display_name_short">км</string>
+    <string name="length_km_display_name_long">километры</string>
+    <string name="length_km_nominative_short">%s км</string>
+    <string name="length_km_nominative_long">%s километра</string>
+
+    <!-- Inch -->
+    <string name="length_in_display_name_short">дюйм.</string>
+    <string name="length_in_display_name_long">дюймы</string>
+    <string name="length_in_nominative_short">%s дюйм.</string>
+    <string name="length_in_nominative_long">%s дюйма</string>
+
+    <!-- Foot -->
+    <string name="length_ft_display_name_short">фт</string>
+    <string name="length_ft_display_name_long">футы</string>
+    <string name="length_ft_nominative_short">%s фт</string>
+    <string name="length_ft_nominative_long">%s фута</string>
+
+    <!-- Mile -->
+    <string name="length_mi_display_name_short">ми</string>
+    <string name="length_mi_display_name_long">мили</string>
+    <string name="length_mi_nominative_short">%s ми</string>
+    <string name="length_mi_nominative_long">%s мили</string>
+
+    <!-- Nautical mile -->
+    <string name="length_nmi_display_name_short">мор. ми</string>
+    <string name="length_nmi_display_name_long">морские мили</string>
+    <string name="length_nmi_nominative_short">%s мор. ми</string>
+    <string name="length_nmi_nominative_long">%s морские мили</string>
+
+    <!-- Area units -->
+
+    <!-- Square meter -->
+    <string name="area_m2_per_short">%s/м²</string>
+    <string name="area_m2_per_long">%s на квадратный метр</string>
+
+    <!-- Speed units -->
+
+    <!-- Knot -->
+    <string name="speed_kn_display_name_short">уз</string>
+    <string name="speed_kn_display_name_long">узел</string>
+    <string name="speed_kn_nominative_short">%s уз</string>
+    <string name="speed_kn_nominative_long">%s узла</string>
+
+    <!-- Beaufort scale -->
+    <string name="speed_bf_display_name_short">Бфт</string>
+    <string name="speed_bf_display_name_long">баллы Бофорта</string>
+    <string name="speed_bf_nominative_short">%s Бфт</string>
+    <string name="speed_bf_nominative_long">%s балла Бофорта</string>
+
+    <!-- Volume units -->
+
+    <!-- Cubic meter -->
+    <string name="volume_m3_per_short">%s/м³</string>
+    <string name="volume_m3_per_long">%s на кубический метр</string>
+
+    <!-- Liter -->
+    <string name="volume_l_display_name_short">л</string>
+    <string name="volume_l_display_name_long">литры</string>
+    <string name="volume_l_nominative_short">%s л</string>
+    <string name="volume_l_nominative_long">%s литра</string>
+
+    <!-- Weight units -->
+
+    <!-- Microgram -->
+    <string name="weight_microg_display_name_short">мкг</string>
+    <string name="weight_microg_display_name_long">микрограммы</string>
+    <string name="weight_microg_nominative_short">%s мкг</string>
+    <string name="weight_microg_nominative_long">%s микрограмма</string>
+
+    <!-- Milligram -->
+    <string name="weight_mg_display_name_short">мг</string>
+    <string name="weight_mg_display_name_long">миллиграммы</string>
+    <string name="weight_mg_nominative_short">%s мг</string>
+    <string name="weight_mg_nominative_long">%s миллиграмма</string>
+
+    <!-- Pressure units -->
+
+    <!-- Pascal -->
+    <string name="pressure_pa_display_name_short">Па</string>
+    <string name="pressure_pa_display_name_long">паскали</string>
+    <string name="pressure_pa_nominative_short">%s Па</string>
+    <string name="pressure_pa_nominative_long">%s паскали</string>
+
+    <!-- Hectopascal -->
+    <string name="pressure_hpa_display_name_short">гПа</string>
+    <string name="pressure_hpa_display_name_long">гектопаскали</string>
+    <string name="pressure_hpa_nominative_short">%s гПа</string>
+    <string name="pressure_hpa_nominative_long">%s гектопаскали</string>
+
+    <!-- Kilopascal -->
+    <string name="pressure_kpa_display_name_short">кПа</string>
+    <string name="pressure_kpa_display_name_long">килопаскали</string>
+    <string name="pressure_kpa_nominative_short">%s кПа</string>
+    <string name="pressure_kpa_nominative_long">%s килопаскали</string>
+
+    <!-- Millibar -->
+    <string name="pressure_mbar_display_name_short">мбар</string>
+    <string name="pressure_mbar_display_name_long">миллибары</string>
+    <string name="pressure_mbar_nominative_short">%s мбар</string>
+    <string name="pressure_mbar_nominative_long">%s миллибары</string>
+
+    <!-- Atmosphere -->
+    <string name="pressure_atm_display_name_short">атм</string>
+    <string name="pressure_atm_display_name_long">атмосферы</string>
+    <string name="pressure_atm_nominative_short">%s атм</string>
+    <string name="pressure_atm_nominative_long">%s атмосферы</string>
+
+    <!-- Millimeter of mercury -->
+    <string name="pressure_mmhg_display_name_short">мм рт. ст.</string>
+    <string name="pressure_mmhg_display_name_long">миллиметры ртутного столба</string>
+    <string name="pressure_mmhg_nominative_short">%s мм рт. ст.</string>
+    <string name="pressure_mmhg_nominative_long">%s миллиметры ртутного столба</string>
+
+    <!-- Inch of mercury -->
+    <string name="pressure_inhg_display_name_short">д. рт. ст.</string>
+    <string name="pressure_inhg_display_name_long">дюймы ртутного столба</string>
+    <string name="pressure_inhg_nominative_short">%s д. рт. ст.</string>
+    <string name="pressure_inhg_nominative_long">%s дюймы ртутного столба</string>
+
+    <!-- Duration units -->
+
+    <!-- Hours -->
+    <string name="duration_hr_nominative_short">%s ч</string>
+    <string name="duration_hr_nominative_long">%s часы</string>
+    <string name="duration_hr_per_short">%s/ч</string>
+    <string name="duration_hr_per_long">%s в час</string>
+
+    <!-- Minutes -->
+    <string name="duration_min_nominative_short">%s мин</string>
+    <string name="duration_min_nominative_long">%s минуты</string>
+
+    <!-- Seconds -->
+    <string name="duration_sec_nominative_short">%s c</string>
+    <string name="duration_sec_nominative_long">%s секунды</string>
+    <string name="duration_sec_per_short">%s/c</string>
+    <string name="duration_sec_per_long">%s в секунду</string>
+
+</resources>

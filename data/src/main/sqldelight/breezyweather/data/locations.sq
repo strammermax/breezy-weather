@@ -1,0 +1,148 @@
+import java.util.TimeZone;
+import kotlin.Boolean;
+
+CREATE TABLE locations(
+    formatted_id TEXT NOT NULL PRIMARY KEY,
+    list_order INTEGER NOT NULL,
+
+    city_id TEXT,
+    latitude REAL NOT NULL,
+    longitude REAL NOT NULL,
+    timezone TEXT AS TimeZone NOT NULL,
+    custom_name TEXT,
+    country TEXT NOT NULL,
+    country_code TEXT,
+    admin1 TEXT,
+    admin1_code TEXT,
+    admin2 TEXT,
+    admin2_code TEXT,
+    admin3 TEXT,
+    admin3_code TEXT,
+    admin4 TEXT,
+    admin4_code TEXT,
+    city TEXT NOT NULL,
+    district TEXT,
+
+    -- Sources
+    weather_source TEXT NOT NULL,
+    current_source TEXT,
+    air_quality_source TEXT,
+    pollen_source TEXT,
+    minutely_source TEXT,
+    alert_source TEXT,
+    normals_source TEXT,
+    reverse_geocoding_source TEXT,
+
+    current_position INTEGER AS Boolean NOT NULL DEFAULT 0,
+
+    needs_geocode_refresh INTEGER AS Boolean NOT NULL DEFAULT 0,
+
+    background_weather_kind TEXT,
+    background_day_night_type TEXT
+);
+
+getLocationById:
+SELECT city_id, latitude, longitude, timezone, custom_name, country, country_code, admin1, admin1_code, admin2, admin2_code, admin3, admin3_code, admin4, admin4_code, city, district, weather_source, current_source, air_quality_source, pollen_source, minutely_source, alert_source, normals_source, reverse_geocoding_source, current_position, needs_geocode_refresh, background_weather_kind, background_day_night_type
+FROM locations
+WHERE formatted_id = :formattedId;
+
+getAllLocations:
+SELECT city_id, latitude, longitude, timezone, custom_name, country, country_code, admin1, admin1_code, admin2, admin2_code, admin3, admin3_code, admin4, admin4_code, city, district, weather_source, current_source, air_quality_source, pollen_source, minutely_source, alert_source, normals_source, reverse_geocoding_source, current_position, needs_geocode_refresh, background_weather_kind, background_day_night_type
+FROM locations
+ORDER BY list_order;
+
+getXLocations:
+SELECT city_id, latitude, longitude, timezone, custom_name, country, country_code, admin1, admin1_code, admin2, admin2_code, admin3, admin3_code, admin4, admin4_code, city, district, weather_source, current_source, air_quality_source, pollen_source, minutely_source, alert_source, normals_source, reverse_geocoding_source, current_position, needs_geocode_refresh, background_weather_kind, background_day_night_type
+FROM locations
+ORDER BY list_order
+LIMIT :limit;
+
+getFirstLocation:
+SELECT city_id, latitude, longitude, timezone, custom_name, country, country_code, admin1, admin1_code, admin2, admin2_code, admin3, admin3_code, admin4, admin4_code, city, district, weather_source, current_source, air_quality_source, pollen_source, minutely_source, alert_source, normals_source, reverse_geocoding_source, current_position, needs_geocode_refresh, background_weather_kind, background_day_night_type
+FROM locations
+ORDER BY list_order
+LIMIT 1;
+
+insert:
+INSERT INTO locations(formatted_id, list_order, city_id, latitude, longitude, timezone, custom_name, country, country_code, admin1, admin1_code, admin2, admin2_code, admin3, admin3_code, admin4, admin4_code, city, district, weather_source, current_source, air_quality_source, pollen_source, minutely_source, alert_source, normals_source, reverse_geocoding_source, current_position, needs_geocode_refresh, background_weather_kind, background_day_night_type)
+VALUES (:formattedId, :listOrder, :cityId, :latitude, :longitude, :timezone, :customName, :country, :countryCode, :admin1, :admin1Code, :admin2, :admin2Code, :admin3, :admin3Code, :admin4, :admin4Code, :city, :district, :weatherSource, :currentSource, :airQualitySource, :pollenSource, :minutelySource, :alertSource, :normalsSource, :reverseGeocodingSource, :currentPosition, :needsGeocodeRefresh, :backgroundWeatherKind, :backgroundDayNightType)
+ON CONFLICT(formatted_id) DO UPDATE SET
+    list_order = coalesce(:listOrder, list_order),
+    city_id = coalesce(:cityId, city_id),
+    latitude = coalesce(:latitude, latitude),
+    longitude = coalesce(:longitude, longitude),
+    timezone = coalesce(:timezone, timezone),
+    custom_name = coalesce(:customName, custom_name),
+    country = coalesce(:country, country),
+    country_code = coalesce(:countryCode, country_code),
+    admin1 = coalesce(:admin1, admin1),
+    admin1_code = coalesce(:admin1Code, admin1_code),
+    admin2 = coalesce(:admin2, admin2),
+    admin2_code = coalesce(:admin2Code, admin2_code),
+    admin3 = coalesce(:admin3, admin3),
+    admin3_code = coalesce(:admin3Code, admin3_code),
+    admin4 = coalesce(:admin4, admin4),
+    admin4_code = coalesce(:admin4Code, admin4_code),
+    city = coalesce(:city, city),
+    district = coalesce(:district, district),
+    weather_source = coalesce(:weatherSource, weather_source),
+    current_source = coalesce(:currentSource, current_source),
+    air_quality_source = coalesce(:airQualitySource, air_quality_source),
+    pollen_source = coalesce(:pollenSource, pollen_source),
+    minutely_source = coalesce(:minutelySource, minutely_source),
+    alert_source = coalesce(:alertSource, alert_source),
+    normals_source = coalesce(:normalsSource, normals_source),
+    reverse_geocoding_source = coalesce(:reverseGeocodingSource, reverse_geocoding_source),
+    current_position = coalesce(:currentPosition, current_position),
+    needs_geocode_refresh = coalesce(:needsGeocodeRefresh, needs_geocode_refresh),
+    background_weather_kind = coalesce(:backgroundWeatherKind, background_weather_kind),
+    background_day_night_type = coalesce(:backgroundDayNightType, background_day_night_type);
+
+updateFormattedId:
+UPDATE locations
+SET formatted_id = coalesce(:newFormattedId, formatted_id)
+WHERE formatted_id = coalesce(:oldFormattedId, formatted_id);
+
+update:
+UPDATE locations
+SET city_id = coalesce(:cityId, city_id),
+    latitude = coalesce(:latitude, latitude),
+    longitude = coalesce(:longitude, longitude),
+    timezone = coalesce(:timezone, timezone),
+    custom_name = coalesce(:customName, custom_name),
+    country = coalesce(:country, country),
+    country_code = coalesce(:countryCode, country_code),
+    admin1 = coalesce(:admin1, admin1),
+    admin1_code = coalesce(:admin1Code, admin1_code),
+    admin2 = coalesce(:admin2, admin2),
+    admin2_code = coalesce(:admin2Code, admin2_code),
+    admin3 = coalesce(:admin3, admin3),
+    admin3_code = coalesce(:admin3Code, admin3_code),
+    admin4 = coalesce(:admin4, admin4),
+    admin4_code = coalesce(:admin4Code, admin4_code),
+    city = coalesce(:city, city),
+    district = coalesce(:district, district),
+    weather_source = coalesce(:weatherSource, weather_source),
+    current_source = coalesce(:currentSource, current_source),
+    air_quality_source = coalesce(:airQualitySource, air_quality_source),
+    pollen_source = coalesce(:pollenSource, pollen_source),
+    minutely_source = coalesce(:minutelySource, minutely_source),
+    alert_source = coalesce(:alertSource, alert_source),
+    normals_source = coalesce(:normalsSource, normals_source),
+    reverse_geocoding_source = coalesce(:reverseGeocodingSource, reverse_geocoding_source),
+    current_position = coalesce(:currentPosition, current_position),
+    needs_geocode_refresh = coalesce(:needsGeocodeRefresh, needs_geocode_refresh),
+    background_weather_kind = coalesce(:backgroundWeatherKind, background_weather_kind),
+    background_day_night_type = coalesce(:backgroundDayNightType, background_day_night_type)
+WHERE formatted_id = coalesce(:formattedId, formatted_id);
+
+deleteLocation:
+DELETE FROM locations
+WHERE formatted_id = :formattedId;
+
+deleteAll:
+DELETE FROM locations;
+
+deleteAllNonMatchingLocations:
+DELETE FROM locations
+WHERE formatted_id NOT IN :formattedIds;

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ONLY values changed from the original file are included -->
+    <!-- Loosely based on https://www.unicode.org/cldr/charts/47/summary/zh_Hant.html -->
+    <!-- Due to various major issues -->
+    <!-- https://unicode-org.atlassian.net/jira/software/c/projects/CLDR/issues/CLDR-10604 -->
+    <!-- If you believe there is an error, please open a discussion -->
+
+    <!-- Value separator -->
+    <string name="locale_separator">，</string>
+
+    <!-- Temperature units -->
+
+    <!-- Degree Celsius -->
+    <string name="temperature_c_display_name_long">攝氏度</string>
+    <string name="temperature_c_nominative_short">%s°C</string>
+    <string name="temperature_c_nominative_long">攝氏 %s 度</string>
+
+    <!-- Degree Fahrenheit -->
+    <string name="temperature_f_display_name_long">華氏度</string>
+    <string name="temperature_f_nominative_short">%s°F</string>
+    <string name="temperature_f_nominative_long">華氏 %s 度</string>
+
+    <!-- Kelvin -->
+    <string name="temperature_k_display_name_long">克耳文</string>
+    <string name="temperature_k_nominative_long">%s 克耳文</string>
+
+    <!-- Length units -->
+
+    <!-- Micrometer -->
+    <string name="length_microm_display_name_long">微米</string>
+    <string name="length_microm_nominative_long">%s微米</string>
+
+    <!-- Millimeter -->
+    <string name="length_mm_display_name_long">毫米</string>
+    <string name="length_mm_nominative_long">%s毫米</string>
+
+    <!-- Centimeter -->
+    <string name="length_cm_display_name_long">厘米</string>
+    <string name="length_cm_nominative_long">%s厘米</string>
+
+    <!-- Meter -->
+    <string name="length_m_display_name_long">米</string>
+    <string name="length_m_nominative_long">%s米</string>
+
+    <!-- Kilometer -->
+    <string name="length_km_display_name_long">公里</string>
+    <string name="length_km_nominative_long">%s公里</string>
+
+    <!-- Inch -->
+    <string name="length_in_display_name_long">吋</string>
+    <string name="length_in_nominative_long">%s吋</string>
+
+    <!-- Foot -->
+    <string name="length_ft_display_name_long">呎</string>
+    <string name="length_ft_nominative_long">%s呎</string>
+
+    <!-- Mile -->
+    <string name="length_mi_display_name_long">哩</string>
+    <string name="length_mi_nominative_long">%s哩</string>
+
+    <!-- Nautical mile -->
+    <string name="length_nmi_display_name_long">浬</string>
+    <string name="length_nmi_nominative_long">%s浬</string>
+
+    <!-- Area units -->
+
+    <!-- Square meter -->
+    <string name="area_m2_per_long">%s 每平方米</string>
+
+    <!-- Speed units -->
+
+    <!-- Knot -->
+    <string name="speed_kn_display_name_long">節</string>
+    <string name="speed_kn_nominative_long">%s節</string>
+
+    <!-- Beaufort scale -->
+    <string name="speed_bf_display_name_short">蒲福風級</string>
+    <string name="speed_bf_nominative_short">%s級</string>
+    <string name="speed_bf_nominative_long">蒲福氏風級 %s 級</string>
+
+    <!-- Volume units -->
+
+    <!-- Cubic meter -->
+    <string name="volume_m3_per_long">%s 每立方米</string>
+
+    <!-- Liter -->
+    <string name="volume_l_display_name_long">公升</string>
+    <string name="volume_l_nominative_long">%s 公升</string>
+
+    <!-- Weight units -->
+
+    <!-- Microgram -->
+    <string name="weight_microg_display_name_long">微克</string>
+    <string name="weight_microg_nominative_long">%s微克</string>
+
+    <!-- Milligram -->
+    <string name="weight_mg_display_name_long">毫克</string>
+    <string name="weight_mg_nominative_long">%s毫克</string>
+
+    <!-- Pressure units -->
+
+    <!-- Pascal -->
+    <string name="pressure_pa_display_name_long">帕斯卡</string>
+    <string name="pressure_pa_nominative_long">%s帕斯卡</string>
+
+    <!-- Hectopascal -->
+    <string name="pressure_hpa_display_name_long">百帕</string>
+    <string name="pressure_hpa_nominative_long">%s百帕</string>
+
+    <!-- Kilopascal -->
+    <string name="pressure_kpa_display_name_long">千帕</string>
+    <string name="pressure_kpa_nominative_long">%s千帕</string>
+
+    <!-- Millibar -->
+    <string name="pressure_mbar_display_name_long">毫巴</string>
+    <string name="pressure_mbar_nominative_long">%s毫巴</string>
+
+    <!-- Atmosphere -->
+    <string name="pressure_atm_display_name_long">氣壓</string>
+    <string name="pressure_atm_nominative_long">%s大氣壓</string>
+
+    <!-- Millimeter of mercury -->
+    <string name="pressure_mmhg_display_name_long">毫米汞柱</string>
+    <string name="pressure_mmhg_nominative_long">%s毫米汞柱</string>
+
+    <!-- Inch of mercury - SPECIFIC to HK -->
+    <string name="pressure_inhg_display_name_long">吋汞柱</string>
+    <string name="pressure_inhg_nominative_long">%s吋汞柱</string>
+
+    <!-- Duration units -->
+
+    <!-- Hours -->
+    <string name="duration_hr_nominative_short">%s小時</string>
+    <string name="duration_hr_per_short">%s 每小時</string>
+
+    <!-- Minutes -->
+    <string name="duration_min_nominative_short">%s分鐘</string>
+
+    <!-- Seconds -->
+    <string name="duration_sec_nominative_short">%s秒</string>
+    <string name="duration_sec_per_short">%s 每秒</string>
+
+</resources>

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ONLY values changed from the original file are included -->
+    <!-- Based on https://www.unicode.org/cldr/charts/47/summary/th.html -->
+    <!-- If you believe there is an error, please open a discussion -->
+
+    <!-- Temperature units -->
+
+    <!-- Degree Celsius -->
+    <string name="temperature_c_display_name_long">องศาเซลเซียส</string>
+    <string name="temperature_c_nominative_long">%s องศาเซลเซียส</string>
+
+    <!-- Degree Fahrenheit -->
+    <string name="temperature_f_display_name_long">องศาฟาเรนไฮต์</string>
+    <string name="temperature_f_nominative_long">%s องศาฟาเรนไฮต์</string>
+
+    <!-- Kelvin -->
+    <string name="temperature_k_display_name_long">เคลวิน</string>
+    <string name="temperature_k_nominative_long">%s เคลวิน</string>
+
+    <!-- Length units -->
+
+    <!-- Micrometer -->
+    <string name="length_microm_display_name_long">ไมโครเมตร</string>
+    <string name="length_microm_nominative_long">%s ไมโครเมตร</string>
+
+    <!-- Millimeter -->
+    <string name="length_mm_display_name_short">มม.</string>
+    <string name="length_mm_display_name_long">มิลลิเมตร</string>
+    <string name="length_mm_nominative_short">%s มม.</string>
+    <string name="length_mm_nominative_long">%s มิลลิเมตร</string>
+
+    <!-- Centimeter -->
+    <string name="length_cm_display_name_short">ซม.</string>
+    <string name="length_cm_display_name_long">เซนติเมตร</string>
+    <string name="length_cm_nominative_short">%s ซม.</string>
+    <string name="length_cm_nominative_long">%s เซนติเมตร</string>
+
+    <!-- Meter -->
+    <string name="length_m_display_name_short">ม.</string>
+    <string name="length_m_display_name_long">เมตร</string>
+    <string name="length_m_nominative_short">%s ม.</string>
+    <string name="length_m_nominative_long">%s เมตร</string>
+
+    <!-- Kilometer -->
+    <string name="length_km_display_name_short">กม.</string>
+    <string name="length_km_display_name_long">กิโลเมตร</string>
+    <string name="length_km_nominative_short">%s กม.</string>
+    <string name="length_km_nominative_long">%s กิโลเมตร</string>
+
+    <!-- Inch -->
+    <string name="length_in_display_name_short">นิ้ว</string>
+    <string name="length_in_nominative_short">%s นิ้ว</string>
+
+    <!-- Foot -->
+    <string name="length_ft_display_name_short">ฟุต</string>
+    <string name="length_ft_nominative_short">%s ฟุต</string>
+
+    <!-- Mile -->
+    <string name="length_mi_display_name_short">ไมล์</string>
+    <string name="length_mi_nominative_short">%s ไมล์</string>
+
+    <!-- Nautical mile -->
+    <string name="length_nmi_display_name_short">ไมล์ทะเล</string>
+    <string name="length_nmi_nominative_short">%s ไมล์ทะเล</string>
+
+    <!-- Area units -->
+
+    <!-- Square meter -->
+    <string name="area_m2_per_short">%s/ตร.ม.</string>
+    <string name="area_m2_per_long">%s ต่อตารางเมตร</string>
+
+    <!-- Speed units -->
+
+    <!-- Knot -->
+    <string name="speed_kn_display_name_short">นอต</string>
+    <string name="speed_kn_nominative_short">%s นอต</string>
+
+    <!-- Beaufort scale -->
+    <string name="speed_bf_display_name_long">โบฟอร์ต</string>
+    <string name="speed_bf_nominative_long">โบฟอร์ต %s</string>
+
+    <!-- Volume units -->
+
+    <!-- Cubic meter -->
+    <string name="volume_m3_per_short">%s/ลบ.ม.</string>
+    <string name="volume_m3_per_long">%s ต่อลูกบาศก์เมตร</string>
+
+    <!-- Liter -->
+    <string name="volume_l_display_name_short">ล.</string>
+    <string name="volume_l_display_name_long">ลิตร</string>
+    <string name="volume_l_nominative_short">%s ล.</string>
+    <string name="volume_l_nominative_long">%s ลิตร</string>
+
+    <!-- Weight units -->
+
+    <!-- Microgram -->
+    <string name="weight_microg_display_name_short">มคก.</string>
+    <string name="weight_microg_display_name_long">ไมโครกรัม</string>
+    <string name="weight_microg_nominative_short">%s มคก.</string>
+    <string name="weight_microg_nominative_long">%s ไมโครกรัม</string>
+
+    <!-- Milligram -->
+    <string name="weight_mg_display_name_short">มก.</string>
+    <string name="weight_mg_display_name_long">มิลลิกรัม</string>
+    <string name="weight_mg_nominative_short">%s มก.</string>
+    <string name="weight_mg_nominative_long">%s มิลลิกรัม</string>
+
+    <!-- Pressure units -->
+
+    <!-- Hectopascal is inconsistent with other *pascal units in this language, but well… -->
+
+    <!-- Pascal -->
+    <string name="pressure_pa_display_name_long">ปาสกาล</string>
+    <string name="pressure_pa_nominative_long">%s ปาสกาล</string>
+
+    <!-- Hectopascal -->
+    <string name="pressure_hpa_display_name_short">เฮกโตปาสกาล</string>
+    <string name="pressure_hpa_nominative_short">%s เฮกโตปาสกาล</string>
+
+    <!-- Kilopascal -->
+    <string name="pressure_kpa_display_name_long">กิโลปาสกาล</string>
+    <string name="pressure_kpa_nominative_long">%s กิโลปาสกาล</string>
+
+    <!-- Millibar -->
+    <string name="pressure_mbar_display_name_short">มิลลิบาร์</string>
+    <string name="pressure_mbar_nominative_short">%s มิลลิบาร์</string>
+
+    <!-- Atmosphere -->
+    <string name="pressure_atm_display_name_short">บรรยากาศ</string>
+    <string name="pressure_atm_nominative_short">%s บรรยากาศ</string>
+
+    <!-- Millimeter of mercury -->
+    <string name="pressure_mmhg_display_name_short">มม. ปรอท</string>
+    <string name="pressure_mmhg_display_name_long">มิลลิเมตรปรอท</string>
+    <string name="pressure_mmhg_nominative_short">%s มม. ปรอท</string>
+    <string name="pressure_mmhg_nominative_long">%s มิลลิเมตรปรอท</string>
+
+    <!-- Inch of mercury -->
+    <string name="pressure_inhg_display_name_short">นิ้วปรอท</string>
+    <string name="pressure_inhg_nominative_short">%s นิ้วปรอท</string>
+
+    <!-- Duration units -->
+
+    <!-- Hours -->
+    <string name="duration_hr_nominative_short">%s ชม.</string>
+    <string name="duration_hr_nominative_long">%s ชั่วโมง</string>
+    <string name="duration_hr_per_short">%s/ชม.</string>
+    <string name="duration_hr_per_long">%s ต่อชั่วโมง</string>
+
+    <!-- Minutes -->
+    <string name="duration_min_nominative_short">%s นาที</string>
+
+    <!-- Seconds -->
+    <string name="duration_sec_nominative_short">%s วิ</string>
+    <string name="duration_sec_nominative_long">%s วินาที</string>
+    <string name="duration_sec_per_short">%s/วิ</string>
+    <string name="duration_sec_per_long">%s ต่อวินาที</string>
+
+</resources>

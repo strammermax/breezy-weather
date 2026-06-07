@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ONLY values changed from the original file are included -->
+    <!-- Based on https://www.unicode.org/cldr/charts/47/summary/oc.html -->
+    <!-- If you believe there is an error, please open a discussion -->
+
+    <!-- Temperature units -->
+
+    <!-- Degree Celsius -->
+    <string name="temperature_c_display_name_short">gr. Celsius</string>
+    <string name="temperature_c_display_name_long">grases Celsius</string>
+    <string name="temperature_c_nominative_long">%s grases Celsius</string>
+
+    <!-- Degree Fahrenheit -->
+    <string name="temperature_f_display_name_short">gr. Fahrenheit</string>
+    <string name="temperature_f_display_name_long">grases Fahrenheit</string>
+    <string name="temperature_f_nominative_long">%s grases Fahrenheit</string>
+
+    <!-- Kelvin -->
+    <!-- No change -->
+
+    <!-- Length units -->
+
+    <!-- Micrometer -->
+    <string name="length_microm_display_name_long">micromètres</string>
+    <string name="length_microm_nominative_long">%s micromètres</string>
+
+    <!-- Millimeter -->
+    <string name="length_mm_display_name_long">milimètres</string>
+    <string name="length_mm_nominative_long">%s milimètres</string>
+
+    <!-- Centimeter -->
+    <string name="length_cm_display_name_long">centimètres</string>
+    <string name="length_cm_nominative_long">%s centimètres</string>
+
+    <!-- Meter -->
+    <string name="length_m_display_name_long">mètres</string>
+    <string name="length_m_nominative_long">%s mètres</string>
+
+    <!-- Kilometer -->
+    <string name="length_km_display_name_long">quilomètres</string>
+    <string name="length_km_nominative_long">%s quilomètres</string>
+
+    <!-- Inch -->
+    <!-- No change -->
+
+    <!-- Foot -->
+    <!-- No change -->
+
+    <!-- Mile -->
+    <!-- No change -->
+
+    <!-- Nautical mile -->
+    <!-- No change -->
+
+    <!-- Area units -->
+
+    <!-- Square meter -->
+    <string name="area_m2_per_long">%s per mètres cairats</string>
+
+    <!-- Speed units -->
+
+    <!-- Knot -->
+    <string name="speed_kn_display_name_long">noses</string>
+    <string name="speed_kn_nominative_long">%s noses</string>
+
+    <!-- Beaufort scale -->
+    <!-- No change -->
+
+    <!-- Volume units -->
+
+    <!-- Cubic meter -->
+    <string name="volume_m3_per_long">%s per mètres cubics</string>
+
+    <!-- Liter -->
+    <string name="volume_l_display_name_long">litres</string>
+    <string name="volume_l_nominative_long">%s litres</string>
+
+    <!-- Weight units -->
+
+    <!-- Microgram -->
+    <string name="weight_microg_display_name_long">microgramas</string>
+    <string name="weight_microg_nominative_long">%s microgramas</string>
+
+    <!-- Milligram -->
+    <string name="weight_mg_display_name_long">miligramas</string>
+    <string name="weight_mg_nominative_long">%s miligramas</string>
+
+    <!-- Pressure units -->
+
+    <!-- Pascal -->
+    <!-- No change -->
+
+    <!-- Hectopascal -->
+    <string name="pressure_hpa_display_name_long">ectopascals</string>
+    <string name="pressure_hpa_nominative_long">%s ectopascals</string>
+
+    <!-- Kilopascal -->
+    <string name="pressure_kpa_display_name_long">quilopascals</string>
+    <string name="pressure_kpa_nominative_long">%s quilopascals</string>
+
+    <!-- Millibar -->
+    <string name="pressure_mbar_display_name_long">milibars</string>
+    <string name="pressure_mbar_nominative_long">%s milibars</string>
+
+    <!-- Atmosphere -->
+    <string name="pressure_atm_display_name_long">atmosfèras</string>
+    <string name="pressure_atm_nominative_long">%s atmosfèras</string>
+
+    <!-- Millimeter of mercury -->
+    <string name="pressure_mmhg_display_name_short">mm Hg</string>
+    <string name="pressure_mmhg_display_name_long">milimètres de mercuri</string>
+    <string name="pressure_mmhg_nominative_short">%s mm Hg</string>
+    <string name="pressure_mmhg_nominative_long">%s milimètres de mercuri</string>
+
+    <!-- Inch of mercury -->
+    <!-- No change -->
+
+    <!-- Duration units -->
+
+    <!-- Hours -->
+    <string name="duration_hr_nominative_long">%s oras</string>
+
+    <!-- Minutes -->
+    <string name="duration_min_nominative_long">%s minutas</string>
+
+    <!-- Seconds -->
+    <string name="duration_sec_nominative_long">%s segondas</string>
+
+</resources>

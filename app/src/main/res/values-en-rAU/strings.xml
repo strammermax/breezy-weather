@@ -1,0 +1,13 @@
+<resources>
+
+    <string name="pollen_mold">Mould</string>
+
+    <string name="settings_color_grey">Grey</string>
+
+    <string name="widget_label_show_widget_card">Background colour</string>
+    <string name="widget_label_text_color">Text colour</string>
+    <string name="widget_clock_font_analog">Analogue</string>
+
+    <string name="humidity_about_description">Relative humidity, more commonly known just as humidity, is the percentage of water vapour present in the air compared to the maximum amount that the air can hold at a given temperature.</string>
+
+</resources>

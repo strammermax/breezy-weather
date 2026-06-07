@@ -1,0 +1,79 @@
+import breezyweather.domain.weather.reference.WeatherCode;
+import kotlin.Boolean;
+import org.breezyweather.unit.distance.Distance;
+import org.breezyweather.unit.pollutant.PollutantConcentration;
+import org.breezyweather.unit.precipitation.Precipitation;
+import org.breezyweather.unit.pressure.Pressure;
+import org.breezyweather.unit.ratio.Ratio;
+import org.breezyweather.unit.speed.Speed;
+import org.breezyweather.unit.temperature.Temperature;
+
+CREATE TABLE hourlys(
+    _id INTEGER NOT NULL PRIMARY KEY,
+    location_formatted_id TEXT NOT NULL,
+
+    date INTEGER NOT NULL,
+
+    daylight INTEGER AS Boolean NOT NULL DEFAULT 1,
+    weather_text TEXT,
+    weather_code TEXT AS WeatherCode,
+
+    temperature INTEGER AS Temperature,
+    temperature_source_feels_like INTEGER AS Temperature,
+    temperature_apparent INTEGER AS Temperature,
+    temperature_wind_chill INTEGER AS Temperature,
+    humidex INTEGER AS Temperature,
+
+    total_precipitation INTEGER AS Precipitation,
+    thunderstorm_precipitation INTEGER AS Precipitation,
+    rain_precipitation INTEGER AS Precipitation,
+    snow_precipitation INTEGER AS Precipitation,
+    ice_precipitation INTEGER AS Precipitation,
+
+    total_precipitation_probability INTEGER AS Ratio,
+    thunderstorm_precipitation_probability INTEGER AS Ratio,
+    rain_precipitation_probability INTEGER AS Ratio,
+    snow_precipitation_probability INTEGER AS Ratio,
+    ice_precipitation_probability INTEGER AS Ratio,
+
+    wind_degree REAL,
+    wind_speed INTEGER AS Speed,
+    wind_gusts INTEGER AS Speed,
+
+    pm25 INTEGER AS PollutantConcentration,
+    pm10 INTEGER AS PollutantConcentration,
+    so2 INTEGER AS PollutantConcentration,
+    no2 INTEGER AS PollutantConcentration,
+    o3 INTEGER AS PollutantConcentration,
+    co INTEGER AS PollutantConcentration,
+
+    -- uv.
+    uvIndex REAL,
+
+    -- details
+    relative_humidity INTEGER AS Ratio,
+    dew_point INTEGER AS Temperature,
+    pressure INTEGER AS Pressure,
+    cloud_cover INTEGER AS Ratio,
+    visibility INTEGER AS Distance,
+
+    UNIQUE(location_formatted_id, date) ON CONFLICT REPLACE,
+    FOREIGN KEY(location_formatted_id) REFERENCES locations (formatted_id)
+    ON DELETE CASCADE
+);
+
+CREATE INDEX hourlys_location_formatted_id_index ON hourlys(location_formatted_id);
+
+getHourlyListByLocationId:
+SELECT date, daylight, weather_text, weather_code, temperature, temperature_source_feels_like, temperature_apparent, temperature_wind_chill, humidex, total_precipitation, thunderstorm_precipitation, rain_precipitation, snow_precipitation, ice_precipitation, total_precipitation_probability, thunderstorm_precipitation_probability, rain_precipitation_probability, snow_precipitation_probability, ice_precipitation_probability, wind_degree, wind_speed, wind_gusts, pm25, pm10, so2, no2, o3, co, uvIndex, relative_humidity, dew_point, pressure, cloud_cover, visibility
+FROM hourlys
+WHERE location_formatted_id = :locationFormattedId
+ORDER BY date;
+
+insert:
+INSERT INTO hourlys(location_formatted_id, date, daylight, weather_text, weather_code, temperature, temperature_source_feels_like, temperature_apparent, temperature_wind_chill, humidex, total_precipitation, thunderstorm_precipitation, rain_precipitation, snow_precipitation, ice_precipitation, total_precipitation_probability, thunderstorm_precipitation_probability, rain_precipitation_probability, snow_precipitation_probability, ice_precipitation_probability, wind_degree, wind_speed, wind_gusts, pm25, pm10, so2, no2, o3, co, uvIndex, relative_humidity, dew_point, pressure, cloud_cover, visibility)
+VALUES (:locationFormattedId, :date, :daylight, :weatherText, :weatherCode, :temperature, :temperatureSourceFeelsLike, :temperatureApparent, :temperatureWindChill, :humidex, :totalPrecipitation, :thunderstormPrecipitation, :rainPrecipitation, :snowPrecipitation, :icePrecipitation, :totalPrecipitationProbability, :thunderstormPrecipitationProbability, :rainPrecipitationProbability, :snowPrecipitationProbability, :icePrecipitationProbability, :windDegree, :windSpeed, :windGusts, :pm25, :pm10, :so2, :no2, :o3, :co, :uvIndex, :relativeHumidity, :dewPoint, :pressure, :cloudCover, :visibility);
+
+deleteHourlyListForLocationId:
+DELETE FROM hourlys
+WHERE location_formatted_id = :locationFormattedId;

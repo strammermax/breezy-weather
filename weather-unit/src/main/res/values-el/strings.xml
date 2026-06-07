@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ONLY values changed from the original file are included -->
+    <!-- Based on https://www.unicode.org/cldr/charts/47/summary/el.html -->
+    <!-- If you believe there is an error, please open a discussion -->
+
+    <!-- Temperature units -->
+
+    <!-- Degree Celsius -->
+    <string name="temperature_c_display_name_short">βθμ C</string>
+    <string name="temperature_c_display_name_long">βαθμοί Κελσίου</string>
+    <string name="temperature_c_nominative_long">%s βαθμοί Κελσίου</string>
+
+    <!-- Degree Fahrenheit -->
+    <string name="temperature_f_display_name_short">βθμ F</string>
+    <string name="temperature_f_display_name_long">βαθμοί Κελσίου</string>
+    <string name="temperature_f_nominative_long">%s βαθμοί Κελσίου</string>
+
+    <!-- Kelvin -->
+    <string name="temperature_k_display_name_long">βαθμοί Κέλβιν</string>
+    <string name="temperature_k_nominative_long">%s βαθμοί Κέλβιν</string>
+
+    <!-- Length units -->
+
+    <!-- Micrometer -->
+    <string name="length_microm_display_name_long">μικρόμετρα</string>
+    <string name="length_microm_nominative_long">%s μικρόμετρα</string>
+
+    <!-- Millimeter -->
+    <string name="length_mm_display_name_short">χλστ.</string>
+    <string name="length_mm_display_name_long">χιλιοστόμετρα</string>
+    <string name="length_mm_nominative_short">%s χλστ.</string>
+    <string name="length_mm_nominative_long">%s χιλιοστόμετρα</string>
+
+    <!-- Centimeter -->
+    <string name="length_cm_display_name_short">εκ.</string>
+    <string name="length_cm_display_name_long">εκατοστά</string>
+    <string name="length_cm_nominative_short">%s εκ.</string>
+    <string name="length_cm_nominative_long">%s εκατοστά</string>
+
+    <!-- Meter -->
+    <string name="length_m_display_name_short">μ.</string>
+    <string name="length_m_display_name_long">μέτρα</string>
+    <string name="length_m_nominative_short">%s μ.</string>
+    <string name="length_m_nominative_long">%s μέτρα</string>
+
+    <!-- Kilometer -->
+    <string name="length_km_display_name_short">χλμ.</string>
+    <string name="length_km_display_name_long">χιλιόμετρα</string>
+    <string name="length_km_nominative_short">%s χλμ.</string>
+    <string name="length_km_nominative_long">%s χιλιόμετρα</string>
+
+    <!-- Inch -->
+    <string name="length_in_display_name_short">ίν.</string>
+    <string name="length_in_display_name_long">ίντσες</string>
+    <string name="length_in_nominative_short">%s ίν.</string>
+    <string name="length_in_nominative_long">%s ίντσες</string>
+
+    <!-- Foot -->
+    <string name="length_ft_display_name_short">πδ</string>
+    <string name="length_ft_display_name_long">πόδια</string>
+    <string name="length_ft_nominative_short">%s πδ</string>
+    <string name="length_ft_nominative_long">%s πόδια</string>
+
+    <!-- Mile -->
+    <string name="length_mi_display_name_short">μίλ.</string>
+    <string name="length_mi_display_name_long">μίλια</string>
+    <string name="length_mi_nominative_short">%s μίλ.</string>
+    <string name="length_mi_nominative_long">%s μίλια</string>
+
+    <!-- Nautical mile -->
+    <string name="length_nmi_display_name_short">ν.μ.</string>
+    <string name="length_nmi_display_name_long">ναυτικά μίλια</string>
+    <string name="length_nmi_nominative_short">%s ν.μ.</string>
+    <string name="length_nmi_nominative_long">%s ναυτικά μίλια</string>
+
+    <!-- Area units -->
+
+    <!-- Square meter -->
+    <string name="area_m2_per_short">%s/τ.μ.</string>
+    <string name="area_m2_per_long">%s/τετραγωνικό μέτρο</string>
+
+    <!-- Speed units -->
+
+    <!-- Knot -->
+    <string name="speed_kn_display_name_short">κμβ</string>
+    <string name="speed_kn_display_name_long">κόμβος</string>
+    <string name="speed_kn_nominative_short">%s κμβ</string>
+    <string name="speed_kn_nominative_long">%s κόμβοι</string>
+
+    <!-- Beaufort scale -->
+    <string name="speed_bf_display_name_short">μποφ.</string>
+    <string name="speed_bf_display_name_long">μποφόρ</string>
+    <string name="speed_bf_nominative_short">%s μποφ.</string>
+    <string name="speed_bf_nominative_long">%s μποφόρ</string>
+
+    <!-- Volume units -->
+
+    <!-- Cubic meter -->
+    <string name="volume_m3_per_long">%s ανά κυβικό μέτρο</string>
+
+    <!-- Liter -->
+    <string name="volume_l_display_name_short">λίτ.</string>
+    <string name="volume_l_display_name_long">λίτρα</string>
+    <string name="volume_l_nominative_short">%s λίτ.</string>
+    <string name="volume_l_nominative_long">%s λίτρα</string>
+
+    <!-- Weight units -->
+
+    <!-- Microgram -->
+    <string name="weight_microg_display_name_long">μικρογραμμάρια</string>
+    <string name="weight_microg_nominative_long">%s μικρογραμμάρια</string>
+
+    <!-- Milligram -->
+    <string name="weight_mg_display_name_long">χιλιοστόγραμμα</string>
+    <string name="weight_mg_nominative_long">%s χιλιοστόγραμμα</string>
+
+    <!-- Pressure units -->
+
+    <!-- Pascal -->
+    <string name="pressure_pa_display_name_long">πασκάλ</string>
+    <string name="pressure_pa_nominative_long">%s πασκάλ</string>
+
+    <!-- Hectopascal -->
+    <string name="pressure_hpa_display_name_long">εκτοπασκάλ</string>
+    <string name="pressure_hpa_nominative_long">%s εκτοπασκάλ</string>
+
+    <!-- Kilopascal -->
+    <string name="pressure_kpa_display_name_long">κιλοπασκάλ</string>
+    <string name="pressure_kpa_nominative_long">%s κιλοπασκάλ</string>
+
+    <!-- Millibar -->
+    <string name="pressure_mbar_display_name_long">μιλιμπάρ</string>
+    <string name="pressure_mbar_nominative_long">%s μιλιμπάρ</string>
+
+    <!-- Atmosphere -->
+    <string name="pressure_atm_display_name_long">ατμόσφαιρες</string>
+    <string name="pressure_atm_nominative_long">%s ατμόσφαιρες</string>
+
+    <!-- Millimeter of mercury -->
+    <string name="pressure_mmhg_display_name_long">χιλιοστόμετρα στήλης υδραργύρου</string>
+    <string name="pressure_mmhg_nominative_long">%s χιλιοστόμετρα στήλης υδραργύρου</string>
+
+    <!-- Inch of mercury -->
+    <string name="pressure_inhg_display_name_long">ίντσες στήλης υδραργύρου</string>
+    <string name="pressure_inhg_nominative_long">%s ίντσες στήλης υδραργύρου</string>
+
+    <!-- Duration units -->
+
+    <!-- Hours -->
+    <string name="duration_hr_nominative_short">%s ώ.</string>
+    <string name="duration_hr_nominative_long">%s ώρες</string>
+    <string name="duration_hr_per_short">%s/ώ.</string>
+    <string name="duration_hr_per_long">%s ανά ώρα</string>
+
+    <!-- Minutes -->
+    <string name="duration_min_nominative_short">%s λεπ.</string>
+    <string name="duration_min_nominative_long">%s λεπτά</string>
+
+    <!-- Seconds -->
+    <string name="duration_sec_nominative_short">%s δευτ.</string>
+    <string name="duration_sec_nominative_long">%s δευτερόλεπτα</string>
+    <string name="duration_sec_per_short">%s/δευτ.</string>
+    <string name="duration_sec_per_long">%s ανά δευτερόλεπτο</string>
+
+</resources>

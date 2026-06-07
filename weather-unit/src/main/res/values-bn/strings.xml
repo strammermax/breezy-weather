@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ONLY values changed from the original file are included -->
+    <!-- Based on https://www.unicode.org/cldr/charts/47/summary/bn.html -->
+    <!-- If you believe there is an error, please open a discussion -->
+
+    <!-- Temperature units -->
+
+    <!-- Degree Celsius -->
+    <string name="temperature_c_display_name_long">ডিগ্রী সেলসিয়াস</string>
+    <string name="temperature_c_nominative_long">%s ডিগ্রী সেলসিয়াস</string>
+
+    <!-- Degree Fahrenheit -->
+    <string name="temperature_f_display_name_long">ডিগ্রী ফারেনহাইট</string>
+    <string name="temperature_f_nominative_long">%s ডিগ্রী ফারেনহাইট</string>
+
+    <!-- Kelvin -->
+    <string name="temperature_k_display_name_long">কেলভিন</string>
+    <string name="temperature_k_nominative_long">%s কেলভিন</string>
+
+    <!-- Length units -->
+
+    <!-- Micrometer -->
+    <string name="length_microm_display_name_long">মাইক্রোমিটার</string>
+    <string name="length_microm_nominative_long">%s মাইক্রোমিটার</string>
+
+    <!-- Millimeter -->
+    <string name="length_mm_display_name_short">মিমি</string>
+    <string name="length_mm_display_name_long">মিলিমিটার</string>
+    <string name="length_mm_nominative_short">%s মিমি</string>
+    <string name="length_mm_nominative_long">%s মিলিমিটার</string>
+
+    <!-- Centimeter -->
+    <string name="length_cm_display_name_short">সেমি</string>
+    <string name="length_cm_display_name_long">সেন্টিমিটার</string>
+    <string name="length_cm_nominative_short">%s সেমি</string>
+    <string name="length_cm_nominative_long">%s সেন্টিমিটার</string>
+
+    <!-- Meter -->
+    <string name="length_m_display_name_short">মিটার</string>
+    <string name="length_m_nominative_short">%s মি</string>
+    <string name="length_m_nominative_long">%s মিটার</string>
+
+    <!-- Kilometer -->
+    <string name="length_km_display_name_short">কিমি</string>
+    <string name="length_km_display_name_long">কিলোমিটার</string>
+    <string name="length_km_nominative_short">%s কিমি</string>
+    <string name="length_km_nominative_long">%s কিলোমিটার</string>
+
+    <!-- Inch -->
+    <string name="length_in_display_name_short">ইঞ্চি</string>
+    <string name="length_in_nominative_short">%s ইঞ্চি</string>
+
+    <!-- Foot -->
+    <string name="length_ft_display_name_short">ফুট</string>
+    <string name="length_ft_nominative_short">%s ফুট</string>
+
+    <!-- Mile -->
+    <string name="length_mi_display_name_short">মাইল</string>
+    <string name="length_mi_nominative_short">%s মাইল</string>
+
+    <!-- Nautical mile -->
+    <string name="length_nmi_display_name_long">নটিক্যাল মাইল</string>
+    <string name="length_nmi_nominative_long">%s নটিক্যাল মাইল</string>
+
+    <!-- Area units -->
+
+    <!-- Square meter -->
+    <string name="area_m2_per_long">%s প্রতি বর্গ মিটার</string>
+
+    <!-- Speed units -->
+
+    <!-- Knot -->
+    <string name="speed_kn_display_name_long">নট</string>
+    <string name="speed_kn_nominative_long">%s নট</string>
+
+    <!-- Beaufort scale -->
+    <string name="speed_bf_display_name_long">বিউফোর্ট</string>
+    <string name="speed_bf_nominative_long">বিউফোর্ট %s</string>
+
+    <!-- Volume units -->
+
+    <!-- Cubic meter -->
+    <string name="volume_m3_per_long">%s প্রতি কিউবিক মিটার</string>
+
+    <!-- Liter -->
+    <string name="volume_l_display_name_short">লিটার</string>
+    <string name="volume_l_nominative_short">%s লিটার</string>
+
+    <!-- Weight units -->
+
+    <!-- Microgram -->
+    <string name="weight_microg_display_name_long">মাইক্রোগ্রাম</string>
+    <string name="weight_microg_nominative_long">%s মাইক্রোগ্রাম</string>
+
+    <!-- Milligram -->
+    <string name="weight_mg_display_name_long">মিলিগ্রাম</string>
+    <string name="weight_mg_nominative_long">%s মিলিগ্রাম</string>
+
+    <!-- Pressure units -->
+
+    <!-- Pascal -->
+    <string name="pressure_pa_display_name_long">প্যাসকেল</string>
+    <string name="pressure_pa_nominative_long">%s প্যাসকেল</string>
+
+    <!-- Hectopascal -->
+    <string name="pressure_hpa_display_name_long">হেক্টোপাসকল</string>
+    <string name="pressure_hpa_nominative_long">%s হেক্টোপাসকল</string>
+
+    <!-- Kilopascal -->
+    <string name="pressure_kpa_display_name_long">কিলোপ্যাসকেল</string>
+    <string name="pressure_kpa_nominative_long">%s কিলোপ্যাসকেল</string>
+
+    <!-- Millibar -->
+    <string name="pressure_mbar_display_name_long">মিলিবার</string>
+    <string name="pressure_mbar_nominative_long">%s মিলিবার</string>
+
+    <!-- Atmosphere -->
+    <!-- No change -->
+
+    <!-- Millimeter of mercury -->
+    <string name="pressure_mmhg_display_name_short">mm Hg</string>
+    <string name="pressure_mmhg_display_name_long">মিলিমিটার পারদ</string>
+    <string name="pressure_mmhg_nominative_short">%s mm Hg</string>
+    <string name="pressure_mmhg_nominative_long">%s মিলিমিটার পারদ</string>
+
+    <!-- Inch of mercury -->
+    <string name="pressure_inhg_display_name_long">ইঞ্চি পারদ</string>
+    <string name="pressure_inhg_nominative_long">%s ইঞ্চি পারদ</string>
+
+    <!-- Duration units -->
+
+    <!-- Hours -->
+    <string name="duration_hr_nominative_short">%s ঘঃ</string>
+    <string name="duration_hr_nominative_long">%s ঘন্টা</string>
+    <string name="duration_hr_per_short">%s/ঘ:</string>
+    <string name="duration_hr_per_long">%s প্রতি ঘন্টা</string>
+
+    <!-- Minutes -->
+    <string name="duration_min_nominative_short">%s মিঃ</string>
+    <string name="duration_min_nominative_long">%s মিনিট</string>
+
+    <!-- Seconds -->
+    <string name="duration_sec_nominative_short">%s/সেঃ</string>
+    <string name="duration_sec_nominative_long">%s সেকেন্ড</string>
+    <string name="duration_sec_per_short">%s সেঃ</string>
+    <string name="duration_sec_per_long">%s প্রতি সেকেন্ড</string>
+
+</resources>

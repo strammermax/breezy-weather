@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="daily_tomorrow_short">Dmn</string>
+    <string name="temperature">Temperatura</string>
+    <string name="nighttime">Nocte</string>
+    <string name="visibility_short">Visibilitate</string>
+    <string name="widget_week_style_5_days">5 dies</string>
+    <string name="settings_section_general">General</string>
+    <string name="app_name">Tempore</string>
+    <string name="daily_yesterday_short">Heri</string>
+    <string name="daily_today_short">Hodie</string>
+    <string name="daytime">Die</string>
+    <string name="visibility">Visibilitate</string>
+    <string name="widget_style_temperature">Temperatura</string>
+    <string name="widget_week_style_3_days">3 dies</string>
+    <string name="widget_live_wallpaper_day_night_type">Hora</string>
+    <string name="settings_background_updates">Actualisationes de secunde plano</string>
+    <string name="settings_background_updates_refresh_never">Nunquam</string>
+    <string name="settings_appearance_language_title">Lingua</string>
+    <string name="about_app">A proposito del app</string>
+    <string name="settings_appearance_summary">Lingua, modo obscur, pacchettos de icone, unitates</string>
+    <string name="about_contact">Contacto</string>
+    <string name="about_open_link_message">Aperir %s?</string>
+</resources>

@@ -1,0 +1,88 @@
+<resources>
+
+    <!-- margin. -->
+    <dimen name="large_margin">20dp</dimen>
+    <dimen name="normal_margin">16dp</dimen>
+    <dimen name="small_margin">8dp</dimen>
+
+    <!-- elevator. -->
+    <dimen name="touch_rise_z">10dp</dimen>
+
+    <!-- image. -->
+    <dimen name="current_weather_icon_container_size">128dp</dimen>
+    <dimen name="current_weather_icon_size">80dp</dimen>
+    <dimen name="standard_weather_icon_container_size">88dp</dimen>
+    <dimen name="small_weather_icon_container_size">74dp</dimen>
+    <dimen name="standard_weather_icon_size">56dp</dimen>
+    <dimen name="small_weather_icon_size">42dp</dimen>
+    <dimen name="material_icon_size">24dp</dimen>
+
+    <!-- view. -->
+    <dimen name="material3_card_settings_list_item_corner_radius">28dp</dimen>
+    <dimen name="material3_card_settings_small_separator">2dp</dimen>
+    <dimen name="material3_card_settings_large_separator">16dp</dimen>
+    <dimen name="material3_card_list_item_corner_radius">16dp</dimen>
+    <dimen name="material3_card_list_item_inner_radius">12dp</dimen>
+    <dimen name="material3_widget_corner_radius">16dp</dimen>
+    <dimen name="material3_widget_inner_radius">12dp</dimen>
+    <dimen name="spinner_drop_width">150dp</dimen>
+    <dimen name="share_view_height">260dp</dimen>
+    <dimen name="progress_view_size">36dp</dimen>
+    <dimen name="trend_item_width">67dp</dimen>
+    <dimen name="trend_item_height_min">144dp</dimen>
+    <dimen name="daily_trend_item_height">298dp</dimen>
+    <dimen name="hourly_trend_item_height">206dp</dimen>
+    <dimen name="nowcasting_chart_height">150dp</dimen>
+    <dimen name="action_bar_height">64dp</dimen>
+
+    <!-- text. -->
+    <dimen name="main_title_text_size">140sp</dimen>
+    <dimen name="design_title_text_size">48sp</dimen>
+    <dimen name="large_title_text_size">20sp</dimen>
+    <dimen name="title_text_size">16sp</dimen>
+    <dimen name="content_text_size">14sp</dimen>
+    <dimen name="subtitle_text_size">12sp</dimen>
+    <dimen name="current_weather_text_size">23sp</dimen>
+    <dimen name="current_weather_details_name_text_size">15sp</dimen>
+    <dimen name="current_weather_details_value_text_size">15sp</dimen>
+
+    <!-- widget. -->
+    <dimen name="widget_grid_1">40dp</dimen>
+    <dimen name="widget_grid_2">110dp</dimen>
+    <dimen name="widget_grid_3">180dp</dimen>
+    <dimen name="widget_grid_4">250dp</dimen>
+
+    <dimen name="widget_current_weather_icon_size">@dimen/standard_weather_icon_size</dimen> <!-- 56dp. -->
+    <dimen name="widget_standard_weather_icon_size">48dp</dimen>
+    <dimen name="widget_small_weather_icon_size">36dp</dimen>
+    <dimen name="widget_mini_weather_icon_size">24dp</dimen>
+    <dimen name="widget_design_title_text_size">30sp</dimen>
+    <dimen name="widget_large_title_text_size">@dimen/large_title_text_size</dimen> <!-- 20sp. -->
+    <dimen name="widget_title_text_size">@dimen/title_text_size</dimen> <!-- 16sp. -->
+    <dimen name="widget_subtitle_text_size">@dimen/subtitle_text_size</dimen> <!-- 12sp. -->
+    <dimen name="widget_content_text_size">@dimen/content_text_size</dimen> <!-- 14sp. -->
+    <dimen name="widget_time_text_size">10sp</dimen>
+    <dimen name="widget_aa_text_size">14dp</dimen>
+
+    <dimen name="widget_material_you_default_size">182dp</dimen>
+    <dimen name="widget_material_you_minimum_size_for_square">150dp</dimen>
+
+    <dimen name="widget_material_you_mini_default_width">140dp</dimen>
+    <dimen name="widget_material_you_mini_default_height">95dp</dimen>
+    <dimen name="widget_material_you_minimum_width_for_square_mini">125dp</dimen>
+    <dimen name="widget_material_you_minimum_height_for_square_mini">85dp</dimen>
+
+    <dimen name="widget_material_you_medium_default_width">364dp</dimen>
+    <dimen name="widget_material_you_medium_default_height">210dp</dimen>
+    <dimen name="widget_material_you_minimum_width_for_square_medium">290dp</dimen>
+    <dimen name="widget_material_you_minimum_height_for_square_medium">180dp</dimen>
+
+    <dimen name="widget_material_you_large_default_width">364dp</dimen>
+    <dimen name="widget_material_you_large_default_height">300dp</dimen>
+    <dimen name="widget_material_you_minimum_width_for_square_large">290dp</dimen>
+    <dimen name="widget_material_you_minimum_height_for_square_large">270dp</dimen>
+
+    <dimen name="widget_material_you_current_default_icon_size">75dp</dimen>
+    <dimen name="widget_material_you_current_default_icon_margin">25dp</dimen>
+
+</resources>

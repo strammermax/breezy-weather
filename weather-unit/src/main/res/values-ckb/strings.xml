@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ONLY values changed from the original file are included -->
+    <!-- Based on https://www.unicode.org/cldr/charts/47/summary/ckb.html -->
+    <!-- If you believe there is an error, please open a discussion -->
+
+    <!-- Value separator -->
+    <string name="locale_separator">،\u0020</string>
+
+    <!-- Temperature units -->
+
+    <!-- Degree Celsius -->
+    <!-- No change -->
+
+    <!-- Degree Fahrenheit -->
+    <!-- No change -->
+
+    <!-- Kelvin -->
+    <!-- No change -->
+
+    <!-- Length units -->
+
+    <!-- Micrometer -->
+    <!-- No change -->
+
+    <!-- Millimeter -->
+    <!-- No change -->
+
+    <!-- Centimeter -->
+    <!-- No change -->
+
+    <!-- Meter -->
+    <!-- No change -->
+
+    <!-- Kilometer -->
+    <!-- No change -->
+
+    <!-- Inch -->
+    <!-- No change -->
+
+    <!-- Foot -->
+    <!-- No change -->
+
+    <!-- Mile -->
+    <!-- No change -->
+
+    <!-- Nautical mile -->
+    <!-- No change -->
+
+    <!-- Area units -->
+
+    <!-- Square meter -->
+    <!-- No change -->
+
+    <!-- Speed units -->
+
+    <!-- Knot -->
+    <!-- No change -->
+
+    <!-- Beaufort scale -->
+    <!-- No change -->
+
+    <!-- Volume units -->
+
+    <!-- Cubic meter -->
+    <!-- No change -->
+
+    <!-- Liter -->
+    <string name="volume_l_display_name_short">liter</string>
+
+    <!-- Weight units -->
+
+    <!-- Microgram -->
+    <!-- No change -->
+
+    <!-- Milligram -->
+    <!-- No change -->
+
+    <!-- Pressure units -->
+
+    <!-- Pascal -->
+    <!-- No change -->
+
+    <!-- Hectopascal -->
+    <!-- No change -->
+
+    <!-- Kilopascal -->
+    <!-- No change -->
+
+    <!-- Millibar -->
+    <!-- No change -->
+
+    <!-- Atmosphere -->
+    <!-- No change -->
+
+    <!-- Millimeter of mercury -->
+    <!-- No change -->
+
+    <!-- Inch of mercury -->
+    <!-- No change -->
+
+    <!-- Duration units -->
+
+    <!-- Hours -->
+    <!-- No change -->
+
+    <!-- Minutes -->
+    <!-- No change -->
+
+    <!-- Seconds -->
+    <!-- No change -->
+
+</resources>

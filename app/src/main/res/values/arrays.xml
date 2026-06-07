@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+
+    <!-- Do not translate this file -->
+    <!-- If you need to translate something not available as a string, please open an issue -->
+
+    <!-- Dark mode. -->
+    <string-array name="dark_modes">
+        <item>@string/settings_follow_system</item>
+        <item>@string/settings_color_light</item>
+        <item>@string/settings_color_dark</item>
+    </string-array>
+    <string-array name="dark_mode_values">
+        <item>system</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+
+    <!-- Location-based dark mode. -->
+    <string-array name="dark_modes_location">
+        <item>@string/settings_appearance_dark_mode_locations_day_night</item>
+        <item>@string/settings_appearance_dark_mode_locations_dark</item>
+    </string-array>
+    <string-array name="dark_mode_location_values">
+        <item>day_night</item>
+        <item>dark</item>
+    </string-array>
+
+    <!-- automatic refresh rate. -->
+    <string-array name="automatic_refresh_rates">
+        <item>@string/settings_background_updates_refresh_never</item>
+        <item>30 min</item>
+        <item>1 hr</item>
+        <item>1 hr and 30 min</item>
+        <item>2 hr</item>
+        <item>3 hr</item>
+        <item>6 hr</item>
+        <item>12 hr</item>
+        <item>24 hr</item>
+    </string-array>
+    <string-array name="automatic_refresh_rate_values">
+        <item>never</item>
+        <item>0:30</item>
+        <item>1:00</item>
+        <item>1:30</item>
+        <item>2:00</item>
+        <item>3:00</item>
+        <item>6:00</item>
+        <item>12:00</item>
+        <item>24:00</item>
+    </string-array>
+
+    <!-- widget week icon mode. -->
+    <string-array name="week_icon_modes">
+        <item>@string/settings_color_day_night</item>
+        <item>@string/settings_color_day_always</item>
+        <item>@string/settings_color_night_always</item>
+    </string-array>
+    <string-array name="week_icon_mode_values">
+        <item>auto</item>
+        <item>day</item>
+        <item>night</item>
+    </string-array>
+
+    <!-- notification style. -->
+    <string-array name="notification_styles">
+        <item>@string/notification_style_native</item>
+        <item>@string/notification_style_cities</item>
+        <item>@string/daily_forecast</item>
+        <item>@string/hourly_forecast</item>
+    </string-array>
+    <string-array name="notification_style_values">
+        <item>native</item>
+        <item>cities</item>
+        <item>daily</item>
+        <item>hourly</item>
+    </string-array>
+
+    <!-- notification text color. -->
+    <string-array name="notification_text_colors">
+        <item>@string/settings_color_dark</item>
+        <item>@string/settings_color_grey</item>
+        <item>@string/settings_color_light</item>
+    </string-array>
+    <string-array name="notification_text_color_values">
+        <item>dark</item>
+        <item>grey</item>
+        <item>light</item>
+    </string-array>
+
+    <!-- widget style. -->
+    <string-array name="widget_styles">
+        <item>@string/widget_style_rectangle</item>
+        <item>@string/widget_style_symmetry</item>
+        <item>@string/widget_style_tile</item>
+        <item>@string/widget_style_mini</item>
+        <item>@string/widget_style_nano</item>
+        <item>@string/widget_style_pixel</item>
+        <item>@string/widget_style_vertical</item>
+        <item>@string/widget_style_oreo</item>
+        <item>@string/widget_style_temperature</item>
+    </string-array>
+    <string-array name="widget_style_values">
+        <item>rectangle</item>
+        <item>symmetry</item>
+        <item>tile</item>
+        <item>mini</item>
+        <item>nano</item>
+        <item>pixel</item>
+        <item>vertical</item>
+        <item>oreo</item>
+        <item>temp</item>
+    </string-array>
+
+    <!-- week widget style. -->
+    <string-array name="widget_week_styles">
+        <item>@string/widget_week_style_5_days</item>
+        <item>@string/widget_week_style_3_days</item>
+    </string-array>
+    <string-array name="widget_week_style_values">
+        <item>5_days</item>
+        <item>3_days</item>
+    </string-array>
+
+    <!-- Widget subtitle data. -->
+    <string-array name="widget_subtitle_data">
+        <item>@string/widget_subtitle_data_time</item>
+        <item>@string/widget_subtitle_data_aqi</item>
+        <item>@string/widget_subtitle_data_wind</item>
+        <item>@string/widget_subtitle_data_feels_like</item>
+        <item>@string/widget_subtitle_data_alternate_calendar</item>
+        <item>@string/widget_subtitle_data_custom</item>
+    </string-array>
+    <string-array name="widget_subtitle_data_values">
+        <item>time</item>
+        <item>aqi</item>
+        <item>wind</item>
+        <item>feels_like</item>
+        <item>lunar</item><!-- Alternate calendar, keep the old name for compatibility reasons -->
+        <item>custom</item>
+    </string-array>
+
+    <!-- widget clock font. -->
+    <string-array name="widget_clock_fonts">
+        <item>@string/widget_clock_font_sans_serif_light</item>
+        <item>@string/widget_clock_font_sans_serif</item>
+        <item>@string/widget_clock_font_sans_serif_black</item>
+        <item>@string/widget_clock_font_analog</item>
+    </string-array>
+    <string-array name="widget_clock_font_values">
+        <item>light</item>
+        <item>normal</item>
+        <item>black</item>
+        <item>analog</item>
+    </string-array>
+
+    <!-- widget card style. -->
+    <string-array name="widget_card_styles">
+        <item>@string/settings_none</item>
+        <item>@string/settings_color_app</item>
+        <item>@string/settings_color_light</item>
+        <item>@string/settings_color_dark</item>
+    </string-array>
+    <string-array name="widget_card_style_values">
+        <item>none</item>
+        <item>auto</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+
+    <!-- widget clock font. -->
+    <string-array name="widget_text_colors">
+        <item>@string/settings_color_light</item>
+        <item>@string/settings_color_dark</item>
+        <item>@string/settings_automatic</item>
+    </string-array>
+    <string-array name="widget_text_color_values">
+        <item>light</item>
+        <item>dark</item>
+        <item>auto</item>
+    </string-array>
+
+    <!-- Background animation. -->
+    <string-array name="background_animation">
+        <item>@string/settings_follow_system</item>
+        <item>@string/settings_main_background_animation_enabled</item>
+        <item>@string/settings_main_background_animation_disabled</item>
+    </string-array>
+    <string-array name="background_animation_values">
+        <item>system</item>
+        <item>enabled</item>
+        <item>disabled</item>
+    </string-array>
+
+    <!-- live wallpaper weather kind. -->
+    <string-array name="live_wallpaper_weather_kinds">
+        <item>@string/settings_automatic</item>
+        <item>@string/weather_kind_clear</item>
+        <item>@string/weather_kind_partly_cloudy</item>
+        <item>@string/weather_kind_cloudy</item>
+        <item>@string/weather_kind_rain</item>
+        <item>@string/weather_kind_snow</item>
+        <item>@string/weather_kind_sleet</item>
+        <item>@string/weather_kind_hail</item>
+        <item>@string/weather_kind_fog</item>
+        <item>@string/weather_kind_haze</item>
+        <item>@string/weather_kind_thunder</item>
+        <item>@string/weather_kind_thunderstorm</item>
+        <item>@string/weather_kind_wind</item>
+    </string-array>
+    <string-array name="live_wallpaper_weather_kind_values">
+        <item>auto</item>
+        <item>CLEAR</item>
+        <item>PARTLY_CLOUDY</item>
+        <item>CLOUDY</item>
+        <item>RAIN</item>
+        <item>SNOW</item>
+        <item>SLEET</item>
+        <item>HAIL</item>
+        <item>FOG</item>
+        <item>HAZE</item>
+        <item>THUNDER</item>
+        <item>THUNDERSTORM</item>
+        <item>WIND</item>
+    </string-array>
+
+    <!-- live wallpaper weather kind. -->
+    <string-array name="live_wallpaper_day_night_types">
+        <item>@string/settings_automatic</item>
+        <item>@string/settings_color_day_always</item>
+        <item>@string/settings_color_night_always</item>
+    </string-array>
+    <string-array name="live_wallpaper_day_night_type_values">
+        <item>auto</item>
+        <item>day</item>
+        <item>night</item>
+    </string-array>
+
+    <!-- Accu Weather preferences -->
+    <string-array name="accu_preference_portal">
+        <item>@string/weather_source_accu_preference_portal_developer</item>
+        <item>@string/weather_source_accu_preference_portal_enterprise</item>
+    </string-array>
+    <string-array name="accu_preference_portal_values">
+        <item>developer</item>
+        <item>enterprise</item>
+    </string-array>
+
+    <string-array name="accu_preference_days">
+        <item>@string/weather_source_accu_preference_days_1</item>
+        <item>@string/weather_source_accu_preference_days_5</item>
+        <item>@string/weather_source_accu_preference_days_10</item>
+        <item>@string/weather_source_accu_preference_days_15</item>
+    </string-array>
+    <string-array name="accu_preference_day_values">
+        <item>1</item>
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+    </string-array>
+
+    <string-array name="accu_preference_hours">
+        <item>@string/weather_source_accu_preference_hours_1</item>
+        <item>@string/weather_source_accu_preference_hours_12</item>
+        <item>@string/weather_source_accu_preference_hours_24</item>
+        <item>@string/weather_source_accu_preference_hours_72</item>
+        <item>@string/weather_source_accu_preference_hours_120</item>
+        <item>@string/weather_source_accu_preference_hours_240</item>
+    </string-array>
+    <string-array name="accu_preference_hour_values">
+        <item>1</item>
+        <item>12</item>
+        <item>24</item>
+        <item>72</item>
+        <item>120</item>
+        <item>240</item>
+    </string-array>
+
+    <!-- Open-Meteo models -->
+    <string-array name="open_meteo_weather_models">
+        <item>Best match</item>
+        <item>ECMWF IFS HRES 9 km</item>
+        <item>ECMWF IFS 0.25°</item>
+        <item>ECMWF AIFS 0.25° Single</item>
+        <item>CMA GRAPES Global</item>
+        <item>BOM ACCESS Global</item>
+        <item>NCEP GFS Seamless</item>
+        <item>NCEP GFS Global 0.11° / 0.25°</item>
+        <item>NCEP HRRR U.S. Conus</item>
+        <item>NCEP NBM U.S. Conus</item>
+        <item>NCEP NAM U.S. Conus</item>
+        <item>GFS GraphCast</item>
+        <item>JMA Seamless</item>
+        <item>JMA MSM</item>
+        <item>JMA GSM</item>
+        <item>KMA Seamless</item>
+        <item>KMA LDPS</item>
+        <item>KMA GDPS</item>
+        <item>DWD ICON Seamless</item>
+        <item>DWD ICON Global</item>
+        <item>DWD ICON EU</item>
+        <item>DWD ICON D2</item>
+        <item>GEM Seamless</item>
+        <item>GEM Global</item>
+        <item>GEM Regional</item>
+        <item>GEM HRDPS Continental</item>
+        <item>Météo-France Seamless</item>
+        <item>Météo-France ARPEGE World</item>
+        <item>Météo-France ARPEGE Europe</item>
+        <item>Météo-France AROME France</item>
+        <item>Météo-France AROME France HD</item>
+        <item>ItaliaMeteo ARPAE ICON 2I</item>
+        <item>MET Norway Nordic (with ECMWF) Seamless</item>
+        <item>MET Norway Nordic</item>
+        <item>KNMI (with ECMWF) Seamless</item>
+        <item>KNMI HARMONIE-AROME Europe</item>
+        <item>KNMI HARMONIE-AROME Netherlands</item>
+        <item>DMI (with ECMWF) Seamless</item>
+        <item>DMI HARMONIE-AROME Europe</item>
+        <item>UK Met Office Seamless</item>
+        <item>UK Met Office Global 10 km</item>
+        <item>UK Met Office UK 2 km</item>
+        <item>MeteoSwiss ICON Seamless</item>
+        <item>MeteoSwiss ICON CH1</item>
+        <item>MeteoSwiss ICON CH2</item>
+    </string-array>
+    <string-array name="open_meteo_weather_models_values">
+        <item>best_match</item>
+        <item>ecmwf_ifs</item>
+        <item>ecmwf_ifs025</item>
+        <item>ecmwf_aifs025_single</item>
+        <item>cma_grapes_global</item>
+        <item>bom_access_global</item>
+        <item>gfs_seamless</item>
+        <item>gfs_global</item>
+        <item>gfs_hrrr</item>
+        <item>ncep_nbm_conus</item>
+        <item>ncep_nam_conus</item>
+        <item>gfs_graphcast025</item>
+        <item>jma_seamless</item>
+        <item>jma_msm</item>
+        <item>jma_gsm</item>
+        <item>kma_seamless</item>
+        <item>kma_ldps</item>
+        <item>kma_gdps</item>
+        <item>icon_seamless</item>
+        <item>icon_global</item>
+        <item>icon_eu</item>
+        <item>icon_d2</item>
+        <item>gem_seamless</item>
+        <item>gem_global</item>
+        <item>gem_regional</item>
+        <item>gem_hrdps_continental</item>
+        <item>meteofrance_seamless</item>
+        <item>meteofrance_arpege_world</item>
+        <item>meteofrance_arpege_europe</item>
+        <item>meteofrance_arome_france</item>
+        <item>meteofrance_arome_france_hd</item>
+        <item>italia_meteo_arpae_icon_2i</item>
+        <item>metno_seamless</item>
+        <item>metno_nordic</item>
+        <item>knmi_seamless</item>
+        <item>knmi_harmonie_arome_europe</item>
+        <item>knmi_harmonie_arome_netherlands</item>
+        <item>dmi_seamless</item>
+        <item>dmi_harmonie_arome_europe</item>
+        <item>ukmo_seamless</item>
+        <item>ukmo_global_deterministic_10km</item>
+        <item>ukmo_uk_deterministic_2km</item>
+        <item>meteoswiss_icon_seamless</item>
+        <item>meteoswiss_icon_ch1</item>
+        <item>meteoswiss_icon_ch2</item>
+    </string-array>
+
+    <!-- Beaufort scale levels -->
+    <string-array name="wind_strength_descriptions">
+        <item>@string/wind_strength_0</item>
+        <item>@string/wind_strength_1</item>
+        <item>@string/wind_strength_2</item>
+        <item>@string/wind_strength_3</item>
+        <item>@string/wind_strength_4</item>
+        <item>@string/wind_strength_5</item>
+        <item>@string/wind_strength_6</item>
+        <item>@string/wind_strength_7</item>
+        <item>@string/wind_strength_8</item>
+        <item>@string/wind_strength_9</item>
+        <item>@string/wind_strength_10</item>
+        <item>@string/wind_strength_11</item>
+        <item>@string/wind_strength_12</item>
+    </string-array>
+    <integer-array name="wind_strength_colors">
+        <item>@color/windStrength_bf0</item>
+        <item>@color/windStrength_bf1</item>
+        <item>@color/windStrength_bf2</item>
+        <item>@color/windStrength_bf3</item>
+        <item>@color/windStrength_bf4</item>
+        <item>@color/windStrength_bf5</item>
+        <item>@color/windStrength_bf6</item>
+        <item>@color/windStrength_bf7</item>
+        <item>@color/windStrength_bf8</item>
+        <item>@color/windStrength_bf9</item>
+        <item>@color/windStrength_bf10</item>
+        <item>@color/windStrength_bf11</item>
+        <item>@color/windStrength_bf12</item>
+    </integer-array>
+
+    <!-- air quality levels -->
+    <string-array name="air_quality_levels">
+        <item>@string/air_quality_level_1</item>
+        <item>@string/air_quality_level_2</item>
+        <item>@string/air_quality_level_3</item>
+        <item>@string/air_quality_level_4</item>
+        <item>@string/air_quality_level_5</item>
+        <item>@string/air_quality_level_6</item>
+    </string-array>
+    <string-array name="air_quality_level_descriptions">
+        <item>@string/air_quality_level_1_description</item>
+        <item>@string/air_quality_level_2_description</item>
+        <item>@string/air_quality_level_3_description</item>
+        <item>@string/air_quality_level_4_description</item>
+        <item>@string/air_quality_level_5_description</item>
+        <item>@string/air_quality_level_6_description</item>
+    </string-array>
+    <string-array name="air_quality_level_harmless_exposures">
+        <item>@string/air_quality_level_1_harmless_exposure</item>
+        <item>@string/air_quality_level_2_harmless_exposure</item>
+        <item>@string/air_quality_level_3_harmless_exposure</item>
+        <item>@string/air_quality_level_4_harmless_exposure</item>
+        <item>@string/air_quality_level_5_harmless_exposure</item>
+        <item>@string/air_quality_level_6_harmless_exposure</item>
+    </string-array>
+    <integer-array name="air_quality_level_colors">
+        <item>@color/aqiLevel_1</item>
+        <item>@color/aqiLevel_2</item>
+        <item>@color/aqiLevel_3</item>
+        <item>@color/aqiLevel_4</item>
+        <item>@color/aqiLevel_5</item>
+        <item>@color/aqiLevel_6</item>
+    </integer-array>
+
+    <!-- pollen levels -->
+    <string-array name="pollen_levels">
+        <item>@string/pollen_level_1</item>
+        <item>@string/pollen_level_2</item>
+        <item>@string/pollen_level_3</item>
+        <item>@string/pollen_level_4</item>
+        <item>@string/pollen_level_5</item>
+    </string-array>
+    <integer-array name="pollen_level_colors">
+        <item>@color/pollenLevel_1</item>
+        <item>@color/pollenLevel_2</item>
+        <item>@color/pollenLevel_3</item>
+        <item>@color/pollenLevel_4</item>
+        <item>@color/pollenLevel_5</item>
+    </integer-array>
+
+    <string-array name="pollen_polleninfo_levels">
+        <item>@string/pollen_level_0</item>
+        <item>@string/pollen_level_2</item>
+        <item>@string/pollen_level_3</item>
+        <item>@string/pollen_level_4</item>
+        <item>@string/pollen_level_5</item>
+    </string-array>
+    <integer-array name="pollen_polleninfo_level_colors">
+        <item>@color/pollenPollenInfoLevel_0</item>
+        <item>@color/pollenPollenInfoLevel_1</item>
+        <item>@color/pollenPollenInfoLevel_2</item>
+        <item>@color/pollenPollenInfoLevel_3</item>
+        <item>@color/pollenPollenInfoLevel_4</item>
+    </integer-array>
+
+</resources>

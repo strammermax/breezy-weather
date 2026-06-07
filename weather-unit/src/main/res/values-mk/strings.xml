@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ONLY values changed from the original file are included -->
+    <!-- Based on https://www.unicode.org/cldr/charts/47/summary/mk.html -->
+    <!-- If you believe there is an error, please open a discussion -->
+
+    <!-- Temperature units -->
+
+    <!-- Degree Celsius -->
+    <string name="temperature_c_display_name_long">целзиусови степени</string>
+    <string name="temperature_c_nominative_long">%s целзиусови степени</string>
+
+    <!-- Degree Fahrenheit -->
+    <string name="temperature_f_display_name_long">фаренхајтови степени</string>
+    <string name="temperature_f_nominative_long">%s фаренхајтови степени</string>
+
+    <!-- Kelvin -->
+    <string name="temperature_k_display_name_long">келвини</string>
+    <string name="temperature_k_nominative_long">%s келвини</string>
+
+    <!-- Length units -->
+
+    <!-- Micrometer -->
+    <string name="length_microm_display_name_long">микрометри</string>
+    <string name="length_microm_nominative_long">%s микрометри</string>
+
+    <!-- Millimeter -->
+    <string name="length_mm_display_name_long">милиметри</string>
+    <string name="length_mm_nominative_long">%s милиметри</string>
+
+    <!-- Centimeter -->
+    <string name="length_cm_display_name_long">сантиметри</string>
+    <string name="length_cm_nominative_long">%s сантиметри</string>
+
+    <!-- Meter -->
+    <string name="length_m_display_name_long">метри</string>
+    <string name="length_m_nominative_long">%s метри</string>
+
+    <!-- Kilometer -->
+    <string name="length_km_display_name_long">километри</string>
+    <string name="length_km_nominative_long">%s километри</string>
+
+    <!-- Inch -->
+    <string name="length_in_display_name_long">инчи</string>
+    <string name="length_in_nominative_long">%s инчи</string>
+
+    <!-- Foot -->
+    <string name="length_ft_display_name_long">стапки</string>
+    <string name="length_ft_nominative_long">%s стапки</string>
+
+    <!-- Mile -->
+    <string name="length_mi_display_name_long">милји</string>
+    <string name="length_mi_nominative_long">%s милји</string>
+
+    <!-- Nautical mile -->
+    <string name="length_nmi_display_name_long">наутички милји</string>
+    <string name="length_nmi_nominative_long">%s наутички милји</string>
+
+    <!-- Area units -->
+
+    <!-- Square meter -->
+    <string name="area_m2_per_long">%s по квадратен метар</string>
+
+    <!-- Speed units -->
+
+    <!-- Knot -->
+    <string name="speed_kn_display_name_long">јазли</string>
+    <string name="speed_kn_nominative_long">%s јазли</string>
+
+    <!-- Beaufort scale -->
+    <string name="speed_bf_display_name_long">бофори</string>
+    <string name="speed_bf_nominative_long">%s бофори</string>
+
+    <!-- Volume units -->
+
+    <!-- Cubic meter -->
+    <string name="volume_m3_per_long">%s на кубен метар</string>
+
+    <!-- Liter -->
+    <string name="volume_l_display_name_long">литри</string>
+    <string name="volume_l_nominative_long">%s литри</string>
+
+    <!-- Weight units -->
+
+    <!-- Microgram -->
+    <string name="weight_microg_display_name_long">микрограми</string>
+    <string name="weight_microg_nominative_long">%s микрограми</string>
+
+    <!-- Milligram -->
+    <string name="weight_mg_display_name_long">милиграми</string>
+    <string name="weight_mg_nominative_long">%s милиграми</string>
+
+    <!-- Pressure units -->
+
+    <!-- Pascal -->
+    <string name="pressure_pa_display_name_long">паскали</string>
+    <string name="pressure_pa_nominative_long">%s паскали</string>
+
+    <!-- Hectopascal -->
+    <string name="pressure_hpa_display_name_long">хектопаскали</string>
+    <string name="pressure_hpa_nominative_long">%s хектопаскали</string>
+
+    <!-- Kilopascal -->
+    <string name="pressure_kpa_display_name_long">килопаскали</string>
+    <string name="pressure_kpa_nominative_long">%s килопаскали</string>
+
+    <!-- Millibar -->
+    <string name="pressure_mbar_display_name_long">милибари</string>
+    <string name="pressure_mbar_nominative_long">%s милибари</string>
+
+    <!-- Atmosphere -->
+    <string name="pressure_atm_display_name_long">атмосфери</string>
+    <string name="pressure_atm_nominative_long">%s атмосфери</string>
+
+    <!-- Millimeter of mercury -->
+    <string name="pressure_mmhg_display_name_long">милиметри жива</string>
+    <string name="pressure_mmhg_nominative_long">%s милиметри жива</string>
+
+    <!-- Inch of mercury -->
+    <string name="pressure_inhg_display_name_long">инчи жива</string>
+    <string name="pressure_inhg_nominative_long">%s инчи жива</string>
+
+    <!-- Duration units -->
+
+    <!-- Hours -->
+    <string name="duration_hr_nominative_short">%s ч.</string>
+    <string name="duration_hr_nominative_long">%s часа</string>
+    <string name="duration_hr_per_short">%s/ч.</string>
+    <string name="duration_hr_per_long">%s на час</string>
+
+    <!-- Minutes -->
+    <string name="duration_min_nominative_short">%s мин.</string>
+    <string name="duration_min_nominative_long">%s минути</string>
+
+    <!-- Seconds -->
+    <string name="duration_sec_nominative_short">%s сек.</string>
+    <string name="duration_sec_nominative_long">%s секунди</string>
+    <!-- Obvious swapping between short and narrow -->
+    <string name="duration_sec_per_short">%s/с.</string>
+    <string name="duration_sec_per_long">%s во секунда</string>
+
+</resources>

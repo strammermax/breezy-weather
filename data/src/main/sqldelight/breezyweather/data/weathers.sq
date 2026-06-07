@@ -1,0 +1,118 @@
+import breezyweather.domain.weather.reference.WeatherCode;
+import org.breezyweather.unit.distance.Distance;
+import org.breezyweather.unit.pollutant.PollutantConcentration;
+import org.breezyweather.unit.pressure.Pressure;
+import org.breezyweather.unit.ratio.Ratio;
+import org.breezyweather.unit.speed.Speed;
+import org.breezyweather.unit.temperature.Temperature;
+
+CREATE TABLE weathers(
+    _id INTEGER NOT NULL PRIMARY KEY,
+    location_formatted_id TEXT NOT NULL,
+
+    -- Base
+    refresh_time INTEGER,
+    main_update_time INTEGER,
+    current_update_time INTEGER,
+    air_quality_update_time INTEGER,
+    pollen_update_time INTEGER,
+    minutely_update_time INTEGER,
+    alerts_update_time INTEGER,
+    normals_update_time INTEGER,
+    normals_update_latitude REAL NOT NULL DEFAULT 0.0,
+    normals_update_longitude REAL NOT NULL DEFAULT 0.0,
+
+    -- Current
+    weather_text TEXT,
+    weather_code TEXT AS WeatherCode,
+
+    temperature INTEGER AS Temperature,
+    temperature_source_feels_like INTEGER AS Temperature,
+    temperature_apparent INTEGER AS Temperature,
+    temperature_wind_chill INTEGER AS Temperature,
+    humidex INTEGER AS Temperature,
+
+    wind_degree REAL,
+    wind_speed INTEGER AS Speed,
+    wind_gusts INTEGER AS Speed,
+
+    uv_index REAL,
+
+    pm25 INTEGER AS PollutantConcentration,
+    pm10 INTEGER AS PollutantConcentration,
+    so2 INTEGER AS PollutantConcentration,
+    no2 INTEGER AS PollutantConcentration,
+    o3 INTEGER AS PollutantConcentration,
+    co INTEGER AS PollutantConcentration,
+
+    relative_humidity INTEGER AS Ratio,
+    dew_point INTEGER AS Temperature,
+    pressure INTEGER AS Pressure,
+    visibility INTEGER AS Distance,
+    cloud_cover INTEGER AS Ratio,
+    ceiling INTEGER AS Distance,
+    daily_forecast TEXT,
+    hourly_forecast TEXT,
+
+    UNIQUE(location_formatted_id) ON CONFLICT REPLACE,
+    FOREIGN KEY(location_formatted_id) REFERENCES locations (formatted_id)
+    ON DELETE CASCADE
+);
+
+CREATE INDEX weathers_location_formatted_id_index ON weathers(location_formatted_id);
+
+getWeatherByLocationId:
+SELECT refresh_time, main_update_time, current_update_time, air_quality_update_time, pollen_update_time, minutely_update_time, alerts_update_time, normals_update_time, normals_update_latitude, normals_update_longitude, weather_text, weather_code, temperature, temperature_source_feels_like, temperature_apparent, temperature_wind_chill, humidex, wind_degree, wind_speed, wind_gusts, uv_index, pm25, pm10, so2, no2, o3, co, relative_humidity, dew_point, pressure, visibility, cloud_cover, ceiling, daily_forecast, hourly_forecast
+FROM weathers
+WHERE location_formatted_id = :locationFormattedId;
+
+insert:
+INSERT INTO weathers(location_formatted_id, refresh_time, main_update_time, current_update_time, air_quality_update_time, pollen_update_time, minutely_update_time, alerts_update_time, normals_update_time, normals_update_latitude, normals_update_longitude, weather_text, weather_code, temperature, temperature_source_feels_like, temperature_apparent, temperature_wind_chill, humidex, wind_degree, wind_speed, wind_gusts, uv_index, pm25, pm10, so2, no2, o3, co, relative_humidity, dew_point, pressure, visibility, cloud_cover, ceiling, daily_forecast, hourly_forecast)
+VALUES (:locationFormattedId, :refreshTime, :mainUpdateTime, :currentUpdateTime, :airQualityUpdateTime, :pollenUpdateTime, :minutelyUpdateTime, :alertsUpdateTime, :normalsUpdateTime, :normalsUpdateLatitude, :normalsUpdateLongitude, :weatherText, :weatherCode, :temperature, :temperatureSourceFeelsLike, :temperatureApparent, :temperatureWindChill, :humidex, :windDegree, :windSpeed, :windGusts, :uvIndex, :pm25, :pm10, :so2, :no2, :o3, :co, :relativeHumidity, :dewPoint, :pressure, :visibility, :cloudCover, :ceiling, :dailyForecast, :hourlyForecast);
+
+update:
+UPDATE weathers SET
+    location_formatted_id = coalesce(:locationFormattedId, location_formatted_id),
+    refresh_time = coalesce(:refreshTime, refresh_time),
+    main_update_time = coalesce(:mainUpdateTime, main_update_time),
+    current_update_time = coalesce(:currentUpdateTime, current_update_time),
+    air_quality_update_time = coalesce(:airQualityUpdateTime, air_quality_update_time),
+    pollen_update_time = coalesce(:pollenUpdateTime, pollen_update_time),
+    minutely_update_time = coalesce(:minutelyUpdateTime, minutely_update_time),
+    alerts_update_time = coalesce(:alertsUpdateTime, alerts_update_time),
+    normals_update_time = coalesce(:normalsUpdateTime, normals_update_time),
+    normals_update_latitude = coalesce(:normalsUpdateTime, normals_update_latitude),
+    normals_update_longitude = coalesce(:normalsUpdateTime, normals_update_longitude),
+    weather_text = coalesce(:weatherText, weather_text),
+    weather_code = coalesce(:weatherCode, weather_code),
+    temperature = coalesce(:temperature, temperature),
+    temperature_source_feels_like = coalesce(:temperatureSourceFeelsLike, temperature_source_feels_like),
+    temperature_apparent = coalesce(:apparentTemperature, temperature_apparent),
+    temperature_wind_chill = coalesce(:windChillTemperature, temperature_wind_chill),
+    humidex = coalesce(:humidex, humidex),
+    wind_degree = coalesce(:windDegree, wind_degree),
+    wind_speed = coalesce(:windSpeed, wind_speed),
+    wind_gusts = coalesce(:windGusts, wind_gusts),
+    uv_index = coalesce(:uvIndex, uv_index),
+    pm25 = coalesce(:pm25, pm25),
+    pm10 = coalesce(:pm10, pm10),
+    so2 = coalesce(:so2, so2),
+    no2 = coalesce(:no2, no2),
+    o3 = coalesce(:o3, o3),
+    co = coalesce(:co, co),
+    relative_humidity = coalesce(:relativeHumidity, relative_humidity),
+    dew_point = coalesce(:dewPoint, dew_point),
+    pressure = coalesce(:pressure, pressure),
+    visibility = coalesce(:visibility, visibility),
+    cloud_cover = coalesce(:cloudCover, cloud_cover),
+    ceiling = coalesce(:ceiling, ceiling),
+    daily_forecast = coalesce(:dailyForecast, daily_forecast),
+    hourly_forecast = coalesce(:hourlyForecast, hourly_forecast)
+WHERE location_formatted_id = :locationFormattedId;
+
+deleteWeatherForLocationId:
+DELETE FROM weathers
+WHERE location_formatted_id = :locationFormattedId;
+
+deleteAllWeathers:
+DELETE FROM weathers;
