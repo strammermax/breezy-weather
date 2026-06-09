@@ -20,6 +20,7 @@ import android.app.WallpaperColors
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
@@ -64,6 +65,7 @@ import org.breezyweather.ui.theme.weatherView.materialWeatherView.DelayRotateCon
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.IntervalComputer
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.MaterialWeatherView
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.WeatherImplementorFactory
+import org.breezyweather.radar.BuienradarNowcastSource
 import org.breezyweather.wallpaper.photo.WallpaperImageStore
 import org.breezyweather.wallpaper.photo.WallpaperRepository
 import javax.inject.Inject
@@ -110,6 +112,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private val mWallpaperImageStore = WallpaperImageStore(applicationContext)
         private val mWallpaperRepository = WallpaperRepository(applicationContext)
         private val mPhotoScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+        // Precipitation nowcast (Buienradar) drawn as a subtle trend strip at the bottom,
+        // only when rain is expected. Empty = nothing drawn.
+        private var mRainIntensities: FloatArray = FloatArray(0)
+        private val mRainPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
         @Size(2)
         private var mSizes: IntArray = intArrayOf(0, 0)
@@ -184,6 +191,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                             )
                         }
                     }
+                    drawRainTrend(canvas)
                     mHolder?.unlockCanvasAndPost(canvas)
                 }
             } catch (e: Throwable) {
@@ -464,6 +472,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
             setWeatherBackgroundDrawable()
             maybeRefreshPhotoBackground(location)
+            maybeRefreshRainTrend(location)
             if (mAnimate) {
                 val screenRefreshRate = ContextCompat.getDisplayOrDefault(this@MaterialLiveWallpaperService)
                     .refreshRate.let {
@@ -514,6 +523,69 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         mHandler?.post(mDrawableRunnable)
                     }
                 }
+            }
+        }
+
+        /**
+         * Fetches the Buienradar precipitation nowcast for the location (off the render thread).
+         * Stores intensities (mm/h) for [drawRainTrend]; empty when no location / on error.
+         */
+        private fun maybeRefreshRainTrend(location: Location?) {
+            if (location == null || !location.isUsable) {
+                mRainIntensities = FloatArray(0)
+                return
+            }
+            mPhotoScope.launch {
+                mRainIntensities = try {
+                    BuienradarNowcastSource()
+                        .getRainTrend(location.latitude, location.longitude)
+                        .map { it.intensityMmH.toFloat() }
+                        .toFloatArray()
+                } catch (e: Throwable) {
+                    FloatArray(0)
+                }
+            }
+        }
+
+        /** Draws a subtle precipitation-nowcast strip at the bottom, only when rain is expected. */
+        private fun drawRainTrend(canvas: android.graphics.Canvas) {
+            try {
+                val data = mRainIntensities
+                if (data.size < 2) return
+                val maxV = data.maxOrNull() ?: return
+                if (maxV <= 0f) return
+                val w = mSizes[0].toFloat()
+                val h = mSizes[1].toFloat()
+                if (w <= 0f || h <= 0f) return
+
+                val stripH = (h * 0.08f).coerceIn(60f, 180f)
+                val bottomInset = h * 0.06f
+                val baseline = h - bottomInset
+                val top = baseline - stripH
+                val left = w * 0.08f
+                val right = w * 0.92f
+                val chartW = right - left
+                val axisMax = maxOf(0.5f, maxV)
+                val n = data.size
+                val stepX = chartW / (n - 1)
+
+                mRainPaint.style = Paint.Style.FILL
+                mRainPaint.color = 0x55000000
+                canvas.drawRoundRect(left - 24f, top - 24f, right + 24f, baseline + 24f, 28f, 28f, mRainPaint)
+
+                val path = Path()
+                path.moveTo(left, baseline)
+                for (i in 0 until n) {
+                    val x = left + stepX * i
+                    val y = baseline - (data[i] / axisMax * stripH).coerceIn(0f, stripH)
+                    path.lineTo(x, y)
+                }
+                path.lineTo(right, baseline)
+                path.close()
+                mRainPaint.color = 0xAA4FC3F7.toInt()
+                canvas.drawPath(path, mRainPaint)
+            } catch (e: Throwable) {
+                // Never crash the wallpaper because of the overlay.
             }
         }
 
