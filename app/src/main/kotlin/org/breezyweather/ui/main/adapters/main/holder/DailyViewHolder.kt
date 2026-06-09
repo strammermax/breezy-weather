@@ -93,8 +93,8 @@ class DailyViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
         modeGroup.children.filter { it is MaterialButton }.toList().forEach { modeGroup.removeView(it) }
         modeGroup.visibility = View.VISIBLE
         listOf(
-            false to context.getString(R.string.daily_forecast),
-            true to context.getString(R.string.hourly_forecast)
+            false to context.getString(R.string.forecast_toggle_daily),
+            true to context.getString(R.string.forecast_toggle_hourly)
         ).forEach { (isHourly, label) ->
             modeGroup.addView(
                 MaterialButton(context, null, com.google.android.material.R.attr.materialButtonStyle).apply {
