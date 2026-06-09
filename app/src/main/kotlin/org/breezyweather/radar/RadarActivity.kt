@@ -25,7 +25,9 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -34,6 +36,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import breezyweather.data.location.LocationRepository
+import breezyweather.data.weather.WeatherRepository
 import breezyweather.domain.location.model.Location
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -55,6 +59,7 @@ import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.ui.common.widgets.Material3Scaffold
 import org.breezyweather.ui.common.widgets.insets.FitStatusBarTopAppBar
 import org.breezyweather.ui.theme.compose.BreezyWeatherTheme
+import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
 
@@ -69,11 +74,16 @@ class RadarActivity : BreezyActivity() {
     @Inject
     lateinit var locationRepository: LocationRepository
 
+    @Inject
+    lateinit var weatherRepository: WeatherRepository
+
     private var loading by mutableStateOf(true)
     private var placeName by mutableStateOf<String?>(null)
     private var latitude by mutableStateOf<Double?>(null)
     private var longitude by mutableStateOf<Double?>(null)
-    private var rainTrend by mutableStateOf<List<RainTrendPoint>>(emptyList())
+    private var rainTrend by mutableStateOf<List<RainTrendPoint>>(emptyList()) // Buienradar 2h
+    private var hourlyTrend by mutableStateOf<List<RainTrendPoint>>(emptyList()) // forecast up to 24h
+    private var trendRange by mutableStateOf(2) // selected horizon in hours
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,6 +107,26 @@ class RadarActivity : BreezyActivity() {
             latitude = location.latitude
             longitude = location.longitude
             rainTrend = BuienradarNowcastSource().getRainTrend(location.latitude, location.longitude)
+            hourlyTrend = try {
+                val weather = weatherRepository.getWeatherByLocationId(
+                    location.formattedId,
+                    withDaily = false,
+                    withHourly = true,
+                    withMinutely = false,
+                    withAlerts = false,
+                    withNormals = false
+                )
+                val fmt = SimpleDateFormat("HH:mm", Locale.getDefault())
+                    .apply { timeZone = location.timeZone }
+                weather?.nextHourlyForecast?.take(24)?.map { h ->
+                    RainTrendPoint(
+                        timeLabel = fmt.format(h.date),
+                        intensityMmH = h.precipitation?.total?.inMillimeters ?: 0.0
+                    )
+                } ?: emptyList()
+            } catch (e: Throwable) {
+                emptyList()
+            }
             loading = false
         }
     }
@@ -145,8 +175,20 @@ class RadarActivity : BreezyActivity() {
                 }
 
                 SectionTitle(stringResource(R.string.radar_section_rain_trend))
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf(2, 3, 6, 12, 24).forEach { hours ->
+                        FilterChip(
+                            selected = trendRange == hours,
+                            onClick = { trendRange = hours },
+                            label = { Text("${hours}u") }
+                        )
+                    }
+                }
                 RainTrendChart(
-                    points = rainTrend,
+                    points = if (trendRange <= 2) rainTrend else hourlyTrend.take(trendRange),
                     modifier = Modifier.fillMaxWidth()
                 )
 
