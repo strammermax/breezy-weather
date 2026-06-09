@@ -3,6 +3,7 @@
 import breezy.buildlogic.Config
 import breezy.buildlogic.getCommitCount
 import breezy.buildlogic.getGitSha
+import breezy.buildlogic.getLwwPatch
 import breezy.buildlogic.registerLocalesConfigTask
 import com.android.build.api.dsl.ApplicationExtension
 import java.util.Properties
@@ -24,8 +25,11 @@ configure<ApplicationExtension> {
 
     defaultConfig {
         applicationId = "com.livewallpaperweather"
-        versionCode = 60202
-        versionName = "6.2.2"
+        // LiveWallpaperWeather's own version (fork of Breezy Weather 6.2.2).
+        // Auto-bumped: the patch = commits since the fork base, so each commit raises the
+        // version by one (1.0.0 -> 1.0.1 -> ...). versionCode stays above the Breezy base.
+        versionCode = 60200 + getLwwPatch()
+        versionName = "1.0.${getLwwPatch()}"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
@@ -53,7 +57,6 @@ configure<ApplicationExtension> {
     buildTypes {
         named("debug") {
             applicationIdSuffix = ".debug"
-            versionNameSuffix = "-r${getCommitCount()}"
         }
         named("release") {
             isShrinkResources = true
