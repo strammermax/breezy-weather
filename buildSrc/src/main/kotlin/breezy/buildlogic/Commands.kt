@@ -14,6 +14,17 @@ fun Project.getGitSha(): String {
     // return "1"
 }
 
+// LiveWallpaperWeather: patch number = number of commits since the Breezy fork base, so the
+// version bumps by one with every commit (1.0.0 -> 1.0.1 -> 1.0.2 ...).
+fun Project.getLwwPatch(): Int {
+    val base = "795e85b" // Breezy Weather base commit ("New cycle"), our fork point
+    return try {
+        runCommand("git rev-list --count $base..HEAD").toIntOrNull() ?: 0
+    } catch (e: Exception) {
+        0
+    }
+}
+
 fun Project.runCommand(command: String): String {
     return providers.exec {
         commandLine = command.split(" ")
