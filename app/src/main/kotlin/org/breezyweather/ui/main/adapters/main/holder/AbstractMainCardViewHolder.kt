@@ -44,17 +44,20 @@ abstract class AbstractMainCardViewHolder(
     ) {
         super.onBindView(activity, location, provider, listAnimationEnabled, itemAnimationEnabled)
         mLocation = location
+        // LiveWallpaperWeather: render the home cards as one continuous block (flat, no
+        // elevation, no rounded corners, no vertical gaps) instead of separate tiles.
         if (itemView is MaterialCardView) {
             (itemView as MaterialCardView).apply {
-                elevation = context.dpToPx(2f)
+                elevation = 0f
+                radius = 0f
             }
         }
         val params = itemView.layoutParams as MarginLayoutParams
         params.setMargins(
             context.resources.getDimensionPixelSize(R.dimen.small_margin),
+            0,
             context.resources.getDimensionPixelSize(R.dimen.small_margin),
-            context.resources.getDimensionPixelSize(R.dimen.small_margin),
-            context.resources.getDimensionPixelSize(R.dimen.small_margin)
+            0
         )
         itemView.layoutParams = params
     }
