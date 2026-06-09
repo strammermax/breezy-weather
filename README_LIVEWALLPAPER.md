@@ -101,22 +101,36 @@ beste werkt:
 | [`RainTrendChart.kt`](app/src/main/kotlin/org/breezyweather/radar/RainTrendChart.kt) | Compose Canvas-grafiek van de regen-trend (zoals de "2 uur neerslagvoorspelling"-kaart). |
 | [`RadarActivity.kt`](app/src/main/kotlin/org/breezyweather/radar/RadarActivity.kt) | In-app scherm: toont de trend-grafiek (Buienradar) + radar-frame-status (RainViewer) voor je huidige locatie. |
 
-**Status:** Fase 1 = data-bronnen + trend-grafiek + scherm (compileert). Fase 2 = de geanimeerde
-radarkaart in dit scherm. Fase 3 = radar/trend-laag op de wallpaper zelf.
+**Status:**
+- ✅ **Fase 1** — data-bronnen + Buienradar regen-trend-grafiek + radar-scherm.
+- ✅ **Fase 2** — geanimeerde RainViewer-radarkaart (Leaflet in een WebView), getest op toestel.
+  - Geleerde lessen die in de code zitten: WebView heeft een **expliciete pixel-hoogte** nodig
+    (`#map{height:420px}`, anders 0); RainViewer-radar gaat tot **zoom 7** (`maxNativeZoom:7`);
+    basiskaart = **CARTO dark** (OSM-tiles werden geannuleerd in de WebView).
+- ✅ Knop naar de radar: **☔-icoon** in de toolbar van het hoofdscherm.
+- 🟡 **Fase 3** — regen-trend-strip onderaan de **live wallpaper** (Buienradar). Compileert en is
+  zwaar afgeschermd (kan de wallpaper niet laten crashen), maar **nog niet visueel geverifieerd**.
 
-**Tijdelijk starten (nog geen menu-item):** met een toestel aangesloten:
-```powershell
-adb shell am start -n org.breezyweather.debug/org.breezyweather.radar.RadarActivity
-```
-(Voeg minstens één locatie toe in de app, anders is er geen lat/lon.)
+## Andere wijzigingen in deze fork
+- **Gecombineerde forecast-kaart**: daily + hourly in één tegel met een **Dag / Per uur**-schakelaar
+  ([`DailyViewHolder.kt`](app/src/main/kotlin/org/breezyweather/ui/main/adapters/main/holder/DailyViewHolder.kt));
+  trend-types in één dropdown. De losse uur-kaart is uit de lijst gehaald.
+- **Home als 1 blok**: kaarten plat, zonder elevatie/ronding/verticale tussenruimte
+  ([`AbstractMainCardViewHolder.kt`](app/src/main/kotlin/org/breezyweather/ui/main/adapters/main/holder/AbstractMainCardViewHolder.kt)).
+  🟡 Nog niet visueel geverifieerd.
+- **Bronnen gesnoeid** naar NL/EU gratis & key-loos (Open-Meteo, MET Norway, KNMI, WMO); Baidu IP +
+  GeoNames verwijderd; offline reverse-geocoding als default (geen Nominatim-prompt).
+- **Mapbox satelliet** als alternatieve achtergrond-bron (naast Unsplash), instelbaar in de
+  wallpaper-settings (bron-keuze + token-veld).
+- **About-scherm**: contributors/vertalers vervangen door een **Breezy-fork-vermelding**.
+- **Opschoning**: "Animaties (gevaarlijk)" → "Animaties"; "Openen in andere app" verwijderd.
 
-> Attributie verplicht: vermeld **Buienradar.nl** en **RainViewer.com** in de UI (gebeurt al
-> onderaan het radar-scherm).
+> ⚠️ **Nog visueel te checken** (toestel was weg tijdens bouwen): de **"home als 1 blok"**-look en
+> de **regen-trend-strip op de wallpaper**. Beide compileren en zitten in aparte commits, dus
+> eenvoudig terug te draaien met `git revert <hash>` als ze niet bevallen.
 
-## Nog te bouwen (volgende stappen)
-- [ ] **Fase 2:** geanimeerde radarkaart (RainViewer-tiles op de locatie, frame-voor-frame).
-- [ ] **Fase 3:** radar/trend-laag op de live wallpaper.
-- [ ] Menu-item/knop naar `RadarActivity` in de app-UI (nu alleen via adb).
+## Nog te bouwen / ideeën
+- [ ] Menu/instelling om de wallpaper-regen-trend aan/uit te zetten.
 - [ ] Beheer van `LocationData` in de UI (handmatig foto's aan gebieden koppelen).
 - [ ] Periodieke achtergrond-refresh via WorkManager (nu alleen bij zichtbaar worden).
-- [ ] Foto-attributie tonen (Unsplash-richtlijn: fotograaf + link vermelden).
+- [ ] Foto-attributie tonen (Unsplash/Mapbox-richtlijnen).
