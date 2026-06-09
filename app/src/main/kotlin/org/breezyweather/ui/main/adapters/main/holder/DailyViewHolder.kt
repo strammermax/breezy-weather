@@ -20,9 +20,11 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
+import androidx.recyclerview.widget.RecyclerView
 import breezyweather.domain.location.model.Location
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonGroup
@@ -30,21 +32,36 @@ import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.common.extensions.getThemeColor
 import org.breezyweather.domain.settings.SettingsManager
-import org.breezyweather.ui.common.adapters.ButtonAdapter
 import org.breezyweather.ui.common.widgets.trend.TrendLayoutManager
 import org.breezyweather.ui.common.widgets.trend.TrendRecyclerView
 import org.breezyweather.ui.main.adapters.trend.DailyTrendAdapter
+import org.breezyweather.ui.main.adapters.trend.HourlyTrendAdapter
 import org.breezyweather.ui.main.widgets.TrendRecyclerViewScrollBar
 import org.breezyweather.ui.theme.ThemeManager
 import org.breezyweather.ui.theme.resource.providers.ResourceProvider
 
+/**
+ * Combined forecast card: a single tile that switches between the daily and the hourly trend
+ * via a "Dag / Per uur" toggle. LiveWallpaperWeather: this replaces the two separate
+ * daily and hourly cards (the standalone hourly card is no longer added to the list).
+ */
 class DailyViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
     LayoutInflater.from(parent.context).inflate(R.layout.container_main_daily_trend_card, parent, false)
 ) {
+    private val title: TextView = itemView.findViewById(R.id.daily_block_title)
+    private val modeGroup: MaterialButtonGroup = itemView.findViewById(R.id.daily_block_mode_group)
     private val subtitle: TextView = itemView.findViewById(R.id.daily_block_subtitle)
     private val buttonGroup: MaterialButtonGroup = itemView.findViewById(R.id.daily_block_button_group)
     private val trendRecyclerView: TrendRecyclerView = itemView.findViewById(R.id.daily_block_trendRecyclerView)
     private val scrollBar = TrendRecyclerViewScrollBar()
+
+    // false = daily, true = hourly. Kept on the (reused) holder so it survives data refreshes.
+    private var hourlyMode = false
+
+    private var boundActivity: BreezyActivity? = null
+    private var boundLocation: Location? = null
+    private var setSelectedTabCallback: ((String?) -> Unit)? = null
+    private var selectedTabValue: String? = null
 
     init {
         trendRecyclerView.setHasFixedSize(true)
@@ -62,79 +79,121 @@ class DailyViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
         setSelectedTab: (String?) -> Unit,
     ) {
         super.onBindView(activity, location, provider, listAnimationEnabled, itemAnimationEnabled)
+        boundActivity = activity
+        boundLocation = location
+        setSelectedTabCallback = setSelectedTab
+        selectedTabValue = selectedTab
 
+        setupModeToggle()
+        bindTrend()
+    }
+
+    /** Builds the "Dag / Per uur" segmented toggle. */
+    private fun setupModeToggle() {
+        modeGroup.children.filter { it is MaterialButton }.toList().forEach { modeGroup.removeView(it) }
+        modeGroup.visibility = View.VISIBLE
+        listOf(
+            false to context.getString(R.string.daily_forecast),
+            true to context.getString(R.string.hourly_forecast)
+        ).forEach { (isHourly, label) ->
+            modeGroup.addView(
+                MaterialButton(context, null, com.google.android.material.R.attr.materialButtonStyle).apply {
+                    text = label
+                    isCheckable = true
+                    isChecked = isHourly == hourlyMode
+                    setOnClickListener {
+                        if (hourlyMode != isHourly) {
+                            hourlyMode = isHourly
+                            // Trend type lists differ between modes, so reset the selection.
+                            selectedTabValue = null
+                            setSelectedTabCallback?.invoke(null)
+                            setupModeToggle()
+                            bindTrend()
+                        }
+                    }
+                }
+            )
+        }
+    }
+
+    /** Binds the trend chart + trend-type dropdown for the currently selected mode. */
+    @SuppressLint("NotifyDataSetChanged")
+    private fun bindTrend() {
+        val activity = boundActivity ?: return
+        val location = boundLocation ?: return
         val weather = location.weather ?: return
 
-        if (weather.current?.dailyForecast.isNullOrEmpty()) {
+        title.text = context.getString(if (hourlyMode) R.string.hourly_forecast else R.string.daily_forecast)
+
+        val sub = if (hourlyMode) weather.current?.hourlyForecast else weather.current?.dailyForecast
+        if (sub.isNullOrEmpty()) {
             subtitle.visibility = View.GONE
         } else {
             subtitle.visibility = View.VISIBLE
-            subtitle.text = weather.current?.dailyForecast
+            subtitle.text = sub
         }
 
-        val trendAdapter = DailyTrendAdapter(activity, trendRecyclerView).apply {
-            bindData(location)
+        val trendRecyclerAdapter: RecyclerView.Adapter<*>
+        val displayNames: List<String>
+        val applyIndex: (Int) -> Unit
+        var currentIndex: Int
+        if (hourlyMode) {
+            val adapter = HourlyTrendAdapter(activity, trendRecyclerView).apply { bindData(location) }
+            displayNames = adapter.adapters.map { it.getDisplayName(activity) }
+            applyIndex = { adapter.selectedIndex = it }
+            currentIndex = adapter.selectedIndex
+            trendRecyclerAdapter = adapter
+        } else {
+            val adapter = DailyTrendAdapter(activity, trendRecyclerView).apply { bindData(location) }
+            displayNames = adapter.adapters.map { it.getDisplayName(activity) }
+            applyIndex = { adapter.selectedIndex = it }
+            currentIndex = adapter.selectedIndex
+            trendRecyclerAdapter = adapter
         }
-        val buttonList: MutableList<ButtonAdapter.Button> = trendAdapter.adapters.map {
-            object : ButtonAdapter.Button {
-                override val name = it.getDisplayName(activity)
-            }
-        }.toMutableList()
-        selectedTab?.let { tab ->
-            buttonList.indexOfFirst { it.name == tab }.let {
-                if (it >= 0) {
-                    trendAdapter.selectedIndex = it
-                } else {
-                    setSelectedTab(null) // Reset
-                }
+
+        selectedTabValue?.let { tab ->
+            val idx = displayNames.indexOfFirst { it == tab }
+            if (idx >= 0) {
+                applyIndex(idx)
+                currentIndex = idx
+            } else {
+                selectedTabValue = null
+                setSelectedTabCallback?.invoke(null)
             }
         }
 
-        if (buttonList.size < 2) {
+        if (displayNames.size < 2) {
             buttonGroup.visibility = View.GONE
         } else {
             buttonGroup.visibility = View.VISIBLE
-            // Dirty trick to get the button group to actually redraw with the correct styles AND the overflow menu
-            while (
-                buttonGroup.children
-                    .filter { it is MaterialButton && it.tag != MaterialButtonGroup.OVERFLOW_BUTTON_TAG }
-                    .count() != 0
-            ) {
-                buttonGroup.children
-                    .filter { it is MaterialButton && it.tag != MaterialButtonGroup.OVERFLOW_BUTTON_TAG }
-                    .forEach {
-                        buttonGroup.removeView(it)
+            buttonGroup.children.filter { it is MaterialButton }.toList().forEach { buttonGroup.removeView(it) }
+
+            val dropdownButton = MaterialButton(
+                context,
+                null,
+                com.google.android.material.R.attr.materialButtonOutlinedStyle
+            )
+            dropdownButton.isCheckable = false
+            dropdownButton.text = displayNames.getOrNull(currentIndex)
+            dropdownButton.contentDescription = context.getString(R.string.action_more)
+            dropdownButton.setOnClickListener { anchor ->
+                PopupMenu(context, anchor).apply {
+                    displayNames.forEachIndexed { index, name ->
+                        menu.add(0, index, index, name)
                     }
-            }
-            buttonGroup.children
-                .filter { it is MaterialButton && it.tag == MaterialButtonGroup.OVERFLOW_BUTTON_TAG }
-                .forEach {
-                    it.contentDescription = context.getString(R.string.action_more)
+                    setOnMenuItemClickListener { menuItem ->
+                        applyIndex(menuItem.itemId)
+                        selectedTabValue = displayNames[menuItem.itemId]
+                        setSelectedTabCallback?.invoke(displayNames[menuItem.itemId])
+                        dropdownButton.text = displayNames[menuItem.itemId]
+                        true
+                    }
+                    show()
                 }
-            buttonList.forEachIndexed { index, button ->
-                buttonGroup.addView(
-                    MaterialButton(
-                        context,
-                        null,
-                        com.google.android.material.R.attr.materialButtonStyle
-                    ).apply {
-                        text = button.name
-                        isCheckable = true
-                        isChecked = index == trendAdapter.selectedIndex
-                        setOnClickListener {
-                            trendAdapter.selectedIndex = index
-                            setSelectedTab(button.name)
-                            buttonGroup.children
-                                .filter { it is MaterialButton && it.tag != MaterialButtonGroup.OVERFLOW_BUTTON_TAG }
-                                .forEach { button ->
-                                    (button as MaterialButton).isChecked = false
-                                }
-                            isChecked = true
-                        }
-                    }
-                )
             }
+            buttonGroup.addView(dropdownButton)
         }
+
         trendRecyclerView.layoutManager = TrendLayoutManager(context)
         trendRecyclerView.setLineColor(
             context.getThemeColor(com.google.android.material.R.attr.colorOutline)
@@ -149,12 +208,14 @@ class DailyViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                 }
             )
         )
-        trendRecyclerView.adapter = trendAdapter
+        trendRecyclerView.adapter = trendRecyclerAdapter
         trendRecyclerView.setKeyLineVisibility(
             SettingsManager.getInstance(context).isTrendHorizontalLinesEnabled
         )
-        weather.todayIndex?.let { todayIndex ->
-            trendRecyclerView.scrollToPosition(todayIndex)
+        if (!hourlyMode) {
+            weather.todayIndex?.let { todayIndex ->
+                trendRecyclerView.scrollToPosition(todayIndex)
+            }
         }
         scrollBar.resetColor(activity)
     }

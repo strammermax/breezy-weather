@@ -236,6 +236,16 @@
         <item>night</item>
     </string-array>
 
+    <!-- live wallpaper background source -->
+    <string-array name="live_wallpaper_bg_sources">
+        <item>@string/widget_live_wallpaper_bg_source_mapbox</item>
+        <item>@string/widget_live_wallpaper_bg_source_unsplash</item>
+    </string-array>
+    <string-array name="live_wallpaper_bg_source_values">
+        <item>mapbox</item>
+        <item>unsplash</item>
+    </string-array>
+
     <!-- Accu Weather preferences -->
     <string-array name="accu_preference_portal">
         <item>@string/weather_source_accu_preference_portal_developer</item>

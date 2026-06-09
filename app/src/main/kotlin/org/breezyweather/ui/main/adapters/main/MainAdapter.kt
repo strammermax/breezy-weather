@@ -116,7 +116,9 @@ class MainAdapter(
                 if (c === CardDisplay.CARD_DAILY_FORECAST && weather.dailyForecast.isEmpty()) {
                     continue
                 }
-                if (c === CardDisplay.CARD_HOURLY_FORECAST && weather.nextHourlyForecast.isEmpty()) {
+                // LiveWallpaperWeather: the hourly trend now lives inside the combined daily
+                // forecast card (with a Dag / Per uur toggle), so no standalone hourly card.
+                if (c === CardDisplay.CARD_HOURLY_FORECAST) {
                     continue
                 }
                 if (c === CardDisplay.CARD_PRECIPITATION) {
