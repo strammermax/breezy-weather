@@ -72,6 +72,7 @@ import org.breezyweather.ui.settings.preference.composables.SwitchPreferenceView
 import org.breezyweather.ui.theme.compose.BreezyWeatherTheme
 import org.breezyweather.ui.theme.compose.themeRipple
 import org.breezyweather.unit.formatting.format
+import org.breezyweather.wallpaper.photo.WallpaperImageStore
 
 class LiveWallpaperConfigActivity : BreezyActivity() {
 
@@ -84,6 +85,14 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
     private lateinit var dayNightTypeValues: Array<String>
 
     private lateinit var animationsEnabledValue: MutableState<Boolean>
+
+    private lateinit var wallpaperImageStore: WallpaperImageStore
+    private lateinit var photoBackgroundEnabledValue: MutableState<Boolean>
+    private lateinit var unsplashKeyValue: MutableState<String>
+    private lateinit var mapboxTokenValue: MutableState<String>
+    private lateinit var backgroundSourceValueNow: MutableState<String>
+    private lateinit var backgroundSourceNames: Array<String>
+    private lateinit var backgroundSourceValues: Array<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,6 +107,14 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         dayNightTypeValues = resources.getStringArray(R.array.live_wallpaper_day_night_type_values)
 
         animationsEnabledValue = mutableStateOf(liveWallpaperConfigManager.animationsEnabled)
+
+        wallpaperImageStore = WallpaperImageStore(this)
+        photoBackgroundEnabledValue = mutableStateOf(wallpaperImageStore.photoBackgroundEnabled)
+        unsplashKeyValue = mutableStateOf(wallpaperImageStore.unsplashAccessKey)
+        mapboxTokenValue = mutableStateOf(wallpaperImageStore.mapboxAccessToken)
+        backgroundSourceValueNow = mutableStateOf(wallpaperImageStore.backgroundSource)
+        backgroundSourceNames = resources.getStringArray(R.array.live_wallpaper_bg_sources)
+        backgroundSourceValues = resources.getStringArray(R.array.live_wallpaper_bg_source_values)
 
         setContent {
             BreezyWeatherTheme {
@@ -139,11 +156,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 }
                 item {
                     SwitchPreferenceView(
-                        title = stringResource(
-                            R.string.parenthesis,
-                            stringResource(R.string.settings_main_section_animations),
-                            stringResource(R.string.widget_live_wallpaper_animations_enable_dangerous)
-                        ),
+                        title = stringResource(R.string.settings_main_section_animations),
                         summary = { context: Context, enabled: Boolean ->
                             if (enabled) {
                                 "⚠️ ${context.getString(R.string.settings_enabled)}"
@@ -163,6 +176,72 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                     }
                 }
                 item {
+                    SwitchPreferenceView(
+                        title = stringResource(R.string.widget_live_wallpaper_photo_background),
+                        summary = { _: Context, _: Boolean ->
+                            this@LiveWallpaperConfigActivity
+                                .getString(R.string.widget_live_wallpaper_photo_background_summary)
+                        },
+                        checked = photoBackgroundEnabledValue.value,
+                        withState = false,
+                        card = false
+                    ) { newValue ->
+                        photoBackgroundEnabledValue.value = newValue
+                    }
+                }
+                item {
+                    Spinner(
+                        currentVal = backgroundSourceValueNow,
+                        names = backgroundSourceNames,
+                        values = backgroundSourceValues,
+                        titleId = R.string.widget_live_wallpaper_bg_source
+                    )
+                }
+                item {
+                    Column(
+                        modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
+                    ) {
+                        OutlinedTextField(
+                            value = mapboxTokenValue.value,
+                            onValueChange = { mapboxTokenValue.value = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            label = {
+                                Text(
+                                    text = stringResource(R.string.widget_live_wallpaper_mapbox_token),
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            },
+                            placeholder = {
+                                Text(stringResource(R.string.widget_live_wallpaper_mapbox_token_hint))
+                            }
+                        )
+                    }
+                }
+                item {
+                    Column(
+                        modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
+                    ) {
+                        OutlinedTextField(
+                            value = unsplashKeyValue.value,
+                            onValueChange = { unsplashKeyValue.value = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            label = {
+                                Text(
+                                    text = stringResource(R.string.widget_live_wallpaper_unsplash_key),
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            },
+                            placeholder = {
+                                Text(stringResource(R.string.widget_live_wallpaper_unsplash_key_hint))
+                            }
+                        )
+                    }
+                }
+                item {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -177,6 +256,14 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                     dayNightTypeValueNow.value,
                                     animationsEnabledValue.value
                                 )
+                                wallpaperImageStore.photoBackgroundEnabled =
+                                    photoBackgroundEnabledValue.value
+                                wallpaperImageStore.unsplashAccessKey =
+                                    unsplashKeyValue.value.trim()
+                                wallpaperImageStore.mapboxAccessToken =
+                                    mapboxTokenValue.value.trim()
+                                wallpaperImageStore.backgroundSource =
+                                    backgroundSourceValueNow.value
                                 finish()
                             },
                             colors = ButtonDefaults.buttonColors(

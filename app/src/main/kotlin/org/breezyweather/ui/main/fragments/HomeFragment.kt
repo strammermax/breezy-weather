@@ -18,6 +18,7 @@ package org.breezyweather.ui.main.fragments
 
 import android.animation.Animator
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
@@ -198,6 +199,9 @@ class HomeFragment : MainModuleFragment() {
             when (menuItem.itemId) {
                 R.id.action_edit -> callback?.onEditIconClicked()
                 R.id.action_open_in_other_app -> callback?.onOpenInOtherAppIconClicked()
+                R.id.action_radar -> startActivity(
+                    Intent(requireContext(), org.breezyweather.radar.RadarActivity::class.java)
+                )
             }
             true
         }
@@ -277,7 +281,8 @@ class HomeFragment : MainModuleFragment() {
                 viewModel.currentLocation.collect {
                     if (it?.location != null) {
                         binding.toolbar.menu.findItem(R.id.action_edit).isVisible = true
-                        binding.toolbar.menu.findItem(R.id.action_open_in_other_app).isVisible = true
+                        // LiveWallpaperWeather: "Open in other app" action removed from the UI.
+                        binding.toolbar.menu.findItem(R.id.action_open_in_other_app).isVisible = false
                         binding.emptyText.visibility = if (it.location.weather != null) View.GONE else View.VISIBLE
                     } else {
                         binding.toolbar.menu.findItem(R.id.action_edit).isVisible = false

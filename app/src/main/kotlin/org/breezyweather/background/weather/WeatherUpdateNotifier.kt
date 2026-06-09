@@ -50,7 +50,7 @@ class WeatherUpdateNotifier(
     val progressNotificationBuilder by lazy {
         context.notificationBuilder(Notifications.CHANNEL_BACKGROUND) {
             setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            setContentTitle(context.getString(R.string.app_name))
+            setContentTitle(context.getString(R.string.brand_name))
             setSmallIcon(R.drawable.ic_running_in_background)
             setOngoing(true)
             setOnlyAlertOnce(true)

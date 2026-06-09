@@ -207,99 +207,38 @@ class SourceManager @Inject constructor(
     wmoSevereWeatherService: WmoSevereWeatherService,
 ) {
     // Location sources
+    // LiveWallpaperWeather: Baidu IP (China) removed; keep Android GPS + IP.sb fallback.
     private val locationSourceList = persistentListOf(
         androidLocationService,
-        ipSbService,
-        baiduIPService
+        ipSbService
     )
 
     // Location search sources
-    private val locationSearchSourceList = persistentListOf(
-        geoNamesService
-    )
+    // LiveWallpaperWeather: GeoNames removed — Open-Meteo already provides place-name search.
+    private val locationSearchSourceList = persistentListOf<LocationSearchSource>()
 
     // Reverse geocoding sources
+    // LiveWallpaperWeather: Nominatim removed — it shows an OSM usage-policy prompt.
+    // The offline Natural Earth + Android geocoder cover NL/EU without any prompt.
     private val reverseGeocodingSourceList = persistentListOf(
         naturalEarthService,
-        androidGeocoderService,
-        nominatimService
+        androidGeocoderService
     )
 
     // Worldwide weather sources, excluding national sources with worldwide support,
-    // with the exception of MET Norway
+    // with the exception of MET Norway.
+    // LiveWallpaperWeather: trimmed to the free, key-less sources relevant for NL/EU.
+    // The other services are still injected above (harmless) but hidden from the chooser.
     private val worldwideWeatherSourceList = persistentListOf(
         openMeteoService,
-        accuService,
-        fpasService,
-        infoplazaService,
         metNoService,
-        nceiService,
-        openWeatherService,
-        pirateWeatherService,
         wmoSevereWeatherService
     )
 
-    // Region-specific or national weather sources
+    // Region-specific or national weather sources.
+    // LiveWallpaperWeather: NL-focused — only KNMI is kept here.
     private val nationalWeatherSourceList = persistentListOf(
-        aemetService,
-        anamBfService,
-        anametService,
-        atmoAuraService,
-        atmoFranceService,
-        atmoGrandEstService,
-        atmoHdfService,
-        atmoSudService,
-        bmdService,
-        bmkgService,
-        brightSkyService,
-        chinaService,
-        cwaService,
-        dccmsService,
-        dmiService,
-        dmnNeService,
-        dwrGmService,
-        ecccService,
-        ekukService,
-        epdHkService,
-        ethioMetService,
-        fmiService,
-        geoSphereAtService,
-        gMetService,
-        hkoService,
-        igebuService,
-        ilmateenistusService,
-        imdService,
-        imsService,
-        inmgbService,
-        ipmaService,
-        jmaService,
-        knmiService,
-        lhmtService,
-        lvgmcService,
-        maliMeteoService,
-        meteoAmService,
-        meteoBeninService,
-        meteoLuxService,
-        meteoTchadService,
-        metIeService,
-        metOfficeService,
-        mettelsatService,
-        mfService,
-        mgmService,
-        msdZwService,
-        namemService,
-        ncdrService,
-        nlscService,
-        nwsService,
-        pollenInfoService,
-        pagasaService,
-        recosanteService,
-        smaScService,
-        smaSuService,
-        smgService,
-        smhiService,
-        ssmsService,
-        vedurIsService
+        knmiService
     )
 
     // Broadcast sources
@@ -523,7 +462,7 @@ class SourceManager @Inject constructor(
                 null
             }
 
-            SourceFeature.REVERSE_GEOCODING -> getReverseGeocodingSource("nominatim")
+            SourceFeature.REVERSE_GEOCODING -> getReverseGeocodingSource("naturalearth")
             else -> getWeatherSource("openmeteo")
         }
     }

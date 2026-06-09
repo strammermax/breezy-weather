@@ -94,7 +94,7 @@ internal class BreezyTextToolbar(
             val intent = Intent().apply {
                 action = Intent.ACTION_SEND
                 type = "text/plain"
-                putExtra(Intent.EXTRA_SUBJECT, view.context.getString(R.string.app_name))
+                putExtra(Intent.EXTRA_SUBJECT, view.context.getString(R.string.brand_name))
                 putExtra(Intent.EXTRA_TEXT, text.trim())
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }

@@ -652,6 +652,24 @@
     <string name="widget_live_wallpaper_animations_enable_dangerous">DANGEROUS</string>
     <string name="widget_live_wallpaper_animations_enable_warning1">Wallpaper animations are known to cause, among other things: high battery consumption; battery overheating; high memory consumption; degraded system responsiveness; Android system crash.</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">If you decide to enable them, you assume full responsibility for any problem that may arise, and no support will be provided.</string>
+    <!-- Location photo background -->
+    <string name="widget_live_wallpaper_photo_background">Location photo background</string>
+    <string name="widget_live_wallpaper_photo_background_summary">Use a photo of where you are as the wallpaper background, with the weather animation on top</string>
+    <string name="widget_live_wallpaper_unsplash_key">Unsplash access key</string>
+    <string name="widget_live_wallpaper_unsplash_key_hint">Paste your Unsplash access key (Client-ID)</string>
+    <string name="widget_live_wallpaper_bg_source">Background source</string>
+    <string name="widget_live_wallpaper_bg_source_mapbox" translatable="false">Mapbox (satellite)</string>
+    <string name="widget_live_wallpaper_bg_source_unsplash" translatable="false">Unsplash (city photo)</string>
+    <string name="widget_live_wallpaper_mapbox_token" translatable="false">Mapbox access token</string>
+    <string name="widget_live_wallpaper_mapbox_token_hint" translatable="false">Paste your Mapbox token (pk.…)</string>
+    <!-- Precipitation radar -->
+    <string name="action_radar">Rain radar</string>
+    <string name="radar_title">Precipitation radar</string>
+    <string name="radar_section_rain_trend">Rain trend (Buienradar)</string>
+    <string name="radar_section_radar_map">Radar map (RainViewer)</string>
+    <string name="radar_frames_available">%1$d frames available, latest %2$s</string>
+    <string name="radar_frames_unavailable">Radar frames unavailable</string>
+    <string name="radar_attribution">Data: Buienradar.nl &amp; RainViewer.com</string>
     <!-- Settings (new design) -->
     <string name="settings_section_general">General</string>
     <string name="settings_background_updates">Background updates</string>
@@ -923,6 +941,9 @@
     <string name="about_dependencies">Dependencies</string>
     <string name="about_contributors">Contributors</string>
     <string name="about_translators">Translators</string>
+    <string name="about_fork_title">Based on</string>
+    <string name="about_fork_description" translatable="false">LiveWallpaperWeather is an open-source fork of Breezy Weather, licensed under the GNU LGPL v3. Many thanks to the Breezy Weather project and its contributors.</string>
+    <string name="about_fork_source" translatable="false">Breezy Weather on GitHub</string>
     <string name="about_contribution_WangDaYeeeeee">Developer of the original project Geometric Weather</string>
     <string name="about_contribution_designer">Logo designer</string>
     <!-- %s is a link -->

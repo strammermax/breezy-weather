@@ -59,13 +59,10 @@ import org.breezyweather.BreezyWeather
 import org.breezyweather.BuildConfig
 import org.breezyweather.R
 import org.breezyweather.background.updater.interactor.GetApplicationRelease
-import org.breezyweather.common.extensions.currentLocale
 import org.breezyweather.common.extensions.plus
 import org.breezyweather.common.extensions.withIOContext
 import org.breezyweather.common.extensions.withUIContext
 import org.breezyweather.common.utils.helpers.SnackbarHelper
-import org.breezyweather.data.appContributors
-import org.breezyweather.data.appTranslators
 import org.breezyweather.ui.common.composables.AlertDialogLink
 import org.breezyweather.ui.common.widgets.Material3ExpressiveCardListItem
 import org.breezyweather.ui.common.widgets.Material3Scaffold
@@ -99,17 +96,6 @@ internal fun AboutScreen(
     val uriHandler = LocalUriHandler.current
     val linkToOpen = rememberSaveable { mutableStateOf("") }
     val dialogLinkOpenState = rememberSaveable { mutableStateOf(false) }
-
-    val locale = context.currentLocale
-    val language = locale.language
-    val languageWithCountry = locale.language + (if (!locale.country.isNullOrEmpty()) "_r" + locale.country else "")
-    var filteredTranslators = appTranslators.filter {
-        it.lang.contains(language) || it.lang.contains(languageWithCountry)
-    }
-    if (filteredTranslators.isEmpty()) {
-        // No translators found? Language doesn’t exist, so defaulting to English
-        filteredTranslators = appTranslators.filter { it.lang.contains("en") }
-    }
 
     val contactLinks = buildList {
         BuildConfig.SOURCE_CODE_LINK.takeIf {
@@ -315,46 +301,26 @@ internal fun AboutScreen(
             }
 
             largeSeparatorItem()
-            item { SectionTitle(stringResource(R.string.about_contributors)) }
-            itemsIndexed(appContributors) { index, item ->
-                ContributorView(
-                    name = item.name,
-                    contribution = item.contribution,
-                    isFirst = index == 0,
-                    isLast = index == appContributors.lastIndex
-                ) {
-                    linkToOpen.value = item.link
-                    if (linkToOpen.value.isNotEmpty()) {
-                        dialogLinkOpenState.value = true
-                    }
-                }
-                if (index != appContributors.lastIndex) {
-                    SmallSeparatorItem()
-                }
+            item { SectionTitle(stringResource(R.string.about_fork_title)) }
+            item {
+                Text(
+                    text = stringResource(R.string.about_fork_description),
+                    modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin)),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
-
-            largeSeparatorItem()
-            item { SectionTitle(stringResource(R.string.about_translators)) }
-            itemsIndexed(filteredTranslators) { index, item ->
-                ContributorView(
-                    name = item.name,
-                    isFirst = index == 0,
-                    isLast = index == filteredTranslators.lastIndex
-                ) {
-                    linkToOpen.value = when {
-                        !item.github.isNullOrEmpty() -> "https://github.com/${item.github}"
-                        !item.weblate.isNullOrEmpty() -> "https://hosted.weblate.org/user/${item.weblate}/"
-                        !item.mail.isNullOrEmpty() -> "mailto:${item.mail}"
-                        !item.url.isNullOrEmpty() -> item.url
-                        else -> ""
-                    }
-                    if (linkToOpen.value.isNotEmpty()) {
+            item {
+                AboutAppLink(
+                    iconId = R.drawable.ic_code,
+                    title = stringResource(R.string.about_fork_source),
+                    isFirst = true,
+                    isLast = true,
+                    onClick = {
+                        linkToOpen.value = "https://github.com/breezy-weather/breezy-weather"
                         dialogLinkOpenState.value = true
                     }
-                }
-                if (index != filteredTranslators.lastIndex) {
-                    SmallSeparatorItem()
-                }
+                )
             }
 
             bottomInsetItem(
@@ -470,40 +436,3 @@ private fun AboutAppLink(
     )
 }
 
-@Composable
-private fun ContributorView(
-    name: String,
-    @StringRes contribution: Int? = null,
-    isFirst: Boolean = false,
-    isLast: Boolean = false,
-    onClick: () -> Unit,
-) {
-    Material3ExpressiveCardListItem(isFirst = isFirst, isLast = isLast) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = themeRipple(),
-                    onClick = {
-                        onClick()
-                    }
-                )
-                .padding(dimensionResource(R.dimen.normal_margin))
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = name,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            if (contribution != null) {
-                Text(
-                    text = stringResource(contribution),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-    }
-}

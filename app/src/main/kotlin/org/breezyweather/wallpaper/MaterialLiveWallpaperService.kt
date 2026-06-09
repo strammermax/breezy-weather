@@ -17,7 +17,12 @@
 package org.breezyweather.wallpaper
 
 import android.app.WallpaperColors
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.graphics.PixelFormat
+import android.graphics.Rect
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -40,6 +45,11 @@ import breezyweather.data.weather.WeatherRepository
 import breezyweather.domain.location.model.Location
 import breezyweather.domain.weather.reference.WeatherCode
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.breezyweather.BreezyWeather
 import org.breezyweather.common.extensions.isLandscape
@@ -54,6 +64,8 @@ import org.breezyweather.ui.theme.weatherView.materialWeatherView.DelayRotateCon
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.IntervalComputer
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.MaterialWeatherView
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.WeatherImplementorFactory
+import org.breezyweather.wallpaper.photo.WallpaperImageStore
+import org.breezyweather.wallpaper.photo.WallpaperRepository
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.acos
@@ -92,6 +104,12 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mBackground: Drawable? = null
         private var mOpenGravitySensor = false
         private var mGravitySensor: Sensor? = null
+
+        // Location-photo background (Unsplash / curated LocationData), drawn beneath the
+        // weather animation so e.g. clouds render over a photo of where you are.
+        private val mWallpaperImageStore = WallpaperImageStore(applicationContext)
+        private val mWallpaperRepository = WallpaperRepository(applicationContext)
+        private val mPhotoScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
         @Size(2)
         private var mSizes: IntArray = intArrayOf(0, 0)
@@ -260,7 +278,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         }
 
         private fun setWeatherBackgroundDrawable() {
-            mBackground = ResourcesCompat.getDrawable(
+            mBackground = buildPhotoBackground() ?: ResourcesCompat.getDrawable(
                 resources,
                 WeatherImplementorFactory.getBackgroundId(mWeatherKind, mDaytime),
                 null
@@ -271,6 +289,45 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     notifyColorsChanged()
                 }
             }
+        }
+
+        /**
+         * Builds a center-cropped drawable from the cached location photo, or null when the
+         * photo background is disabled / unavailable so the caller falls back to the gradient.
+         * The weather animation ([mImplementor], e.g. clouds/rain) is still drawn on top.
+         */
+        private fun buildPhotoBackground(): Drawable? {
+            if (!mWallpaperImageStore.photoBackgroundEnabled) return null
+            if (mSizes[0] <= 0 || mSizes[1] <= 0) return null
+            val source = mWallpaperRepository.loadCachedBitmap() ?: return null
+            return try {
+                val cropped = centerCrop(source, mSizes[0], mSizes[1])
+                if (cropped !== source) source.recycle()
+                BitmapDrawable(resources, cropped)
+            } catch (e: Throwable) {
+                null
+            }
+        }
+
+        /** Scales [source] to fill [targetWidth] x [targetHeight], cropping the overflow. */
+        private fun centerCrop(source: Bitmap, targetWidth: Int, targetHeight: Int): Bitmap {
+            val result = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(result)
+            val srcRatio = source.width.toFloat() / source.height
+            val dstRatio = targetWidth.toFloat() / targetHeight
+            val src: Rect = if (srcRatio > dstRatio) {
+                // Source is relatively wider: crop the left/right edges.
+                val w = (source.height * dstRatio).toInt()
+                val x = (source.width - w) / 2
+                Rect(x, 0, x + w, source.height)
+            } else {
+                // Source is relatively taller: crop the top/bottom edges.
+                val h = (source.width / dstRatio).toInt()
+                val y = (source.height - h) / 2
+                Rect(0, y, source.width, y + h)
+            }
+            canvas.drawBitmap(source, src, Rect(0, 0, targetWidth, targetHeight), Paint(Paint.FILTER_BITMAP_FLAG))
+            return result
         }
 
         private fun setIntervalComputer() {
@@ -406,6 +463,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             }
 
             setWeatherBackgroundDrawable()
+            maybeRefreshPhotoBackground(location)
             if (mAnimate) {
                 val screenRefreshRate = ContextCompat.getDisplayOrDefault(this@MaterialLiveWallpaperService)
                     .refreshRate.let {
@@ -435,8 +493,33 @@ class MaterialLiveWallpaperService : WallpaperService() {
             }
         }
 
+        /**
+         * Downloads/caches the location photo for [location] in the background (off the render
+         * thread). On success it rebuilds the background drawable and triggers a single redraw.
+         * No-op when the photo background is disabled or the location has no usable coordinates.
+         */
+        private fun maybeRefreshPhotoBackground(location: Location?) {
+            if (!mWallpaperImageStore.photoBackgroundEnabled) return
+            if (location == null || !location.isUsable) return
+            mPhotoScope.launch {
+                val placeName = location.city.ifBlank { location.admin1 ?: location.country }
+                val file = mWallpaperRepository.refreshFor(
+                    location.latitude,
+                    location.longitude,
+                    placeName
+                )
+                if (file != null && mVisible) {
+                    mHandler?.post {
+                        setWeatherBackgroundDrawable()
+                        mHandler?.post(mDrawableRunnable)
+                    }
+                }
+            }
+        }
+
         override fun onDestroy() {
             onVisibilityChanged(false)
+            mPhotoScope.cancel()
             mHandlerThread?.quit()
         }
     }

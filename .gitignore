@@ -43,3 +43,9 @@ bin/
 /currentPosition.properties
 /captures
 /local.properties
+
+### LiveWallpaperWeather local artifacts ###
+/.claude/
+/apk_build*.log
+/build_check.log
+/*.png

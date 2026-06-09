@@ -813,4 +813,14 @@
     <string name="message_please_wait_refresh">Wacht tot de vernieuwing is voltooid</string>
     <string name="settings_main_background_title">Weergebaseerde achtergrond</string>
     <string name="settings_weather_source_no_longer_exists">%s (bestaat niet meer)</string>
+    <!-- LiveWallpaperWeather: regenradar + wallpaper -->
+    <string name="action_radar">Regenradar</string>
+    <string name="radar_title">Regenradar</string>
+    <string name="radar_section_radar_map">Radarkaart (RainViewer)</string>
+    <string name="radar_section_rain_trend">Regen-trend (Buienradar)</string>
+    <string name="radar_frames_unavailable">Radar niet beschikbaar</string>
+    <string name="widget_live_wallpaper_photo_background">Foto-achtergrond van locatie</string>
+    <string name="widget_live_wallpaper_photo_background_summary">Gebruik een foto van waar je bent als achtergrond, met de weer-animatie eroverheen</string>
+    <string name="widget_live_wallpaper_bg_source">Achtergrond-bron</string>
+    <string name="about_fork_title">Gebaseerd op</string>
 </resources>
