@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -172,6 +173,7 @@ class RadarActivity : BreezyActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     @Composable
     private fun RadarMap(latitude: Double, longitude: Double, modifier: Modifier = Modifier) {
+        val dark = isSystemInDarkTheme()
         AndroidView(
             modifier = modifier,
             factory = { ctx ->
@@ -190,7 +192,7 @@ class RadarActivity : BreezyActivity() {
                     }
                     loadDataWithBaseURL(
                         "https://www.rainviewer.com",
-                        radarHtml(latitude, longitude),
+                        radarHtml(latitude, longitude, dark),
                         "text/html",
                         "UTF-8",
                         null
@@ -206,26 +208,30 @@ class RadarActivity : BreezyActivity() {
          * animated precipitation radar frames (past + nowcast) playing in a loop, centred on
          * the user's location.
          */
-        private fun radarHtml(latitude: Double, longitude: Double): String {
+        private fun radarHtml(latitude: Double, longitude: Double, dark: Boolean): String {
             val lat = String.format(Locale.US, "%.5f", latitude)
             val lon = String.format(Locale.US, "%.5f", longitude)
+            val style = if (dark) "dark_all" else "light_all"
+            val pageBg = if (dark) "#0e1116" else "#e8eaed"
+            val pillBg = if (dark) "rgba(0,0,0,.65)" else "rgba(255,255,255,.85)"
+            val pillFg = if (dark) "#fff" else "#222"
             return """
 <!DOCTYPE html><html><head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
- html,body{margin:0;padding:0;background:#0e1116}
+ html,body{margin:0;padding:0;background:$pageBg}
  #map{width:100%;height:420px}
  .ts{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:1000;
-     background:rgba(0,0,0,.65);color:#fff;padding:4px 12px;border-radius:14px;
+     background:$pillBg;color:$pillFg;padding:4px 12px;border-radius:14px;
      font:13px/1.4 sans-serif}
 </style></head><body>
 <div id="map"></div><div class="ts" id="ts">…</div>
 <script>
  var lat=$lat, lon=$lon;
  var map=L.map('map',{zoomControl:true,attributionControl:false}).setView([lat,lon],7);
- var base=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{subdomains:'abcd',maxZoom:12});
+ var base=L.tileLayer('https://{s}.basemaps.cartocdn.com/$style/{z}/{x}/{y}.png',{subdomains:'abcd',maxZoom:12});
  base.on('tileerror',function(e){ console.log('base tileerror'); });
  base.on('load',function(){ console.log('base tiles loaded'); });
  base.addTo(map);
