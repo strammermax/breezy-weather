@@ -245,6 +245,12 @@ configure<ApplicationExtension> {
             "ACCU_WEATHER_KEY",
             "\"${localProperties.getProperty("breezy.accu.key") ?: ""}\""
         )
+        // LiveWallpaperWeather: Unsplash key kept out of source (in local.properties).
+        it.buildConfigField(
+            "String",
+            "UNSPLASH_KEY",
+            "\"${localProperties.getProperty("lww.unsplash.key") ?: ""}\""
+        )
         it.buildConfigField(
             "String",
             "AEMET_KEY",
