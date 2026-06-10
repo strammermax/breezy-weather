@@ -174,9 +174,10 @@ class WallpaperRepository(
  * via [WallpaperImageStore.unsplashAccessKey]) — see README_LIVEWALLPAPER.md.
  */
 private object BuildConfigUnsplashKey {
-    // Personal Unsplash access key (Client-ID). For a personal build this is fine here;
-    // for sharing, move it to local.properties + a BuildConfig field instead.
-    const val value: String = "BDTwXUBorbfO8ZSBOa9_M6Db2gRlZv4zekXQaLrrFT4"
+    // Read from BuildConfig (sourced from local.properties `lww.unsplash.key`), so the key
+    // is never committed. Empty when not configured — the app still works (Mapbox/keyless
+    // providers + the in-app key field remain available).
+    val value: String get() = org.breezyweather.BuildConfig.UNSPLASH_KEY
 }
 
 /**
