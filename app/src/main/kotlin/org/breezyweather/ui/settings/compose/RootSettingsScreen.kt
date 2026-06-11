@@ -34,6 +34,8 @@ import org.breezyweather.ui.settings.preference.composables.PreferenceScreen
 import org.breezyweather.ui.settings.preference.composables.PreferenceViewWithCard
 import org.breezyweather.ui.settings.preference.largeSeparatorItem
 import org.breezyweather.ui.settings.preference.smallSeparatorItem
+import org.breezyweather.common.utils.helpers.SnackbarHelper
+import org.breezyweather.wallpaper.launchLiveWallpaperPicker
 
 @Composable
 fun RootSettingsView(
@@ -42,6 +44,7 @@ fun RootSettingsView(
     modifier: Modifier = Modifier,
 ) {
     val scrollBehavior = generateCollapsedScrollBehavior()
+    val context = LocalContext.current
 
     Material3Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -57,6 +60,25 @@ fun RootSettingsView(
         PreferenceScreen(
             paddingValues = paddings.plus(PaddingValues(horizontal = dimensionResource(R.dimen.normal_margin)))
         ) {
+            clickablePreferenceItem(R.string.settings_set_live_wallpaper) { id ->
+                PreferenceViewWithCard(
+                    titleId = id,
+                    iconId = R.drawable.ic_home,
+                    summaryId = R.string.settings_set_live_wallpaper_summary,
+                    isFirst = true,
+                    isLast = true
+                ) {
+                    if (!launchLiveWallpaperPicker(context)) {
+                        SnackbarHelper.showSnackbar(
+                            context.getString(
+                                R.string.settings_modules_live_wallpaper_error,
+                                context.getString(R.string.brand_name)
+                            )
+                        )
+                    }
+                }
+            }
+            largeSeparatorItem()
             clickablePreferenceItem(R.string.settings_background_updates) { id ->
                 PreferenceViewWithCard(
                     titleId = id,

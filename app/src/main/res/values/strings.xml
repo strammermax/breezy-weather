@@ -858,6 +858,8 @@
     <string name="settings_notifications_forecast_time_today_title">Notification time for the day’s forecast</string>
     <string name="settings_notifications_forecast_tomorrow_title">Notification for next-day forecast</string>
     <string name="settings_notifications_forecast_time_tomorrow_title">Notification time for next-day forecast</string>
+    <string name="settings_set_live_wallpaper">Set live wallpaper</string>
+    <string name="settings_set_live_wallpaper_summary">Apply LiveWallpaperWeather as your home/lock-screen wallpaper</string>
     <string name="settings_modules">External modules</string>
     <string name="settings_modules_summary">Widgets, notification widget, wallpaper, data sharing with other apps</string>
     <string name="settings_modules_section_general" translatable="false">@string/settings_section_general</string>
