@@ -128,9 +128,11 @@ class WikimediaProvider(
         private const val GEO_RADIUS_M = 10000
         private const val THUMB_WIDTH = 1080
 
-        // Wikimedia requires a descriptive, contactable User-Agent for API access.
+        // Wikimedia requires a descriptive, contactable User-Agent for API access; a generic
+        // one risks HTTP 429. See https://meta.wikimedia.org/wiki/User-Agent_policy
         private const val USER_AGENT =
-            "LiveWallpaperWeather/1.0 (https://github.com/; based on Breezy Weather)"
+            "LiveWallpaperWeather/1.0 (https://github.com/strammermax/breezy-weather; " +
+                "based on Breezy Weather)"
 
         private const val COMMON_PARAMS =
             "action=query&format=json&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=$THUMB_WIDTH"

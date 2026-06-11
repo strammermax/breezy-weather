@@ -128,6 +128,7 @@ class WallpaperImageStore(context: Context) {
 
         const val SOURCE_MAPBOX = "mapbox"
         const val SOURCE_UNSPLASH = "unsplash"
+        const val SOURCE_WIKIMEDIA = "wikimedia"
 
         /** File name used for the cached background bitmap inside the app files dir. */
         const val CACHE_FILE_NAME = "wallpaper_location_photo.jpg"

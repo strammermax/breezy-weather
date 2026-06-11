@@ -69,6 +69,7 @@ class WallpaperRepository(
 
         val ordered = when (store.backgroundSource) {
             WallpaperImageStore.SOURCE_MAPBOX -> listOf(mapbox, unsplash, wikimedia)
+            WallpaperImageStore.SOURCE_WIKIMEDIA -> listOf(wikimedia, unsplash, mapbox)
             else -> listOf(unsplash, wikimedia, mapbox)
         }
         return ordered.filter { it.isConfigured() }
