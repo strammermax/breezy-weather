@@ -661,6 +661,9 @@
     <string name="widget_live_wallpaper_bg_source_mapbox" translatable="false">Mapbox (satellite)</string>
     <string name="widget_live_wallpaper_bg_source_unsplash" translatable="false">Unsplash (city photo)</string>
     <string name="widget_live_wallpaper_bg_source_wikimedia" translatable="false">Wikimedia Commons (no key)</string>
+    <string name="widget_live_wallpaper_bg_source_flickr" translatable="false">Flickr (city photo)</string>
+    <string name="widget_live_wallpaper_flickr_key" translatable="false">Flickr API key</string>
+    <string name="widget_live_wallpaper_flickr_key_hint" translatable="false">Paste your Flickr API key</string>
     <string name="widget_live_wallpaper_mapbox_token" translatable="false">Mapbox access token</string>
     <string name="widget_live_wallpaper_mapbox_token_hint" translatable="false">Paste your Mapbox token (pk.…)</string>
     <string name="widget_live_wallpaper_preview">Preview</string>

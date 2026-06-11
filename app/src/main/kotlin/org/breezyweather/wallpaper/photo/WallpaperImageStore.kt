@@ -63,6 +63,13 @@ class WallpaperImageStore(context: Context) {
             config.edit().putString(KEY_MAPBOX_TOKEN, value).apply()
         }
 
+    /** Flickr API key for the `flickr.photos.search` endpoint. Empty by default (free key). */
+    var flickrApiKey: String
+        get() = config.getString(KEY_FLICKR_KEY, null).orEmpty()
+        set(value) {
+            config.edit().putString(KEY_FLICKR_KEY, value).apply()
+        }
+
     /** Absolute path of the currently cached background photo, or null if none. */
     var cachedPhotoPath: String?
         get() = config.getString(KEY_CACHED_PATH, null)
@@ -120,6 +127,7 @@ class WallpaperImageStore(context: Context) {
         private const val KEY_BG_SOURCE = "background_source"
         private const val KEY_UNSPLASH_KEY = "unsplash_access_key"
         private const val KEY_MAPBOX_TOKEN = "mapbox_access_token"
+        private const val KEY_FLICKR_KEY = "flickr_api_key"
         private const val KEY_CACHED_PATH = "cached_photo_path"
         private const val KEY_CACHED_URL = "cached_photo_url"
         private const val KEY_CACHED_ATTRIBUTION = "cached_photo_attribution"
@@ -129,6 +137,7 @@ class WallpaperImageStore(context: Context) {
         const val SOURCE_MAPBOX = "mapbox"
         const val SOURCE_UNSPLASH = "unsplash"
         const val SOURCE_WIKIMEDIA = "wikimedia"
+        const val SOURCE_FLICKR = "flickr"
 
         /** File name used for the cached background bitmap inside the app files dir. */
         const val CACHE_FILE_NAME = "wallpaper_location_photo.jpg"
