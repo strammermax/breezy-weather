@@ -66,6 +66,7 @@ import org.breezyweather.ui.theme.weatherView.materialWeatherView.IntervalComput
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.MaterialWeatherView
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.WeatherImplementorFactory
 import org.breezyweather.radar.BuienradarNowcastSource
+import org.breezyweather.wallpaper.photo.PlaceQuery
 import org.breezyweather.wallpaper.photo.WallpaperImageStore
 import org.breezyweather.wallpaper.photo.WallpaperRepository
 import javax.inject.Inject
@@ -511,11 +512,16 @@ class MaterialLiveWallpaperService : WallpaperService() {
             if (!mWallpaperImageStore.photoBackgroundEnabled) return
             if (location == null || !location.isUsable) return
             mPhotoScope.launch {
-                val placeName = location.city.ifBlank { location.admin1 ?: location.country }
+                val place = PlaceQuery(
+                    city = location.city.ifBlank { null },
+                    municipality = location.admin2,
+                    state = location.admin1,
+                    country = location.country.ifBlank { null },
+                )
                 val file = mWallpaperRepository.refreshFor(
                     location.latitude,
                     location.longitude,
-                    placeName
+                    place
                 )
                 if (file != null && mVisible) {
                     mHandler?.post {
