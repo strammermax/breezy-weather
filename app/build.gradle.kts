@@ -470,6 +470,10 @@ dependencies {
 
     implementation(libs.kotlinx.collections.immutable)
 
+    // LiveWallpaperWeather: on-device sky segmentation (DeepLab Cityscapes) for the
+    // transparent-sky live wallpaper, so weather animations show through the sky.
+    implementation(libs.tensorflow.lite)
+
     implementation(libs.core.ktx)
     implementation(libs.appcompat)
     implementation(libs.material)

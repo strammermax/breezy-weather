@@ -54,6 +54,9 @@ class WallpaperRepository(
     /** Distance under which a non-containing [LocationData] still counts as a match. */
     var maxMatchDistanceKm: Double = 50.0
 
+    /** Lazily-loaded on-device sky-segmentation model (loads its weights on first use). */
+    private val skySegmenter by lazy { SkySegmenter(context) }
+
     /**
      * Builds the provider chain in priority order for the current configuration. The selected
      * source goes first; the keyless Wikimedia fallback is always present; unconfigured
@@ -127,20 +130,30 @@ class WallpaperRepository(
         longitude: Double,
         place: PlaceQuery,
     ): File? {
-        val result = resolveImage(latitude, longitude, place) ?: return null
-        val url = result.url
-
         val cacheFile = cacheFile(place)
-        if (url == store.cachedUrlFor(cacheFile.name) && cacheFile.exists()) {
-            // Already cached for this place; just mark it active.
-            store.cachedPhotoPath = cacheFile.absolutePath
-            store.cachedPhotoUrl = url
-            store.cachedPhotoAttribution = result.attribution
-            return cacheFile
-        }
+        val tried = HashSet<String>()
+        // Try several candidate photos and keep the first that has enough sky to show the weather
+        // (>= MIN_SKY_FRACTION). Photos without sky are skipped and never shown as a background.
+        repeat(MAX_SKY_ATTEMPTS) {
+            val result = resolveImage(latitude, longitude, place) ?: return@repeat
+            val url = result.url
+            if (!tried.add(url)) return@repeat
 
-        val downloaded = download(url, cacheFile)
-        if (downloaded) {
+            // Fast path: this exact image already passed the sky check and is cached for the place.
+            if (url == store.cachedUrlFor(cacheFile.name) && cacheFile.exists()) {
+                store.cachedPhotoPath = cacheFile.absolutePath
+                store.cachedPhotoUrl = url
+                store.cachedPhotoAttribution = result.attribution
+                return cacheFile
+            }
+
+            // null => download failed or the photo has too little sky => try another candidate.
+            val bitmap = downloadSkyBitmap(url) ?: return@repeat
+            try {
+                cacheFile.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            } finally {
+                bitmap.recycle()
+            }
             store.setCachedUrl(cacheFile.name, url)
             store.cachedPhotoUrl = url
             store.cachedPhotoPath = cacheFile.absolutePath
@@ -148,6 +161,20 @@ class WallpaperRepository(
             return cacheFile
         }
         return null
+    }
+
+    /**
+     * Downloads [url] and returns the bitmap to cache: the sky-erased (transparent) version when
+     * the model finds at least [SkySegmenter] minimum sky; the opaque image when the model is
+     * unavailable; or null when the download fails or there is too little sky (caller skips it).
+     */
+    private suspend fun downloadSkyBitmap(url: String): Bitmap? = withContext(Dispatchers.Default) {
+        val bytes = downloadBytes(url) ?: return@withContext null
+        val source = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return@withContext null
+        if (!skySegmenter.isAvailable()) return@withContext source // can't check sky; use as-is
+        val erased = skySegmenter.eraseSky(source)
+        source.recycle()
+        erased // null => too little sky => skip this candidate
     }
 
     /** Back-compatible overload taking a single place name. */
@@ -184,7 +211,7 @@ class WallpaperRepository(
 
     private fun cacheFile(place: PlaceQuery): File = File(context.filesDir, place.cacheFileName())
 
-    private suspend fun download(url: String, target: File): Boolean = withContext(Dispatchers.IO) {
+    private suspend fun downloadBytes(url: String): ByteArray? = withContext(Dispatchers.IO) {
         try {
             // A descriptive User-Agent is required by Wikimedia (upload.wikimedia.org returns
             // 403/429 for requests with a blocked/empty UA) and is harmless for other hosts.
@@ -195,26 +222,20 @@ class WallpaperRepository(
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
                     android.util.Log.w("LWWPhoto", "download HTTP ${response.code} for $url")
-                    return@withContext false
+                    return@withContext null
                 }
-                val bytes = response.body?.bytes() ?: return@withContext false
-                // Validate it actually decodes as an image before replacing the cache.
-                val bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                if (bmp == null) {
-                    android.util.Log.w("LWWPhoto", "download decode-failed (${bytes.size}B) for $url")
-                    return@withContext false
-                }
-                bmp.recycle()
-                target.outputStream().use { it.write(bytes) }
-                true
+                response.body?.bytes()
             }
         } catch (e: Throwable) {
             android.util.Log.w("LWWPhoto", "download error for $url", e)
-            false
+            null
         }
     }
 
     companion object {
+        /** How many candidate photos to try before giving up on finding one with enough sky. */
+        private const val MAX_SKY_ATTEMPTS = 5
+
         private const val USER_AGENT =
             "LiveWallpaperWeather/1.0 (https://github.com/strammermax/breezy-weather; " +
                 "based on Breezy Weather)"

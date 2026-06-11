@@ -53,6 +53,7 @@ work-runtime = "2.11.2"
 
 [libraries]
 aboutLibraries = { group = "com.mikepenz", name = "aboutlibraries-compose-m3", version.ref = "aboutlib" }
+tensorflow-lite = { group = "org.tensorflow", name = "tensorflow-lite", version = "2.16.1" }
 aboutLibraries-gradle = { group = "com.mikepenz.aboutlibraries.plugin", name = "aboutlibraries-plugin", version.ref = "aboutlib" }
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
