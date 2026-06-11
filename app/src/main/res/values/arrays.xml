@@ -240,11 +240,13 @@
     <string-array name="live_wallpaper_bg_sources">
         <item>@string/widget_live_wallpaper_bg_source_wikimedia</item>
         <item>@string/widget_live_wallpaper_bg_source_unsplash</item>
+        <item>@string/widget_live_wallpaper_bg_source_flickr</item>
         <item>@string/widget_live_wallpaper_bg_source_mapbox</item>
     </string-array>
     <string-array name="live_wallpaper_bg_source_values">
         <item>wikimedia</item>
         <item>unsplash</item>
+        <item>flickr</item>
         <item>mapbox</item>
     </string-array>
 
