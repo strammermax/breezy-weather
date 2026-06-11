@@ -8,11 +8,7 @@
         android:icon="@drawable/ic_precipitation"
         app:showAsAction="ifRoom" />
 
-    <item android:id="@+id/action_edit"
-        android:title="@string/action_edit_location"
-        android:orderInCategory="100"
-        android:icon="@drawable/ic_edit"
-        app:showAsAction="ifRoom" />
+    <!-- LiveWallpaperWeather: "Edit location" moved to the Locations list (pencil per row). -->
 
     <item android:id="@+id/action_open_in_other_app"
         android:title="@string/action_open_in_other_app"

@@ -530,10 +530,16 @@ open class ManagementFragment : MainModuleFragment(), TouchReactor {
                 mClickListener = { formattedId ->
                     viewModel.setLocation(formattedId)
                     parentFragmentManager.popBackStack()
+                },
+                mDragListener = { holder ->
+                    itemTouchHelper.startDrag(holder)
+                },
+                mEditListener = { formattedId ->
+                    viewModel.validLocationList.value
+                        .firstOrNull { it.formattedId == formattedId }
+                        ?.let { (requireActivity() as MainActivity).openPerLocationSettings(it) }
                 }
-            ) { holder ->
-                itemTouchHelper.startDrag(holder)
-            }
+            )
         recyclerView = RecyclerView(requireContext())
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(

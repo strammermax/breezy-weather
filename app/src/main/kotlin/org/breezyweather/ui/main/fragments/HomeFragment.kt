@@ -197,7 +197,7 @@ class HomeFragment : MainModuleFragment() {
         binding.toolbar.inflateMenu(R.menu.activity_main)
         binding.toolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.action_edit -> callback?.onEditIconClicked()
+                // LiveWallpaperWeather: "Edit location" moved to the Locations list (pencil per row).
                 R.id.action_open_in_other_app -> callback?.onOpenInOtherAppIconClicked()
                 R.id.action_radar -> startActivity(
                     Intent(requireContext(), org.breezyweather.radar.RadarActivity::class.java)
@@ -205,7 +205,6 @@ class HomeFragment : MainModuleFragment() {
             }
             true
         }
-        binding.toolbar.menu.findItem(R.id.action_edit).isVisible = false
         binding.toolbar.menu.findItem(R.id.action_open_in_other_app).isVisible = false
         // Needed to get the icon to show the correct color depending on dark mode
         binding.toolbar.overflowIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_more_vert)
@@ -280,12 +279,11 @@ class HomeFragment : MainModuleFragment() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.currentLocation.collect {
                     if (it?.location != null) {
-                        binding.toolbar.menu.findItem(R.id.action_edit).isVisible = true
-                        // LiveWallpaperWeather: "Open in other app" action removed from the UI.
+                        // LiveWallpaperWeather: "Edit location" moved to the Locations list;
+                        // "Open in other app" action removed from the UI.
                         binding.toolbar.menu.findItem(R.id.action_open_in_other_app).isVisible = false
                         binding.emptyText.visibility = if (it.location.weather != null) View.GONE else View.VISIBLE
                     } else {
-                        binding.toolbar.menu.findItem(R.id.action_edit).isVisible = false
                         binding.toolbar.menu.findItem(R.id.action_open_in_other_app).isVisible = false
                         binding.emptyText.visibility = View.GONE
                     }
