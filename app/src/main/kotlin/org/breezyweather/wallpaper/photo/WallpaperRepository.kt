@@ -37,8 +37,13 @@ import java.util.concurrent.TimeUnit
  * Matching order:
  *  1. A manually-curated [LocationData] whose bounding box [LocationData.contains] the point.
  *  2. The nearest [LocationData] center within [maxMatchDistanceKm].
- *  3. An Unsplash search by place name (e.g. the city).
+ *  3. The configured [ImageSearchProvider]s in priority order (e.g. Unsplash → Wikimedia →
+ *     Mapbox). For each provider, coordinates are tried first (geo-aware providers) then the
+ *     [PlaceQuery.searchTerms] from most specific (city) to most generic (country).
  *  4. null — caller keeps the default gradient background.
+ *
+ * The keyless [WikimediaProvider] is always in the chain, so the feature keeps working even
+ * when no API key is configured.
  */
 class WallpaperRepository(
     private val context: Context,
@@ -50,72 +55,104 @@ class WallpaperRepository(
     var maxMatchDistanceKm: Double = 50.0
 
     /**
-     * Resolves the most appropriate image URL for the given position.
-     *
-     * @param placeName city / place name used as the Unsplash fallback query.
+     * Builds the provider chain in priority order for the current configuration. The selected
+     * source goes first; the keyless Wikimedia fallback is always present; unconfigured
+     * (key-less) providers are filtered out.
      */
-    suspend fun resolveImageUrl(
+    private fun providers(): List<ImageSearchProvider> {
+        val mapboxToken = store.mapboxAccessToken.ifBlank { BuildConfigMapboxToken.value }
+        val unsplashKey = store.unsplashAccessKey.ifBlank { BuildConfigUnsplashKey.value }
+
+        val unsplash = UnsplashProvider(unsplashKey, client)
+        val wikimedia = WikimediaProvider(client)
+        val mapbox = MapboxProvider(mapboxToken)
+
+        val ordered = when (store.backgroundSource) {
+            WallpaperImageStore.SOURCE_MAPBOX -> listOf(mapbox, unsplash, wikimedia)
+            else -> listOf(unsplash, wikimedia, mapbox)
+        }
+        return ordered.filter { it.isConfigured() }
+    }
+
+    /**
+     * Resolves the most appropriate image for the given position, returning the URL plus its
+     * attribution, or null when nothing usable was found.
+     */
+    suspend fun resolveImage(
         latitude: Double,
         longitude: Double,
-        placeName: String?,
-    ): String? {
+        place: PlaceQuery,
+    ): ImageResult? {
         val manual = store.locationData
 
-        manual.firstOrNull { it.contains(latitude, longitude) }?.let { return it.imageUrl }
+        manual.firstOrNull { it.contains(latitude, longitude) }
+            ?.let { return ImageResult(it.imageUrl) }
 
         manual
             .map { it to it.distanceKmTo(latitude, longitude) }
             .filter { it.second <= maxMatchDistanceKm }
             .minByOrNull { it.second }
-            ?.let { return it.first.imageUrl }
+            ?.let { return ImageResult(it.first.imageUrl) }
 
-        // Try the user-selected provider first, then fall back to the other one.
-        val mapboxToken = store.mapboxAccessToken.ifBlank { BuildConfigMapboxToken.value }
-        val unsplashKey = store.unsplashAccessKey.ifBlank { BuildConfigUnsplashKey.value }
-
-        suspend fun mapbox(): String? =
-            MapboxPhotoSource.staticSatelliteUrl(latitude, longitude, mapboxToken)
-
-        suspend fun unsplash(): String? =
-            if (!placeName.isNullOrBlank() && unsplashKey.isNotBlank()) {
-                UnsplashPhotoSource(unsplashKey, client).searchPhotoUrl(placeName)
-            } else {
-                null
+        val terms = place.searchTerms()
+        for (provider in providers()) {
+            provider.searchImageByLocation(latitude, longitude)?.let { return it }
+            for (term in terms) {
+                provider.searchImage(term)?.let { return it }
             }
-
-        return when (store.backgroundSource) {
-            WallpaperImageStore.SOURCE_MAPBOX -> mapbox() ?: unsplash()
-            else -> unsplash() ?: mapbox()
         }
+        return null
     }
 
+    /** Back-compatible URL-only resolution using just a single place name. */
+    suspend fun resolveImageUrl(
+        latitude: Double,
+        longitude: Double,
+        placeName: String?,
+    ): String? = resolveImage(latitude, longitude, PlaceQuery(city = placeName))?.url
+
     /**
-     * Resolves, downloads and caches the background image for the given position.
+     * Resolves, downloads and caches the background image for the given position. Each place
+     * is cached under its own file ([PlaceQuery.cacheFileName]) so revisiting is instant.
      *
-     * Skips the download when the resolved URL already matches the cached one. Returns the
-     * cached [File] on success, or null when no image could be resolved/downloaded (in which
-     * case the existing cache, if any, is left untouched).
+     * Skips the download when the resolved URL already matches what was cached for that place.
+     * Returns the cached [File] on success, or null when no image could be resolved/downloaded
+     * (in which case the existing cache, if any, is left untouched).
      */
     suspend fun refreshFor(
         latitude: Double,
         longitude: Double,
-        placeName: String?,
+        place: PlaceQuery,
     ): File? {
-        val url = resolveImageUrl(latitude, longitude, placeName) ?: return null
+        val result = resolveImage(latitude, longitude, place) ?: return null
+        val url = result.url
 
-        val cacheFile = cacheFile()
-        if (url == store.cachedPhotoUrl && cacheFile.exists()) {
+        val cacheFile = cacheFile(place)
+        if (url == store.cachedUrlFor(cacheFile.name) && cacheFile.exists()) {
+            // Already cached for this place; just mark it active.
+            store.cachedPhotoPath = cacheFile.absolutePath
+            store.cachedPhotoUrl = url
+            store.cachedPhotoAttribution = result.attribution
             return cacheFile
         }
 
         val downloaded = download(url, cacheFile)
         if (downloaded) {
+            store.setCachedUrl(cacheFile.name, url)
             store.cachedPhotoUrl = url
             store.cachedPhotoPath = cacheFile.absolutePath
+            store.cachedPhotoAttribution = result.attribution
             return cacheFile
         }
         return null
     }
+
+    /** Back-compatible overload taking a single place name. */
+    suspend fun refreshFor(
+        latitude: Double,
+        longitude: Double,
+        placeName: String?,
+    ): File? = refreshFor(latitude, longitude, PlaceQuery(city = placeName))
 
     /** Loads the cached background as a [Bitmap], or null when nothing is cached. */
     fun loadCachedBitmap(): Bitmap? {
@@ -134,13 +171,15 @@ class WallpaperRepository(
         return File(path).exists()
     }
 
+    /** Clears the currently active cached photo (the per-place files are left on disk). */
     fun clearCache() {
-        cacheFile().delete()
+        store.cachedPhotoPath?.let { File(it).delete() }
         store.cachedPhotoPath = null
         store.cachedPhotoUrl = null
+        store.cachedPhotoAttribution = null
     }
 
-    private fun cacheFile(): File = File(context.filesDir, WallpaperImageStore.CACHE_FILE_NAME)
+    private fun cacheFile(place: PlaceQuery): File = File(context.filesDir, place.cacheFileName())
 
     private suspend fun download(url: String, target: File): Boolean = withContext(Dispatchers.IO) {
         try {

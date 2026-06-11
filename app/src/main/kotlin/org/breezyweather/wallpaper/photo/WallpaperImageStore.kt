@@ -18,6 +18,7 @@ package org.breezyweather.wallpaper.photo
 
 import android.content.Context
 import org.breezyweather.domain.settings.ConfigStore
+import org.json.JSONObject
 
 /**
  * Persists the configuration and cache bookkeeping for the photo-background feature of
@@ -76,6 +77,32 @@ class WallpaperImageStore(context: Context) {
             config.edit().putString(KEY_CACHED_URL, value).apply()
         }
 
+    /** Attribution/credit string for the currently active photo (provider/author/license). */
+    var cachedPhotoAttribution: String?
+        get() = config.getString(KEY_CACHED_ATTRIBUTION, null)
+        set(value) {
+            config.edit().putString(KEY_CACHED_ATTRIBUTION, value).apply()
+        }
+
+    /**
+     * Returns the source URL previously cached for the per-place [fileName], or null. Lets the
+     * repository skip re-downloading when the same place resolves to the same image again.
+     */
+    fun cachedUrlFor(fileName: String): String? = cacheUrlMap().optString(fileName).ifBlank { null }
+
+    /** Records that [fileName] was downloaded from [url] (per-place cache bookkeeping). */
+    fun setCachedUrl(fileName: String, url: String) {
+        val map = cacheUrlMap()
+        map.put(fileName, url)
+        config.edit().putString(KEY_CACHE_URLS, map.toString()).apply()
+    }
+
+    private fun cacheUrlMap(): JSONObject = try {
+        config.getString(KEY_CACHE_URLS, null)?.let { JSONObject(it) } ?: JSONObject()
+    } catch (e: Throwable) {
+        JSONObject()
+    }
+
     /** Manually curated area-to-image mappings. */
     var locationData: List<LocationData>
         get() = LocationData.listFromJson(config.getString(KEY_LOCATION_DATA, null))
@@ -95,6 +122,8 @@ class WallpaperImageStore(context: Context) {
         private const val KEY_MAPBOX_TOKEN = "mapbox_access_token"
         private const val KEY_CACHED_PATH = "cached_photo_path"
         private const val KEY_CACHED_URL = "cached_photo_url"
+        private const val KEY_CACHED_ATTRIBUTION = "cached_photo_attribution"
+        private const val KEY_CACHE_URLS = "cache_urls"
         private const val KEY_LOCATION_DATA = "location_data"
 
         const val SOURCE_MAPBOX = "mapbox"
