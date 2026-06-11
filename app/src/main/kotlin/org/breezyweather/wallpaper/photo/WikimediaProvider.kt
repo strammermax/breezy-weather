@@ -47,21 +47,14 @@ class WikimediaProvider(
 
     override suspend fun searchImage(query: String): ImageResult? {
         if (query.isBlank()) return null
+        // Text search (the backend behind Special:MediaSearch) returns curated, photogenic images
+        // about the place — far better wallpapers than geosearch, which returns whatever happens to
+        // be geotagged nearby (aerials, close-ups). So geosearch is intentionally not used.
         val url = "$API?$COMMON_PARAMS" +
             "&generator=search" +
             "&gsrnamespace=6" +
             "&gsrlimit=$LIMIT" +
             "&gsrsearch=${enc(query)}"
-        return request(url)
-    }
-
-    override suspend fun searchImageByLocation(latitude: Double, longitude: Double): ImageResult? {
-        val url = "$API?$COMMON_PARAMS" +
-            "&generator=geosearch" +
-            "&ggsnamespace=6" +
-            "&ggsradius=$GEO_RADIUS_M" +
-            "&ggslimit=$LIMIT" +
-            "&ggscoord=${enc("$latitude|$longitude")}"
         return request(url)
     }
 
@@ -130,7 +123,6 @@ class WikimediaProvider(
     companion object {
         private const val API = "https://commons.wikimedia.org/w/api.php"
         private const val LIMIT = 20
-        private const val GEO_RADIUS_M = 10000
         private const val THUMB_WIDTH = 1080
 
         // Wikimedia requires a descriptive, contactable User-Agent for API access; a generic
