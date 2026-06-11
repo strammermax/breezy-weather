@@ -47,25 +47,62 @@ class SkySegmenter(context: Context) {
         val interp = interpreter ?: return null
         return try {
             val scaled = Bitmap.createScaledBitmap(source, INPUT_SIZE, INPUT_SIZE, true)
-            val input = toUint8Input(scaled)
+            val scaledPixels = IntArray(INPUT_SIZE * INPUT_SIZE)
+            scaled.getPixels(scaledPixels, 0, INPUT_SIZE, 0, 0, INPUT_SIZE, INPUT_SIZE)
+            val input = toFloatInput(scaled)
             if (scaled !== source) scaled.recycle()
 
             val output = Array(1) { Array(INPUT_SIZE) { FloatArray(INPUT_SIZE) } }
             interp.run(input, output)
             val labels = output[0]
 
-            // How much of the frame is sky? Skip when there's basically none.
+            // How much of the frame is sky, and how much of the TOP band is sky? Real sky sits at
+            // the top of the frame; this lets us reject e.g. aerial photos where lake water is
+            // misclassified as sky (it would otherwise be scattered/low, not a top band).
             var skyCount = 0
+            var topBandSky = 0
+            var bottomBandSky = 0
+            var skyColoured = 0
+            var sumY = 0L
+            val topRows = (INPUT_SIZE * TOP_BAND_FRACTION).toInt().coerceAtLeast(1)
+            val bottomStart = INPUT_SIZE - topRows
             for (y in 0 until INPUT_SIZE) {
                 for (x in 0 until INPUT_SIZE) {
-                    if (labels[y][x].toInt() == SKY_CLASS) skyCount++
+                    if (labels[y][x].toInt() == SKY_CLASS) {
+                        skyCount++
+                        sumY += y
+                        if (y < topRows) topBandSky++
+                        if (y >= bottomStart) bottomBandSky++
+                        // Real sky is blue or bright/neutral (overcast). Reject regions that are
+                        // clearly not sky-coloured: red banners, green fields (aerials), etc.
+                        val c = scaledPixels[y * INPUT_SIZE + x]
+                        val r = c shr 16 and 0xFF
+                        val g = c shr 8 and 0xFF
+                        val b = c and 0xFF
+                        val bright = (r + g + b) / 3 >= 150
+                        if (b >= r - 12 && (bright || b >= 80)) skyColoured++
+                    }
                 }
             }
             val fraction = skyCount.toDouble() / (INPUT_SIZE * INPUT_SIZE)
-            android.util.Log.i("LWWPhoto", "sky fraction=${"%.3f".format(fraction)} (min $MIN_SKY_FRACTION)")
-            // Require a meaningful amount of sky; otherwise the photo can't show the weather, so
-            // the caller skips it and tries another image.
+            val topBandFraction = topBandSky.toDouble() / (topRows * INPUT_SIZE)
+            val bottomBandFraction = bottomBandSky.toDouble() / (topRows * INPUT_SIZE)
+            // Vertical centre of mass of the sky, 0 = top .. 1 = bottom.
+            val centroidY = if (skyCount > 0) (sumY.toDouble() / skyCount) / INPUT_SIZE else 1.0
+            android.util.Log.i(
+                "LWWPhoto",
+                "sky fraction=${"%.3f".format(fraction)} top=${"%.2f".format(topBandFraction)} " +
+                    "bottom=${"%.2f".format(bottomBandFraction)} centroidY=${"%.2f".format(centroidY)}"
+            )
+            // Require enough sky, concentrated near the top (low centroid + some top band, little
+            // bottom). This keeps ground-level photos with real sky and rejects e.g. aerial photos
+            // where lake water/haze is misread as a sky blob in the middle of the frame.
+            val skyColouredFraction = if (skyCount > 0) skyColoured.toDouble() / skyCount else 0.0
             if (fraction < MIN_SKY_FRACTION) return null
+            if (topBandFraction < MIN_TOP_BAND_SKY) return null
+            if (centroidY > MAX_SKY_CENTROID_Y) return null
+            if (bottomBandFraction > MAX_BOTTOM_BAND_SKY) return null
+            if (skyColouredFraction < MIN_SKY_COLOURED) return null
 
             applyMask(source, labels)
         } catch (e: Throwable) {
@@ -74,17 +111,17 @@ class SkySegmenter(context: Context) {
         }
     }
 
-    /** Packs [scaled] (513x513) into the model's uint8 RGB input buffer. */
-    private fun toUint8Input(scaled: Bitmap): ByteBuffer {
+    /** Packs [scaled] into the model's float32 RGB input, normalized to [-1, 1]. */
+    private fun toFloatInput(scaled: Bitmap): ByteBuffer {
         val buffer = ByteBuffer
-            .allocateDirect(INPUT_SIZE * INPUT_SIZE * 3)
+            .allocateDirect(INPUT_SIZE * INPUT_SIZE * 3 * 4)
             .order(ByteOrder.nativeOrder())
         val pixels = IntArray(INPUT_SIZE * INPUT_SIZE)
         scaled.getPixels(pixels, 0, INPUT_SIZE, 0, 0, INPUT_SIZE, INPUT_SIZE)
         for (pixel in pixels) {
-            buffer.put((pixel shr 16 and 0xFF).toByte()) // R
-            buffer.put((pixel shr 8 and 0xFF).toByte()) // G
-            buffer.put((pixel and 0xFF).toByte()) // B
+            buffer.putFloat(((pixel shr 16 and 0xFF) - 127.5f) / 127.5f) // R
+            buffer.putFloat(((pixel shr 8 and 0xFF) - 127.5f) / 127.5f) // G
+            buffer.putFloat(((pixel and 0xFF) - 127.5f) / 127.5f) // B
         }
         buffer.rewind()
         return buffer
@@ -132,13 +169,33 @@ class SkySegmenter(context: Context) {
     }
 
     companion object {
-        private const val MODEL_ASSET = "sky_segmentation_cityscapes.tflite"
-        private const val INPUT_SIZE = 513
+        private const val MODEL_ASSET = "sky_segmentation_ade20k.tflite"
+        private const val INPUT_SIZE = 512
 
-        /** Cityscapes train-id for "sky". */
-        private const val SKY_CLASS = 10
+        /** ADE20K (1-indexed) class for "sky": 0=bg, 1=wall, 2=building, 3=sky. */
+        private const val SKY_CLASS = 3
 
-        /** A photo needs at least this fraction of sky to be usable as a wallpaper background. */
-        private const val MIN_SKY_FRACTION = 0.25
+        // The model measures sky conservatively (~half of what a person perceives), so these
+        // measured thresholds correspond to roughly "25%+ visible sky, located at the top".
+
+        /** A photo needs at least this measured fraction of sky to be usable as a background.
+         *  (The shape gates below — top band, centroid, bottom — do the real quality filtering.) */
+        private const val MIN_SKY_FRACTION = 0.08
+
+        /** Fraction of the image height treated as the "top band" for the sky-position check. */
+        private const val TOP_BAND_FRACTION = 0.15
+
+        /** The top band must be at least this much sky, so the sky is really at the top. */
+        private const val MIN_TOP_BAND_SKY = 0.30
+
+        /** The sky's vertical centre of mass must be in the upper part of the frame (0=top). */
+        private const val MAX_SKY_CENTROID_Y = 0.40
+
+        /** The bottom band must have almost no sky (ground photos have ground at the bottom). */
+        private const val MAX_BOTTOM_BAND_SKY = 0.15
+
+        /** Most of the "sky" must actually be sky-coloured (blue or bright/neutral), which rejects
+         *  e.g. red banners, green fields and coloured interiors misread as sky. */
+        private const val MIN_SKY_COLOURED = 0.6
     }
 }

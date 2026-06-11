@@ -234,7 +234,7 @@ class WallpaperRepository(
 
     companion object {
         /** How many candidate photos to try before giving up on finding one with enough sky. */
-        private const val MAX_SKY_ATTEMPTS = 5
+        private const val MAX_SKY_ATTEMPTS = 10
 
         private const val USER_AGENT =
             "LiveWallpaperWeather/1.0 (https://github.com/strammermax/breezy-weather; " +
