@@ -35,6 +35,7 @@ class LocationHolder(
     private val mBinding: ItemLocationCardBinding,
     private val mClickListener: (String) -> Unit,
     private val mDragListener: (LocationHolder) -> Unit,
+    private val mEditListener: (String) -> Unit,
 ) : RecyclerView.ViewHolder(mBinding.root) {
     @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     fun onBindView(context: Context, model: LocationModel, resourceProvider: ResourceProvider) {
@@ -93,6 +94,18 @@ class LocationHolder(
             )
         )
         mBinding.sortButton.visibility = View.VISIBLE
+        ImageViewCompat.setImageTintList(
+            mBinding.editButton,
+            ColorStateList.valueOf(
+                if (model.selected) {
+                    context.getThemeColor(com.google.android.material.R.attr.colorOnPrimaryContainer)
+                } else if (model.alerts > 0) {
+                    ContextCompat.getColor(context, R.color.alert_text)
+                } else {
+                    context.getThemeColor(androidx.appcompat.R.attr.colorPrimary)
+                }
+            )
+        )
         mBinding.content.setPaddingRelative(0, 0, 0, 0)
         if (model.weatherCode != null) {
             mBinding.weatherIcon.apply {
@@ -125,6 +138,7 @@ class LocationHolder(
         }
 
         mBinding.container.setOnClickListener { mClickListener(model.location.formattedId) }
+        mBinding.editButton.setOnClickListener { mEditListener(model.location.formattedId) }
         // TODO
         mBinding.sortButton.setOnTouchListener { _: View?, event: MotionEvent ->
             if (event.action == MotionEvent.ACTION_DOWN) {

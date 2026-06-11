@@ -37,6 +37,7 @@ class LocationAdapter(
     private val sourceManager: SourceManager,
     private val mClickListener: (String) -> Unit,
     private val mDragListener: (LocationHolder) -> Unit,
+    private val mEditListener: (String) -> Unit,
 ) : SyncListAdapter<LocationModel, LocationHolder>(
     ArrayList(),
     object : DiffUtil.ItemCallback<LocationModel>() {
@@ -59,7 +60,8 @@ class LocationAdapter(
         return LocationHolder(
             ItemLocationCardBinding.inflate(LayoutInflater.from(parent.context)),
             mClickListener,
-            mDragListener
+            mDragListener,
+            mEditListener
         )
     }
 

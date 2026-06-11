@@ -62,6 +62,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import breezyweather.data.location.LocationRepository
 import breezyweather.data.weather.WeatherRepository
 import breezyweather.domain.location.model.Location
+import org.breezyweather.domain.location.model.isDaylight as locationIsDaylight
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -901,6 +902,26 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
             _dialogPerLocationSettingsOpen.value = true
             initPerLocationSettingsView()
         }
+    }
+
+    /**
+     * Opens the per-location "Edit location" dialog for a specific [location]. Used by the
+     * pencil button on each row of the Locations list (the action that used to live in the
+     * home toolbar).
+     */
+    fun openPerLocationSettings(location: Location) {
+        if (viewModel.loading.value) {
+            SnackbarHelper.showSnackbar(getString(R.string.message_please_wait_refresh))
+            return
+        }
+        binding.perLocationSettings.setContent {
+            BreezyWeatherTheme(
+                !ThemeManager.isLightTheme(this, location.locationIsDaylight)
+            ) {
+                PerLocationSettingsDialog(location = location)
+            }
+        }
+        _dialogPerLocationSettingsOpen.value = true
     }
 
     override fun onOpenInOtherAppIconClicked() {
