@@ -62,12 +62,11 @@ class WallpaperRepository(
     private fun providers(): List<ImageSearchProvider> {
         val mapboxToken = store.mapboxAccessToken.ifBlank { BuildConfigMapboxToken.value }
         val unsplashKey = store.unsplashAccessKey.ifBlank { BuildConfigUnsplashKey.value }
-        val flickrKey = store.flickrApiKey.ifBlank { BuildConfigFlickrKey.value }
 
         val unsplash = UnsplashProvider(unsplashKey, client)
         val wikimedia = WikimediaProvider(client)
         val mapbox = MapboxProvider(mapboxToken)
-        val flickr = FlickrProvider(flickrKey, client)
+        val flickr = FlickrProvider(client)
 
         val ordered = when (store.backgroundSource) {
             WallpaperImageStore.SOURCE_MAPBOX -> listOf(mapbox, unsplash, wikimedia, flickr)
@@ -245,12 +244,4 @@ private object BuildConfigUnsplashKey {
  */
 private object BuildConfigMapboxToken {
     const val value: String = ""
-}
-
-/**
- * Optional build-time Flickr API key (sourced from local.properties `lww.flickr.key`), so the
- * key is never committed. Empty when not configured — the app still works (keyless Wikimedia).
- */
-private object BuildConfigFlickrKey {
-    val value: String get() = org.breezyweather.BuildConfig.FLICKR_KEY
 }

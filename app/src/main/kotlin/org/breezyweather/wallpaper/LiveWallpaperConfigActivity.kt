@@ -116,7 +116,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
     private lateinit var wallpaperImageStore: WallpaperImageStore
     private lateinit var photoBackgroundEnabledValue: MutableState<Boolean>
     private lateinit var unsplashKeyValue: MutableState<String>
-    private lateinit var flickrKeyValue: MutableState<String>
     private lateinit var mapboxTokenValue: MutableState<String>
     private lateinit var backgroundSourceValueNow: MutableState<String>
     private lateinit var backgroundSourceNames: Array<String>
@@ -139,7 +138,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         wallpaperImageStore = WallpaperImageStore(this)
         photoBackgroundEnabledValue = mutableStateOf(wallpaperImageStore.photoBackgroundEnabled)
         unsplashKeyValue = mutableStateOf(wallpaperImageStore.unsplashAccessKey)
-        flickrKeyValue = mutableStateOf(wallpaperImageStore.flickrApiKey)
         mapboxTokenValue = mutableStateOf(wallpaperImageStore.mapboxAccessToken)
         backgroundSourceValueNow = mutableStateOf(wallpaperImageStore.backgroundSource)
         backgroundSourceNames = resources.getStringArray(R.array.live_wallpaper_bg_sources)
@@ -175,7 +173,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         // Persist the current UI selections so the chosen source/keys are actually used.
         wallpaperImageStore.photoBackgroundEnabled = photoBackgroundEnabledValue.value
         wallpaperImageStore.unsplashAccessKey = unsplashKeyValue.value.trim()
-        wallpaperImageStore.flickrApiKey = flickrKeyValue.value.trim()
         wallpaperImageStore.mapboxAccessToken = mapboxTokenValue.value.trim()
         wallpaperImageStore.backgroundSource = backgroundSourceValueNow.value
 
@@ -335,28 +332,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                     Column(
                         modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
                     ) {
-                        OutlinedTextField(
-                            value = flickrKeyValue.value,
-                            onValueChange = { flickrKeyValue.value = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            label = {
-                                Text(
-                                    text = stringResource(R.string.widget_live_wallpaper_flickr_key),
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            },
-                            placeholder = {
-                                Text(stringResource(R.string.widget_live_wallpaper_flickr_key_hint))
-                            }
-                        )
-                    }
-                }
-                item {
-                    Column(
-                        modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
-                    ) {
                         Text(
                             text = stringResource(R.string.widget_live_wallpaper_preview),
                             color = MaterialTheme.colorScheme.secondary,
@@ -432,8 +407,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                     photoBackgroundEnabledValue.value
                                 wallpaperImageStore.unsplashAccessKey =
                                     unsplashKeyValue.value.trim()
-                                wallpaperImageStore.flickrApiKey =
-                                    flickrKeyValue.value.trim()
                                 wallpaperImageStore.mapboxAccessToken =
                                     mapboxTokenValue.value.trim()
                                 wallpaperImageStore.backgroundSource =
