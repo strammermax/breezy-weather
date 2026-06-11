@@ -254,6 +254,8 @@
     <string name="settings_location_service">Locatieservice</string>
     <string name="settings_notifications">Meldingen</string>
     <string name="settings_notifications_summary">Meldingen van weeralarmen, neerslag of verwachtingen voor de eerste locatie</string>
+    <string name="settings_set_live_wallpaper">Live achtergrond instellen</string>
+    <string name="settings_set_live_wallpaper_summary">Stel LiveWallpaperWeather in als je start-/vergrendelscherm-achtergrond</string>
     <string name="settings_modules">Externe modules</string>
     <string name="settings_modules_summary">Widgets, meldingenwidget, achtergrond, gegevens delen met andere apps</string>
     <string name="settings_modules_notification_feels_like_switch">Gevoelstemperatuur gebruiken</string>
