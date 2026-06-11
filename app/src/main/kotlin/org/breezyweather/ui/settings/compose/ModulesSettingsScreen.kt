@@ -29,17 +29,13 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableList
 import org.breezyweather.R
-import org.breezyweather.common.extensions.currentLocale
 import org.breezyweather.common.extensions.plus
 import org.breezyweather.common.options.NotificationStyle
 import org.breezyweather.common.options.WidgetWeekIconMode
 import org.breezyweather.common.source.BroadcastSource
 import org.breezyweather.common.utils.helpers.SnackbarHelper
 import org.breezyweather.domain.settings.SettingsManager
-import org.breezyweather.domain.settings.SourceConfigStore
 import org.breezyweather.remoteviews.config.ClockDayDetailsWidgetConfigActivity
 import org.breezyweather.remoteviews.config.ClockDayHorizontalWidgetConfigActivity
 import org.breezyweather.remoteviews.config.ClockDayVerticalWidgetConfigActivity
@@ -70,7 +66,6 @@ import org.breezyweather.ui.common.widgets.insets.FitStatusBarTopAppBar
 import org.breezyweather.ui.settings.preference.bottomInsetItem
 import org.breezyweather.ui.settings.preference.clickablePreferenceItem
 import org.breezyweather.ui.settings.preference.composables.ListPreferenceView
-import org.breezyweather.ui.settings.preference.composables.PackagePreferenceView
 import org.breezyweather.ui.settings.preference.composables.PreferenceScreen
 import org.breezyweather.ui.settings.preference.composables.PreferenceViewWithCard
 import org.breezyweather.ui.settings.preference.composables.SwitchPreferenceView
@@ -81,7 +76,6 @@ import org.breezyweather.ui.settings.preference.sectionHeaderItem
 import org.breezyweather.ui.settings.preference.smallSeparatorItem
 import org.breezyweather.ui.settings.preference.switchPreferenceItem
 import org.breezyweather.wallpaper.launchLiveWallpaperPicker
-import java.text.Collator
 
 @Composable
 fun ModulesSettingsScreen(
@@ -347,43 +341,6 @@ fun ModulesSettingsScreen(
                 )
             }
             sectionFooterItem(R.string.settings_modules_section_notification_widget)
-
-            largeSeparatorItem()
-
-            sectionHeaderItem(R.string.settings_modules_broadcast_title)
-            broadcastSources
-                .sortedWith { ws1, ws2 ->
-                    Collator.getInstance(context.currentLocale).compare(ws1.name, ws2.name)
-                }
-                .forEachIndexed { index, broadcastSource ->
-                    item(key = broadcastSource.id) {
-                        val config = SourceConfigStore(context, broadcastSource.id)
-                        val enabledPackages = (config.getString("packages", null) ?: "").let {
-                            if (it.isNotEmpty()) {
-                                it.split(",").toImmutableList()
-                            } else {
-                                persistentListOf()
-                            }
-                        }
-                        PackagePreferenceView(
-                            title = stringResource(
-                                R.string.settings_modules_broadcast_send_data_title,
-                                broadcastSource.name
-                            ),
-                            intent = broadcastSource.intentAction,
-                            selectedKeys = enabledPackages,
-                            isFirst = index == 0,
-                            isLast = index == broadcastSources.lastIndex
-                        ) {
-                            config.edit().putString("packages", it.joinToString(",")).apply()
-                            broadcastDataIfNecessary(context, broadcastSource.id)
-                        }
-                    }
-                    if (index != broadcastSources.lastIndex) {
-                        smallSeparatorItem()
-                    }
-                }
-            sectionFooterItem(R.string.settings_modules_broadcast_title)
 
             bottomInsetItem()
         }
