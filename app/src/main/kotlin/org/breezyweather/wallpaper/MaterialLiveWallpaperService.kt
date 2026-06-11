@@ -105,6 +105,10 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mRotators: Array<MaterialWeatherView.RotateController>? = null
         private var mImplementor: MaterialWeatherView.WeatherAnimationImplementor? = null
         private var mBackground: Drawable? = null
+        // When the cached photo has a transparent (erased) sky, it is drawn as a foreground over
+        // the weather animation, so our sky/clouds/rain/snow show through where the sky was.
+        private var mForeground: Drawable? = null
+        private var mPhotoHasTransparentSky = false
         private var mOpenGravitySensor = false
         private var mGravitySensor: Sensor? = null
 
@@ -160,6 +164,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         mAdaptiveSize[0] = mSizes[0]
                         mAdaptiveSize[1] = mSizes[1]
                         mBackground?.setBounds(0, 0, mSizes[0], mSizes[1])
+                        mForeground?.setBounds(0, 0, mSizes[0], mSizes[1])
                     }
                     mBackground?.draw(canvas)
                     if (mIntervalComputer != null && mRotators != null) {
@@ -192,6 +197,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
                             )
                         }
                     }
+                    // Photo foreground (with transparent sky) over the weather animation.
+                    mForeground?.draw(canvas)
                     drawRainTrend(canvas)
                     mHolder?.unlockCanvasAndPost(canvas)
                 }
@@ -287,29 +294,44 @@ class MaterialLiveWallpaperService : WallpaperService() {
         }
 
         private fun setWeatherBackgroundDrawable() {
-            mBackground = buildPhotoBackground() ?: ResourcesCompat.getDrawable(
-                resources,
-                WeatherImplementorFactory.getBackgroundId(mWeatherKind, mDaytime),
-                null
-            )
-            mBackground?.let {
-                it.setBounds(0, 0, mSizes[0], mSizes[1])
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-                    notifyColorsChanged()
-                }
+            val gradient = {
+                ResourcesCompat.getDrawable(
+                    resources,
+                    WeatherImplementorFactory.getBackgroundId(mWeatherKind, mDaytime),
+                    null
+                )
+            }
+            val photo = buildPhotoBackground()
+            if (photo != null && mPhotoHasTransparentSky) {
+                // Sky was erased: gradient sky behind, weather animation, then the photo (with
+                // its transparent sky) on top — so weather shows through the sky hole.
+                mBackground = gradient()
+                mForeground = photo
+            } else {
+                // Opaque photo (or no photo): keep it as the background; weather draws over it.
+                mBackground = photo ?: gradient()
+                mForeground = null
+            }
+            mBackground?.setBounds(0, 0, mSizes[0], mSizes[1])
+            mForeground?.setBounds(0, 0, mSizes[0], mSizes[1])
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                notifyColorsChanged()
             }
         }
 
         /**
          * Builds a center-cropped drawable from the cached location photo, or null when the
          * photo background is disabled / unavailable so the caller falls back to the gradient.
-         * The weather animation ([mImplementor], e.g. clouds/rain) is still drawn on top.
+         * Sets [mPhotoHasTransparentSky] from the source bitmap's alpha: when the sky has been
+         * erased (PNG with alpha) the photo is used as a foreground rather than a background.
          */
         private fun buildPhotoBackground(): Drawable? {
+            mPhotoHasTransparentSky = false
             if (!mWallpaperImageStore.photoBackgroundEnabled) return null
             if (mSizes[0] <= 0 || mSizes[1] <= 0) return null
             val source = mWallpaperRepository.loadCachedBitmap() ?: return null
             return try {
+                mPhotoHasTransparentSky = source.hasAlpha()
                 val cropped = centerCrop(source, mSizes[0], mSizes[1])
                 if (cropped !== source) source.recycle()
                 BitmapDrawable(resources, cropped)
@@ -381,6 +403,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                             mAdaptiveSize[0] = mSizes[0]
                             mAdaptiveSize[1] = mSizes[1]
                             mBackground?.setBounds(0, 0, mSizes[0], mSizes[1])
+                            mForeground?.setBounds(0, 0, mSizes[0], mSizes[1])
                             mAnimate = LiveWallpaperConfigManager(this@MaterialLiveWallpaperService).animationsEnabled
                             setWeatherImplementor()
                         }
