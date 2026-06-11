@@ -72,11 +72,15 @@ class WikimediaProvider(
                 .header("User-Agent", USER_AGENT)
                 .build()
             client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) return@withContext null
+                if (!response.isSuccessful) {
+                    android.util.Log.w("LWWPhoto", "wikimedia HTTP ${response.code} for $url")
+                    return@withContext null
+                }
                 val body = response.body?.string() ?: return@withContext null
                 parse(body)
             }
         } catch (e: Throwable) {
+            android.util.Log.w("LWWPhoto", "wikimedia error for $url", e)
             null
         }
     }
