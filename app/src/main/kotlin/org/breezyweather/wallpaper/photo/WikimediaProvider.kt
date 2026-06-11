@@ -81,25 +81,26 @@ class WikimediaProvider(
         }
     }
 
-    /** Picks the best image from a MediaWiki `query.pages` response (respecting result order). */
+    /** Picks a random usable raster image from a MediaWiki `query.pages` response. */
     private fun parse(body: String): ImageResult? {
         val pages = JSONObject(body)
             .optJSONObject("query")
             ?.optJSONObject("pages")
             ?: return null
 
-        // Pages are keyed by id; the per-page "index" preserves the API's relevance ordering.
-        val ordered = pages.keys().asSequence()
+        // Collect all usable raster hits, then pick a random one so each refresh varies.
+        val rasters = pages.keys().asSequence()
             .map { pages.getJSONObject(it) }
-            .sortedBy { it.optInt("index", Int.MAX_VALUE) }
+            .mapNotNull { page ->
+                val info = page.optJSONArray("imageinfo")?.optJSONObject(0)
+                    ?: return@mapNotNull null
+                val thumb = info.optString("thumburl").ifBlank { info.optString("url") }
+                if (thumb.isBlank() || !isRaster(thumb)) null else info to thumb
+            }
+            .toList()
 
-        for (page in ordered) {
-            val info = page.optJSONArray("imageinfo")?.optJSONObject(0) ?: continue
-            val thumb = info.optString("thumburl").ifBlank { info.optString("url") }
-            if (thumb.isBlank() || !isRaster(thumb)) continue
-            return ImageResult(url = thumb, attribution = attributionOf(info))
-        }
-        return null
+        val pick = rasters.randomOrNull() ?: return null
+        return ImageResult(url = pick.second, attribution = attributionOf(pick.first))
     }
 
     private fun isRaster(url: String): Boolean {

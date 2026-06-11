@@ -47,11 +47,14 @@ class UnsplashPhotoSource(
         return withContext(Dispatchers.IO) {
             try {
                 val orientation = if (portrait) "portrait" else "landscape"
+                // Fetch a page of results and pick a random one, so "Refresh now" (and each
+                // wallpaper refresh) shows a different photo of the place instead of always the
+                // single top hit.
                 val url = "$BASE_URL/search/photos" +
                     "?query=${URLEncoder.encode(query, "UTF-8")}" +
                     "&orientation=$orientation" +
                     "&content_filter=high" +
-                    "&per_page=1"
+                    "&per_page=30"
                 val request = Request.Builder()
                     .url(url)
                     .header("Authorization", "Client-ID $accessKey")
@@ -63,9 +66,12 @@ class UnsplashPhotoSource(
                     val body = response.body?.string() ?: return@use null
                     val results = JSONObject(body).optJSONArray("results")
                     if (results == null || results.length() == 0) return@use null
-                    val urls = results.getJSONObject(0).optJSONObject("urls") ?: return@use null
                     // Prefer "regular" (~1080px wide); fall back to "full".
-                    urls.optString("regular").ifBlank { urls.optString("full") }.ifBlank { null }
+                    val urls = (0 until results.length()).mapNotNull { i ->
+                        val u = results.getJSONObject(i).optJSONObject("urls") ?: return@mapNotNull null
+                        u.optString("regular").ifBlank { u.optString("full") }.ifBlank { null }
+                    }
+                    urls.randomOrNull()
                 }
             } catch (e: Throwable) {
                 null
