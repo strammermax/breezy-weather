@@ -251,12 +251,6 @@ configure<ApplicationExtension> {
             "UNSPLASH_KEY",
             "\"${localProperties.getProperty("lww.unsplash.key") ?: ""}\""
         )
-        // LiveWallpaperWeather: Flickr key kept out of source (in local.properties).
-        it.buildConfigField(
-            "String",
-            "FLICKR_KEY",
-            "\"${localProperties.getProperty("lww.flickr.key") ?: ""}\""
-        )
         it.buildConfigField(
             "String",
             "AEMET_KEY",

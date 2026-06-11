@@ -22,42 +22,39 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 import java.net.URLEncoder
-import java.util.Locale
 
 /**
- * [ImageSearchProvider] backed by the Flickr REST API (`flickr.photos.search`). Supports both
- * a free-text place query and a geo search around coordinates. Needs a free Flickr API key;
- * without one [isConfigured] is false and the repository skips it (falling back to Wikimedia).
+ * Keyless [ImageSearchProvider] backed by Flickr's public photo feed
+ * (`services/feeds/photos_public.gne`). Flickr disabled API-key creation for free accounts, but
+ * this feed needs no key, so it is always available. It is tag-based (no geo), so only
+ * [searchImage] is implemented: the query words are used as tags.
  *
- * `extras=url_l` gives a ~1024px image URL directly, and `owner_name` is used for attribution.
- * A random result is picked so each refresh varies.
+ * The feed returns a medium (`_m`, 240px) URL; it is upsized to large (`_b`, 1024px). A random
+ * item is picked so each refresh varies, and the author is used for attribution.
  */
 class FlickrProvider(
-    private val apiKey: String,
     private val client: OkHttpClient,
 ) : ImageSearchProvider {
 
     override val id: String = "flickr"
-    override val requiresApiKey: Boolean = true
+    override val requiresApiKey: Boolean = false
 
-    override fun isConfigured(): Boolean = apiKey.isNotBlank()
+    override fun isConfigured(): Boolean = true
 
     override suspend fun searchImage(query: String): ImageResult? {
-        if (!isConfigured() || query.isBlank()) return null
-        return request("$BASE&text=${enc(query)}&sort=relevance")
-    }
-
-    override suspend fun searchImageByLocation(latitude: Double, longitude: Double): ImageResult? {
-        if (!isConfigured()) return null
-        val lat = String.format(Locale.US, "%.5f", latitude)
-        val lon = String.format(Locale.US, "%.5f", longitude)
-        return request("$BASE&lat=$lat&lon=$lon&radius=$GEO_RADIUS_KM&radius_units=km")
+        if (query.isBlank()) return null
+        // The public feed is tag-based; use the query words as (AND-combined) tags.
+        val tags = query.trim().split(WHITESPACE).joinToString(",") { enc(it) }
+        val url = "$ENDPOINT?format=json&nojsoncallback=1&tagmode=all&tags=$tags"
+        return request(url)
     }
 
     private suspend fun request(url: String): ImageResult? = withContext(Dispatchers.IO) {
         try {
-            val fullUrl = "$ENDPOINT?method=flickr.photos.search&api_key=${enc(apiKey)}$url"
-            val request = Request.Builder().url(fullUrl).build()
+            val request = Request.Builder()
+                .url(url)
+                .header("User-Agent", USER_AGENT)
+                .build()
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return@withContext null
                 val body = response.body?.string() ?: return@withContext null
@@ -69,33 +66,39 @@ class FlickrProvider(
     }
 
     private fun parse(body: String): ImageResult? {
-        val photos = JSONObject(body).optJSONObject("photos")?.optJSONArray("photo")
-            ?: return null
-        // Keep only entries that actually expose a usable image URL, then pick one at random.
-        val usable = (0 until photos.length())
-            .map { photos.getJSONObject(it) }
-            .mapNotNull { p ->
-                val imageUrl = p.optString("url_l").ifBlank { p.optString("url_c") }
-                if (imageUrl.isBlank()) {
+        val items = JSONObject(body).optJSONArray("items") ?: return null
+        val usable = (0 until items.length())
+            .map { items.getJSONObject(it) }
+            .mapNotNull { item ->
+                val medium = item.optJSONObject("media")?.optString("m").orEmpty()
+                if (medium.isBlank()) {
                     null
                 } else {
-                    val owner = p.optString("ownername").ifBlank { "Flickr" }
-                    imageUrl to "$owner / Flickr"
+                    largeUrl(medium) to authorOf(item.optString("author"))
                 }
             }
         val pick = usable.randomOrNull() ?: return null
         return ImageResult(url = pick.first, attribution = pick.second)
     }
 
+    /** Upsizes a Flickr static URL from medium (`_m`) to large (`_b`, ~1024px) when possible. */
+    private fun largeUrl(medium: String): String =
+        if (medium.endsWith("_m.jpg")) medium.removeSuffix("_m.jpg") + "_b.jpg" else medium
+
+    /** Extracts the display name from `nobody@flickr.com ("Real Name")`. */
+    private fun authorOf(author: String): String {
+        val name = AUTHOR_NAME.find(author)?.groupValues?.getOrNull(1)?.trim()
+        return if (!name.isNullOrBlank()) "$name / Flickr" else "Flickr"
+    }
+
     private fun enc(value: String): String = URLEncoder.encode(value, "UTF-8")
 
     companion object {
-        private const val ENDPOINT = "https://api.flickr.com/services/rest/"
-        private const val GEO_RADIUS_KM = 15
-
-        // Common query params shared by text and geo searches.
-        private const val BASE =
-            "&extras=url_l%2Curl_c%2Cowner_name&content_type=1&media=photos&safe_search=1" +
-                "&per_page=30&format=json&nojsoncallback=1"
+        private const val ENDPOINT = "https://www.flickr.com/services/feeds/photos_public.gne"
+        private const val USER_AGENT =
+            "LiveWallpaperWeather/1.0 (https://github.com/strammermax/breezy-weather; " +
+                "based on Breezy Weather)"
+        private val WHITESPACE = Regex("\\s+")
+        private val AUTHOR_NAME = Regex("\\(\"(.*)\"\\)")
     }
 }
