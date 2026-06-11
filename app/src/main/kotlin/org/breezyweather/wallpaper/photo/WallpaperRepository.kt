@@ -184,23 +184,39 @@ class WallpaperRepository(
 
     private suspend fun download(url: String, target: File): Boolean = withContext(Dispatchers.IO) {
         try {
-            val request = Request.Builder().url(url).build()
+            // A descriptive User-Agent is required by Wikimedia (upload.wikimedia.org returns
+            // 403/429 for requests with a blocked/empty UA) and is harmless for other hosts.
+            val request = Request.Builder()
+                .url(url)
+                .header("User-Agent", USER_AGENT)
+                .build()
             client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) return@withContext false
+                if (!response.isSuccessful) {
+                    android.util.Log.w("LWWPhoto", "download HTTP ${response.code} for $url")
+                    return@withContext false
+                }
                 val bytes = response.body?.bytes() ?: return@withContext false
                 // Validate it actually decodes as an image before replacing the cache.
                 val bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                    ?: return@withContext false
+                if (bmp == null) {
+                    android.util.Log.w("LWWPhoto", "download decode-failed (${bytes.size}B) for $url")
+                    return@withContext false
+                }
                 bmp.recycle()
                 target.outputStream().use { it.write(bytes) }
                 true
             }
         } catch (e: Throwable) {
+            android.util.Log.w("LWWPhoto", "download error for $url", e)
             false
         }
     }
 
     companion object {
+        private const val USER_AGENT =
+            "LiveWallpaperWeather/1.0 (https://github.com/strammermax/breezy-weather; " +
+                "based on Breezy Weather)"
+
         private fun defaultClient(): OkHttpClient = OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
