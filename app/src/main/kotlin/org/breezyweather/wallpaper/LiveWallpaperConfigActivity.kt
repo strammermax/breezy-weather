@@ -72,9 +72,36 @@ import org.breezyweather.ui.settings.preference.composables.SwitchPreferenceView
 import org.breezyweather.ui.theme.compose.BreezyWeatherTheme
 import org.breezyweather.ui.theme.compose.themeRipple
 import org.breezyweather.unit.formatting.format
+import org.breezyweather.wallpaper.photo.PlaceQuery
 import org.breezyweather.wallpaper.photo.WallpaperImageStore
+import org.breezyweather.wallpaper.photo.WallpaperRepository
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
+import breezyweather.data.location.LocationRepository
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class LiveWallpaperConfigActivity : BreezyActivity() {
+
+    @Inject
+    lateinit var locationRepository: LocationRepository
+
+    private lateinit var wallpaperRepository: WallpaperRepository
+    private lateinit var previewBitmapValue: MutableState<Bitmap?>
+    private lateinit var refreshBusyValue: MutableState<Boolean>
+    private lateinit var refreshStatusValue: MutableState<String>
+    private lateinit var attributionValue: MutableState<String>
 
     private lateinit var weatherKindValueNow: MutableState<String>
     private lateinit var weatherKinds: Array<String>
@@ -116,10 +143,70 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         backgroundSourceNames = resources.getStringArray(R.array.live_wallpaper_bg_sources)
         backgroundSourceValues = resources.getStringArray(R.array.live_wallpaper_bg_source_values)
 
+        wallpaperRepository = WallpaperRepository(this)
+        previewBitmapValue = mutableStateOf(null)
+        refreshBusyValue = mutableStateOf(false)
+        refreshStatusValue = mutableStateOf("")
+        attributionValue = mutableStateOf(wallpaperImageStore.cachedPhotoAttribution.orEmpty())
+        // Preload the currently cached photo (decode off the main thread).
+        lifecycleScope.launch {
+            previewBitmapValue.value = withContext(Dispatchers.IO) {
+                wallpaperRepository.loadCachedBitmap()
+            }
+        }
+
         setContent {
             BreezyWeatherTheme {
                 ContentView()
             }
+        }
+    }
+
+    /**
+     * Applies the currently selected settings, then resolves+downloads a photo for the app's
+     * current location through the provider chain and updates the in-screen preview. Lets the
+     * user test a source (incl. keyless Wikimedia) without waiting for a wallpaper redraw.
+     */
+    private fun runRefresh() {
+        if (refreshBusyValue.value) return
+
+        // Persist the current UI selections so the chosen source/keys are actually used.
+        wallpaperImageStore.photoBackgroundEnabled = photoBackgroundEnabledValue.value
+        wallpaperImageStore.unsplashAccessKey = unsplashKeyValue.value.trim()
+        wallpaperImageStore.mapboxAccessToken = mapboxTokenValue.value.trim()
+        wallpaperImageStore.backgroundSource = backgroundSourceValueNow.value
+
+        refreshBusyValue.value = true
+        refreshStatusValue.value = getString(R.string.widget_live_wallpaper_refresh_running)
+
+        lifecycleScope.launch {
+            val location = withContext(Dispatchers.IO) {
+                locationRepository.getFirstLocation(withParameters = false)
+            }
+            if (location == null || !location.isUsable) {
+                refreshStatusValue.value = getString(R.string.widget_live_wallpaper_refresh_no_location)
+                refreshBusyValue.value = false
+                return@launch
+            }
+            val place = PlaceQuery(
+                city = location.city.ifBlank { null },
+                municipality = location.admin2,
+                state = location.admin1,
+                country = location.country.ifBlank { null }
+            )
+            val file = withContext(Dispatchers.IO) {
+                wallpaperRepository.refreshFor(location.latitude, location.longitude, place)
+            }
+            if (file != null) {
+                previewBitmapValue.value = withContext(Dispatchers.IO) {
+                    wallpaperRepository.loadCachedBitmap()
+                }
+                attributionValue.value = wallpaperImageStore.cachedPhotoAttribution.orEmpty()
+                refreshStatusValue.value = getString(R.string.widget_live_wallpaper_refresh_ok)
+            } else {
+                refreshStatusValue.value = getString(R.string.widget_live_wallpaper_refresh_none)
+            }
+            refreshBusyValue.value = false
         }
     }
 
@@ -239,6 +326,66 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                 Text(stringResource(R.string.widget_live_wallpaper_unsplash_key_hint))
                             }
                         )
+                    }
+                }
+                item {
+                    Column(
+                        modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
+                    ) {
+                        Text(
+                            text = stringResource(R.string.widget_live_wallpaper_preview),
+                            color = MaterialTheme.colorScheme.secondary,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.small_margin)))
+                        val bmp = previewBitmapValue.value
+                        if (bmp != null) {
+                            Image(
+                                bitmap = bmp.asImageBitmap(),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp),
+                                contentScale = ContentScale.Crop
+                            )
+                            if (attributionValue.value.isNotBlank()) {
+                                Spacer(
+                                    modifier = Modifier.height(dimensionResource(R.dimen.small_margin))
+                                )
+                                Text(
+                                    text = attributionValue.value,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Button(
+                                onClick = { runRefresh() },
+                                enabled = !refreshBusyValue.value
+                            ) {
+                                if (refreshBusyValue.value) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(18.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        strokeWidth = 2.dp
+                                    )
+                                    Spacer(modifier = Modifier.width(dimensionResource(R.dimen.small_margin)))
+                                }
+                                Text(stringResource(R.string.widget_live_wallpaper_refresh_now))
+                            }
+                            if (refreshStatusValue.value.isNotBlank()) {
+                                Spacer(
+                                    modifier = Modifier.width(dimensionResource(R.dimen.normal_margin))
+                                )
+                                Text(
+                                    text = refreshStatusValue.value,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
                     }
                 }
                 item {
