@@ -17,7 +17,6 @@
 package org.breezyweather.ui.settings.compose
 
 import android.app.WallpaperManager
-import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -123,33 +122,35 @@ fun ModulesSettingsScreen(
                     summaryId = R.string.settings_modules_live_wallpaper_summary,
                     isFirst = true
                 ) {
-                    try {
-                        context.startActivity(
-                            Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
-                                .putExtra(
-                                    WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
-                                    ComponentName(context, MaterialLiveWallpaperService::class.java)
-                                )
-                                .addFlags(
-                                    Intent.FLAG_ACTIVITY_NEW_TASK and Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
-                                )
+                    // Some OEMs (notably Samsung/OneUI) don't support the direct
+                    // ACTION_CHANGE_LIVE_WALLPAPER preview and throw various exceptions, so try
+                    // it first, then fall back to the generic live-wallpaper chooser. NOTE: the
+                    // flags must be combined with `or` (bitwise OR); `and` yields 0 = no flags.
+                    val launchFlags =
+                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+                    val previewIntent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
+                        .putExtra(
+                            WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
+                            ComponentName(context, MaterialLiveWallpaperService::class.java)
                         )
-                    } catch (e: ActivityNotFoundException) {
+                        .addFlags(launchFlags)
+                    val chooserIntent = Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER)
+                        .addFlags(launchFlags)
+                    val launched = listOf(previewIntent, chooserIntent).any { intent ->
                         try {
-                            context.startActivity(
-                                Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER)
-                                    .addFlags(
-                                        Intent.FLAG_ACTIVITY_NEW_TASK and Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
-                                    )
-                            )
-                        } catch (e2: ActivityNotFoundException) {
-                            SnackbarHelper.showSnackbar(
-                                context.getString(
-                                    R.string.settings_modules_live_wallpaper_error,
-                                    context.getString(R.string.brand_name)
-                                )
-                            )
+                            context.startActivity(intent)
+                            true
+                        } catch (e: Exception) {
+                            false
                         }
+                    }
+                    if (!launched) {
+                        SnackbarHelper.showSnackbar(
+                            context.getString(
+                                R.string.settings_modules_live_wallpaper_error,
+                                context.getString(R.string.brand_name)
+                            )
+                        )
                     }
                 }
             }
