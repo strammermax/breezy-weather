@@ -350,10 +350,19 @@ configure<ApplicationExtension> {
         "CF_ACCESS_CLIENT_ID" to (localProperties.getProperty("lww.cfaccess.id") ?: ""),
         "CF_ACCESS_CLIENT_SECRET" to (localProperties.getProperty("lww.cfaccess.secret") ?: ""),
     )
+    val lwwWebpLossless = localProperties.getProperty("lww.webp.lossless")
+        ?.toBooleanStrictOrNull()
+        ?: true
+    val lwwWebpQuality = localProperties.getProperty("lww.webp.quality")
+        ?.toIntOrNull()
+        ?.coerceIn(0, 100)
+        ?: 100
     buildTypes.forEach { bt ->
         lwwRemoveSkyConfig.forEach { (name, value) ->
             bt.buildConfigField("String", name, "\"$value\"")
         }
+        bt.buildConfigField("boolean", "WEBP_LOSSLESS", lwwWebpLossless.toString())
+        bt.buildConfigField("int", "WEBP_QUALITY", lwwWebpQuality.toString())
     }
 
     flavorDimensions.add("default")

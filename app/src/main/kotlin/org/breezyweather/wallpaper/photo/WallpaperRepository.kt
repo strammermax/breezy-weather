@@ -19,10 +19,12 @@ package org.breezyweather.wallpaper.photo
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Build
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.breezyweather.BuildConfig
 import java.io.File
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
@@ -141,7 +143,13 @@ class WallpaperRepository(
             val bitmap = downloadSkyBitmap(url, result.alreadyProcessed) ?: return@repeat
             val cacheFile = cacheFile(place, url)
             try {
-                cacheFile.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+                val written = cacheFile.outputStream().use {
+                    bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it)
+                }
+                if (!written) {
+                    cacheFile.delete()
+                    return@repeat
+                }
             } finally {
                 bitmap.recycle()
             }
@@ -219,8 +227,16 @@ class WallpaperRepository(
     private fun cacheFile(place: PlaceQuery, url: String): File {
         val placeName = place.cacheFileName().substringBeforeLast('.')
         val locationDirectory = File(photoCacheDir(), placeName).apply { mkdirs() }
-        return File(locationDirectory, "${url.sha256Prefix()}.png")
+        return File(locationDirectory, "${url.sha256Prefix()}.webp")
     }
+
+    @Suppress("DEPRECATION")
+    private fun webpCompressFormat(): Bitmap.CompressFormat =
+        if (BuildConfig.WEBP_LOSSLESS && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Bitmap.CompressFormat.WEBP_LOSSLESS
+        } else {
+            Bitmap.CompressFormat.WEBP
+        }
 
     private fun photoCacheDir(): File = File(context.filesDir, PHOTO_CACHE_DIR).apply { mkdirs() }
 
@@ -278,7 +294,6 @@ class WallpaperRepository(
         private const val MAX_SKY_ATTEMPTS = 10
         private const val PHOTO_CACHE_DIR = "wallpaper_photo_cache"
         private const val BYTES_PER_MB = 1024L * 1024L
-
         private const val USER_AGENT =
             "LiveWallpaperWeather/1.0 (https://github.com/strammermax/breezy-weather; " +
                 "based on Breezy Weather)"
