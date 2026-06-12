@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
+import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 
 /**
@@ -48,7 +49,7 @@ import java.util.concurrent.TimeUnit
 class WallpaperRepository(
     private val context: Context,
     private val store: WallpaperImageStore = WallpaperImageStore(context),
-    private val client: OkHttpClient = defaultClient(),
+    private val client: OkHttpClient = defaultClient(store),
 ) {
 
     /** Distance under which a non-containing [LocationData] still counts as a match. */
@@ -62,23 +63,13 @@ class WallpaperRepository(
      * source goes first; the keyless Wikimedia fallback is always present; unconfigured
      * (key-less) providers are filtered out.
      */
-    private fun providers(): List<ImageSearchProvider> {
-        val mapboxToken = store.mapboxAccessToken.ifBlank { BuildConfigMapboxToken.value }
-        val unsplashKey = store.unsplashAccessKey.ifBlank { BuildConfigUnsplashKey.value }
+    private fun providers(excludedUrls: Set<String> = emptySet()): List<ImageSearchProvider> =
+        listOf(removeSkyProvider(excludedUrls))
 
-        val unsplash = UnsplashProvider(unsplashKey, client)
-        val wikimedia = WikimediaProvider(client)
-        val mapbox = MapboxProvider(mapboxToken)
-        val flickr = FlickrProvider(client)
+    suspend fun removeSkyHealthStatus(): String? = removeSkyProvider().healthStatus()
 
-        val ordered = when (store.backgroundSource) {
-            WallpaperImageStore.SOURCE_MAPBOX -> listOf(mapbox, unsplash, wikimedia, flickr)
-            WallpaperImageStore.SOURCE_WIKIMEDIA -> listOf(wikimedia, unsplash, flickr, mapbox)
-            WallpaperImageStore.SOURCE_FLICKR -> listOf(flickr, wikimedia, unsplash, mapbox)
-            else -> listOf(unsplash, wikimedia, flickr, mapbox)
-        }
-        return ordered.filter { it.isConfigured() }
-    }
+    private fun removeSkyProvider(excludedUrls: Set<String> = emptySet()) =
+        RemoveSkyProvider(store.removeSkyBaseUrl, client, excludedUrls)
 
     /**
      * Resolves the most appropriate image for the given position, returning the URL plus its
@@ -88,6 +79,7 @@ class WallpaperRepository(
         latitude: Double,
         longitude: Double,
         place: PlaceQuery,
+        excludedUrls: Set<String> = emptySet(),
     ): ImageResult? {
         val manual = store.locationData
 
@@ -101,10 +93,14 @@ class WallpaperRepository(
             ?.let { return ImageResult(it.first.imageUrl) }
 
         val terms = place.searchTerms()
-        for (provider in providers()) {
-            provider.searchImageByLocation(latitude, longitude)?.let { return it }
+        for (provider in providers(excludedUrls)) {
+            provider.searchImageByLocation(latitude, longitude)?.let {
+                if (it.url !in excludedUrls) return it
+            }
             for (term in terms) {
-                provider.searchImage(term)?.let { return it }
+                provider.searchImage(term)?.let {
+                    if (it.url !in excludedUrls) return it
+                }
             }
         }
         return null
@@ -129,35 +125,33 @@ class WallpaperRepository(
         latitude: Double,
         longitude: Double,
         place: PlaceQuery,
+        forceRefresh: Boolean = false,
     ): File? {
-        val cacheFile = cacheFile(place)
+        val placeKey = place.cacheFileName()
         val tried = HashSet<String>()
+        if (forceRefresh) tried.addAll(store.recentUrlsFor(placeKey))
         // Try several candidate photos and keep the first that has enough sky to show the weather
         // (>= MIN_SKY_FRACTION). Photos without sky are skipped and never shown as a background.
         repeat(MAX_SKY_ATTEMPTS) {
-            val result = resolveImage(latitude, longitude, place) ?: return@repeat
+            val result = resolveImage(latitude, longitude, place, tried) ?: return@repeat
             val url = result.url
             if (!tried.add(url)) return@repeat
 
-            // Fast path: this exact image already passed the sky check and is cached for the place.
-            if (url == store.cachedUrlFor(cacheFile.name) && cacheFile.exists()) {
-                store.cachedPhotoPath = cacheFile.absolutePath
-                store.cachedPhotoUrl = url
-                store.cachedPhotoAttribution = result.attribution
-                return cacheFile
-            }
-
             // null => download failed or the photo has too little sky => try another candidate.
-            val bitmap = downloadSkyBitmap(url) ?: return@repeat
+            val bitmap = downloadSkyBitmap(url, result.alreadyProcessed) ?: return@repeat
+            val cacheFile = cacheFile(place, url)
             try {
                 cacheFile.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
             } finally {
                 bitmap.recycle()
             }
-            store.setCachedUrl(cacheFile.name, url)
+            cacheFile.setLastModified(System.currentTimeMillis())
+            store.recordRecentUrl(placeKey, url)
             store.cachedPhotoUrl = url
             store.cachedPhotoPath = cacheFile.absolutePath
             store.cachedPhotoAttribution = result.attribution
+            pruneLocationCache(cacheFile.parentFile, cacheFile)
+            prunePhotoCache(cacheFile)
             return cacheFile
         }
         return null
@@ -168,9 +162,14 @@ class WallpaperRepository(
      * the model finds at least [SkySegmenter] minimum sky; the opaque image when the model is
      * unavailable; or null when the download fails or there is too little sky (caller skips it).
      */
-    private suspend fun downloadSkyBitmap(url: String): Bitmap? = withContext(Dispatchers.Default) {
+    private suspend fun downloadSkyBitmap(
+        url: String,
+        alreadyProcessed: Boolean,
+    ): Bitmap? = withContext(Dispatchers.Default) {
         val bytes = downloadBytes(url) ?: return@withContext null
         val source = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return@withContext null
+        // RemoveSky already erased the sky server-side: keep the transparent PNG as-is.
+        if (alreadyProcessed) return@withContext source
         if (!skySegmenter.isAvailable()) return@withContext source // can't check sky; use as-is
         val erased = skySegmenter.eraseSky(source)
         source.recycle()
@@ -201,15 +200,57 @@ class WallpaperRepository(
         return File(path).exists()
     }
 
-    /** Clears the currently active cached photo (the per-place files are left on disk). */
+    /** Clears the active photo and all downloaded wallpaper-photo cache files. */
     fun clearCache() {
-        store.cachedPhotoPath?.let { File(it).delete() }
+        photoCacheDir().deleteRecursively()
         store.cachedPhotoPath = null
         store.cachedPhotoUrl = null
         store.cachedPhotoAttribution = null
     }
 
-    private fun cacheFile(place: PlaceQuery): File = File(context.filesDir, place.cacheFileName())
+    fun enforceCacheLimit() {
+        val activeFile = store.cachedPhotoPath?.let(::File)
+        photoCacheDir().listFiles()?.filter(File::isDirectory)?.forEach { directory ->
+            pruneLocationCache(directory, activeFile)
+        }
+        prunePhotoCache(activeFile)
+    }
+
+    private fun cacheFile(place: PlaceQuery, url: String): File {
+        val placeName = place.cacheFileName().substringBeforeLast('.')
+        val locationDirectory = File(photoCacheDir(), placeName).apply { mkdirs() }
+        return File(locationDirectory, "${url.sha256Prefix()}.png")
+    }
+
+    private fun photoCacheDir(): File = File(context.filesDir, PHOTO_CACHE_DIR).apply { mkdirs() }
+
+    private fun pruneLocationCache(directory: File?, activeFile: File?) {
+        if (directory == null) return
+        val overflow = directory.listFiles()
+            ?.filter { it.isFile && it != activeFile }
+            ?.sortedBy(File::lastModified)
+            ?.dropLast((store.maxCachedPhotosPerLocation - if (activeFile?.parentFile == directory) 1 else 0)
+                .coerceAtLeast(0))
+            .orEmpty()
+        overflow.forEach(File::delete)
+        if (directory.listFiles().isNullOrEmpty()) directory.delete()
+    }
+
+    private fun prunePhotoCache(activeFile: File?) {
+        val limitBytes = store.photoCacheLimitMb.toLong() * BYTES_PER_MB
+        val files = photoCacheDir().walkTopDown().filter(File::isFile).toList()
+        var totalBytes = files.sumOf(File::length)
+        for (file in files.filterNot { it == activeFile }.sortedBy(File::lastModified)) {
+            if (totalBytes <= limitBytes) break
+            val length = file.length()
+            if (file.delete()) totalBytes -= length
+        }
+    }
+
+    private fun String.sha256Prefix(): String = MessageDigest.getInstance("SHA-256")
+        .digest(toByteArray(Charsets.UTF_8))
+        .take(8)
+        .joinToString("") { "%02x".format(it) }
 
     private suspend fun downloadBytes(url: String): ByteArray? = withContext(Dispatchers.IO) {
         try {
@@ -235,34 +276,17 @@ class WallpaperRepository(
     companion object {
         /** How many candidate photos to try before giving up on finding one with enough sky. */
         private const val MAX_SKY_ATTEMPTS = 10
+        private const val PHOTO_CACHE_DIR = "wallpaper_photo_cache"
+        private const val BYTES_PER_MB = 1024L * 1024L
 
         private const val USER_AGENT =
             "LiveWallpaperWeather/1.0 (https://github.com/strammermax/breezy-weather; " +
                 "based on Breezy Weather)"
 
-        private fun defaultClient(): OkHttpClient = OkHttpClient.Builder()
+        private fun defaultClient(store: WallpaperImageStore): OkHttpClient = OkHttpClient.Builder()
+            .addInterceptor(RemoveSkyInterceptor(store))
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .build()
     }
-}
-
-/**
- * Optional build-time Unsplash key. Kept in a separate object so the repository compiles
- * even before a key is wired into BuildConfig. Replace [value] (or set the key at runtime
- * via [WallpaperImageStore.unsplashAccessKey]) — see README_LIVEWALLPAPER.md.
- */
-private object BuildConfigUnsplashKey {
-    // Read from BuildConfig (sourced from local.properties `lww.unsplash.key`), so the key
-    // is never committed. Empty when not configured — the app still works (Mapbox/keyless
-    // providers + the in-app key field remain available).
-    val value: String get() = org.breezyweather.BuildConfig.UNSPLASH_KEY
-}
-
-/**
- * Optional build-time Mapbox token fallback. Set [value] here, or supply it at runtime via
- * [WallpaperImageStore.mapboxAccessToken] in the live-wallpaper settings.
- */
-private object BuildConfigMapboxToken {
-    const val value: String = ""
 }
