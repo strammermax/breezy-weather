@@ -19,12 +19,16 @@ package org.breezyweather.wallpaper
 import android.app.WallpaperColors
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PixelFormat
-import android.graphics.Rect
+import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -39,7 +43,6 @@ import android.view.SurfaceHolder
 import androidx.annotation.RequiresApi
 import androidx.annotation.Size
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.withTranslation
 import breezyweather.data.location.LocationRepository
 import breezyweather.data.weather.WeatherRepository
@@ -58,6 +61,8 @@ import org.breezyweather.common.extensions.sensorManager
 import org.breezyweather.common.utils.helpers.AsyncHelper
 import org.breezyweather.domain.location.model.isDaylight
 import org.breezyweather.domain.settings.SettingsManager
+import org.breezyweather.ui.common.images.MoonDrawable
+import org.breezyweather.ui.common.images.SunDrawable
 import org.breezyweather.ui.theme.weatherView.WeatherView
 import org.breezyweather.ui.theme.weatherView.WeatherView.WeatherKindRule
 import org.breezyweather.ui.theme.weatherView.WeatherViewController
@@ -74,6 +79,7 @@ import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sin
 import kotlin.math.sqrt
 
 @AndroidEntryPoint
@@ -105,10 +111,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mRotators: Array<MaterialWeatherView.RotateController>? = null
         private var mImplementor: MaterialWeatherView.WeatherAnimationImplementor? = null
         private var mBackground: Drawable? = null
-        // When the cached photo has a transparent (erased) sky, it is drawn as a foreground over
-        // the weather animation, so our sky/clouds/rain/snow show through where the sky was.
+        // The processed location photo is the middle layer: sky and celestial body behind it,
+        // weather effects in front of it.
         private var mForeground: Drawable? = null
-        private var mPhotoHasTransparentSky = false
+        private var mCelestialStartMillis: Long? = null
+        private var mCelestialEndMillis: Long? = null
         private var mOpenGravitySensor = false
         private var mGravitySensor: Sensor? = null
 
@@ -122,6 +129,10 @@ class MaterialLiveWallpaperService : WallpaperService() {
         // only when rain is expected. Empty = nothing drawn.
         private var mRainIntensities: FloatArray = FloatArray(0)
         private val mRainPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val photoHeightFraction = 0.52f
+        private val celestialSizeFraction = 0.14f
+        private val dayMillis = 24L * 60L * 60L * 1000L
+        private val fallbackCelestialDuration = 12L * 60L * 60L * 1000L
 
         @Size(2)
         private var mSizes: IntArray = intArrayOf(0, 0)
@@ -142,8 +153,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mHandlerThread: HandlerThread? = null
         private var mHandler: Handler? = null
         private val mDrawableRunnable = Runnable {
-            if (mImplementor == null ||
-                mBackground == null ||
+            if (mBackground == null ||
                 mRotators == null ||
                 mHandler == null
             ) {
@@ -167,6 +177,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         mForeground?.setBounds(0, 0, mSizes[0], mSizes[1])
                     }
                     mBackground?.draw(canvas)
+                    drawCelestialBody(canvas)
+                    mForeground?.draw(canvas)
                     if (mIntervalComputer != null && mRotators != null) {
                         var interval = mIntervalComputer!!.interval
                         if (!mAnimate) {
@@ -197,8 +209,6 @@ class MaterialLiveWallpaperService : WallpaperService() {
                             )
                         }
                     }
-                    // Photo foreground (with transparent sky) over the weather animation.
-                    mForeground?.draw(canvas)
                     drawRainTrend(canvas)
                     mHolder?.unlockCanvasAndPost(canvas)
                 }
@@ -280,13 +290,18 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
         private fun setWeatherImplementor() {
             hasDrawn = false
-            mImplementor = WeatherImplementorFactory.getWeatherImplementor(
-                applicationContext,
-                mWeatherKind,
-                mDaytime,
-                mAdaptiveSize,
-                mAnimate
-            )
+            // The scene layer draws its own time-positioned sun. Avoid the old fixed clear-day sun.
+            mImplementor = if (mWeatherKind == WeatherView.WEATHER_KIND_CLEAR && mDaytime) {
+                null
+            } else {
+                WeatherImplementorFactory.getWeatherImplementor(
+                    applicationContext,
+                    mWeatherKind,
+                    mDaytime,
+                    mAdaptiveSize,
+                    mAnimate
+                )
+            }
             mRotators = arrayOf(
                 DelayRotateController(mRotation2D.toDouble()),
                 DelayRotateController(mRotation3D.toDouble())
@@ -294,24 +309,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
         }
 
         private fun setWeatherBackgroundDrawable() {
-            val gradient = {
-                ResourcesCompat.getDrawable(
-                    resources,
-                    WeatherImplementorFactory.getBackgroundId(mWeatherKind, mDaytime),
-                    null
-                )
-            }
-            val photo = buildPhotoBackground()
-            if (photo != null && mPhotoHasTransparentSky) {
-                // Sky was erased: gradient sky behind, weather animation, then the photo (with
-                // its transparent sky) on top — so weather shows through the sky hole.
-                mBackground = gradient()
-                mForeground = photo
-            } else {
-                // Opaque photo (or no photo): keep it as the background; weather draws over it.
-                mBackground = photo ?: gradient()
-                mForeground = null
-            }
+            mBackground = buildSkyBackground()
+            mForeground = buildPhotoForeground()
             mBackground?.setBounds(0, 0, mSizes[0], mSizes[1])
             mForeground?.setBounds(0, 0, mSizes[0], mSizes[1])
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
@@ -320,45 +319,115 @@ class MaterialLiveWallpaperService : WallpaperService() {
         }
 
         /**
-         * Builds a center-cropped drawable from the cached location photo, or null when the
-         * photo background is disabled / unavailable so the caller falls back to the gradient.
-         * Sets [mPhotoHasTransparentSky] from the source bitmap's alpha: when the sky has been
-         * erased (PNG with alpha) the photo is used as a foreground rather than a background.
+         * Places the complete processed photo at the bottom of a transparent full-screen bitmap.
+         * Its height is kept near half the display; wide photos are cropped only at the sides.
          */
-        private fun buildPhotoBackground(): Drawable? {
-            mPhotoHasTransparentSky = false
+        private fun buildPhotoForeground(): Drawable? {
             if (!mWallpaperImageStore.photoBackgroundEnabled) return null
             if (mSizes[0] <= 0 || mSizes[1] <= 0) return null
             val source = mWallpaperRepository.loadCachedBitmap() ?: return null
             return try {
-                mPhotoHasTransparentSky = source.hasAlpha()
-                val cropped = centerCrop(source, mSizes[0], mSizes[1])
-                if (cropped !== source) source.recycle()
-                BitmapDrawable(resources, cropped)
+                val positioned = positionPhotoAtBottom(source, mSizes[0], mSizes[1])
+                BitmapDrawable(resources, positioned).apply {
+                    if (!mDaytime) {
+                        colorFilter = ColorMatrixColorFilter(
+                            ColorMatrix().apply { setScale(0.58f, 0.62f, 0.72f, 1f) }
+                        )
+                    }
+                }
             } catch (e: Throwable) {
                 null
+            } finally {
+                source.recycle()
             }
         }
 
-        /** Scales [source] to fill [targetWidth] x [targetHeight], cropping the overflow. */
-        private fun centerCrop(source: Bitmap, targetWidth: Int, targetHeight: Int): Bitmap {
+        private fun positionPhotoAtBottom(source: Bitmap, targetWidth: Int, targetHeight: Int): Bitmap {
             val result = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(result)
-            val srcRatio = source.width.toFloat() / source.height
-            val dstRatio = targetWidth.toFloat() / targetHeight
-            val src: Rect = if (srcRatio > dstRatio) {
-                // Source is relatively wider: crop the left/right edges.
-                val w = (source.height * dstRatio).toInt()
-                val x = (source.width - w) / 2
-                Rect(x, 0, x + w, source.height)
-            } else {
-                // Source is relatively taller: crop the top/bottom edges.
-                val h = (source.width / dstRatio).toInt()
-                val y = (source.height - h) / 2
-                Rect(0, y, source.width, y + h)
-            }
-            canvas.drawBitmap(source, src, Rect(0, 0, targetWidth, targetHeight), Paint(Paint.FILTER_BITMAP_FLAG))
+            val photoHeight = targetHeight * photoHeightFraction
+            val scale = photoHeight / source.height
+            val photoWidth = source.width * scale
+            val left = (targetWidth - photoWidth) / 2f
+            canvas.drawBitmap(
+                source,
+                null,
+                RectF(left, targetHeight - photoHeight, left + photoWidth, targetHeight.toFloat()),
+                Paint(Paint.FILTER_BITMAP_FLAG)
+            )
             return result
+        }
+
+        private fun buildSkyBackground(): Drawable = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            if (mDaytime) {
+                intArrayOf(Color.rgb(42, 125, 196), Color.rgb(174, 221, 244))
+            } else {
+                intArrayOf(Color.rgb(3, 12, 35), Color.rgb(31, 55, 94))
+            }
+        )
+
+        private fun drawCelestialBody(canvas: Canvas) {
+            val width = mSizes[0]
+            val height = mSizes[1]
+            if (width <= 0 || height <= 0) return
+
+            val progress = celestialProgress(System.currentTimeMillis())
+            val centerX = width * (0.12f + 0.76f * progress)
+            val horizonY = height * 0.48f
+            val peakY = height * 0.12f
+            val centerY = horizonY - sin(Math.PI * progress).toFloat() * (horizonY - peakY)
+            val size = (min(width, height) * celestialSizeFraction).toInt()
+            val halfSize = size / 2
+            val drawable = if (mDaytime) SunDrawable() else MoonDrawable()
+            drawable.setBounds(
+                (centerX - halfSize).toInt(),
+                (centerY - halfSize).toInt(),
+                (centerX + halfSize).toInt(),
+                (centerY + halfSize).toInt()
+            )
+            drawable.draw(canvas)
+        }
+
+        private fun celestialProgress(now: Long): Float {
+            val start = mCelestialStartMillis ?: return 0.5f
+            val end = mCelestialEndMillis ?: return 0.5f
+            if (end <= start) return 0.5f
+            return ((now - start).toFloat() / (end - start)).coerceIn(0f, 1f)
+        }
+
+        private fun updateCelestialTiming(location: Location?) {
+            val now = System.currentTimeMillis()
+            val daily = location?.weather?.dailyForecast.orEmpty()
+            val intervals = if (mDaytime) {
+                daily.mapNotNull { day -> astroInterval(day.sun?.riseDate?.time, day.sun?.setDate?.time, now) }
+            } else {
+                daily.mapNotNull { day -> astroInterval(day.moon?.riseDate?.time, day.moon?.setDate?.time, now) }
+            }
+            val active = intervals.firstOrNull { now in it.first..it.second }
+                ?: intervals.minByOrNull { interval -> min(abs(now - interval.first), abs(now - interval.second)) }
+
+            if (active != null) {
+                mCelestialStartMillis = active.first
+                mCelestialEndMillis = active.second
+                return
+            }
+
+            // Daily astro data can be absent for some providers. Keep a stable 12-hour arc.
+            mCelestialStartMillis = now - fallbackCelestialDuration / 2
+            mCelestialEndMillis = now + fallbackCelestialDuration / 2
+        }
+
+        private fun astroInterval(rise: Long?, set: Long?, now: Long): Pair<Long, Long>? {
+            if (rise == null || set == null) return null
+            var start = rise
+            var end = set
+            if (end <= start) end += dayMillis
+            if (now < start && now + dayMillis <= end) {
+                start -= dayMillis
+                end -= dayMillis
+            }
+            return start to end
         }
 
         private fun setIntervalComputer() {
@@ -480,6 +549,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 WeatherViewController.getWeatherKind(weatherKind),
                 daytime
             )
+            updateCelestialTiming(location)
 
             setWeatherImplementor()
             setIntervalComputer()
