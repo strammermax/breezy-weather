@@ -29,7 +29,7 @@ configure<ApplicationExtension> {
         // Auto-bumped: the patch = commits since the fork base, so each commit raises the
         // version by one (1.0.0 -> 1.0.1 -> ...). versionCode stays above the Breezy base.
         versionCode = 60200 + getLwwPatch()
-        versionName = "1.0.${getLwwPatch()}"
+        versionName = "1.1.${getLwwPatch()}"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
