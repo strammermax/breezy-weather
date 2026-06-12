@@ -17,7 +17,9 @@
 package org.breezyweather.wallpaper.photo
 
 import android.content.Context
+import org.breezyweather.BuildConfig
 import org.breezyweather.domain.settings.ConfigStore
+import org.json.JSONArray
 import org.json.JSONObject
 
 /**
@@ -36,32 +38,46 @@ class WallpaperImageStore(context: Context) {
             config.edit().putBoolean(KEY_ENABLED, value).apply()
         }
 
-    /**
-     * Which provider supplies the background image: [SOURCE_MAPBOX] (satellite of the exact
-     * coordinates) or [SOURCE_UNSPLASH] (a photo searched by place name).
-     */
-    var backgroundSource: String
-        get() = config.getString(KEY_BG_SOURCE, null) ?: SOURCE_UNSPLASH
+    /** Maximum disk space used by downloaded wallpaper photos. */
+    var photoCacheLimitMb: Int
+        get() = config.getInt(KEY_CACHE_LIMIT_MB, DEFAULT_CACHE_LIMIT_MB)
+            .coerceIn(MIN_CACHE_LIMIT_MB, MAX_CACHE_LIMIT_MB)
         set(value) {
-            config.edit().putString(KEY_BG_SOURCE, value).apply()
+            config.edit().putInt(
+                KEY_CACHE_LIMIT_MB,
+                value.coerceIn(MIN_CACHE_LIMIT_MB, MAX_CACHE_LIMIT_MB)
+            ).apply()
+        }
+
+    /** Maximum number of downloaded photos retained for a single location. */
+    var maxCachedPhotosPerLocation: Int
+        get() = config.getInt(KEY_MAX_PHOTOS_PER_LOCATION, DEFAULT_MAX_PHOTOS_PER_LOCATION)
+            .coerceIn(MIN_PHOTOS_PER_LOCATION, MAX_PHOTOS_PER_LOCATION)
+        set(value) {
+            config.edit().putInt(
+                KEY_MAX_PHOTOS_PER_LOCATION,
+                value.coerceIn(MIN_PHOTOS_PER_LOCATION, MAX_PHOTOS_PER_LOCATION)
+            ).apply()
         }
 
     /**
-     * Unsplash API access key (Client-ID). Empty by default — see README for how to obtain
-     * a free key. Can also be supplied at build time via BuildConfig as a fallback.
+     * Base URL from `local.properties`, with the public service as fallback.
      */
-    var unsplashAccessKey: String
-        get() = config.getString(KEY_UNSPLASH_KEY, null).orEmpty()
-        set(value) {
-            config.edit().putString(KEY_UNSPLASH_KEY, value).apply()
-        }
+    val removeSkyBaseUrl: String
+        get() = BuildConfig.REMOVESKY_URL.ifBlank { RemoveSkyProvider.DEFAULT_BASE_URL }
 
-    /** Mapbox access token (pk.…) for the satellite Static Images API. */
-    var mapboxAccessToken: String
-        get() = config.getString(KEY_MAPBOX_TOKEN, null).orEmpty()
-        set(value) {
-            config.edit().putString(KEY_MAPBOX_TOKEN, value).apply()
-        }
+    /** Optional RemoveSky API key (sent as the `x-api-key` header); empty when the API is open. */
+    val removeSkyApiKey: String get() = BuildConfig.REMOVESKY_API_KEY
+
+    /**
+     * Cloudflare Access service-token Client ID. When set (with [cfAccessClientSecret]), the app
+     * sends `CF-Access-Client-Id` / `CF-Access-Client-Secret` so requests pass a Zero-Trust /
+     * Access gate in front of RemoveSky. Values are supplied through `local.properties`.
+     */
+    val cfAccessClientId: String get() = BuildConfig.CF_ACCESS_CLIENT_ID
+
+    /** Cloudflare Access service-token Client Secret (paired with [cfAccessClientId]). */
+    val cfAccessClientSecret: String get() = BuildConfig.CF_ACCESS_CLIENT_SECRET
 
     /** Absolute path of the currently cached background photo, or null if none. */
     var cachedPhotoPath: String?
@@ -84,21 +100,28 @@ class WallpaperImageStore(context: Context) {
             config.edit().putString(KEY_CACHED_ATTRIBUTION, value).apply()
         }
 
-    /**
-     * Returns the source URL previously cached for the per-place [fileName], or null. Lets the
-     * repository skip re-downloading when the same place resolves to the same image again.
-     */
-    fun cachedUrlFor(fileName: String): String? = cacheUrlMap().optString(fileName).ifBlank { null }
-
-    /** Records that [fileName] was downloaded from [url] (per-place cache bookkeeping). */
-    fun setCachedUrl(fileName: String, url: String) {
-        val map = cacheUrlMap()
-        map.put(fileName, url)
-        config.edit().putString(KEY_CACHE_URLS, map.toString()).apply()
+    /** Most recently shown URLs for [placeKey], newest first. */
+    fun recentUrlsFor(placeKey: String): List<String> = try {
+        val values = recentUrlMap().optJSONArray(placeKey) ?: return emptyList()
+        buildList {
+            for (index in 0 until values.length()) {
+                values.optString(index).takeIf { it.isNotBlank() }?.let(::add)
+            }
+        }
+    } catch (e: Throwable) {
+        emptyList()
     }
 
-    private fun cacheUrlMap(): JSONObject = try {
-        config.getString(KEY_CACHE_URLS, null)?.let { JSONObject(it) } ?: JSONObject()
+    /** Adds [url] to the per-location history while retaining the last four unique entries. */
+    fun recordRecentUrl(placeKey: String, url: String) {
+        val urls = listOf(url) + recentUrlsFor(placeKey).filterNot { it == url }
+        val map = recentUrlMap()
+        map.put(placeKey, JSONArray(urls.take(RECENT_URL_COUNT)))
+        config.edit().putString(KEY_RECENT_URLS, map.toString()).apply()
+    }
+
+    private fun recentUrlMap(): JSONObject = try {
+        config.getString(KEY_RECENT_URLS, null)?.let(::JSONObject) ?: JSONObject()
     } catch (e: Throwable) {
         JSONObject()
     }
@@ -117,21 +140,22 @@ class WallpaperImageStore(context: Context) {
     companion object {
         private const val SP_NAME = "live_wallpaper_photo"
         private const val KEY_ENABLED = "photo_background_enabled"
-        private const val KEY_BG_SOURCE = "background_source"
-        private const val KEY_UNSPLASH_KEY = "unsplash_access_key"
-        private const val KEY_MAPBOX_TOKEN = "mapbox_access_token"
+        private const val KEY_CACHE_LIMIT_MB = "photo_cache_limit_mb"
+        private const val KEY_MAX_PHOTOS_PER_LOCATION = "max_photos_per_location"
         private const val KEY_CACHED_PATH = "cached_photo_path"
         private const val KEY_CACHED_URL = "cached_photo_url"
         private const val KEY_CACHED_ATTRIBUTION = "cached_photo_attribution"
-        private const val KEY_CACHE_URLS = "cache_urls"
+        private const val KEY_RECENT_URLS = "recent_urls"
         private const val KEY_LOCATION_DATA = "location_data"
-
-        const val SOURCE_MAPBOX = "mapbox"
-        const val SOURCE_UNSPLASH = "unsplash"
-        const val SOURCE_WIKIMEDIA = "wikimedia"
-        const val SOURCE_FLICKR = "flickr"
 
         /** File name used for the cached background bitmap inside the app files dir. */
         const val CACHE_FILE_NAME = "wallpaper_location_photo.jpg"
+        const val DEFAULT_CACHE_LIMIT_MB = 100
+        const val MIN_CACHE_LIMIT_MB = 25
+        const val MAX_CACHE_LIMIT_MB = 500
+        const val RECENT_URL_COUNT = 4
+        const val DEFAULT_MAX_PHOTOS_PER_LOCATION = 12
+        const val MIN_PHOTOS_PER_LOCATION = 4
+        const val MAX_PHOTOS_PER_LOCATION = 50
     }
 }

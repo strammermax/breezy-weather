@@ -544,7 +544,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 val file = mWallpaperRepository.refreshFor(
                     location.latitude,
                     location.longitude,
-                    place
+                    place,
+                    forceRefresh = true,
                 )
                 if (file != null && mVisible) {
                     mHandler?.post {

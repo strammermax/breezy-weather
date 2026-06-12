@@ -22,6 +22,7 @@ import androidx.activity.compose.setContent
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -42,11 +43,13 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -90,6 +93,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class LiveWallpaperConfigActivity : BreezyActivity() {
@@ -102,6 +106,9 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
     private lateinit var refreshBusyValue: MutableState<Boolean>
     private lateinit var refreshStatusValue: MutableState<String>
     private lateinit var attributionValue: MutableState<String>
+    private lateinit var currentLocationValue: MutableState<String>
+    private lateinit var photoCacheLimitMbValue: MutableState<Float>
+    private lateinit var maxPhotosPerLocationValue: MutableState<Float>
 
     private lateinit var weatherKindValueNow: MutableState<String>
     private lateinit var weatherKinds: Array<String>
@@ -115,11 +122,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
 
     private lateinit var wallpaperImageStore: WallpaperImageStore
     private lateinit var photoBackgroundEnabledValue: MutableState<Boolean>
-    private lateinit var unsplashKeyValue: MutableState<String>
-    private lateinit var mapboxTokenValue: MutableState<String>
-    private lateinit var backgroundSourceValueNow: MutableState<String>
-    private lateinit var backgroundSourceNames: Array<String>
-    private lateinit var backgroundSourceValues: Array<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,22 +139,25 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
 
         wallpaperImageStore = WallpaperImageStore(this)
         photoBackgroundEnabledValue = mutableStateOf(wallpaperImageStore.photoBackgroundEnabled)
-        unsplashKeyValue = mutableStateOf(wallpaperImageStore.unsplashAccessKey)
-        mapboxTokenValue = mutableStateOf(wallpaperImageStore.mapboxAccessToken)
-        backgroundSourceValueNow = mutableStateOf(wallpaperImageStore.backgroundSource)
-        backgroundSourceNames = resources.getStringArray(R.array.live_wallpaper_bg_sources)
-        backgroundSourceValues = resources.getStringArray(R.array.live_wallpaper_bg_source_values)
 
         wallpaperRepository = WallpaperRepository(this)
         previewBitmapValue = mutableStateOf(null)
         refreshBusyValue = mutableStateOf(false)
         refreshStatusValue = mutableStateOf("")
         attributionValue = mutableStateOf(wallpaperImageStore.cachedPhotoAttribution.orEmpty())
+        currentLocationValue = mutableStateOf("")
+        photoCacheLimitMbValue = mutableFloatStateOf(wallpaperImageStore.photoCacheLimitMb.toFloat())
+        maxPhotosPerLocationValue =
+            mutableFloatStateOf(wallpaperImageStore.maxCachedPhotosPerLocation.toFloat())
         // Preload the currently cached photo (decode off the main thread).
         lifecycleScope.launch {
-            previewBitmapValue.value = withContext(Dispatchers.IO) {
-                wallpaperRepository.loadCachedBitmap()
+            val (bitmap, location) = withContext(Dispatchers.IO) {
+                wallpaperRepository.loadCachedBitmap() to
+                    locationRepository.getFirstLocation(withParameters = false)
             }
+            previewBitmapValue.value = bitmap
+            currentLocationValue.value = location?.city?.takeIf { it.isNotBlank() }
+                ?: location?.country.orEmpty()
         }
 
         setContent {
@@ -170,16 +175,21 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
     private fun runRefresh() {
         if (refreshBusyValue.value) return
 
-        // Persist the current UI selections so the chosen source/keys are actually used.
         wallpaperImageStore.photoBackgroundEnabled = photoBackgroundEnabledValue.value
-        wallpaperImageStore.unsplashAccessKey = unsplashKeyValue.value.trim()
-        wallpaperImageStore.mapboxAccessToken = mapboxTokenValue.value.trim()
-        wallpaperImageStore.backgroundSource = backgroundSourceValueNow.value
 
         refreshBusyValue.value = true
         refreshStatusValue.value = getString(R.string.widget_live_wallpaper_refresh_running)
 
         lifecycleScope.launch {
+            val removeSkyHealthStatus = withContext(Dispatchers.IO) {
+                wallpaperRepository.removeSkyHealthStatus()
+            }
+            if (removeSkyHealthStatus != "ok") {
+                refreshStatusValue.value = "RemoveSky health check failed"
+                refreshBusyValue.value = false
+                return@launch
+            }
+
             val location = withContext(Dispatchers.IO) {
                 locationRepository.getFirstLocation(withParameters = false)
             }
@@ -194,20 +204,42 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 state = location.admin1,
                 country = location.country.ifBlank { null }
             )
+            currentLocationValue.value = place.displayName
             val file = withContext(Dispatchers.IO) {
-                wallpaperRepository.refreshFor(location.latitude, location.longitude, place)
+                wallpaperRepository.refreshFor(
+                    location.latitude,
+                    location.longitude,
+                    place,
+                    forceRefresh = true,
+                )
             }
             if (file != null) {
                 previewBitmapValue.value = withContext(Dispatchers.IO) {
                     wallpaperRepository.loadCachedBitmap()
                 }
                 attributionValue.value = wallpaperImageStore.cachedPhotoAttribution.orEmpty()
-                refreshStatusValue.value = getString(R.string.widget_live_wallpaper_refresh_ok)
+                refreshStatusValue.value = buildString {
+                    append(getString(R.string.widget_live_wallpaper_refresh_ok))
+                    append(" (RemoveSky: $removeSkyHealthStatus)")
+                }
             } else {
                 refreshStatusValue.value = getString(R.string.widget_live_wallpaper_refresh_none)
             }
             refreshBusyValue.value = false
         }
+    }
+
+    private fun saveAndFinish() {
+        LiveWallpaperConfigManager.update(
+            this,
+            weatherKindValueNow.value,
+            dayNightTypeValueNow.value,
+            animationsEnabledValue.value
+        )
+        wallpaperImageStore.photoBackgroundEnabled = photoBackgroundEnabledValue.value
+        wallpaperImageStore.photoCacheLimitMb = photoCacheLimitMbValue.value.roundToInt()
+        wallpaperImageStore.maxCachedPhotosPerLocation = maxPhotosPerLocationValue.value.roundToInt()
+        finish()
     }
 
     @Composable
@@ -216,7 +248,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         Material3Scaffold(
             topBar = {
                 FitStatusBarTopAppBar(
-                    title = stringResource(R.string.settings_modules_live_wallpaper_title),
+                    title = "Live wallpaper",
                     onBackPressed = { finish() }
                 )
             }
@@ -277,61 +309,65 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                     }
                 }
                 item {
-                    Spinner(
-                        currentVal = backgroundSourceValueNow,
-                        names = backgroundSourceNames,
-                        values = backgroundSourceValues,
-                        titleId = R.string.widget_live_wallpaper_bg_source
-                    )
-                }
-                item {
                     Column(
                         modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
                     ) {
-                        OutlinedTextField(
-                            value = mapboxTokenValue.value,
-                            onValueChange = { mapboxTokenValue.value = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            label = {
-                                Text(
-                                    text = stringResource(R.string.widget_live_wallpaper_mapbox_token),
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            },
-                            placeholder = {
-                                Text(stringResource(R.string.widget_live_wallpaper_mapbox_token_hint))
-                            }
+                        val cacheLimitMb = photoCacheLimitMbValue.value.roundToInt()
+                        Text(
+                            text = "Photo cache: $cacheLimitMb MB",
+                            fontWeight = FontWeight.Bold,
                         )
-                    }
-                }
-                item {
-                    Column(
-                        modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
-                    ) {
-                        OutlinedTextField(
-                            value = unsplashKeyValue.value,
-                            onValueChange = { unsplashKeyValue.value = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            label = {
-                                Text(
-                                    text = stringResource(R.string.widget_live_wallpaper_unsplash_key),
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            },
-                            placeholder = {
-                                Text(stringResource(R.string.widget_live_wallpaper_unsplash_key_hint))
-                            }
+                        Text(
+                            text = "The last ${WallpaperImageStore.RECENT_URL_COUNT} photos per location " +
+                                "are skipped when choosing a new background.",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
                         )
-                    }
-                }
-                item {
-                    Column(
-                        modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
-                    ) {
+                        Slider(
+                            value = photoCacheLimitMbValue.value,
+                            onValueChange = { value ->
+                                photoCacheLimitMbValue.value =
+                                    (value / CACHE_LIMIT_STEP_MB).roundToInt() * CACHE_LIMIT_STEP_MB
+                            },
+                            valueRange = WallpaperImageStore.MIN_CACHE_LIMIT_MB.toFloat()..
+                                WallpaperImageStore.MAX_CACHE_LIMIT_MB.toFloat(),
+                            steps = CACHE_LIMIT_STEPS,
+                            onValueChangeFinished = {
+                                wallpaperImageStore.photoCacheLimitMb =
+                                    photoCacheLimitMbValue.value.roundToInt()
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    wallpaperRepository.enforceCacheLimit()
+                                }
+                            },
+                        )
+                        val maxPhotos = maxPhotosPerLocationValue.value.roundToInt()
+                        Text(
+                            text = "Maximum per location: $maxPhotos photos",
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Slider(
+                            value = maxPhotosPerLocationValue.value,
+                            onValueChange = { maxPhotosPerLocationValue.value = it.roundToInt().toFloat() },
+                            valueRange = WallpaperImageStore.MIN_PHOTOS_PER_LOCATION.toFloat()..
+                                WallpaperImageStore.MAX_PHOTOS_PER_LOCATION.toFloat(),
+                            steps = WallpaperImageStore.MAX_PHOTOS_PER_LOCATION -
+                                WallpaperImageStore.MIN_PHOTOS_PER_LOCATION - 1,
+                            onValueChangeFinished = {
+                                wallpaperImageStore.maxCachedPhotosPerLocation =
+                                    maxPhotosPerLocationValue.value.roundToInt()
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    wallpaperRepository.enforceCacheLimit()
+                                }
+                            },
+                        )
+                        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
+                        if (currentLocationValue.value.isNotBlank()) {
+                            Text(
+                                text = "Current location: ${currentLocationValue.value}",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.small_margin)))
+                        }
                         Text(
                             text = stringResource(R.string.widget_live_wallpaper_preview),
                             color = MaterialTheme.colorScheme.secondary,
@@ -360,7 +396,11 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             }
                         }
                         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             Button(
                                 onClick = { runRefresh() },
                                 enabled = !refreshBusyValue.value
@@ -375,54 +415,27 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                 }
                                 Text(stringResource(R.string.widget_live_wallpaper_refresh_now))
                             }
-                            if (refreshStatusValue.value.isNotBlank()) {
-                                Spacer(
-                                    modifier = Modifier.width(dimensionResource(R.dimen.normal_margin))
+                            Button(
+                                onClick = { saveAndFinish() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
                                 )
+                            ) {
                                 Text(
-                                    text = refreshStatusValue.value,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    style = MaterialTheme.typography.bodySmall
+                                    text = stringResource(R.string.action_save),
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.titleMedium
                                 )
                             }
                         }
-                    }
-                }
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(dimensionResource(R.dimen.normal_margin)),
-                        contentAlignment = Alignment.CenterEnd
-                    ) {
-                        Button(
-                            onClick = {
-                                LiveWallpaperConfigManager.update(
-                                    this@LiveWallpaperConfigActivity,
-                                    weatherKindValueNow.value,
-                                    dayNightTypeValueNow.value,
-                                    animationsEnabledValue.value
-                                )
-                                wallpaperImageStore.photoBackgroundEnabled =
-                                    photoBackgroundEnabledValue.value
-                                wallpaperImageStore.unsplashAccessKey =
-                                    unsplashKeyValue.value.trim()
-                                wallpaperImageStore.mapboxAccessToken =
-                                    mapboxTokenValue.value.trim()
-                                wallpaperImageStore.backgroundSource =
-                                    backgroundSourceValueNow.value
-                                finish()
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            )
-                        ) {
+                        if (refreshStatusValue.value.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.small_margin)))
                             Text(
-                                text = stringResource(R.string.action_save),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleMedium
+                                text = refreshStatusValue.value,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall
                             )
                         }
                     }
@@ -579,5 +592,10 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 }
             }
         }
+    }
+
+    private companion object {
+        const val CACHE_LIMIT_STEP_MB = 25f
+        const val CACHE_LIMIT_STEPS = 18
     }
 }

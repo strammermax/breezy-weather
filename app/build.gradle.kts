@@ -245,12 +245,6 @@ configure<ApplicationExtension> {
             "ACCU_WEATHER_KEY",
             "\"${localProperties.getProperty("breezy.accu.key") ?: ""}\""
         )
-        // LiveWallpaperWeather: Unsplash key kept out of source (in local.properties).
-        it.buildConfigField(
-            "String",
-            "UNSPLASH_KEY",
-            "\"${localProperties.getProperty("lww.unsplash.key") ?: ""}\""
-        )
         it.buildConfigField(
             "String",
             "AEMET_KEY",
@@ -346,6 +340,20 @@ configure<ApplicationExtension> {
             "INFOPLAZA_KEY",
             "\"${localProperties.getProperty("breezy.infoplaza.key") ?: ""}\""
         )
+    }
+
+    // LiveWallpaperWeather: keys/secrets from local.properties (gitignored) are baked into
+    // build variants, so the RemoveSky-only app is configured outside source control.
+    val lwwRemoveSkyConfig = mapOf(
+        "REMOVESKY_URL" to (localProperties.getProperty("lww.removesky.url") ?: ""),
+        "REMOVESKY_API_KEY" to (localProperties.getProperty("lww.removesky.apikey") ?: ""),
+        "CF_ACCESS_CLIENT_ID" to (localProperties.getProperty("lww.cfaccess.id") ?: ""),
+        "CF_ACCESS_CLIENT_SECRET" to (localProperties.getProperty("lww.cfaccess.secret") ?: ""),
+    )
+    buildTypes.forEach { bt ->
+        lwwRemoveSkyConfig.forEach { (name, value) ->
+            bt.buildConfigField("String", name, "\"$value\"")
+        }
     }
 
     flavorDimensions.add("default")

@@ -22,6 +22,11 @@ package org.breezyweather.wallpaper.photo
 data class ImageResult(
     val url: String,
     val attribution: String? = null,
+    /**
+     * True when [url] already points at a sky-erased (transparent) image — e.g. from the
+     * RemoveSky service. The caller must then NOT run the on-device [SkySegmenter] again.
+     */
+    val alreadyProcessed: Boolean = false,
 )
 
 /**
