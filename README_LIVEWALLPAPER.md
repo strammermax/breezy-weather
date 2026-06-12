@@ -108,7 +108,8 @@ beste werkt:
     (`#map{height:420px}`, anders 0); RainViewer-radar gaat tot **zoom 7** (`maxNativeZoom:7`);
     basiskaart = **CARTO dark** (OSM-tiles werden geannuleerd in de WebView).
 - ✅ Knop naar de radar: **☔-icoon** in de toolbar van het hoofdscherm.
-- 🟡 **Fase 3** — regen-trend-strip onderaan de **live wallpaper** (Buienradar). Compileert en is
+- ✅ **Fase 3** — Verbeterde weer-animaties (regen, sneeuw, mist, wolken, bliksem) met AGSL-ondersteuning (Android 13+) en een geoptimaliseerde Canvas-fallback (Android 6+). FPS beperkt tot 30 voor batterijbesparing.
+- 🟡 **Fase 4** — regen-trend-strip onderaan de **live wallpaper** (Buienradar). Compileert en is
   zwaar afgeschermd (kan de wallpaper niet laten crashen), maar **nog niet visueel geverifieerd**.
 
 ## Andere wijzigingen in deze fork
