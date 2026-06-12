@@ -37,6 +37,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Process
+import android.os.SystemClock
 import android.service.wallpaper.WallpaperService
 import android.view.OrientationEventListener
 import android.view.SurfaceHolder
@@ -70,10 +71,13 @@ import org.breezyweather.ui.theme.weatherView.materialWeatherView.DelayRotateCon
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.IntervalComputer
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.MaterialWeatherView
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.WeatherImplementorFactory
+import org.breezyweather.BuildConfig
 import org.breezyweather.radar.BuienradarNowcastSource
 import org.breezyweather.wallpaper.photo.PlaceQuery
 import org.breezyweather.wallpaper.photo.WallpaperImageStore
 import org.breezyweather.wallpaper.photo.WallpaperRepository
+import java.io.File
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.acos
@@ -81,6 +85,17 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
+
+// Parallax travel per layer as a fraction of the screen width. The same constants drive the
+// extra layer width (updateLayerBounds), the foreground bitmap width (buildPhotoForeground)
+// and the per-frame offsets, so bitmap, bounds and offsets can never disagree.
+private const val PARALLAX_BG_FACTOR = 0.05f
+private const val PARALLAX_FG_FACTOR = 0.15f
+private const val PARALLAX_CELESTIAL_FACTOR = 0.02f
+
+// When the photo background is enabled but no cached photo exists, probe/refresh at most
+// this often (the render loop runs every frame; downloading must not).
+private const val PHOTO_PROBE_INTERVAL_MS = 5_000L
 
 @AndroidEntryPoint
 class MaterialLiveWallpaperService : WallpaperService() {
@@ -119,6 +134,23 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mCelestialEndMillis: Long? = null
         private var mOpenGravitySensor = false
         private var mGravitySensor: Sensor? = null
+
+        private var mParallaxEnabled = false
+        private var mXOffset = 0.5f
+
+        // Identity of the currently built photo foreground (path|mtime|size|parallax|daytime).
+        // A null key with photo enabled means "needs (re)build"; ensureForeground() recovers
+        // automatically once the surface has a real size and a cached photo exists.
+        private var mForegroundKey: String? = null
+        private var mNextPhotoProbeMillis = 0L
+        private var mLastLocation: Location? = null
+        private val mPhotoRefreshing = AtomicBoolean(false)
+        private var mLoggedForegroundMissing = false
+
+        /** Debug-only logging (single tag), compiled out of release builds. */
+        private inline fun lwwLog(message: () -> String) {
+            if (BuildConfig.DEBUG) android.util.Log.d("LWW", message())
+        }
 
         // Location-photo background (Unsplash / curated LocationData), drawn beneath the
         // weather animation so e.g. clouds render over a photo of where you are.
@@ -160,7 +192,12 @@ class MaterialLiveWallpaperService : WallpaperService() {
             ) {
                 return@Runnable
             }
-            // LogHelper.log(msg = "[LiveWallpaper] Runnable is running")
+            // Log only on the missing->present transition of the photo layer, never per frame.
+            val foregroundMissing = mWallpaperImageStore.photoBackgroundEnabled && mForeground == null
+            if (foregroundMissing != mLoggedForegroundMissing) {
+                mLoggedForegroundMissing = foregroundMissing
+                lwwLog { "photo foreground ${if (foregroundMissing) "missing" else "present"}" }
+            }
             mIntervalComputer?.invalidate()
             if (mRotators != null && mIntervalComputer != null) {
                 mRotators!![0].updateRotation(mRotation2D.toDouble(), mIntervalComputer!!.interval)
@@ -175,17 +212,35 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     mHolder?.lockCanvas()
                 }
                 canvas?.let {
-                    if (mSizes[0] != it.width || mSizes[1] != it.height) {
-                        mSizes[0] = it.width
-                        mSizes[1] = it.height
-                        mAdaptiveSize[0] = mSizes[0]
-                        mAdaptiveSize[1] = mSizes[1]
-                        mBackground?.setBounds(0, 0, mSizes[0], mSizes[1])
-                        mForeground?.setBounds(0, 0, mSizes[0], mSizes[1])
+                    val width = it.width
+                    val height = it.height
+                    if (mSizes[0] != width || mSizes[1] != height || mBackground == null) {
+                        mSizes[0] = width
+                        mSizes[1] = height
+                        mAdaptiveSize[0] = width
+                        mAdaptiveSize[1] = height
+
+                        setWeatherBackgroundDrawable()
                     }
-                    mBackground?.draw(it)
-                    drawCelestialBody(it)
-                    mForeground?.draw(it)
+                    // Cheap per-frame check (string compare); rebuilds the photo layer only when
+                    // its identity changed (new photo, new size, parallax/daytime toggle) and
+                    // recovers automatically once a size or cached photo becomes available.
+                    ensureForeground()
+                    // Offsets are clamped to the extra layer width so parallax can never push a
+                    // layer past its own bounds, whatever the factors are set to.
+                    val bgOffset = parallaxOffset(PARALLAX_BG_FACTOR)
+                    val fgOffset = parallaxOffset(PARALLAX_FG_FACTOR)
+                    val celestialOffset = parallaxOffset(PARALLAX_CELESTIAL_FACTOR)
+
+                    it.withTranslation(-bgOffset, 0f) {
+                        mBackground?.draw(it)
+                    }
+                    it.withTranslation(-celestialOffset, 0f) {
+                        drawCelestialBody(it)
+                    }
+                    it.withTranslation(-fgOffset, 0f) {
+                        mForeground?.draw(it)
+                    }
                     if (mIntervalComputer != null && mRotators != null) {
                         var interval = mIntervalComputer!!.interval
                         if (!mAnimate) {
@@ -330,12 +385,81 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
         private fun setWeatherBackgroundDrawable() {
             mBackground = buildSkyBackground()
-            mForeground = buildPhotoForeground()
-            mBackground?.setBounds(0, 0, mSizes[0], mSizes[1])
-            mForeground?.setBounds(0, 0, mSizes[0], mSizes[1])
+            // Invalidate the photo identity so ensureForeground() rebuilds it (e.g. after a
+            // daytime change or a fresh download); the keyed path is the only decode site.
+            mForegroundKey = null
+            ensureForeground()
+            updateLayerBounds()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
                 notifyColorsChanged()
             }
+        }
+
+        /**
+         * Keeps [mForeground] in sync with the cached photo without depending on event order:
+         * a 0x0 surface, a missing cache or a parallax/daytime toggle all self-heal here. The
+         * photo is decoded only when its identity key changes, never per frame. When the photo
+         * background is enabled but no cached file exists, a throttled refresh is triggered so
+         * the photo appears as soon as a download succeeds.
+         */
+        private fun ensureForeground() {
+            if (!mWallpaperImageStore.photoBackgroundEnabled) {
+                if (mForeground != null) {
+                    mForeground = null
+                    mForegroundKey = null
+                }
+                return
+            }
+            if (mSizes[0] <= 0 || mSizes[1] <= 0) return // recovers when a real size arrives
+
+            val path = mWallpaperImageStore.cachedPhotoPath
+            val file = path?.let(::File)
+            if (file == null || !file.exists()) {
+                val now = SystemClock.elapsedRealtime()
+                if (now >= mNextPhotoProbeMillis) {
+                    mNextPhotoProbeMillis = now + PHOTO_PROBE_INTERVAL_MS
+                    if (file != null) {
+                        lwwLog { "stale cachedPhotoPath $path, clearing" }
+                        mWallpaperImageStore.cachedPhotoPath = null
+                    }
+                    lwwLog { "no cached photo; triggering refresh (location=${mLastLocation != null})" }
+                    maybeRefreshPhotoBackground(mLastLocation)
+                }
+                return
+            }
+
+            val key = "$path|${file.lastModified()}|${mSizes[0]}x${mSizes[1]}|$mParallaxEnabled|$mDaytime"
+            if (key == mForegroundKey && mForeground != null) return
+
+            mForeground = buildPhotoForeground()
+            mForegroundKey = if (mForeground != null) key else null
+            updateLayerBounds()
+            lwwLog { "foreground rebuilt success=${mForeground != null} key=$key" }
+        }
+
+        /** Parallax shift for a layer, clamped so it can never exceed the layer's extra width. */
+        private fun parallaxOffset(factor: Float): Float {
+            if (!mParallaxEnabled) return 0f
+            val extra = mSizes[0] * factor
+            return ((mXOffset - 0.5f) * mSizes[0] * factor).coerceIn(-extra, extra)
+        }
+
+        private fun updateLayerBounds() {
+            val width = mSizes[0]
+            val height = mSizes[1]
+            if (width <= 0 || height <= 0) return
+
+            if (mParallaxEnabled) {
+                // Make layers wider to allow shifting
+                val bgExtra = (width * PARALLAX_BG_FACTOR).toInt()
+                val fgExtra = (width * PARALLAX_FG_FACTOR).toInt()
+                mBackground?.setBounds(-bgExtra, 0, width + bgExtra, height)
+                mForeground?.setBounds(-fgExtra, 0, width + fgExtra, height)
+            } else {
+                mBackground?.setBounds(0, 0, width, height)
+                mForeground?.setBounds(0, 0, width, height)
+            }
+            lwwLog { "layer bounds updated ${width}x$height parallax=$mParallaxEnabled" }
         }
 
         /**
@@ -343,11 +467,29 @@ class MaterialLiveWallpaperService : WallpaperService() {
          * Its height is kept near half the display; wide photos are cropped only at the sides.
          */
         private fun buildPhotoForeground(): Drawable? {
-            if (!mWallpaperImageStore.photoBackgroundEnabled) return null
-            if (mSizes[0] <= 0 || mSizes[1] <= 0) return null
-            val source = mWallpaperRepository.loadCachedBitmap() ?: return null
+            if (!mWallpaperImageStore.photoBackgroundEnabled) {
+                lwwLog { "buildPhotoForeground skipped: disabled" }
+                return null
+            }
+            if (mSizes[0] <= 0 || mSizes[1] <= 0) {
+                lwwLog { "buildPhotoForeground skipped: size=${mSizes[0]}x${mSizes[1]}" }
+                return null
+            }
+            val source = mWallpaperRepository.loadCachedBitmap()
+            if (source == null) {
+                lwwLog { "buildPhotoForeground skipped: no cached bitmap (path=${mWallpaperImageStore.cachedPhotoPath})" }
+                return null
+            }
             return try {
-                val positioned = positionPhotoAtBottom(source, mSizes[0], mSizes[1])
+                // Width must match the parallax bounds (1 + 2 * factor) so the BitmapDrawable
+                // is never stretched into wider bounds.
+                val width = if (mParallaxEnabled) {
+                    (mSizes[0] * (1f + 2 * PARALLAX_FG_FACTOR)).toInt()
+                } else {
+                    mSizes[0]
+                }
+                val positioned = positionPhotoAtBottom(source, width, mSizes[1])
+                lwwLog { "buildPhotoForeground ok: src=${source.width}x${source.height} -> ${width}x${mSizes[1]}" }
                 BitmapDrawable(resources, positioned).apply {
                     if (!mDaytime) {
                         colorFilter = ColorMatrixColorFilter(
@@ -356,6 +498,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     }
                 }
             } catch (e: Throwable) {
+                lwwLog { "buildPhotoForeground failed: ${e.message}" }
                 null
             } finally {
                 source.recycle()
@@ -477,28 +620,48 @@ class MaterialLiveWallpaperService : WallpaperService() {
             }
             mSizes = intArrayOf(0, 0)
             mAdaptiveSize = intArrayOf(0, 0)
+            // Read parallax before the first surfaceChanged so the very first foreground build
+            // already uses the right bitmap width/bounds (it used to be read only on visibility).
+            mParallaxEnabled = LiveWallpaperConfigManager(applicationContext).parallaxEnabled
             mHolder = surfaceHolder.apply {
                 addCallback(object : SurfaceHolder.Callback {
-                    override fun surfaceCreated(holder: SurfaceHolder) {}
+                    override fun surfaceCreated(holder: SurfaceHolder) {
+                        lwwLog { "surfaceCreated" }
+                    }
                     override fun surfaceChanged(
                         holder: SurfaceHolder,
                         format: Int,
                         width: Int,
                         height: Int,
                     ) {
+                        lwwLog { "surfaceChanged ${width}x$height valid=${holder.surface.isValid}" }
                         if (holder.surface.isValid) {
+                            val sizeChanged = mSizes[0] != width || mSizes[1] != height
                             mSizes[0] = width
                             mSizes[1] = height
                             mAdaptiveSize[0] = mSizes[0]
                             mAdaptiveSize[1] = mSizes[1]
-                            mBackground?.setBounds(0, 0, mSizes[0], mSizes[1])
-                            mForeground?.setBounds(0, 0, mSizes[0], mSizes[1])
-                            mAnimate = LiveWallpaperConfigManager(this@MaterialLiveWallpaperService).animationsEnabled
+
+                            val configManager = LiveWallpaperConfigManager(this@MaterialLiveWallpaperService)
+                            mAnimate = configManager.animationsEnabled
+                            mParallaxEnabled = configManager.parallaxEnabled
                             setWeatherImplementor()
+
+                            // Drawables are owned by the render thread; serialize mutations there
+                            // instead of racing it from this (main-thread) callback.
+                            mHandler?.post {
+                                if (sizeChanged || mForeground == null) {
+                                    setWeatherBackgroundDrawable()
+                                } else {
+                                    updateLayerBounds()
+                                }
+                            }
                         }
                     }
 
-                    override fun surfaceDestroyed(holder: SurfaceHolder) {}
+                    override fun surfaceDestroyed(holder: SurfaceHolder) {
+                        lwwLog { "surfaceDestroyed" }
+                    }
                 })
                 setFormat(PixelFormat.RGBA_8888)
             }
@@ -565,6 +728,14 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 "night" -> false
                 else -> location?.isDaylight ?: true
             }
+            mParallaxEnabled = configManager.parallaxEnabled
+            mLastLocation = location
+            lwwLog {
+                "onVisibilityChanged visible=true parallax=$mParallaxEnabled " +
+                    "photoEnabled=${mWallpaperImageStore.photoBackgroundEnabled} " +
+                    "hasCachedPhoto=${mWallpaperRepository.hasCachedPhoto()} " +
+                    "location=${location != null}"
+            }
             setWeather(
                 WeatherViewController.getWeatherKind(weatherKind),
                 daytime
@@ -584,7 +755,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 sensorManager?.unregisterListener(mGravityListener, mGravitySensor)
             }
 
-            setWeatherBackgroundDrawable()
+            mHandler?.post { setWeatherBackgroundDrawable() }
             maybeRefreshPhotoBackground(location)
             maybeRefreshRainTrend(location)
             if (mAnimate) {
@@ -607,6 +778,26 @@ class MaterialLiveWallpaperService : WallpaperService() {
             }
         }
 
+        override fun onOffsetsChanged(
+            xOffset: Float,
+            yOffset: Float,
+            xOffsetStep: Float,
+            yOffsetStep: Float,
+            xPixelOffset: Int,
+            yPixelOffset: Int
+        ) {
+            super.onOffsetsChanged(xOffset, yOffset, xOffsetStep, yOffsetStep, xPixelOffset, yPixelOffset)
+            if (mParallaxEnabled && mXOffset != xOffset) {
+                if (abs(mXOffset - xOffset) > 0.1f) {
+                    lwwLog { "onOffsetsChanged x=$xOffset" }
+                }
+                mXOffset = xOffset
+                if (!mAnimate) {
+                    mHandler?.post(mDrawableRunnable)
+                }
+            }
+        }
+
         @RequiresApi(Build.VERSION_CODES.O_MR1)
         override fun onComputeColors(): WallpaperColors? {
             return if (mBackground != null) {
@@ -624,24 +815,33 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private fun maybeRefreshPhotoBackground(location: Location?) {
             if (!mWallpaperImageStore.photoBackgroundEnabled) return
             if (location == null || !location.isUsable) return
+            if (!mPhotoRefreshing.compareAndSet(false, true)) return // one download at a time
             mPhotoScope.launch {
-                val place = PlaceQuery(
-                    city = location.city.ifBlank { null },
-                    municipality = location.admin2,
-                    state = location.admin1,
-                    country = location.country.ifBlank { null },
-                )
-                val file = mWallpaperRepository.refreshFor(
-                    location.latitude,
-                    location.longitude,
-                    place,
-                    forceRefresh = true,
-                )
-                if (file != null && mVisible) {
-                    mHandler?.post {
-                        setWeatherBackgroundDrawable()
-                        mHandler?.post(mDrawableRunnable)
+                try {
+                    val place = PlaceQuery(
+                        city = location.city.ifBlank { null },
+                        municipality = location.admin2,
+                        state = location.admin1,
+                        country = location.country.ifBlank { null },
+                    )
+                    // Without a usable cache, do a non-forced refresh: the cached/recent URL is
+                    // not excluded, which is the fastest path to getting *any* photo on screen.
+                    // Only rotate to a brand-new photo when one is already showing.
+                    val file = mWallpaperRepository.refreshFor(
+                        location.latitude,
+                        location.longitude,
+                        place,
+                        forceRefresh = mWallpaperRepository.hasCachedPhoto(),
+                    )
+                    lwwLog { "maybeRefreshPhotoBackground result=${file?.name}" }
+                    if (file != null && mVisible) {
+                        mHandler?.post {
+                            setWeatherBackgroundDrawable()
+                            mHandler?.post(mDrawableRunnable)
+                        }
                     }
+                } finally {
+                    mPhotoRefreshing.set(false)
                 }
             }
         }

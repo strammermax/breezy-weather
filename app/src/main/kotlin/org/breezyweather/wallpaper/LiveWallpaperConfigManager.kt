@@ -23,12 +23,14 @@ class LiveWallpaperConfigManager(context: Context) {
     val weatherKind: String
     val dayNightType: String
     val animationsEnabled: Boolean
+    val parallaxEnabled: Boolean
 
     init {
         val config = ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
         weatherKind = config.getString(KEY_WEATHER_KIND, null) ?: "auto"
         dayNightType = config.getString(KEY_DAY_NIGHT_TYPE, null) ?: "auto"
         animationsEnabled = config.getBoolean(KEY_ANIMATIONS_ENABLED, false)
+        parallaxEnabled = config.getBoolean(KEY_PARALLAX_ENABLED, false)
     }
 
     companion object {
@@ -36,13 +38,21 @@ class LiveWallpaperConfigManager(context: Context) {
         private const val KEY_WEATHER_KIND = "weather_kind"
         private const val KEY_DAY_NIGHT_TYPE = "day_night_type"
         private const val KEY_ANIMATIONS_ENABLED = "animations_enabled"
+        private const val KEY_PARALLAX_ENABLED = "parallax_enabled"
 
-        fun update(context: Context, weatherKind: String?, dayNightType: String?, animationsEnabled: Boolean) {
+        fun update(
+            context: Context,
+            weatherKind: String?,
+            dayNightType: String?,
+            animationsEnabled: Boolean,
+            parallaxEnabled: Boolean
+        ) {
             ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
                 .edit()
                 .putString(KEY_WEATHER_KIND, weatherKind)
                 .putString(KEY_DAY_NIGHT_TYPE, dayNightType)
                 .putBoolean(KEY_ANIMATIONS_ENABLED, animationsEnabled)
+                .putBoolean(KEY_PARALLAX_ENABLED, parallaxEnabled)
                 .apply()
         }
     }
