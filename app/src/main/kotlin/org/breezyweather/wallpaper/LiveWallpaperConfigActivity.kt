@@ -119,6 +119,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
     private lateinit var dayNightTypeValues: Array<String>
 
     private lateinit var animationsEnabledValue: MutableState<Boolean>
+    private lateinit var parallaxEnabledValue: MutableState<Boolean>
 
     private lateinit var wallpaperImageStore: WallpaperImageStore
     private lateinit var photoBackgroundEnabledValue: MutableState<Boolean>
@@ -136,6 +137,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         dayNightTypeValues = resources.getStringArray(R.array.live_wallpaper_day_night_type_values)
 
         animationsEnabledValue = mutableStateOf(liveWallpaperConfigManager.animationsEnabled)
+        parallaxEnabledValue = mutableStateOf(liveWallpaperConfigManager.parallaxEnabled)
 
         wallpaperImageStore = WallpaperImageStore(this)
         photoBackgroundEnabledValue = mutableStateOf(wallpaperImageStore.photoBackgroundEnabled)
@@ -234,7 +236,8 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
             this,
             weatherKindValueNow.value,
             dayNightTypeValueNow.value,
-            animationsEnabledValue.value
+            animationsEnabledValue.value,
+            parallaxEnabledValue.value
         )
         wallpaperImageStore.photoBackgroundEnabled = photoBackgroundEnabledValue.value
         wallpaperImageStore.photoCacheLimitMb = photoCacheLimitMbValue.value.roundToInt()
@@ -292,6 +295,19 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         } else {
                             animationsEnabledValue.value = false
                         }
+                    }
+                }
+                item {
+                    SwitchPreferenceView(
+                        title = "Parallax effect",
+                        summary = { _: Context, _: Boolean ->
+                            "Shifts layers when scrolling between home screens"
+                        },
+                        checked = parallaxEnabledValue.value,
+                        withState = false,
+                        card = false
+                    ) { newValue ->
+                        parallaxEnabledValue.value = newValue
                     }
                 }
                 item {
