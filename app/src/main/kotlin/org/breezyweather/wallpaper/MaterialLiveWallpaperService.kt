@@ -110,6 +110,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mIntervalComputer: IntervalComputer? = null
         private var mRotators: Array<MaterialWeatherView.RotateController>? = null
         private var mImplementor: MaterialWeatherView.WeatherAnimationImplementor? = null
+        private var mWallpaperEffectRenderer: WallpaperWeatherEffectRenderer? = null
         private var mBackground: Drawable? = null
         // The processed location photo is the middle layer: sky and celestial body behind it,
         // weather effects in front of it.
@@ -166,19 +167,25 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 mRotators!![1].updateRotation(mRotation3D.toDouble(), mIntervalComputer!!.interval)
             }
 
+            var canvas: Canvas? = null
             try {
-                mHolder?.lockCanvas()?.let { canvas ->
-                    if (mSizes[0] != canvas.width || mSizes[1] != canvas.height) {
-                        mSizes[0] = canvas.width
-                        mSizes[1] = canvas.height
+                canvas = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && mWallpaperEffectRenderer != null) {
+                    mHolder?.lockHardwareCanvas()
+                } else {
+                    mHolder?.lockCanvas()
+                }
+                canvas?.let {
+                    if (mSizes[0] != it.width || mSizes[1] != it.height) {
+                        mSizes[0] = it.width
+                        mSizes[1] = it.height
                         mAdaptiveSize[0] = mSizes[0]
                         mAdaptiveSize[1] = mSizes[1]
                         mBackground?.setBounds(0, 0, mSizes[0], mSizes[1])
                         mForeground?.setBounds(0, 0, mSizes[0], mSizes[1])
                     }
-                    mBackground?.draw(canvas)
-                    drawCelestialBody(canvas)
-                    mForeground?.draw(canvas)
+                    mBackground?.draw(it)
+                    drawCelestialBody(it)
+                    mForeground?.draw(it)
                     if (mIntervalComputer != null && mRotators != null) {
                         var interval = mIntervalComputer!!.interval
                         if (!mAnimate) {
@@ -196,7 +203,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         )
                     }
                     if (mImplementor != null && mRotators != null) {
-                        canvas.withTranslation(
+                        it.withTranslation(
                             (mSizes[0] - mAdaptiveSize[0]) / 2f,
                             (mSizes[1] - mAdaptiveSize[1]) / 2f
                         ) {
@@ -209,13 +216,19 @@ class MaterialLiveWallpaperService : WallpaperService() {
                             )
                         }
                     }
-                    drawRainTrend(canvas)
-                    mHolder?.unlockCanvasAndPost(canvas)
+                    mWallpaperEffectRenderer?.update(
+                        mIntervalComputer?.interval?.toLong() ?: 0L,
+                        mAnimate,
+                    )
+                    mWallpaperEffectRenderer?.draw(it)
+                    drawRainTrend(it)
                 }
             } catch (e: Throwable) {
                 if (BreezyWeather.instance.debugMode) {
                     e.printStackTrace()
                 }
+            } finally {
+                canvas?.let { mHolder?.unlockCanvasAndPost(it) }
             }
         }
 
@@ -290,8 +303,15 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
         private fun setWeatherImplementor() {
             hasDrawn = false
+            mWallpaperEffectRenderer = if (WallpaperWeatherEffectRenderer.supports(mWeatherKind)) {
+                WallpaperWeatherEffectRenderer(mWeatherKind, mDaytime)
+            } else {
+                null
+            }
             // The scene layer draws its own time-positioned sun. Avoid the old fixed clear-day sun.
-            mImplementor = if (mWeatherKind == WeatherView.WEATHER_KIND_CLEAR && mDaytime) {
+            mImplementor = if (mWallpaperEffectRenderer != null ||
+                mWeatherKind == WeatherView.WEATHER_KIND_CLEAR && mDaytime
+            ) {
                 null
             } else {
                 WeatherImplementorFactory.getWeatherImplementor(
@@ -570,7 +590,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             if (mAnimate) {
                 val screenRefreshRate = ContextCompat.getDisplayOrDefault(this@MaterialLiveWallpaperService)
                     .refreshRate.let {
-                        if (it > 60f) 60f else it
+                        if (it > 30f) 30f else it
                     }
                 mIntervalController = AsyncHelper.intervalRunOnUI(
                     { mHandler?.post(mDrawableRunnable) },

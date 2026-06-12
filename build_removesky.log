@@ -1,0 +1,269 @@
+Configuration on demand is an incubating feature.
+Type-safe project accessors is an incubating feature.
+Project accessors enabled, but root project name not explicitly set for 'buildSrc'. Checking out the project in different folders will impact the generated code and implicitly the buildscript classpath, breaking caching.
+> Task :buildSrc:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :buildSrc:generateExternalPluginSpecBuilders UP-TO-DATE
+> Task :buildSrc:extractPrecompiledScriptPluginPlugins UP-TO-DATE
+> Task :buildSrc:compilePluginsBlocks UP-TO-DATE
+> Task :buildSrc:generatePrecompiledScriptPluginAccessors UP-TO-DATE
+> Task :buildSrc:generateScriptPluginAdapters UP-TO-DATE
+> Task :buildSrc:compileKotlin UP-TO-DATE
+> Task :buildSrc:compileJava NO-SOURCE
+> Task :buildSrc:compileGroovy NO-SOURCE
+> Task :buildSrc:pluginDescriptors UP-TO-DATE
+> Task :buildSrc:processResources UP-TO-DATE
+> Task :buildSrc:classes UP-TO-DATE
+> Task :buildSrc:jar UP-TO-DATE
+
+> Configure project :app
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+
+> Configure project :data
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+
+> Configure project :domain
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+
+> Configure project :maps-utils
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+
+> Configure project :ui-weather-view
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+
+> Configure project :weather-unit
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+Configuration 'basicDebugCompileClasspath' was resolved during configuration time.
+This is a build performance and scalability issue.
+See https://github.com/gradle/gradle/issues/2298
+Run with --info for a stacktrace.
+Configuration 'basicDebugRuntimeClasspath' was resolved during configuration time.
+This is a build performance and scalability issue.
+See https://github.com/gradle/gradle/issues/2298
+Run with --info for a stacktrace.
+
+> Task :app:copyHebrewStrings UP-TO-DATE
+> Task :app:copyIndonesianStrings UP-TO-DATE
+> Task :app:generateLocalesConfig UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preBasicDebugBuild UP-TO-DATE
+> Task :app:mergeBasicDebugNativeDebugMetadata NO-SOURCE
+> Task :app:dataBindingMergeDependencyArtifactsBasicDebug UP-TO-DATE
+> Task :app:generateBasicDebugResValues UP-TO-DATE
+> Task :app:generateBasicDebugResources UP-TO-DATE
+> Task :app:prepareLibraryDefinitionsBasicDebug UP-TO-DATE
+> Task :data:preBuild UP-TO-DATE
+> Task :data:preDebugBuild UP-TO-DATE
+> Task :data:generateDebugResources UP-TO-DATE
+> Task :data:packageDebugResources UP-TO-DATE
+> Task :domain:preBuild UP-TO-DATE
+> Task :domain:preDebugBuild UP-TO-DATE
+> Task :domain:generateDebugResources UP-TO-DATE
+> Task :domain:packageDebugResources UP-TO-DATE
+> Task :maps-utils:preBuild UP-TO-DATE
+> Task :maps-utils:preDebugBuild UP-TO-DATE
+> Task :maps-utils:generateDebugResources UP-TO-DATE
+> Task :maps-utils:packageDebugResources UP-TO-DATE
+> Task :ui-weather-view:preBuild UP-TO-DATE
+> Task :ui-weather-view:preDebugBuild UP-TO-DATE
+> Task :ui-weather-view:generateDebugResources UP-TO-DATE
+> Task :ui-weather-view:packageDebugResources UP-TO-DATE
+> Task :weather-unit:preBuild UP-TO-DATE
+> Task :weather-unit:preDebugBuild UP-TO-DATE
+> Task :weather-unit:generateDebugResValues UP-TO-DATE
+> Task :weather-unit:generateDebugResources UP-TO-DATE
+> Task :weather-unit:packageDebugResources UP-TO-DATE
+> Task :app:mergeBasicDebugResources UP-TO-DATE
+> Task :app:packageBasicDebugResources UP-TO-DATE
+> Task :data:processDebugNavigationResources UP-TO-DATE
+> Task :domain:processDebugNavigationResources UP-TO-DATE
+> Task :maps-utils:processDebugNavigationResources UP-TO-DATE
+> Task :ui-weather-view:processDebugNavigationResources UP-TO-DATE
+> Task :weather-unit:processDebugNavigationResources UP-TO-DATE
+> Task :app:processBasicDebugNavigationResources UP-TO-DATE
+> Task :app:parseBasicDebugLocalResources UP-TO-DATE
+> Task :data:parseDebugLocalResources UP-TO-DATE
+> Task :data:generateDebugRFile UP-TO-DATE
+> Task :domain:parseDebugLocalResources UP-TO-DATE
+> Task :domain:generateDebugRFile UP-TO-DATE
+> Task :maps-utils:parseDebugLocalResources UP-TO-DATE
+> Task :maps-utils:generateDebugRFile UP-TO-DATE
+> Task :ui-weather-view:parseDebugLocalResources UP-TO-DATE
+> Task :ui-weather-view:generateDebugRFile UP-TO-DATE
+> Task :weather-unit:parseDebugLocalResources UP-TO-DATE
+> Task :weather-unit:generateDebugRFile UP-TO-DATE
+> Task :app:dataBindingGenBaseClassesBasicDebug UP-TO-DATE
+> Task :app:generateBasicDebugBuildConfig UP-TO-DATE
+> Task :app:generateBasicDebugRFile UP-TO-DATE
+> Task :data:generateDebugDatabaseInterface UP-TO-DATE
+> Task :weather-unit:compileDebugKotlin UP-TO-DATE
+> Task :weather-unit:javaPreCompileDebug UP-TO-DATE
+> Task :weather-unit:compileDebugJavaWithJavac NO-SOURCE
+> Task :weather-unit:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :domain:compileDebugKotlin UP-TO-DATE
+> Task :domain:javaPreCompileDebug UP-TO-DATE
+> Task :domain:compileDebugJavaWithJavac NO-SOURCE
+> Task :domain:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :data:compileDebugKotlin UP-TO-DATE
+> Task :data:javaPreCompileDebug UP-TO-DATE
+> Task :data:compileDebugJavaWithJavac NO-SOURCE
+> Task :data:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :maps-utils:compileDebugKotlin UP-TO-DATE
+> Task :maps-utils:javaPreCompileDebug UP-TO-DATE
+> Task :maps-utils:compileDebugJavaWithJavac NO-SOURCE
+> Task :maps-utils:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :ui-weather-view:compileDebugKotlin UP-TO-DATE
+> Task :ui-weather-view:javaPreCompileDebug UP-TO-DATE
+> Task :ui-weather-view:compileDebugJavaWithJavac NO-SOURCE
+> Task :ui-weather-view:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :app:kspBasicDebugKotlin UP-TO-DATE
+> Task :app:compileBasicDebugKotlin UP-TO-DATE
+> Task :app:javaPreCompileBasicDebug UP-TO-DATE
+> Task :app:compileBasicDebugJavaWithJavac UP-TO-DATE
+> Task :app:generateBasicDebugAssets UP-TO-DATE
+> Task :data:generateDebugAssets UP-TO-DATE
+> Task :data:mergeDebugAssets UP-TO-DATE
+> Task :domain:generateDebugAssets UP-TO-DATE
+> Task :domain:mergeDebugAssets UP-TO-DATE
+> Task :maps-utils:generateDebugAssets UP-TO-DATE
+> Task :maps-utils:mergeDebugAssets UP-TO-DATE
+> Task :ui-weather-view:generateDebugAssets UP-TO-DATE
+> Task :ui-weather-view:mergeDebugAssets UP-TO-DATE
+> Task :weather-unit:generateDebugAssets UP-TO-DATE
+> Task :weather-unit:mergeDebugAssets UP-TO-DATE
+> Task :app:mergeBasicDebugAssets UP-TO-DATE
+> Task :app:compressBasicDebugAssets UP-TO-DATE
+> Task :app:generateBasicDebugGlobalSynthetics UP-TO-DATE
+> Task :app:processBasicDebugJavaRes UP-TO-DATE
+> Task :data:processDebugJavaRes UP-TO-DATE
+> Task :domain:processDebugJavaRes UP-TO-DATE
+> Task :maps-utils:processDebugJavaRes UP-TO-DATE
+> Task :ui-weather-view:processDebugJavaRes UP-TO-DATE
+> Task :weather-unit:processDebugJavaRes UP-TO-DATE
+> Task :app:mergeBasicDebugJavaResource UP-TO-DATE
+> Task :app:checkBasicDebugDuplicateClasses UP-TO-DATE
+> Task :app:desugarBasicDebugFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexBasicDebug UP-TO-DATE
+> Task :data:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :domain:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :weather-unit:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :maps-utils:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :ui-weather-view:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :app:hiltSyncBasicDebug UP-TO-DATE
+> Task :data:writeDebugAarMetadata UP-TO-DATE
+> Task :app:mergeLibDexBasicDebug UP-TO-DATE
+> Task :app:hiltAggregateDepsBasicDebug UP-TO-DATE
+> Task :app:hiltJavaCompileBasicDebug UP-TO-DATE
+> Task :domain:writeDebugAarMetadata UP-TO-DATE
+> Task :maps-utils:writeDebugAarMetadata UP-TO-DATE
+> Task :ui-weather-view:writeDebugAarMetadata UP-TO-DATE
+> Task :weather-unit:writeDebugAarMetadata UP-TO-DATE
+> Task :app:checkBasicDebugAarMetadata UP-TO-DATE
+> Task :app:mapBasicDebugSourceSetPaths UP-TO-DATE
+> Task :app:compileBasicDebugNavigationResources UP-TO-DATE
+> Task :app:createBasicDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksBasicDebug UP-TO-DATE
+> Task :data:extractDeepLinksDebug UP-TO-DATE
+> Task :data:processDebugManifest UP-TO-DATE
+> Task :domain:extractDeepLinksDebug UP-TO-DATE
+> Task :domain:processDebugManifest UP-TO-DATE
+> Task :maps-utils:extractDeepLinksDebug UP-TO-DATE
+> Task :maps-utils:processDebugManifest UP-TO-DATE
+> Task :ui-weather-view:extractDeepLinksDebug UP-TO-DATE
+> Task :ui-weather-view:processDebugManifest UP-TO-DATE
+> Task :weather-unit:extractDeepLinksDebug UP-TO-DATE
+> Task :weather-unit:processDebugManifest UP-TO-DATE
+> Task :app:processBasicDebugMainManifest UP-TO-DATE
+> Task :app:processBasicDebugManifest UP-TO-DATE
+> Task :app:processBasicDebugManifestForPackage UP-TO-DATE
+> Task :data:mapDebugSourceSetPaths UP-TO-DATE
+> Task :data:compileDebugLibraryResources UP-TO-DATE
+> Task :domain:mapDebugSourceSetPaths UP-TO-DATE
+> Task :domain:compileDebugLibraryResources UP-TO-DATE
+> Task :maps-utils:mapDebugSourceSetPaths UP-TO-DATE
+> Task :maps-utils:compileDebugLibraryResources UP-TO-DATE
+> Task :ui-weather-view:mapDebugSourceSetPaths UP-TO-DATE
+> Task :ui-weather-view:compileDebugLibraryResources UP-TO-DATE
+> Task :weather-unit:mapDebugSourceSetPaths UP-TO-DATE
+> Task :weather-unit:compileDebugLibraryResources UP-TO-DATE
+> Task :app:processBasicDebugResources UP-TO-DATE
+> Task :app:transformBasicDebugClassesWithAsm UP-TO-DATE
+> Task :app:dexBuilderBasicDebug
+> Task :app:mergeProjectDexBasicDebug UP-TO-DATE
+> Task :app:mergeBasicDebugJniLibFolders UP-TO-DATE
+> Task :data:mergeDebugJniLibFolders UP-TO-DATE
+> Task :data:mergeDebugNativeLibs NO-SOURCE
+> Task :data:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :domain:mergeDebugJniLibFolders UP-TO-DATE
+> Task :domain:mergeDebugNativeLibs NO-SOURCE
+> Task :domain:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :maps-utils:mergeDebugJniLibFolders UP-TO-DATE
+> Task :maps-utils:mergeDebugNativeLibs NO-SOURCE
+> Task :maps-utils:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :ui-weather-view:mergeDebugJniLibFolders UP-TO-DATE
+> Task :ui-weather-view:mergeDebugNativeLibs NO-SOURCE
+> Task :ui-weather-view:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :weather-unit:mergeDebugJniLibFolders UP-TO-DATE
+> Task :weather-unit:mergeDebugNativeLibs NO-SOURCE
+> Task :weather-unit:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :app:mergeBasicDebugNativeLibs UP-TO-DATE
+> Task :app:stripBasicDebugDebugSymbols UP-TO-DATE
+> Task :app:validateSigningBasicDebug UP-TO-DATE
+> Task :app:writeBasicDebugAppMetadata UP-TO-DATE
+> Task :app:writeBasicDebugSigningConfigVersions UP-TO-DATE
+> Task :app:packageBasicDebug
+> Task :app:createBasicDebugApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleBasicDebug
+
+BUILD SUCCESSFUL in 20s
+149 actionable tasks: 2 executed, 147 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html
