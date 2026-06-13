@@ -3,9 +3,34 @@
 <img src="app/src/res_breezy/mipmap-xxxhdpi/ic_launcher_round.webp" alt="Logo" />
 </div>
 
-<h1 align="center">Breezy Weather</h1>
+<h1 align="center">LiveWeatherApp</h1>
+<h3 align="center">Enhanced fork of Breezy Weather</h3>
+
+<div align="center">
+  <small>Based on <a href="https://github.com/breezy-weather/breezy-weather">Breezy Weather</a> with additional features and improvements</small>
+</div>
 
 <br />
+
+> **Quick Start Guide**  
+> 1. Download APK from [Releases](https://github.com/strammermax/breezy-weather/releases)
+> 2. Install on your Android device (`adb install app-basic-universal-debug.apk`)
+> 3. Open app and add your location
+> 4. Customize widgets and settings
+
+**Key Improvements in This Fork:**
+- Enhanced wallpaper rendering engine
+- Additional weather visualization options  
+- Optimized performance for custom use cases
+- Extended API support
+
+**Developer Setup**  
+```bash
+git clone https://github.com/breezy-weather/breezy-weather.git
+cd breezy-weather
+./gradlew assembleDebug
+adb install app/build/outputs/apk/basic/debug/app-basic-universal-debug.apk
+```
 
 <div align="center">
   <img alt="API 21+" src="https://img.shields.io/badge/Api%2021+-50f270?logo=android&logoColor=black&style=for-the-badge" />
@@ -100,9 +125,13 @@ alt="Get it on F-Droid" align="center" height="80" /></a>
 - 🏭 More than 50 weather sources supported (<a href="docs/SOURCES.md">full list</a>)
 - 🧩 Large selection of widgets
 - 🖼️ Live wallpaper
-- 📦 Custom icon packs
-  - [Geometric Weather icon packs](https://github.com/breezy-weather/breezy-weather-icon-packs/blob/main/README.md)
-  - Chronus Weather icon packs
+- 🎨 Customization
+  - Icon packs:
+    - [Geometric Weather](https://github.com/breezy-weather/breezy-weather-icon-packs)
+    - Chronus Weather compatible
+  - 20+ widget styles
+  - Dark/light theme scheduling
+  - Unit customization (metric/imperial)
 - 🌙 Automatic dark mode
 - 🔁 Opt-in data sharing with other apps (such as Gadgetbridge)
 - <details><summary>🚹 Accessibility</summary>
