@@ -25,7 +25,6 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.LinearGradient
 import android.graphics.Paint
-import android.graphics.Path
 import android.graphics.PixelFormat
 import android.graphics.RectF
 import android.graphics.RadialGradient
@@ -40,7 +39,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Process
-import android.os.SystemClock
 import android.service.wallpaper.WallpaperService
 import android.view.OrientationEventListener
 import android.view.SurfaceHolder
@@ -53,11 +51,6 @@ import breezyweather.data.weather.WeatherRepository
 import breezyweather.domain.location.model.Location
 import breezyweather.domain.weather.reference.WeatherCode
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.breezyweather.BreezyWeather
 import org.breezyweather.common.extensions.isLandscape
@@ -74,19 +67,20 @@ import org.breezyweather.ui.theme.weatherView.materialWeatherView.IntervalComput
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.MaterialWeatherView
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.WeatherImplementorFactory
 import org.breezyweather.BuildConfig
-import org.breezyweather.radar.BuienradarNowcastSource
-import org.breezyweather.wallpaper.photo.PlaceQuery
 import org.breezyweather.wallpaper.photo.WallpaperImageStore
 import org.breezyweather.wallpaper.photo.WallpaperRepository
 import java.io.File
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.Calendar
+import java.util.TimeZone
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.acos
+import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
+import kotlin.math.tan
 
 // Parallax travel per layer as a fraction of the screen width. The same constants drive the
 // extra layer width (updateLayerBounds), the foreground bitmap width (buildPhotoForeground)
@@ -94,10 +88,6 @@ import kotlin.math.sqrt
 private const val PARALLAX_BG_FACTOR = 0.05f
 private const val PARALLAX_FG_FACTOR = 0.15f
 private const val PARALLAX_CELESTIAL_FACTOR = 0.02f
-
-// When the photo background is enabled but no cached photo exists, probe/refresh at most
-// this often (the render loop runs every frame; downloading must not).
-private const val PHOTO_PROBE_INTERVAL_MS = 5_000L
 
 @AndroidEntryPoint
 class MaterialLiveWallpaperService : WallpaperService() {
@@ -168,9 +158,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         // A null key with photo enabled means "needs (re)build"; ensureForeground() recovers
         // automatically once the surface has a real size and a cached photo exists.
         private var mForegroundKey: String? = null
-        private var mNextPhotoProbeMillis = 0L
-        private var mLastLocation: Location? = null
-        private val mPhotoRefreshing = AtomicBoolean(false)
+        private var mCurrentLocationData: Location? = null
         private var mLoggedForegroundMissing = false
 
         /** Debug-only logging (single tag), compiled out of release builds. */
@@ -178,17 +166,19 @@ class MaterialLiveWallpaperService : WallpaperService() {
             if (BuildConfig.DEBUG) android.util.Log.d("LWW", message())
         }
 
-        // Location-photo background (Unsplash / curated LocationData), drawn beneath the
-        // weather animation so e.g. clouds render over a photo of where you are.
+        // The renderer only reads the photo cache. Fetching is owned by the app data layer.
         private val mWallpaperImageStore = WallpaperImageStore(applicationContext)
         private val mWallpaperRepository = WallpaperRepository(applicationContext)
-        private val mPhotoScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-        // Precipitation nowcast (Buienradar) drawn as a subtle trend strip at the bottom,
-        // only when rain is expected. Empty = nothing drawn.
-        private var mRainIntensities: FloatArray = FloatArray(0)
-        private val mRainPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val mRotatingLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val mSunGlowPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val mSunCorePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.rgb(255, 255, 246)
+        }
+        private val mMoonDrawable = MoonDrawable()
+        private var mCelestialPaintMinute = Long.MIN_VALUE
+        private var mSunPaintCenterX = Float.NaN
+        private var mSunPaintCenterY = Float.NaN
+        private var mSunPaintAlpha = -1
         private val photoHeightFraction = 0.52f
         private val celestialSizeFraction = 0.14f
         private val dayMillis = 24L * 60L * 60L * 1000L
@@ -271,7 +261,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     it.withTranslation(-celestialOffset, 0f) {
                         drawCelestialBody(it)
                     }
-                    mWallpaperEffectRenderer?.drawClouds(it)
+                    mWallpaperEffectRenderer?.drawBackgroundWeatherPass(it)
                     it.withTranslation(-fgOffset, 0f) {
                         mForeground?.draw(it)
                     }
@@ -309,8 +299,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         mIntervalComputer?.interval?.toLong() ?: 0L,
                         mAnimate,
                     )
-                    mWallpaperEffectRenderer?.drawForegroundEffects(it)
-                    drawRainTrend(it)
+                    mWallpaperEffectRenderer?.drawForegroundWeatherPass(it)
+                    mWallpaperEffectRenderer?.drawGlassRainDrops(it)
                     drawRotatingWeatherLabel(it)
                 }
             } catch (e: Throwable) {
@@ -488,9 +478,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
         /**
          * Keeps [mForeground] in sync with the cached photo without depending on event order:
          * a 0x0 surface, a missing cache or a parallax/daytime toggle all self-heal here. The
-         * photo is decoded only when its identity key changes, never per frame. When the photo
-         * background is enabled but no cached file exists, a throttled refresh is triggered so
-         * the photo appears as soon as a download succeeds.
+         * photo is decoded only when its identity key changes, never per frame. A missing cache
+         * remains empty until the app data layer stores a new processed photo.
          */
         private fun ensureForeground() {
             if (!mWallpaperImageStore.photoBackgroundEnabled) {
@@ -505,16 +494,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val path = mWallpaperImageStore.cachedPhotoPath
             val file = path?.let(::File)
             if (file == null || !file.exists()) {
-                val now = SystemClock.elapsedRealtime()
-                if (now >= mNextPhotoProbeMillis) {
-                    mNextPhotoProbeMillis = now + PHOTO_PROBE_INTERVAL_MS
-                    if (file != null) {
-                        lwwLog { "stale cachedPhotoPath $path, clearing" }
-                        mWallpaperImageStore.cachedPhotoPath = null
-                    }
-                    lwwLog { "no cached photo; triggering refresh (location=${mLastLocation != null})" }
-                    maybeRefreshPhotoBackground(mLastLocation)
+                if (file != null) {
+                    lwwLog { "stale cachedPhotoPath $path, clearing" }
+                    mWallpaperImageStore.cachedPhotoPath = null
                 }
+                lwwLog { "no cached photo; waiting for app data layer" }
                 return
             }
 
@@ -651,8 +635,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
         private fun cloudSpeedFactor(): Float {
             val windMetersPerSecond = maxOf(
-                mLastLocation?.weather?.current?.wind?.speed?.inMetersPerSecond ?: 0.0,
-                mLastLocation?.weather?.current?.wind?.gusts?.inMetersPerSecond ?: 0.0,
+                mCurrentLocationData?.weather?.current?.wind?.speed?.inMetersPerSecond ?: 0.0,
+                mCurrentLocationData?.weather?.current?.wind?.gusts?.inMetersPerSecond ?: 0.0,
             )
             val measuredFactor = when {
                 windMetersPerSecond < 8.0 -> 1f
@@ -711,56 +695,87 @@ class MaterialLiveWallpaperService : WallpaperService() {
             if (width <= 0 || height <= 0) return
 
             val now = System.currentTimeMillis()
-            val daytime = visualDaytime(now)
-            val progress = if (daytime) {
-                celestialProgress(now, mSunriseMillis, mSunsetMillis)
-            } else {
-                celestialProgress(now, mMoonriseMillis, mMoonsetMillis)
-            }
-            val centerX = width * (0.12f + 0.76f * progress)
             val horizonY = height * 0.48f
             val peakY = height * 0.12f
-            val centerY = horizonY - sin(Math.PI * progress).toFloat() * (horizonY - peakY)
-            if (daytime) {
-                drawSun(canvas, centerX, centerY, min(width, height).toFloat())
-            } else {
-                val size = (min(width, height) * celestialSizeFraction).toInt()
+            val shortestSide = min(width, height).toFloat()
+            val sunAlpha = sunVisibility(now)
+            val moonAlpha = 1f - sunAlpha
+            val positionTime = now / 60_000L * 60_000L
+
+            if (sunAlpha > 0.01f) {
+                val sunProgress = celestialProgress(positionTime, mSunriseMillis, mSunsetMillis)
+                val sunX = width * (0.12f + 0.76f * sunProgress)
+                val sunY = horizonY - sin(Math.PI * sunProgress).toFloat() * (horizonY - peakY)
+                drawSun(canvas, sunX, sunY, shortestSide, sunAlpha)
+            }
+            if (moonAlpha > 0.01f) {
+                val moonProgress = celestialProgress(positionTime, mMoonriseMillis, mMoonsetMillis)
+                val moonX = width * (0.12f + 0.76f * moonProgress)
+                val moonY = horizonY - sin(Math.PI * moonProgress).toFloat() * (horizonY - peakY)
+                val size = (shortestSide * celestialSizeFraction).toInt()
                 val halfSize = size / 2
-                MoonDrawable().apply {
-                    setBounds(
-                        (centerX - halfSize).toInt(),
-                        (centerY - halfSize).toInt(),
-                        (centerX + halfSize).toInt(),
-                        (centerY + halfSize).toInt(),
-                    )
-                    draw(canvas)
-                }
+                mMoonDrawable.alpha = (moonAlpha * 255).toInt()
+                mMoonDrawable.setBounds(
+                    (moonX - halfSize).toInt(),
+                    (moonY - halfSize).toInt(),
+                    (moonX + halfSize).toInt(),
+                    (moonY + halfSize).toInt(),
+                )
+                mMoonDrawable.draw(canvas)
             }
         }
 
-        private fun drawSun(canvas: Canvas, centerX: Float, centerY: Float, shortestSide: Float) {
-            val glowRadius = shortestSide * 0.23f
-            val coreRadius = shortestSide * 0.035f
-            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-            paint.shader = RadialGradient(
-                centerX,
-                centerY,
-                glowRadius,
-                intArrayOf(
-                    Color.argb(245, 255, 255, 244),
-                    Color.argb(178, 255, 252, 226),
-                    Color.argb(82, 255, 247, 205),
-                    Color.argb(24, 255, 242, 190),
-                    Color.TRANSPARENT,
-                ),
-                floatArrayOf(0f, 0.13f, 0.34f, 0.68f, 1f),
-                Shader.TileMode.CLAMP,
-            )
-            canvas.drawCircle(centerX, centerY, glowRadius, paint)
+        private fun drawSun(
+            canvas: Canvas,
+            centerX: Float,
+            centerY: Float,
+            shortestSide: Float,
+            visibility: Float,
+        ) {
+            val glowRadius = shortestSide * 0.345f
+            val coreRadius = shortestSide * 0.0525f
+            val alpha = (visibility * 255).toInt()
+            val minute = System.currentTimeMillis() / 60_000L
+            if (minute != mCelestialPaintMinute || centerX != mSunPaintCenterX ||
+                centerY != mSunPaintCenterY || alpha != mSunPaintAlpha
+            ) {
+                mSunGlowPaint.shader = RadialGradient(
+                    centerX,
+                    centerY,
+                    glowRadius,
+                    intArrayOf(
+                        Color.argb(245, 255, 255, 244),
+                        Color.argb(178, 255, 252, 226),
+                        Color.argb(82, 255, 247, 205),
+                        Color.argb(24, 255, 242, 190),
+                        Color.TRANSPARENT,
+                    ),
+                    floatArrayOf(0f, 0.13f, 0.34f, 0.68f, 1f),
+                    Shader.TileMode.CLAMP,
+                )
+                mCelestialPaintMinute = minute
+                mSunPaintCenterX = centerX
+                mSunPaintCenterY = centerY
+                mSunPaintAlpha = alpha
+            }
+            mSunGlowPaint.alpha = alpha
+            mSunCorePaint.alpha = alpha
+            canvas.drawCircle(centerX, centerY, glowRadius, mSunGlowPaint)
+            canvas.drawCircle(centerX, centerY, coreRadius, mSunCorePaint)
+        }
 
-            paint.shader = null
-            paint.color = Color.rgb(255, 255, 246)
-            canvas.drawCircle(centerX, centerY, coreRadius, paint)
+        private fun sunVisibility(now: Long): Float {
+            if (!mAutomaticDayNight) return if (mDaytime) 1f else 0f
+            val sunrise = mSunriseMillis ?: return if (mDaytime) 1f else 0f
+            val sunset = mSunsetMillis ?: return if (mDaytime) 1f else 0f
+            val crossFade = 25L * 60L * 1000L
+            return when {
+                now < sunrise - crossFade -> 0f
+                now < sunrise + crossFade -> fraction(now, sunrise - crossFade, sunrise + crossFade)
+                now < sunset - crossFade -> 1f
+                now < sunset + crossFade -> 1f - fraction(now, sunset - crossFade, sunset + crossFade)
+                else -> 0f
+            }
         }
 
         private fun celestialProgress(now: Long, preferredStart: Long?, preferredEnd: Long?): Float {
@@ -801,11 +816,16 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 astroInterval(day.moon?.riseDate?.time, day.moon?.setDate?.time, now)
             }
             val sun = closestAstroInterval(sunIntervals, now)
+                ?: location?.let { approximateSunInterval(it, now) }
             val moon = closestAstroInterval(moonIntervals, now)
             mSunriseMillis = sun?.first
             mSunsetMillis = sun?.second
             mMoonriseMillis = moon?.first
             mMoonsetMillis = moon?.second
+            lwwLog {
+                "celestial timing sunrise=${mSunriseMillis?.let(::formatDebugTime)} " +
+                    "sunset=${mSunsetMillis?.let(::formatDebugTime)} sourceIntervals=${sunIntervals.size}"
+            }
             val intervals = if (mDaytime) {
                 sunIntervals
             } else {
@@ -823,6 +843,44 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mCelestialStartMillis = now - fallbackCelestialDuration / 2
             mCelestialEndMillis = now + fallbackCelestialDuration / 2
         }
+
+        private fun approximateSunInterval(location: Location, now: Long): Pair<Long, Long>? {
+            if (!location.isCurrentPosition && location.latitude == 0.0 && location.longitude == 0.0) return null
+            val timeZone = TimeZone.getDefault()
+            val calendar = Calendar.getInstance(timeZone).apply { timeInMillis = now }
+            val dayOfYear = calendar[Calendar.DAY_OF_YEAR]
+            val gamma = 2.0 * Math.PI / 365.0 * (dayOfYear - 1)
+            val equationOfTime = 229.18 * (
+                0.000075 + 0.001868 * cos(gamma) - 0.032077 * sin(gamma) -
+                    0.014615 * cos(2.0 * gamma) - 0.040849 * sin(2.0 * gamma)
+                )
+            val declination = 0.006918 - 0.399912 * cos(gamma) + 0.070257 * sin(gamma) -
+                0.006758 * cos(2.0 * gamma) + 0.000907 * sin(2.0 * gamma) -
+                0.002697 * cos(3.0 * gamma) + 0.00148 * sin(3.0 * gamma)
+            val latitudeRadians = Math.toRadians(location.latitude.coerceIn(-89.0, 89.0))
+            val zenith = Math.toRadians(90.833)
+            val hourAngleCos = (
+                cos(zenith) / (cos(latitudeRadians) * cos(declination)) -
+                    tan(latitudeRadians) * tan(declination)
+                ).coerceIn(-1.0, 1.0)
+            val hourAngleDegrees = Math.toDegrees(acos(hourAngleCos))
+            val offsetMinutes = timeZone.getOffset(now) / 60_000.0
+            val solarNoonMinutes = 720.0 - 4.0 * location.longitude - equationOfTime + offsetMinutes
+            val sunriseMinutes = solarNoonMinutes - hourAngleDegrees * 4.0
+            val sunsetMinutes = solarNoonMinutes + hourAngleDegrees * 4.0
+            val midnight = Calendar.getInstance(timeZone).apply {
+                timeInMillis = now
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.timeInMillis
+            return (midnight + (sunriseMinutes * 60_000.0).toLong()) to
+                (midnight + (sunsetMinutes * 60_000.0).toLong())
+        }
+
+        private fun formatDebugTime(timeMillis: Long): String =
+            java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", java.util.Locale.US).format(timeMillis)
 
         private fun closestAstroInterval(intervals: List<Pair<Long, Long>>, now: Long): Pair<Long, Long>? =
             intervals.firstOrNull { now in it.first..it.second }
@@ -946,27 +1004,22 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 mOrientationListener.enable()
             }
 
-            val location: Location? = if (configManager.weatherKind == "auto" || configManager.dayNightType == "auto") {
-                // TODO: Isn't there a more efficient way than reloading the location from database
-                // everytime the visibility changes??
-                // TODO
-                runBlocking {
-                    locationRepository.getFirstLocation(withParameters = false)
-                        .let {
-                            it?.copy(
-                                weather = weatherRepository.getWeatherByLocationId(
-                                    it.formattedId,
-                                    withDaily = configManager.dayNightType == "auto",
-                                    withHourly = false,
-                                    withMinutely = false,
-                                    withAlerts = false,
-                                    withNormals = false
-                                )
+            // Celestial positions still need the real location and daily astro data while
+            // weather/day-night are forced for visual testing (including Rotating mode).
+            val location: Location? = runBlocking {
+                locationRepository.getFirstLocation(withParameters = false)
+                    ?.let {
+                        it.copy(
+                            weather = weatherRepository.getWeatherByLocationId(
+                                it.formattedId,
+                                withDaily = true,
+                                withHourly = false,
+                                withMinutely = false,
+                                withAlerts = false,
+                                withNormals = false
                             )
-                        }
-                }
-            } else {
-                null
+                        )
+                    }
             }
             val weatherKind = when (configManager.weatherKind) {
                 "auto" -> location?.weather?.current?.weatherCode
@@ -981,7 +1034,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mAutomaticDayNight = configManager.dayNightType == "auto"
             mLastDayNightCheckMinute = Long.MIN_VALUE
             mParallaxEnabled = configManager.parallaxEnabled
-            mLastLocation = location
+            mCurrentLocationData = location
             lwwLog {
                 "onVisibilityChanged visible=true parallax=$mParallaxEnabled " +
                     "photoEnabled=${mWallpaperImageStore.photoBackgroundEnabled} " +
@@ -1012,8 +1065,6 @@ class MaterialLiveWallpaperService : WallpaperService() {
             }
 
             mHandler?.post { setWeatherBackgroundDrawable() }
-            maybeRefreshPhotoBackground(location)
-            maybeRefreshRainTrend(location)
             if (mRotatingWeather) {
                 mHandler?.postDelayed(mRotatingWeatherRunnable, ROTATING_WEATHER_INTERVAL_MILLIS)
             }
@@ -1066,111 +1117,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
             }
         }
 
-        /**
-         * Downloads/caches the location photo for [location] in the background (off the render
-         * thread). On success it rebuilds the background drawable and triggers a single redraw.
-         * No-op when the photo background is disabled or the location has no usable coordinates.
-         */
-        private fun maybeRefreshPhotoBackground(location: Location?) {
-            if (!mWallpaperImageStore.photoBackgroundEnabled) return
-            if (location == null || !location.isUsable) return
-            if (!mPhotoRefreshing.compareAndSet(false, true)) return // one download at a time
-            mPhotoScope.launch {
-                try {
-                    val place = PlaceQuery(
-                        city = location.city.ifBlank { null },
-                        municipality = location.admin2,
-                        state = location.admin1,
-                        country = location.country.ifBlank { null },
-                    )
-                    // Without a usable cache, do a non-forced refresh: the cached/recent URL is
-                    // not excluded, which is the fastest path to getting *any* photo on screen.
-                    // Only rotate to a brand-new photo when one is already showing.
-                    val file = mWallpaperRepository.refreshFor(
-                        location.latitude,
-                        location.longitude,
-                        place,
-                        forceRefresh = mWallpaperRepository.hasCachedPhoto(),
-                    )
-                    lwwLog { "maybeRefreshPhotoBackground result=${file?.name}" }
-                    if (file != null && mVisible) {
-                        mHandler?.post {
-                            setWeatherBackgroundDrawable()
-                            mHandler?.post(mDrawableRunnable)
-                        }
-                    }
-                } finally {
-                    mPhotoRefreshing.set(false)
-                }
-            }
-        }
-
-        /**
-         * Fetches the Buienradar precipitation nowcast for the location (off the render thread).
-         * Stores intensities (mm/h) for [drawRainTrend]; empty when no location / on error.
-         */
-        private fun maybeRefreshRainTrend(location: Location?) {
-            if (location == null || !location.isUsable) {
-                mRainIntensities = FloatArray(0)
-                return
-            }
-            mPhotoScope.launch {
-                mRainIntensities = try {
-                    BuienradarNowcastSource()
-                        .getRainTrend(location.latitude, location.longitude)
-                        .map { it.intensityMmH.toFloat() }
-                        .toFloatArray()
-                } catch (e: Throwable) {
-                    FloatArray(0)
-                }
-            }
-        }
-
-        /** Draws a subtle precipitation-nowcast strip at the bottom, only when rain is expected. */
-        private fun drawRainTrend(canvas: android.graphics.Canvas) {
-            try {
-                val data = mRainIntensities
-                if (data.size < 2) return
-                val maxV = data.maxOrNull() ?: return
-                if (maxV <= 0f) return
-                val w = mSizes[0].toFloat()
-                val h = mSizes[1].toFloat()
-                if (w <= 0f || h <= 0f) return
-
-                val stripH = (h * 0.08f).coerceIn(60f, 180f)
-                val bottomInset = h * 0.06f
-                val baseline = h - bottomInset
-                val top = baseline - stripH
-                val left = w * 0.08f
-                val right = w * 0.92f
-                val chartW = right - left
-                val axisMax = maxOf(0.5f, maxV)
-                val n = data.size
-                val stepX = chartW / (n - 1)
-
-                mRainPaint.style = Paint.Style.FILL
-                mRainPaint.color = 0x55000000
-                canvas.drawRoundRect(left - 24f, top - 24f, right + 24f, baseline + 24f, 28f, 28f, mRainPaint)
-
-                val path = Path()
-                path.moveTo(left, baseline)
-                for (i in 0 until n) {
-                    val x = left + stepX * i
-                    val y = baseline - (data[i] / axisMax * stripH).coerceIn(0f, stripH)
-                    path.lineTo(x, y)
-                }
-                path.lineTo(right, baseline)
-                path.close()
-                mRainPaint.color = 0xAA4FC3F7.toInt()
-                canvas.drawPath(path, mRainPaint)
-            } catch (e: Throwable) {
-                // Never crash the wallpaper because of the overlay.
-            }
-        }
-
         override fun onDestroy() {
             onVisibilityChanged(false)
-            mPhotoScope.cancel()
             mHandlerThread?.quit()
         }
     }
