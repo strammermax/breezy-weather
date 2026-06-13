@@ -469,6 +469,8 @@
     <string name="action_add_current_location">Add current location</string>
     <string name="action_add_new_location">Add a new location</string>
     <string name="action_camera">Camera</string>
+    <string name="action_retake">Retake</string>
+    <string name="camera_uploading">Uploading photo...</string>
     <string name="action_radar">Rain radar</string>
     <!-- Label shown when sharing coordinates from a maps app to Breezy Weather -->
     <string name="action_add_as_location">Add as location</string>
