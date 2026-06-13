@@ -20,15 +20,18 @@ import android.app.WallpaperColors
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.ColorFilter
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
+import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PixelFormat
 import android.graphics.RectF
+import android.graphics.RadialGradient
+import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -63,7 +66,6 @@ import org.breezyweather.common.utils.helpers.AsyncHelper
 import org.breezyweather.domain.location.model.isDaylight
 import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.ui.common.images.MoonDrawable
-import org.breezyweather.ui.common.images.SunDrawable
 import org.breezyweather.ui.theme.weatherView.WeatherView
 import org.breezyweather.ui.theme.weatherView.WeatherView.WeatherKindRule
 import org.breezyweather.ui.theme.weatherView.WeatherViewController
@@ -116,6 +118,24 @@ class MaterialLiveWallpaperService : WallpaperService() {
         return WeatherEngine(locationRepository, weatherRepository)
     }
 
+    companion object {
+        private const val ROTATING_WEATHER_INTERVAL_MILLIS = 20_000L
+        private val ROTATING_WEATHER_KINDS = intArrayOf(
+            WeatherView.WEATHER_KIND_CLEAR,
+            WeatherView.WEATHER_KIND_CLOUD,
+            WeatherView.WEATHER_KIND_CLOUDY,
+            WeatherView.WEATHER_KIND_RAINY,
+            WeatherView.WEATHER_KIND_SNOW,
+            WeatherView.WEATHER_KIND_SLEET,
+            WeatherView.WEATHER_KIND_HAIL,
+            WeatherView.WEATHER_KIND_FOG,
+            WeatherView.WEATHER_KIND_HAZE,
+            WeatherView.WEATHER_KIND_THUNDER,
+            WeatherView.WEATHER_KIND_THUNDERSTORM,
+            WeatherView.WEATHER_KIND_WIND,
+        )
+    }
+
     private inner class WeatherEngine(
         private val locationRepository: LocationRepository,
         private val weatherRepository: WeatherRepository,
@@ -132,6 +152,12 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mForeground: Drawable? = null
         private var mCelestialStartMillis: Long? = null
         private var mCelestialEndMillis: Long? = null
+        private var mSunriseMillis: Long? = null
+        private var mSunsetMillis: Long? = null
+        private var mMoonriseMillis: Long? = null
+        private var mMoonsetMillis: Long? = null
+        private var mAutomaticDayNight = false
+        private var mLastDayNightCheckMinute = Long.MIN_VALUE
         private var mOpenGravitySensor = false
         private var mGravitySensor: Sensor? = null
 
@@ -162,6 +188,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         // only when rain is expected. Empty = nothing drawn.
         private var mRainIntensities: FloatArray = FloatArray(0)
         private val mRainPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val mRotatingLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val photoHeightFraction = 0.52f
         private val celestialSizeFraction = 0.14f
         private val dayMillis = 24L * 60L * 60L * 1000L
@@ -180,6 +207,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mDaytime = false
         private var mVisible = false
         private var mAnimate = false
+        private var mRotatingWeather = false
+        private var mRotatingWeatherIndex = 0
         private var hasDrawn = false
         private var mDeviceOrientation: DeviceOrientation = DeviceOrientation.TOP
         private var mIntervalController: AsyncHelper.Controller? = null
@@ -206,7 +235,10 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
             var canvas: Canvas? = null
             try {
-                canvas = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && mWallpaperEffectRenderer != null) {
+                canvas = if (
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                    (mRotatingWeather || mWallpaperEffectRenderer != null)
+                ) {
                     mHolder?.lockHardwareCanvas()
                 } else {
                     mHolder?.lockCanvas()
@@ -222,6 +254,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
                         setWeatherBackgroundDrawable()
                     }
+                    refreshAutomaticDayNight(System.currentTimeMillis())
                     // Cheap per-frame check (string compare); rebuilds the photo layer only when
                     // its identity changed (new photo, new size, parallax/daytime toggle) and
                     // recovers automatically once a size or cached photo becomes available.
@@ -238,6 +271,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     it.withTranslation(-celestialOffset, 0f) {
                         drawCelestialBody(it)
                     }
+                    mWallpaperEffectRenderer?.drawClouds(it)
                     it.withTranslation(-fgOffset, 0f) {
                         mForeground?.draw(it)
                     }
@@ -275,8 +309,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         mIntervalComputer?.interval?.toLong() ?: 0L,
                         mAnimate,
                     )
-                    mWallpaperEffectRenderer?.draw(it)
+                    mWallpaperEffectRenderer?.drawForegroundEffects(it)
                     drawRainTrend(it)
+                    drawRotatingWeatherLabel(it)
                 }
             } catch (e: Throwable) {
                 if (BreezyWeather.instance.debugMode) {
@@ -284,6 +319,17 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 }
             } finally {
                 canvas?.let { mHolder?.unlockCanvasAndPost(it) }
+            }
+        }
+
+        private val mRotatingWeatherRunnable = object : Runnable {
+            override fun run() {
+                if (!mVisible || !mRotatingWeather) return
+                mRotatingWeatherIndex = (mRotatingWeatherIndex + 1) % ROTATING_WEATHER_KINDS.size
+                setWeather(ROTATING_WEATHER_KINDS[mRotatingWeatherIndex], mDaytime)
+                setWeatherImplementor()
+                mHandler?.post(mDrawableRunnable)
+                mHandler?.postDelayed(this, ROTATING_WEATHER_INTERVAL_MILLIS)
             }
         }
 
@@ -356,10 +402,54 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mDaytime = daytime
         }
 
+        private fun drawRotatingWeatherLabel(canvas: Canvas) {
+            if (!mRotatingWeather) return
+
+            val label = "Rotating: ${rotatingWeatherName(mWeatherKind)}"
+            val textSize = (canvas.height * 0.022f).coerceIn(34f, 60f)
+            mRotatingLabelPaint.textSize = textSize
+            mRotatingLabelPaint.textAlign = Paint.Align.CENTER
+            mRotatingLabelPaint.typeface = android.graphics.Typeface.DEFAULT_BOLD
+
+            val centerX = canvas.width / 2f
+            val baseline = canvas.height * 0.31f
+            val paddingX = textSize * 0.65f
+            val paddingY = textSize * 0.38f
+            val textWidth = mRotatingLabelPaint.measureText(label)
+            val metrics = mRotatingLabelPaint.fontMetrics
+            val bounds = RectF(
+                centerX - textWidth / 2f - paddingX,
+                baseline + metrics.ascent - paddingY,
+                centerX + textWidth / 2f + paddingX,
+                baseline + metrics.descent + paddingY,
+            )
+
+            mRotatingLabelPaint.color = 0x99000000.toInt()
+            canvas.drawRoundRect(bounds, textSize * 0.45f, textSize * 0.45f, mRotatingLabelPaint)
+            mRotatingLabelPaint.color = Color.WHITE
+            canvas.drawText(label, centerX, baseline, mRotatingLabelPaint)
+        }
+
+        private fun rotatingWeatherName(@WeatherKindRule weatherKind: Int): String = when (weatherKind) {
+            WeatherView.WEATHER_KIND_CLEAR -> "Clear"
+            WeatherView.WEATHER_KIND_CLOUD -> "Cloud"
+            WeatherView.WEATHER_KIND_CLOUDY -> "Cloudy"
+            WeatherView.WEATHER_KIND_RAINY -> "Rain"
+            WeatherView.WEATHER_KIND_SNOW -> "Snow"
+            WeatherView.WEATHER_KIND_SLEET -> "Sleet"
+            WeatherView.WEATHER_KIND_HAIL -> "Hail"
+            WeatherView.WEATHER_KIND_FOG -> "Fog"
+            WeatherView.WEATHER_KIND_HAZE -> "Haze"
+            WeatherView.WEATHER_KIND_THUNDER -> "Thunder"
+            WeatherView.WEATHER_KIND_THUNDERSTORM -> "Thunderstorm"
+            WeatherView.WEATHER_KIND_WIND -> "Wind"
+            else -> "Unknown"
+        }
+
         private fun setWeatherImplementor() {
             hasDrawn = false
             mWallpaperEffectRenderer = if (WallpaperWeatherEffectRenderer.supports(mWeatherKind)) {
-                WallpaperWeatherEffectRenderer(mWeatherKind, mDaytime)
+                WallpaperWeatherEffectRenderer(mWeatherKind, mDaytime, cloudSpeedFactor())
             } else {
                 null
             }
@@ -521,54 +611,207 @@ class MaterialLiveWallpaperService : WallpaperService() {
             return result
         }
 
-        private fun buildSkyBackground(): Drawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            if (mDaytime) {
-                intArrayOf(Color.rgb(42, 125, 196), Color.rgb(174, 221, 244))
-            } else {
-                intArrayOf(Color.rgb(3, 12, 35), Color.rgb(31, 55, 94))
+        private fun buildSkyBackground(): Drawable = object : Drawable() {
+            private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+            private var cachedMinute = Long.MIN_VALUE
+            private var cachedBounds = RectF()
+
+            override fun draw(canvas: Canvas) {
+                val now = System.currentTimeMillis()
+                val minute = now / 60_000L
+                val drawBounds = RectF(bounds)
+                if (minute != cachedMinute || drawBounds != cachedBounds) {
+                    val colors = skyColors(now)
+                    paint.shader = LinearGradient(
+                        0f,
+                        drawBounds.top,
+                        0f,
+                        drawBounds.bottom,
+                        colors[0],
+                        colors[1],
+                        Shader.TileMode.CLAMP,
+                    )
+                    cachedMinute = minute
+                    cachedBounds = drawBounds
+                }
+                canvas.drawRect(drawBounds, paint)
             }
+
+            override fun setAlpha(alpha: Int) {
+                paint.alpha = alpha
+            }
+
+            override fun setColorFilter(colorFilter: ColorFilter?) {
+                paint.colorFilter = colorFilter
+            }
+
+            @Deprecated("Deprecated in Android")
+            override fun getOpacity(): Int = PixelFormat.OPAQUE
+        }
+
+        private fun cloudSpeedFactor(): Float {
+            val windMetersPerSecond = maxOf(
+                mLastLocation?.weather?.current?.wind?.speed?.inMetersPerSecond ?: 0.0,
+                mLastLocation?.weather?.current?.wind?.gusts?.inMetersPerSecond ?: 0.0,
+            )
+            val measuredFactor = when {
+                windMetersPerSecond < 8.0 -> 1f
+                windMetersPerSecond < 14.0 ->
+                    (1.0 + (windMetersPerSecond - 8.0) / 6.0 * 1.8).toFloat()
+                else -> 3.6f
+            }
+            return when (mWeatherKind) {
+                WeatherView.WEATHER_KIND_THUNDER,
+                WeatherView.WEATHER_KIND_THUNDERSTORM,
+                -> max(measuredFactor, 2.8f)
+                WeatherView.WEATHER_KIND_WIND -> max(measuredFactor, 4.2f)
+                else -> measuredFactor
+            }
+        }
+
+        private fun skyColors(now: Long): IntArray {
+            val night = intArrayOf(Color.rgb(3, 12, 35), Color.rgb(31, 55, 94))
+            val dawn = intArrayOf(Color.rgb(78, 78, 126), Color.rgb(242, 145, 104))
+            val day = intArrayOf(Color.rgb(42, 125, 196), Color.rgb(174, 221, 244))
+            val dusk = intArrayOf(Color.rgb(54, 61, 108), Color.rgb(230, 113, 76))
+
+            if (!mAutomaticDayNight) return if (mDaytime) day else night
+            val sunrise = mSunriseMillis ?: return if (mDaytime) day else night
+            val sunset = mSunsetMillis ?: return if (mDaytime) day else night
+            val transition = 45L * 60L * 1000L
+
+            return when {
+                now < sunrise - transition -> night
+                now < sunrise -> blendSky(night, dawn, fraction(now, sunrise - transition, sunrise))
+                now < sunrise + transition -> blendSky(dawn, day, fraction(now, sunrise, sunrise + transition))
+                now < sunset - transition -> day
+                now < sunset -> blendSky(day, dusk, fraction(now, sunset - transition, sunset))
+                now < sunset + transition -> blendSky(dusk, night, fraction(now, sunset, sunset + transition))
+                else -> night
+            }
+        }
+
+        private fun blendSky(from: IntArray, to: IntArray, amount: Float): IntArray = intArrayOf(
+            blendColor(from[0], to[0], amount),
+            blendColor(from[1], to[1], amount),
         )
+
+        private fun blendColor(from: Int, to: Int, amount: Float): Int = Color.rgb(
+            (Color.red(from) + (Color.red(to) - Color.red(from)) * amount).toInt(),
+            (Color.green(from) + (Color.green(to) - Color.green(from)) * amount).toInt(),
+            (Color.blue(from) + (Color.blue(to) - Color.blue(from)) * amount).toInt(),
+        )
+
+        private fun fraction(value: Long, start: Long, end: Long): Float =
+            ((value - start).toFloat() / (end - start)).coerceIn(0f, 1f)
 
         private fun drawCelestialBody(canvas: Canvas) {
             val width = mSizes[0]
             val height = mSizes[1]
             if (width <= 0 || height <= 0) return
 
-            val progress = celestialProgress(System.currentTimeMillis())
+            val now = System.currentTimeMillis()
+            val daytime = visualDaytime(now)
+            val progress = if (daytime) {
+                celestialProgress(now, mSunriseMillis, mSunsetMillis)
+            } else {
+                celestialProgress(now, mMoonriseMillis, mMoonsetMillis)
+            }
             val centerX = width * (0.12f + 0.76f * progress)
             val horizonY = height * 0.48f
             val peakY = height * 0.12f
             val centerY = horizonY - sin(Math.PI * progress).toFloat() * (horizonY - peakY)
-            val size = (min(width, height) * celestialSizeFraction).toInt()
-            val halfSize = size / 2
-            val drawable = if (mDaytime) SunDrawable() else MoonDrawable()
-            drawable.setBounds(
-                (centerX - halfSize).toInt(),
-                (centerY - halfSize).toInt(),
-                (centerX + halfSize).toInt(),
-                (centerY + halfSize).toInt()
-            )
-            drawable.draw(canvas)
+            if (daytime) {
+                drawSun(canvas, centerX, centerY, min(width, height).toFloat())
+            } else {
+                val size = (min(width, height) * celestialSizeFraction).toInt()
+                val halfSize = size / 2
+                MoonDrawable().apply {
+                    setBounds(
+                        (centerX - halfSize).toInt(),
+                        (centerY - halfSize).toInt(),
+                        (centerX + halfSize).toInt(),
+                        (centerY + halfSize).toInt(),
+                    )
+                    draw(canvas)
+                }
+            }
         }
 
-        private fun celestialProgress(now: Long): Float {
-            val start = mCelestialStartMillis ?: return 0.5f
-            val end = mCelestialEndMillis ?: return 0.5f
+        private fun drawSun(canvas: Canvas, centerX: Float, centerY: Float, shortestSide: Float) {
+            val glowRadius = shortestSide * 0.23f
+            val coreRadius = shortestSide * 0.035f
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+            paint.shader = RadialGradient(
+                centerX,
+                centerY,
+                glowRadius,
+                intArrayOf(
+                    Color.argb(245, 255, 255, 244),
+                    Color.argb(178, 255, 252, 226),
+                    Color.argb(82, 255, 247, 205),
+                    Color.argb(24, 255, 242, 190),
+                    Color.TRANSPARENT,
+                ),
+                floatArrayOf(0f, 0.13f, 0.34f, 0.68f, 1f),
+                Shader.TileMode.CLAMP,
+            )
+            canvas.drawCircle(centerX, centerY, glowRadius, paint)
+
+            paint.shader = null
+            paint.color = Color.rgb(255, 255, 246)
+            canvas.drawCircle(centerX, centerY, coreRadius, paint)
+        }
+
+        private fun celestialProgress(now: Long, preferredStart: Long?, preferredEnd: Long?): Float {
+            val start = preferredStart ?: mCelestialStartMillis ?: return 0.5f
+            val end = preferredEnd ?: mCelestialEndMillis ?: return 0.5f
             if (end <= start) return 0.5f
             return ((now - start).toFloat() / (end - start)).coerceIn(0f, 1f)
+        }
+
+        private fun visualDaytime(now: Long): Boolean {
+            if (!mAutomaticDayNight) return mDaytime
+            val sunrise = mSunriseMillis ?: return mDaytime
+            val sunset = mSunsetMillis ?: return mDaytime
+            return now in sunrise..sunset
+        }
+
+        private fun refreshAutomaticDayNight(now: Long) {
+            if (!mAutomaticDayNight) return
+            val minute = now / 60_000L
+            if (minute == mLastDayNightCheckMinute) return
+            mLastDayNightCheckMinute = minute
+
+            val daytime = visualDaytime(now)
+            if (daytime == mDaytime) return
+            mDaytime = daytime
+            mForegroundKey = null
+            setWeatherImplementor()
+            lwwLog { "automatic day/night changed daytime=$daytime" }
         }
 
         private fun updateCelestialTiming(location: Location?) {
             val now = System.currentTimeMillis()
             val daily = location?.weather?.dailyForecast.orEmpty()
-            val intervals = if (mDaytime) {
-                daily.mapNotNull { day -> astroInterval(day.sun?.riseDate?.time, day.sun?.setDate?.time, now) }
-            } else {
-                daily.mapNotNull { day -> astroInterval(day.moon?.riseDate?.time, day.moon?.setDate?.time, now) }
+            val sunIntervals = daily.mapNotNull { day ->
+                astroInterval(day.sun?.riseDate?.time, day.sun?.setDate?.time, now)
             }
-            val active = intervals.firstOrNull { now in it.first..it.second }
-                ?: intervals.minByOrNull { interval -> min(abs(now - interval.first), abs(now - interval.second)) }
+            val moonIntervals = daily.mapNotNull { day ->
+                astroInterval(day.moon?.riseDate?.time, day.moon?.setDate?.time, now)
+            }
+            val sun = closestAstroInterval(sunIntervals, now)
+            val moon = closestAstroInterval(moonIntervals, now)
+            mSunriseMillis = sun?.first
+            mSunsetMillis = sun?.second
+            mMoonriseMillis = moon?.first
+            mMoonsetMillis = moon?.second
+            val intervals = if (mDaytime) {
+                sunIntervals
+            } else {
+                moonIntervals
+            }
+            val active = closestAstroInterval(intervals, now)
 
             if (active != null) {
                 mCelestialStartMillis = active.first
@@ -580,6 +823,10 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mCelestialStartMillis = now - fallbackCelestialDuration / 2
             mCelestialEndMillis = now + fallbackCelestialDuration / 2
         }
+
+        private fun closestAstroInterval(intervals: List<Pair<Long, Long>>, now: Long): Pair<Long, Long>? =
+            intervals.firstOrNull { now in it.first..it.second }
+                ?: intervals.minByOrNull { interval -> min(abs(now - interval.first), abs(now - interval.second)) }
 
         private fun astroInterval(rise: Long?, set: Long?, now: Long): Pair<Long, Long>? {
             if (rise == null || set == null) return null
@@ -691,6 +938,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val settingsManager = SettingsManager.getInstance(applicationContext)
             val configManager = LiveWallpaperConfigManager(this@MaterialLiveWallpaperService)
             mAnimate = configManager.animationsEnabled
+            mRotatingWeather = configManager.weatherKind == "rotating"
+            mRotatingWeatherIndex = 0
             mRotation2D = 0f
             mRotation3D = 0f
             if (mOrientationListener.canDetectOrientation()) {
@@ -721,6 +970,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             }
             val weatherKind = when (configManager.weatherKind) {
                 "auto" -> location?.weather?.current?.weatherCode
+                "rotating" -> null
                 else -> WeatherCode.getInstance(configManager.weatherKind)
             }
             val daytime = when (configManager.dayNightType) {
@@ -728,6 +978,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 "night" -> false
                 else -> location?.isDaylight ?: true
             }
+            mAutomaticDayNight = configManager.dayNightType == "auto"
+            mLastDayNightCheckMinute = Long.MIN_VALUE
             mParallaxEnabled = configManager.parallaxEnabled
             mLastLocation = location
             lwwLog {
@@ -737,7 +989,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     "location=${location != null}"
             }
             setWeather(
-                WeatherViewController.getWeatherKind(weatherKind),
+                if (mRotatingWeather) {
+                    ROTATING_WEATHER_KINDS[mRotatingWeatherIndex]
+                } else {
+                    WeatherViewController.getWeatherKind(weatherKind)
+                },
                 daytime
             )
             updateCelestialTiming(location)
@@ -758,6 +1014,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mHandler?.post { setWeatherBackgroundDrawable() }
             maybeRefreshPhotoBackground(location)
             maybeRefreshRainTrend(location)
+            if (mRotatingWeather) {
+                mHandler?.postDelayed(mRotatingWeatherRunnable, ROTATING_WEATHER_INTERVAL_MILLIS)
+            }
             if (mAnimate) {
                 val screenRefreshRate = ContextCompat.getDisplayOrDefault(this@MaterialLiveWallpaperService)
                     .refreshRate.let {

@@ -195,6 +195,7 @@
     <!-- live wallpaper weather kind. -->
     <string-array name="live_wallpaper_weather_kinds">
         <item>@string/settings_automatic</item>
+        <item>@string/widget_live_wallpaper_weather_rotating</item>
         <item>@string/weather_kind_clear</item>
         <item>@string/weather_kind_partly_cloudy</item>
         <item>@string/weather_kind_cloudy</item>
@@ -210,6 +211,7 @@
     </string-array>
     <string-array name="live_wallpaper_weather_kind_values">
         <item>auto</item>
+        <item>rotating</item>
         <item>CLEAR</item>
         <item>PARTLY_CLOUDY</item>
         <item>CLOUDY</item>
