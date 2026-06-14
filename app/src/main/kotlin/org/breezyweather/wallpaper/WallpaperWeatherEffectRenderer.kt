@@ -43,6 +43,7 @@ internal class WallpaperWeatherEffectRenderer(
         windDirectionDegrees = null,
     ),
     private val starField: StarFieldParams = StarFieldFactory.starFieldParams(locationSeed = 0L),
+    private val glassRainIntensity: Float = 0f,
 ) {
     private var daylight = daylight.coerceIn(0f, 1f)
     private val daytime: Boolean
@@ -61,15 +62,17 @@ internal class WallpaperWeatherEffectRenderer(
                 }
             } catch (error: Throwable) {
                 Log.w(LOG_TAG, "Weather RuntimeShader unavailable; using Canvas fallback", error)
-                canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField)
+                canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField, glassRainIntensity)
             }
         } else {
-            canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField)
+            canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField, glassRainIntensity)
         }
     }
 
     private var elapsedSeconds = 0f
     private var precipitationLayerCount = DEFAULT_PRECIPITATION_LAYERS
+    private val glassRainProfile: GlassRainProfile
+        get() = GlassRainFieldFactory.profileFor(precipitationLayerCount)
     private var averageFrameMillis = TARGET_FRAME_MILLIS
     private var qualityEvaluationMillis = 0L
     private var stableFrameMillis = 0L
@@ -146,6 +149,10 @@ internal class WallpaperWeatherEffectRenderer(
             s.setFloatUniform("fogColor", FogFieldFactory.fogColor(fogField.isHaze, daylight))
             s.setFloatUniform("starVisibility", StarFieldFactory.starVisibility(daylight))
             s.setFloatUniform("starSeed", starField.seed)
+            s.setFloatUniform("glassRainIntensity", glassRainIntensity)
+            s.setFloatUniform("glassTrailLength", glassRainProfile.trailLength)
+            s.setFloatUniform("glassHighlightStrength", glassRainProfile.highlightStrength)
+            s.setFloatUniform("glassRefractionStrength", glassRainProfile.refractionStrength)
             canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), sp)
         } else {
             if (pass == WEATHER_PASS_BACKGROUND) {
@@ -165,6 +172,7 @@ internal class WallpaperWeatherEffectRenderer(
         val cloudField: CloudFieldParams,
         val fogField: FogFieldParams,
         val starField: StarFieldParams,
+        val glassRainIntensity: Float,
     ) {
         val daytime: Boolean
             get() = daylight >= 0.5f
@@ -172,6 +180,7 @@ internal class WallpaperWeatherEffectRenderer(
         private val particles = mutableListOf<Particle>()
         private val clouds = mutableListOf<CloudParticle>()
         private val screenDrops = mutableListOf<ScreenDrop>()
+        private var glassRainProfile = GlassRainFieldFactory.BALANCED
         private var lightningAlpha = 0f
         private var fogElapsedSeconds = 0f
         private var starElapsedSeconds = 0f
@@ -243,8 +252,9 @@ internal class WallpaperWeatherEffectRenderer(
                 }
             }
 
+            glassRainProfile = GlassRainFieldFactory.profileFor(effectiveLayers)
             for (drop in screenDrops) {
-                drop.update(deltaSec, lastHeight)
+                drop.update(deltaSec, lastHeight, glassRainProfile.trailLength)
             }
 
             // Update lightning
@@ -373,24 +383,43 @@ internal class WallpaperWeatherEffectRenderer(
         fun drawGlassRainDrops(canvas: Canvas, contribution: Float = 1f) {
             lastWidth = canvas.width
             lastHeight = canvas.height
+            if (glassRainIntensity <= 0f) return
             if (weatherKind == WeatherView.WEATHER_KIND_RAINY ||
                 weatherKind == WeatherView.WEATHER_KIND_THUNDER ||
                 weatherKind == WeatherView.WEATHER_KIND_THUNDERSTORM ||
                 weatherKind == WeatherView.WEATHER_KIND_SLEET
             ) {
                 if (screenDrops.isEmpty()) {
-                    repeat(34) { screenDrops.add(ScreenDrop(random, lastWidth, lastHeight)) }
+                    val staticRatio = GlassRainFieldFactory.staticRatio(glassRainIntensity)
+                    repeat(glassRainProfile.maxDrops) { index ->
+                        val isSliding = index >= glassRainProfile.maxDrops * staticRatio
+                        screenDrops.add(ScreenDrop(random, lastWidth, lastHeight, isSliding))
+                    }
                 }
-                paint.style = Paint.Style.STROKE
+                val effectiveAlpha = glassRainIntensity * contribution
+                val highlightStrength = glassRainProfile.highlightStrength
+                val refractionStrength = glassRainProfile.refractionStrength
                 paint.strokeWidth = 2f
                 for (drop in screenDrops) {
+                    if (drop.isSliding && drop.trailLength > 1f) {
+                        paint.style = Paint.Style.STROKE
+                        paint.color = Color.rgb(220, 236, 255)
+                        paint.alpha = (70 * highlightStrength * effectiveAlpha).toInt().coerceIn(0, 255)
+                        canvas.drawLine(drop.x, drop.y - drop.radius, drop.x, drop.y - drop.radius - drop.trailLength, paint)
+                    }
+                    paint.style = Paint.Style.STROKE
                     paint.color = Color.rgb(24, 38, 58)
-                    paint.alpha = (78 * contribution).toInt()
+                    paint.alpha = (78 * effectiveAlpha).toInt().coerceIn(0, 255)
                     canvas.drawArc(drop.bounds, 12f, 156f, false, paint)
+                    paint.style = Paint.Style.FILL
+                    paint.color = Color.rgb(154, 200, 232)
+                    paint.alpha = (60 * refractionStrength * effectiveAlpha).toInt().coerceIn(0, 255)
+                    canvas.drawOval(drop.lensRing, paint)
+                    paint.style = Paint.Style.STROKE
                     paint.color = Color.WHITE
-                    paint.alpha = (46 * contribution).toInt()
+                    paint.alpha = (46 * effectiveAlpha).toInt().coerceIn(0, 255)
                     canvas.drawOval(drop.bounds, paint)
-                    paint.alpha = (115 * contribution).toInt()
+                    paint.alpha = (115 * highlightStrength * effectiveAlpha).toInt().coerceIn(0, 255)
                     canvas.drawArc(drop.highlight, 195f, 82f, false, paint)
                 }
                 paint.style = Paint.Style.FILL
@@ -433,28 +462,50 @@ internal class WallpaperWeatherEffectRenderer(
             val speedX = (8f + r.nextFloat() * 16f) * layer.speedFactor
         }
 
-        private class ScreenDrop(r: Random, w: Int, h: Int) {
-            private val radius = 5f + r.nextFloat() * 13f
-            private val x = radius + r.nextFloat() * (w - radius * 2f).coerceAtLeast(1f)
-            private var y = radius + r.nextFloat() * (h - radius * 2f).coerceAtLeast(1f)
-            private val speedY = if (r.nextFloat() < 0.22f) 7f + r.nextFloat() * 16f else 0f
+        /**
+         * ACT-006: static drops jitter slightly in place; sliding drops fall, accelerate
+         * and grow a trail above them that is cleared on recycle.
+         */
+        private class ScreenDrop(r: Random, w: Int, h: Int, val isSliding: Boolean) {
+            val radius = 5f + r.nextFloat() * 13f
+            var x = radius + r.nextFloat() * (w - radius * 2f).coerceAtLeast(1f)
+            var y = radius + r.nextFloat() * (h - radius * 2f).coerceAtLeast(1f)
+            private var speedY = if (isSliding) 7f + r.nextFloat() * 16f else 0f
+            private val jitterPhase = r.nextFloat() * (2f * Math.PI).toFloat()
+            private val jitterSpeed = 0.4f + r.nextFloat() * 0.6f
+            private val baseX = x
+            private var elapsedSeconds = 0f
+            var trailLength = 0f
             val bounds = RectF()
             val highlight = RectF()
+            val lensRing = RectF()
 
             init {
                 updateBounds()
             }
 
-            fun update(deltaSeconds: Float, height: Int) {
-                if (speedY == 0f) return
-                y += speedY * deltaSeconds
-                if (y - radius > height) y = -radius
+            fun update(deltaSeconds: Float, height: Int, trailLengthFactor: Float) {
+                elapsedSeconds += deltaSeconds
+                if (isSliding) {
+                    speedY += deltaSeconds * 6f
+                    y += speedY * deltaSeconds
+                    trailLength = (trailLength + speedY * deltaSeconds)
+                        .coerceAtMost(radius * 3f * trailLengthFactor)
+                    if (y - radius - trailLength > height) {
+                        y = -radius
+                        speedY = 7f
+                        trailLength = 0f
+                    }
+                } else {
+                    x = baseX + kotlin.math.sin(elapsedSeconds * jitterSpeed + jitterPhase) * radius * 0.06f
+                }
                 updateBounds()
             }
 
             private fun updateBounds() {
                 bounds.set(x - radius * 0.72f, y - radius, x + radius * 0.72f, y + radius)
                 highlight.set(x - radius * 0.48f, y - radius * 0.72f, x + radius * 0.48f, y + radius * 0.50f)
+                lensRing.set(x - radius * 0.40f, y - radius * 0.40f, x + radius * 0.40f, y + radius * 0.40f)
             }
         }
     }
@@ -527,6 +578,10 @@ internal class WallpaperWeatherEffectRenderer(
             uniform float fogColor[3];
             uniform float starVisibility;
             uniform float starSeed;
+            uniform float glassRainIntensity;
+            uniform float glassTrailLength;
+            uniform float glassHighlightStrength;
+            uniform float glassRefractionStrength;
 
             float hash21(float2 p) {
                 p = fract(p * float2(123.34, 456.21));
@@ -558,13 +613,17 @@ internal class WallpaperWeatherEffectRenderer(
                 return streak * smoothstep(0.28, 0.96, random);
             }
 
-            float2 glassDropLayer(float2 uv, float scale, float speed, float seed) {
+            // ACT-006: returns (highlight, shadow, refraction). trailLength scales how far
+            // the drop's trail reaches (0 = static, no trail), refractionStrength scales a
+            // lensing ring that approximates background light bending through the drop.
+            float3 glassDropLayer(float2 uv, float scale, float speed, float seed, float trailLength, float refractionStrength) {
                 float2 p = uv * float2(scale, scale * 1.18);
                 float2 cell = floor(p);
                 float random = hash21(cell + seed);
                 float2 local = fract(p) - 0.5;
                 local.y = fract(local.y - time * speed * mix(0.18, 1.0, random)) - 0.5;
-                local.x += (random - 0.5) * 0.46 + sin(local.y * 9.0 + seed) * 0.018;
+                float windSkew = sin(radians(windDirection)) * 0.10 * windFactor;
+                local.x += (random - 0.5) * 0.46 + sin(local.y * 9.0 + seed) * 0.018 + windSkew * local.y;
 
                 float size = mix(0.045, 0.13, hash21(cell + seed + 17.0));
                 float2 dropPoint = local;
@@ -576,9 +635,11 @@ internal class WallpaperWeatherEffectRenderer(
                     - smoothstep(size * 0.76, size * 0.48, distanceFromDrop);
 
                 float trailWidth = mix(0.012, 0.034, random);
+                float trailReach = mix(size * 0.42, 0.42, trailLength);
                 float trail = smoothstep(trailWidth, 0.0, abs(local.x))
-                    * smoothstep(0.42, size * 0.38, local.y)
-                    * smoothstep(-0.50, -0.18, local.y);
+                    * smoothstep(trailReach, size * 0.38, local.y)
+                    * smoothstep(-0.50, -0.18, local.y)
+                    * trailLength;
                 float topLight = smoothstep(size * 0.42, 0.0,
                     length(dropPoint - float2(-size * 0.30, -size * 0.32)));
                 float bottomShade = smoothstep(size * 0.34, 0.0,
@@ -586,7 +647,12 @@ internal class WallpaperWeatherEffectRenderer(
                 float visible = smoothstep(0.70, 0.98, random);
                 float highlight = (rim * 0.30 + topLight * 0.42 + trail * 0.10) * visible;
                 float shadow = (body * 0.08 + bottomShade * 0.30 + trail * 0.12) * visible;
-                return float2(highlight, shadow);
+                // Bright lensing ring inside the drop body, approximating refraction of the
+                // scene behind the glass.
+                float lensRing = smoothstep(size * 0.92, size * 0.60, distanceFromDrop)
+                    - smoothstep(size * 0.55, size * 0.30, distanceFromDrop);
+                float refraction = lensRing * body * visible * refractionStrength;
+                return float3(highlight, shadow, refraction);
             }
 
             float hailLayer(float2 uv, float scale, float speed, float seed) {
@@ -701,6 +767,7 @@ internal class WallpaperWeatherEffectRenderer(
                 float3 color = float3(0.82, 0.91, 1.0);
                 float glassHighlight = 0.0;
                 float glassShadow = 0.0;
+                float glassRefraction = 0.0;
 
                 if (weatherPass == 1.0 && (mode == 1.0 || mode == 4.0 || mode == 5.0)) {
                     float rain = rainLayer(aspectUv, 18.0, 1.65, 1.0) * 0.24;
@@ -709,12 +776,16 @@ internal class WallpaperWeatherEffectRenderer(
                     alpha += rain;
                 }
 
-                if (weatherPass == 2.0 && (mode == 1.0 || mode == 4.0 || mode == 5.0)) {
-                    float2 largeDrops = glassDropLayer(aspectUv, 5.5, 0.026, 31.0);
-                    float2 mediumDrops = glassDropLayer(aspectUv, 10.0, 0.016, 73.0);
-                    float2 smallDrops = glassDropLayer(aspectUv, 18.0, 0.007, 117.0);
-                    glassHighlight = clamp(largeDrops.x + mediumDrops.x * 0.78 + smallDrops.x * 0.46, 0.0, 0.72);
+                if (weatherPass == 2.0 && (mode == 1.0 || mode == 4.0 || mode == 5.0) && glassRainIntensity > 0.0) {
+                    float3 largeDrops = glassDropLayer(aspectUv, 5.5, 0.026, 31.0, glassTrailLength, glassRefractionStrength);
+                    float3 mediumDrops = glassDropLayer(aspectUv, 10.0, 0.016, 73.0, glassTrailLength, glassRefractionStrength);
+                    float3 smallDrops = glassDropLayer(aspectUv, 18.0, 0.007, 117.0, glassTrailLength, glassRefractionStrength);
+                    glassHighlight = clamp((largeDrops.x + mediumDrops.x * 0.78 + smallDrops.x * 0.46) * glassHighlightStrength, 0.0, 0.85);
                     glassShadow = clamp(largeDrops.y + mediumDrops.y * 0.82 + smallDrops.y * 0.50, 0.0, 0.58);
+                    glassRefraction = clamp(largeDrops.z + mediumDrops.z * 0.78 + smallDrops.z * 0.46, 0.0, 0.5);
+                    glassHighlight *= glassRainIntensity;
+                    glassShadow *= glassRainIntensity;
+                    glassRefraction *= glassRainIntensity;
                 }
 
                 if (weatherPass == 1.0 && (mode == 2.0 || mode == 5.0)) {
@@ -842,6 +913,11 @@ internal class WallpaperWeatherEffectRenderer(
                 premultiplied = premultiplied * (1.0 - glassHighlight)
                     + float3(0.86, 0.93, 1.0) * glassHighlight;
                 a = a + glassHighlight * (1.0 - a);
+                // ACT-006: lensing ring approximating refraction of the scene behind each drop.
+                float refractionMix = clamp(glassRefraction, 0.0, 1.0) * 0.9;
+                premultiplied = premultiplied * (1.0 - refractionMix)
+                    + float3(0.66, 0.85, 1.0) * refractionMix;
+                a = a + refractionMix * (1.0 - a);
                 // Global crossfade contribution. Output is premultiplied, so scale both the
                 // premultiplied color and alpha to keep transparent pixels invisible.
                 premultiplied = premultiplied * transitionAlpha;

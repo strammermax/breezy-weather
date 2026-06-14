@@ -527,6 +527,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                             StarFieldFactory.locationSeed(it.latitude, it.longitude)
                         } ?: 0L,
                     ),
+                    glassRainIntensity = sceneState.glassRainIntensity,
                 )
             } else {
                 null
