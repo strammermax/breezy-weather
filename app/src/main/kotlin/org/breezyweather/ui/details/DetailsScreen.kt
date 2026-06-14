@@ -43,6 +43,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleFloatingActionButton
 import androidx.compose.material3.ToggleFloatingActionButtonDefaults.animateIcon
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.animateFloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,8 +57,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
@@ -127,11 +130,22 @@ internal fun DailyWeatherScreen(
     }
 
     BreezyWeatherTheme(!isLightTheme) {
+        // ACT-013: text color for content placed directly on the sky-gradient
+        // background (outside any glass card), e.g. the top bar title and the
+        // numbers/labels in DetailsConditions.
+        val glassContentColor = colorResource(R.color.colorGlassTopBarText)
         Material3Scaffold(
             topBar = {
                 BWCenterAlignedTopAppBar(
                     title = detailsUiState.selectedChart.getName(context),
-                    onBackPressed = onBackPressed
+                    onBackPressed = onBackPressed,
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color.Transparent,
+                        scrolledContainerColor = Color.Transparent,
+                        titleContentColor = glassContentColor,
+                        navigationIconContentColor = glassContentColor,
+                        actionIconContentColor = glassContentColor
+                    )
                 )
             },
             floatingActionButton = {
@@ -143,7 +157,11 @@ internal fun DailyWeatherScreen(
                     )
                 }
             },
-            floatingActionButtonPosition = FabPosition.End
+            floatingActionButtonPosition = FabPosition.End,
+            // ACT-013: let the activity's sky-gradient background show through behind
+            // the glass scaffold, instead of an opaque Material surface color.
+            containerColor = Color.Transparent,
+            contentColor = glassContentColor
         ) { paddings ->
             detailsUiState.location?.let { loc ->
                 val scope = rememberCoroutineScope()
@@ -156,36 +174,51 @@ internal fun DailyWeatherScreen(
                 val pagerPage by remember {
                     derivedStateOf { pagerState.currentPage }
                 }
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            top = paddings.calculateTopPadding(),
-                            start = paddings.calculateStartPadding(LocalLayoutDirection.current),
-                            end = paddings.calculateEndPadding(LocalLayoutDirection.current)
-                        )
-                ) {
-                    DailyPagerIndicator(
-                        pages = pages,
-                        selected = pagerPage,
-                        location = loc,
-                        onClick = {
-                            scope.launch {
-                                pagerState.animateScrollToPage(it)
-                            }
-                        },
-                        todayIndex = loc.weather!!.todayIndex
-                    )
-                    HorizontalPager(state = pagerState) { page ->
-                        DailyPagerContent(
+                // ACT-013: override the surface/outline colors so the cards and tab bar
+                // inside this screen render as translucent glass over the sky-gradient
+                // background, with light text that stays readable on the photo/gradient.
+                val glassColorScheme = MaterialTheme.colorScheme.copy(
+                    surface = colorResource(R.color.colorGlassCardBackground),
+                    surfaceVariant = colorResource(R.color.colorGlassCardBackground),
+                    onSurface = colorResource(R.color.colorGlassTopBarText),
+                    onSurfaceVariant = colorResource(R.color.colorGlassTopBarText).copy(alpha = 0.75f),
+                    outline = colorResource(R.color.colorGlassCardStroke),
+                    outlineVariant = colorResource(R.color.colorGlassCardStroke)
+                )
+                MaterialTheme(colorScheme = glassColorScheme) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                top = paddings.calculateTopPadding(),
+                                start = paddings.calculateStartPadding(LocalLayoutDirection.current),
+                                end = paddings.calculateEndPadding(LocalLayoutDirection.current)
+                            )
+                    ) {
+                        DailyPagerIndicator(
+                            pages = pages,
+                            selected = pagerPage,
                             location = loc,
-                            selected = page,
-                            selectedChart = detailsUiState.selectedChart,
-                            setSelectedChart = { chart -> detailsViewModel.setSelectedChart(chart) },
-                            selectedPollutant = detailsUiState.selectedPollutant,
-                            setSelectedPollutant = { pollutant -> detailsViewModel.setSelectedPollutant(pollutant) },
-                            pollenIndexSource = detailsViewModel.getPollenIndexSource(loc)
+                            onClick = {
+                                scope.launch {
+                                    pagerState.animateScrollToPage(it)
+                                }
+                            },
+                            todayIndex = loc.weather!!.todayIndex
                         )
+                        HorizontalPager(state = pagerState) { page ->
+                            DailyPagerContent(
+                                location = loc,
+                                selected = page,
+                                selectedChart = detailsUiState.selectedChart,
+                                setSelectedChart = { chart -> detailsViewModel.setSelectedChart(chart) },
+                                selectedPollutant = detailsUiState.selectedPollutant,
+                                setSelectedPollutant = { pollutant ->
+                                    detailsViewModel.setSelectedPollutant(pollutant)
+                                },
+                                pollenIndexSource = detailsViewModel.getPollenIndexSource(loc)
+                            )
+                        }
                     }
                 }
             }

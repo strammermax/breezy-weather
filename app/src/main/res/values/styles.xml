@@ -88,6 +88,17 @@
         <item name="popupTheme">@style/ThemeOverlay.MaterialComponents.Toolbar.Popup.Primary</item>
     </style>
 
+    <!-- ACT-013: transparent toolbar overlay for the glass home screen, with
+         light text/icons readable against the sky-gradient background. -->
+    <style name="ThemeOverlay.GlassToolbar" parent="ThemeOverlay.MaterialComponents.Toolbar.Surface">
+        <item name="android:textColorPrimary">@color/colorGlassTopBarText</item>
+        <item name="colorControlNormal">@color/colorGlassTopBarText</item>
+    </style>
+
+    <style name="TextAppearance.Toolbar.GlassTitle" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textColor">@color/colorGlassTopBarText</item>
+    </style>
+
     <!-- card. -->
     <style name="material_card">
         <item name="android:layout_width">match_parent</item>

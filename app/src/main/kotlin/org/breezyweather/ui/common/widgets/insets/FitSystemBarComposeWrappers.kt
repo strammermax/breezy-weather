@@ -34,6 +34,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -117,6 +118,7 @@ fun BWCenterAlignedTopAppBar(
     onBackPressed: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
     windowInsets: WindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+    colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
 ) = CenterAlignedTopAppBar(
     title = { Text(text = title) },
     modifier = modifier,
@@ -132,7 +134,8 @@ fun BWCenterAlignedTopAppBar(
         }
     } ?: {},
     actions = actions,
-    windowInsets = windowInsets
+    windowInsets = windowInsets,
+    colors = colors
 )
 
 enum class BottomInsetKey { INSTANCE }

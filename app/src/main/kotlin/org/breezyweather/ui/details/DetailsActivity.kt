@@ -19,6 +19,7 @@ package org.breezyweather.ui.details
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import dagger.hilt.android.AndroidEntryPoint
+import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
 
 @AndroidEntryPoint
@@ -26,6 +27,10 @@ class DetailsActivity : BreezyActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ACT-013: show the same sky-gradient background as the home screen behind
+        // the transparent glass scaffold/cards of this screen.
+        window.setBackgroundDrawableResource(R.drawable.bg_glass_sky)
 
         setContent {
             DailyWeatherScreen(

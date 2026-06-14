@@ -61,6 +61,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -454,6 +455,19 @@ private fun TemperatureSwitcher(
     onRealTempSwitch: (Boolean) -> Unit,
     showRealTemp: Boolean,
 ) {
+    // ACT-013: the default unchecked ToggleButton colors come from
+    // colorScheme.surfaceContainer/onSurfaceVariant, which we don't override for
+    // the glass theme - against the sky-gradient background that renders as a
+    // near-opaque white pill with low-contrast text. Use the same translucent
+    // glass colors as the cards for the unchecked state instead.
+    val glassContainer = colorResource(R.color.colorGlassCardBackground)
+    val glassContent = colorResource(R.color.colorGlassTopBarText)
+    val toggleColors = ToggleButtonDefaults.toggleButtonColors(
+        containerColor = glassContainer,
+        contentColor = glassContent,
+        disabledContainerColor = glassContainer.copy(alpha = glassContainer.alpha * 0.5f),
+        disabledContentColor = glassContent.copy(alpha = 0.38f)
+    )
     Row(
         horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
     ) {
@@ -461,7 +475,8 @@ private fun TemperatureSwitcher(
             checked = showRealTemp,
             onCheckedChange = { onRealTempSwitch(true) },
             modifier = Modifier.weight(1f),
-            shapes = ButtonGroupDefaults.connectedLeadingButtonShapes()
+            shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
+            colors = toggleColors
         ) {
             if (showRealTemp) {
                 Icon(
@@ -476,7 +491,8 @@ private fun TemperatureSwitcher(
             checked = !showRealTemp,
             onCheckedChange = { onRealTempSwitch(false) },
             modifier = Modifier.weight(1f),
-            shapes = ButtonGroupDefaults.connectedTrailingButtonShapes()
+            shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
+            colors = toggleColors
         ) {
             if (!showRealTemp) {
                 Icon(
