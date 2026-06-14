@@ -85,7 +85,7 @@
     <color name="colorMainCardBackground">#FDFCFF</color>
 
     <!-- ACT-013: glassmorphic card styling for the home weather cards. -->
-    <color name="colorGlassCardBackground">#29FFFFFF</color>
+    <color name="colorGlassCardBackground">#40FFFFFF</color>
     <color name="colorGlassCardStroke">#59FFFFFF</color>
 
     <!-- ACT-014: top bar text/icon color over the sky-gradient background. -->

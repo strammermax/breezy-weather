@@ -10,7 +10,7 @@
     <color name="colorMainCardBackground">#1C1B1F</color>
 
     <!-- ACT-013: glassmorphic card styling for the home weather cards. -->
-    <color name="colorGlassCardBackground">#4D0A1430</color>
+    <color name="colorGlassCardBackground">#660A1430</color>
     <color name="colorGlassCardStroke">#2EFFFFFF</color>
 
     <!-- ACT-014: top bar text/icon color over the sky-gradient background. -->
