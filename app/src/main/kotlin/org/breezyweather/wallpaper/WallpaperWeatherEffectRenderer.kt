@@ -42,6 +42,7 @@ internal class WallpaperWeatherEffectRenderer(
         windFactor = cloudSpeedFactor,
         windDirectionDegrees = null,
     ),
+    private val starField: StarFieldParams = StarFieldFactory.starFieldParams(locationSeed = 0L),
 ) {
     private var daylight = daylight.coerceIn(0f, 1f)
     private val daytime: Boolean
@@ -60,10 +61,10 @@ internal class WallpaperWeatherEffectRenderer(
                 }
             } catch (error: Throwable) {
                 Log.w(LOG_TAG, "Weather RuntimeShader unavailable; using Canvas fallback", error)
-                canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField)
+                canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField)
             }
         } else {
-            canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField)
+            canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField)
         }
     }
 
@@ -143,6 +144,8 @@ internal class WallpaperWeatherEffectRenderer(
             s.setFloatUniform("fogBandAlpha", FloatArray(4) { fogField.bands[it].baseAlpha })
             s.setFloatUniform("fogSpeed", FloatArray(4) { fogField.bands[it].speedFactor })
             s.setFloatUniform("fogColor", FogFieldFactory.fogColor(fogField.isHaze, daylight))
+            s.setFloatUniform("starVisibility", StarFieldFactory.starVisibility(daylight))
+            s.setFloatUniform("starSeed", starField.seed)
             canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), sp)
         } else {
             if (pass == WEATHER_PASS_BACKGROUND) {
@@ -161,6 +164,7 @@ internal class WallpaperWeatherEffectRenderer(
         val cloudSpeedFactor: Float,
         val cloudField: CloudFieldParams,
         val fogField: FogFieldParams,
+        val starField: StarFieldParams,
     ) {
         val daytime: Boolean
             get() = daylight >= 0.5f
@@ -170,6 +174,7 @@ internal class WallpaperWeatherEffectRenderer(
         private val screenDrops = mutableListOf<ScreenDrop>()
         private var lightningAlpha = 0f
         private var fogElapsedSeconds = 0f
+        private var starElapsedSeconds = 0f
         private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         private var lastWidth = 0
         private var lastHeight = 0
@@ -182,6 +187,7 @@ internal class WallpaperWeatherEffectRenderer(
         fun update(deltaMillis: Long, effectiveLayers: Float) {
             val deltaSec = deltaMillis / 1000f
             fogElapsedSeconds += deltaSec
+            starElapsedSeconds += deltaSec
 
             if (lastWidth <= 0 || lastHeight <= 0) return
 
@@ -271,6 +277,8 @@ internal class WallpaperWeatherEffectRenderer(
             lastWidth = canvas.width
             lastHeight = canvas.height
 
+            drawStars(canvas, contribution)
+
             if (weatherKind == WeatherView.WEATHER_KIND_FOG || weatherKind == WeatherView.WEATHER_KIND_HAZE) {
                 val rgb = FogFieldFactory.fogColor(fogField.isHaze, daylight)
                 paint.color = Color.rgb(
@@ -320,6 +328,19 @@ internal class WallpaperWeatherEffectRenderer(
                     c.y + c.radius * 0.58f,
                     paint,
                 )
+            }
+        }
+
+        private fun drawStars(canvas: Canvas, contribution: Float) {
+            val visibility = StarFieldFactory.starVisibility(daylight)
+            if (visibility <= 0f) return
+            for (star in starField.stars) {
+                val twinkle = 0.65f + 0.35f * kotlin.math.sin(starElapsedSeconds * star.twinkleSpeed + star.twinklePhase)
+                val alpha = star.brightness * twinkle * visibility * contribution
+                if (alpha <= 0f) continue
+                paint.color = Color.WHITE
+                paint.alpha = (alpha * 255).toInt().coerceIn(0, 255)
+                canvas.drawCircle(star.x * lastWidth, star.y * lastHeight, star.size * (lastWidth / 400f), paint)
             }
         }
 
@@ -504,6 +525,8 @@ internal class WallpaperWeatherEffectRenderer(
             uniform float fogBandAlpha[4];
             uniform float fogSpeed[4];
             uniform float fogColor[3];
+            uniform float starVisibility;
+            uniform float starSeed;
 
             float hash21(float2 p) {
                 p = fract(p * float2(123.34, 456.21));
@@ -622,6 +645,31 @@ internal class WallpaperWeatherEffectRenderer(
                 return result;
             }
 
+            // ACT-014: procedural (not astronomically-accurate) star field, three layers of
+            // grid-based point stars with independent density/size/twinkle.
+            float starLayer(float2 uv, float density, float threshold, float seed) {
+                float2 p = uv * density;
+                float2 cell = floor(p);
+                float2 local = fract(p) - 0.5;
+                float h = hash21(cell + seed);
+                if (h < threshold) return 0.0;
+                float size = mix(0.05, 0.16, hash21(cell + seed + 31.0));
+                float star = smoothstep(size, 0.0, length(local));
+                float twinklePhase = hash21(cell + seed + 53.0) * 6.2831853;
+                float twinkleSpeed = mix(0.5, 2.0, hash21(cell + seed + 71.0));
+                float twinkle = 0.6 + 0.4 * sin(time * twinkleSpeed + twinklePhase);
+                float brightness = mix(0.4, 1.0, hash21(cell + seed + 97.0));
+                return star * brightness * twinkle;
+            }
+
+            float starField(float2 auv, float seed) {
+                float stars = 0.0;
+                stars += starLayer(auv, 60.0, 0.985, seed + 1.0) * 1.0;
+                stars += starLayer(auv, 35.0, 0.97, seed + 17.0) * 0.7;
+                stars += starLayer(auv, 18.0, 0.95, seed + 41.0) * 0.45;
+                return clamp(stars, 0.0, 1.0);
+            }
+
             float cloudCircle(float2 point, float2 center, float radius, float softness) {
                 return smoothstep(radius + softness, radius - softness, length(point - center));
             }
@@ -737,27 +785,42 @@ internal class WallpaperWeatherEffectRenderer(
                 // Layered cloud mass: back/mid/front layers with their own scale, speed,
                 // alpha and darkness (ACT-003). A layer with alpha 0 contributes nothing,
                 // so transitions between weather families never pop a layer in or out.
-                if (weatherPass == 0.0 && layerCount > 0.0) {
-                    float dirSign = cos(radians(windDirection)) >= 0.0 ? 1.0 : -1.0;
+                if (weatherPass == 0.0) {
                     float clouds = 0.0;
-                    float darknessSum = 0.0;
-                    float alphaSum = 0.0;
-                    for (int i = 0; i < 3; i++) {
-                        if (layerAlpha[i] <= 0.0) continue;
-                        float y = 0.16 + float(i) * 0.13 + layerVerticalOffset[i];
-                        float size = 0.16 + layerScale[i] * 0.14;
-                        float speed = 0.005 * layerSpeed[i] * dirSign;
-                        float seed = 0.08 + float(i) * 0.41;
-                        float shape = driftingCloud(aspectUv, y, size, speed, seed) * layerAlpha[i];
-                        clouds = max(clouds, shape);
-                        darknessSum += layerDarkness[i] * shape;
-                        alphaSum += shape;
+                    float3 cloudColor = color;
+                    if (layerCount > 0.0) {
+                        float dirSign = cos(radians(windDirection)) >= 0.0 ? 1.0 : -1.0;
+                        float darknessSum = 0.0;
+                        float alphaSum = 0.0;
+                        for (int i = 0; i < 3; i++) {
+                            if (layerAlpha[i] <= 0.0) continue;
+                            float y = 0.16 + float(i) * 0.13 + layerVerticalOffset[i];
+                            float size = 0.16 + layerScale[i] * 0.14;
+                            float speed = 0.005 * layerSpeed[i] * dirSign;
+                            float seed = 0.08 + float(i) * 0.41;
+                            float shape = driftingCloud(aspectUv, y, size, speed, seed) * layerAlpha[i];
+                            clouds = max(clouds, shape);
+                            darknessSum += layerDarkness[i] * shape;
+                            alphaSum += shape;
+                        }
+                        float weightedDarkness = alphaSum > 0.0 ? darknessSum / alphaSum : 0.0;
+                        float3 fairColor = daylight > 0.5 ? float3(0.94, 0.97, 1.0) : float3(0.48, 0.54, 0.64);
+                        float3 stormColor = daylight > 0.5 ? float3(0.48, 0.55, 0.64) : float3(0.24, 0.29, 0.38);
+                        cloudColor = mix(fairColor, stormColor, weightedDarkness);
                     }
-                    alpha += clouds;
-                    float weightedDarkness = alphaSum > 0.0 ? darknessSum / alphaSum : 0.0;
-                    float3 fairColor = daylight > 0.5 ? float3(0.94, 0.97, 1.0) : float3(0.48, 0.54, 0.64);
-                    float3 stormColor = daylight > 0.5 ? float3(0.48, 0.55, 0.64) : float3(0.24, 0.29, 0.38);
-                    color = mix(fairColor, stormColor, weightedDarkness);
+
+                    // ACT-014: stars fade in at night and are occluded by clouds.
+                    float starAlpha = 0.0;
+                    if (starVisibility > 0.0) {
+                        float horizonFade = smoothstep(0.66, 0.38, uv.y);
+                        starAlpha = starField(aspectUv, starSeed) * starVisibility * horizonFade * (1.0 - clouds);
+                    }
+
+                    float total = clouds + starAlpha;
+                    if (total > 0.0) {
+                        color = mix(float3(1.0, 0.98, 0.92), cloudColor, clouds / total);
+                    }
+                    alpha += total;
                 }
 
                 if (weatherPass == 1.0 && mode == 4.0) {

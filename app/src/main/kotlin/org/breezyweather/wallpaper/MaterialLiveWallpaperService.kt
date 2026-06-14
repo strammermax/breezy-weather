@@ -522,6 +522,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         windFactor = sceneState.windFactor,
                         windDirectionDegrees = sceneState.windDirectionDegrees,
                     ),
+                    starField = StarFieldFactory.starFieldParams(
+                        locationSeed = mCurrentLocationData?.let {
+                            StarFieldFactory.locationSeed(it.latitude, it.longitude)
+                        } ?: 0L,
+                    ),
                 )
             } else {
                 null
