@@ -50,3 +50,4 @@ bin/
 /apk_build*.log
 /build_check.log
 /*.png
+docs/testfotos/
