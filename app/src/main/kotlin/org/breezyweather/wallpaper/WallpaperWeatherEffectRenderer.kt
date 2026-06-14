@@ -27,9 +27,12 @@ import kotlin.math.min
  */
 internal class WallpaperWeatherEffectRenderer(
     private val weatherKind: Int,
-    private val daytime: Boolean,
+    daylight: Float,
     private val cloudSpeedFactor: Float = 1f,
 ) {
+    private var daylight = daylight.coerceIn(0f, 1f)
+    private val daytime: Boolean
+        get() = daylight >= 0.5f
     private var shader: RuntimeShader? = null
     private var shaderPaint: Paint? = null
     private var canvasRenderer: CanvasRenderer? = null
@@ -44,10 +47,10 @@ internal class WallpaperWeatherEffectRenderer(
                 }
             } catch (error: Throwable) {
                 Log.w(LOG_TAG, "Weather RuntimeShader unavailable; using Canvas fallback", error)
-                canvasRenderer = CanvasRenderer(weatherKind, daytime, cloudSpeedFactor)
+                canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor)
             }
         } else {
-            canvasRenderer = CanvasRenderer(weatherKind, daytime, cloudSpeedFactor)
+            canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor)
         }
     }
 
@@ -56,6 +59,11 @@ internal class WallpaperWeatherEffectRenderer(
     private var averageFrameMillis = TARGET_FRAME_MILLIS
     private var qualityEvaluationMillis = 0L
     private var stableFrameMillis = 0L
+
+    fun setDaylight(daylight: Float) {
+        this.daylight = daylight.coerceIn(0f, 1f)
+        canvasRenderer?.daylight = this.daylight
+    }
 
     fun update(intervalMillis: Long, animate: Boolean) {
         if (animate) {
@@ -88,14 +96,15 @@ internal class WallpaperWeatherEffectRenderer(
         }
     }
 
-    fun drawBackgroundWeatherPass(canvas: Canvas) = draw(canvas, WEATHER_PASS_BACKGROUND)
+    fun drawBackgroundWeatherPass(canvas: Canvas, alpha: Float = 1f) = draw(canvas, WEATHER_PASS_BACKGROUND, alpha)
 
-    fun drawForegroundWeatherPass(canvas: Canvas) = draw(canvas, WEATHER_PASS_FOREGROUND)
+    fun drawForegroundWeatherPass(canvas: Canvas, alpha: Float = 1f) = draw(canvas, WEATHER_PASS_FOREGROUND, alpha)
 
-    fun drawGlassRainDrops(canvas: Canvas) = draw(canvas, WEATHER_PASS_GLASS)
+    fun drawGlassRainDrops(canvas: Canvas, alpha: Float = 1f) = draw(canvas, WEATHER_PASS_GLASS, alpha)
 
-    private fun draw(canvas: Canvas, pass: Float) {
+    private fun draw(canvas: Canvas, pass: Float, alpha: Float = 1f) {
         if (canvas.width <= 0 || canvas.height <= 0) return
+        if (alpha <= 0f) return
 
         val s = shader
         val sp = shaderPaint
@@ -103,27 +112,30 @@ internal class WallpaperWeatherEffectRenderer(
             s.setFloatUniform("resolution", canvas.width.toFloat(), canvas.height.toFloat())
             s.setFloatUniform("time", elapsedSeconds)
             s.setFloatUniform("mode", shaderMode(weatherKind))
-            s.setFloatUniform("daylight", if (daytime) 1f else 0f)
+            s.setFloatUniform("daylight", daylight)
             s.setFloatUniform("windFactor", cloudSpeedFactor)
             s.setFloatUniform("weatherPass", pass)
             s.setFloatUniform("precipitationLayers", precipitationLayerCount)
+            s.setFloatUniform("transitionAlpha", alpha.coerceIn(0f, 1f))
             canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), sp)
         } else {
             if (pass == WEATHER_PASS_BACKGROUND) {
-                canvasRenderer?.drawClouds(canvas)
+                canvasRenderer?.drawClouds(canvas, alpha)
             } else if (pass == WEATHER_PASS_FOREGROUND) {
-                canvasRenderer?.drawForegroundEffects(canvas)
+                canvasRenderer?.drawForegroundEffects(canvas, alpha)
             } else {
-                canvasRenderer?.drawGlassRainDrops(canvas)
+                canvasRenderer?.drawGlassRainDrops(canvas, alpha)
             }
         }
     }
 
     private class CanvasRenderer(
         val weatherKind: Int,
-        val daytime: Boolean,
+        var daylight: Float,
         val cloudSpeedFactor: Float,
     ) {
+        val daytime: Boolean
+            get() = daylight >= 0.5f
         private val random = Random()
         private val particles = mutableListOf<Particle>()
         private val clouds = mutableListOf<CloudParticle>()
@@ -217,7 +229,7 @@ internal class WallpaperWeatherEffectRenderer(
             }
         }
 
-        fun drawClouds(canvas: Canvas) {
+        fun drawClouds(canvas: Canvas, contribution: Float = 1f) {
             lastWidth = canvas.width
             lastHeight = canvas.height
 
@@ -229,7 +241,7 @@ internal class WallpaperWeatherEffectRenderer(
                 }
                 val baseAlpha = if (weatherKind == WeatherView.WEATHER_KIND_FOG) 42 else 28
                 repeat(3) { layer ->
-                    paint.alpha = baseAlpha + layer * 12
+                    paint.alpha = ((baseAlpha + layer * 12) * contribution).toInt()
                     val top = lastHeight * (0.33f + layer * 0.13f)
                     canvas.drawOval(
                         -lastWidth * 0.18f,
@@ -255,8 +267,8 @@ internal class WallpaperWeatherEffectRenderer(
                     daytime -> Color.WHITE
                     else -> Color.LTGRAY
                 }
-                val alpha = if (weatherKind == WeatherView.WEATHER_KIND_FOG || weatherKind == WeatherView.WEATHER_KIND_HAZE) 0.3f else 0.5f
-                paint.alpha = (alpha * 255 * c.alphaMod).toInt()
+                val cloudAlpha = if (weatherKind == WeatherView.WEATHER_KIND_FOG || weatherKind == WeatherView.WEATHER_KIND_HAZE) 0.3f else 0.5f
+                paint.alpha = (cloudAlpha * 255 * c.alphaMod * contribution).toInt()
                 canvas.drawCircle(c.x - c.radius * 0.52f, c.y + c.radius * 0.08f, c.radius * 0.48f, paint)
                 canvas.drawCircle(c.x - c.radius * 0.12f, c.y - c.radius * 0.18f, c.radius * 0.62f, paint)
                 canvas.drawCircle(c.x + c.radius * 0.38f, c.y - c.radius * 0.06f, c.radius * 0.52f, paint)
@@ -270,14 +282,14 @@ internal class WallpaperWeatherEffectRenderer(
             }
         }
 
-        fun drawForegroundEffects(canvas: Canvas) {
+        fun drawForegroundEffects(canvas: Canvas, contribution: Float = 1f) {
             lastWidth = canvas.width
             lastHeight = canvas.height
 
             // Draw lightning flash
             if (lightningAlpha > 0) {
                 paint.color = Color.WHITE
-                paint.alpha = (lightningAlpha * 255).toInt()
+                paint.alpha = (lightningAlpha * 255 * contribution).toInt()
                 canvas.drawRect(0f, 0f, lastWidth.toFloat(), lastHeight.toFloat(), paint)
             }
 
@@ -291,7 +303,7 @@ internal class WallpaperWeatherEffectRenderer(
                 } else {
                     Color.WHITE
                 }
-                paint.alpha = (p.alpha * 255).toInt()
+                paint.alpha = (p.alpha * 255 * contribution).toInt()
                 if (weatherKind == WeatherView.WEATHER_KIND_SNOW || weatherKind == WeatherView.WEATHER_KIND_HAIL) {
                     canvas.drawCircle(p.x, p.y, p.size, paint)
                 } else {
@@ -303,7 +315,7 @@ internal class WallpaperWeatherEffectRenderer(
 
         }
 
-        fun drawGlassRainDrops(canvas: Canvas) {
+        fun drawGlassRainDrops(canvas: Canvas, contribution: Float = 1f) {
             lastWidth = canvas.width
             lastHeight = canvas.height
             if (weatherKind == WeatherView.WEATHER_KIND_RAINY ||
@@ -318,12 +330,12 @@ internal class WallpaperWeatherEffectRenderer(
                 paint.strokeWidth = 2f
                 for (drop in screenDrops) {
                     paint.color = Color.rgb(24, 38, 58)
-                    paint.alpha = 78
+                    paint.alpha = (78 * contribution).toInt()
                     canvas.drawArc(drop.bounds, 12f, 156f, false, paint)
                     paint.color = Color.WHITE
-                    paint.alpha = 46
+                    paint.alpha = (46 * contribution).toInt()
                     canvas.drawOval(drop.bounds, paint)
-                    paint.alpha = 115
+                    paint.alpha = (115 * contribution).toInt()
                     canvas.drawArc(drop.highlight, 195f, 82f, false, paint)
                 }
                 paint.style = Paint.Style.FILL
@@ -409,6 +421,7 @@ internal class WallpaperWeatherEffectRenderer(
         private const val WEATHER_PASS_GLASS = 2f
 
         fun supports(weatherKind: Int): Boolean = weatherKind in setOf(
+            WeatherView.WEATHER_KIND_CLEAR,
             WeatherView.WEATHER_KIND_RAINY,
             WeatherView.WEATHER_KIND_SLEET,
             WeatherView.WEATHER_KIND_SNOW,
@@ -444,6 +457,7 @@ internal class WallpaperWeatherEffectRenderer(
             uniform float windFactor;
             uniform float weatherPass;
             uniform float precipitationLayers;
+            uniform float transitionAlpha;
 
             float hash21(float2 p) {
                 p = fract(p * float2(123.34, 456.21));
@@ -714,6 +728,10 @@ internal class WallpaperWeatherEffectRenderer(
                 premultiplied = premultiplied * (1.0 - glassHighlight)
                     + float3(0.86, 0.93, 1.0) * glassHighlight;
                 a = a + glassHighlight * (1.0 - a);
+                // Global crossfade contribution. Output is premultiplied, so scale both the
+                // premultiplied color and alpha to keep transparent pixels invisible.
+                premultiplied = premultiplied * transitionAlpha;
+                a = a * transitionAlpha;
                 return half4(half3(premultiplied), half(a));
             }
         """

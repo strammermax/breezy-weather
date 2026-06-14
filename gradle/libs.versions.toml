@@ -7,6 +7,7 @@ agp = "9.2.1"
 appcompat = "1.7.1"
 annotationJvm = "1.10.0"
 breezy-datasharing-lib = "09c0e4dd062601239c3f6062266d4b963577cefc"
+camerax = "1.4.2"
 cardview = "1.0.0"
 compose-bom = "2026.05.01"
 compose-material3 = "1.5.0-alpha21"
@@ -63,6 +64,10 @@ android-gradle = { group = "com.android.tools.build", name = "gradle", version.r
 annotation-jvm = { group = "androidx.annotation", name = "annotation-jvm", version.ref = "annotationJvm" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 breezy-datasharing-lib = { group = "com.github.breezy-weather", name = "breezy-weather-data-sharing-lib", version.ref = "breezy-datasharing-lib" }
+camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "camerax" }
+camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
+camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
+camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
 cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
 compose-animation = { group = "androidx.compose.animation", name = "animation" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
@@ -145,6 +150,7 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 
 [bundles]
+camerax = ["camera-core", "camera-camera2", "camera-lifecycle", "camera-view"]
 lifecycle = ["lifecycle-common-java8", "lifecycle-extensions", "lifecycle-livedata-ktx", "lifecycle-reactivestreams-ktx", "lifecycle-runtime-ktx", "lifecycle-viewmodel-compose", "lifecycle-viewmodel-ktx"]
 okhttp = ["okhttp-core", "okhttp-logging", "okhttp-tls"]
 retrofit = ["retrofit-adapter-rxjava3", "retrofit-converter-kotlinx-serialization", "retrofit-core"]

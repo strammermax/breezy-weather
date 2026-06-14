@@ -1,0 +1,16 @@
+# TOKEN MANAGEMENT & OPENROUTER OPTIMIZATION
+
+## 1. Context & Token Reduction (CRITICAL)
+- **Do NOT blindly read directories**: Never use broad search or directory listing commands (`ls -R`, `grep` across the whole project, etc.) unless strictly necessary.
+- **Never read large dependency or build folders**: You are strictly forbidden from scanning or reading `node_modules`, `dist`, `build`, `.next`, `.git`, `.serverless`, `vendor`, or `.nuxt`.
+- **Targeted file reading only**: Open and read files one by one. Do not read more than 3 files at once. Ask the user for clarification if you don't know which file contains the logic.
+- **Ignore lockfiles**: Never read `package-lock.json`, `yarn.lock`, or `pnpm-lock.yaml`.
+
+## 2. Compact Communication
+- **Be concise**: Keep explanations extremely brief. Do not write introductory or concluding fluff. 
+- **Code Diffs Only**: When modifying files, do not output the entire file content in your response unless it is a brand-new file. Only show the modified parts (diffs) or small snippets.
+- **Terminal History**: Keep terminal commands short. Do not chain multiple long commands together, as this inflates the context history.
+
+## 3. Workflow & Planning (Avoid Loop Traps)
+- **Think before doing**: Before making any multi-file changes, briefly state your plan to the user in 1 or 2 sentences and wait for confirmation if it impacts more than 3 files.
+- **Stop when stuck**: If a command or build fails 2 times in a row, STOP immediately. Do not keep trying variations. Ask the user for help to prevent token-burning loops.
