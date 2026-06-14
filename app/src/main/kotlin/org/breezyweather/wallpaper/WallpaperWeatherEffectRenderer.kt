@@ -76,8 +76,8 @@ internal class WallpaperWeatherEffectRenderer(
         if (animate) {
             val delta = min(intervalMillis, MAX_FRAME_INTERVAL_MILLIS).coerceAtLeast(0L)
             elapsedSeconds += delta / 1000f
-            canvasRenderer?.update(delta)
             updateAdaptivePrecipitationQuality(intervalMillis)
+            canvasRenderer?.update(delta, precipitationLayerCount)
         }
     }
 
@@ -159,8 +159,13 @@ internal class WallpaperWeatherEffectRenderer(
         private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         private var lastWidth = 0
         private var lastHeight = 0
+        private val snowHailPool: WallpaperParticlePool? = when (weatherKind) {
+            WeatherView.WEATHER_KIND_SNOW -> WallpaperParticlePool(WallpaperParticleKind.SNOW)
+            WeatherView.WEATHER_KIND_HAIL -> WallpaperParticlePool(WallpaperParticleKind.HAIL)
+            else -> null
+        }
 
-        fun update(deltaMillis: Long) {
+        fun update(deltaMillis: Long, effectiveLayers: Float) {
             val deltaSec = deltaMillis / 1000f
 
             if (lastWidth <= 0 || lastHeight <= 0) return
@@ -177,22 +182,34 @@ internal class WallpaperWeatherEffectRenderer(
                 }
             }
 
-            // Update particles (rain/snow)
-            if (particles.isEmpty()) {
-                spawnInitialParticles()
-            }
-
-            val it = particles.iterator()
-            while (it.hasNext()) {
-                val p = it.next()
-                p.y += p.speedY * deltaSec
-                p.x += p.speedX * deltaSec
-                if (p.y > lastHeight + 100) {
-                    p.y = -100f
-                    p.x = random.nextFloat() * lastWidth
+            // Snow and hail use the pre-allocated particle pool (ACT-004); rain/sleet keep the
+            // lightweight streak particles below.
+            val pool = snowHailPool
+            if (pool != null) {
+                pool.configure(
+                    lastWidth,
+                    lastHeight,
+                    cloudField.directionDegrees,
+                    cloudSpeedFactor,
+                    effectiveLayers,
+                )
+                pool.update(deltaSec)
+            } else {
+                if (particles.isEmpty()) {
+                    spawnInitialParticles()
                 }
-                if (p.x > lastWidth + 100f) p.x = -100f
-                if (p.x < -100f) p.x = lastWidth + 100f
+                val it = particles.iterator()
+                while (it.hasNext()) {
+                    val p = it.next()
+                    p.y += p.speedY * deltaSec
+                    p.x += p.speedX * deltaSec
+                    if (p.y > lastHeight + 100) {
+                        p.y = -100f
+                        p.x = random.nextFloat() * lastWidth
+                    }
+                    if (p.x > lastWidth + 100f) p.x = -100f
+                    if (p.x < -100f) p.x = lastWidth + 100f
+                }
             }
 
             // Update cloud mass layers: deeper (back) layers move slower for parallax.
@@ -297,21 +314,14 @@ internal class WallpaperWeatherEffectRenderer(
                 canvas.drawRect(0f, 0f, lastWidth.toFloat(), lastHeight.toFloat(), paint)
             }
 
-            // Draw particles
-            for (p in particles) {
-                paint.color = if (weatherKind == WeatherView.WEATHER_KIND_RAINY ||
-                    weatherKind == WeatherView.WEATHER_KIND_THUNDERSTORM ||
-                    weatherKind == WeatherView.WEATHER_KIND_SLEET
-                ) {
-                    if (daytime) 0xAAFFFFFF.toInt() else 0x77FFFFFF.toInt()
-                } else {
-                    Color.WHITE
-                }
-                paint.alpha = (p.alpha * 255 * contribution).toInt()
-                if (weatherKind == WeatherView.WEATHER_KIND_SNOW || weatherKind == WeatherView.WEATHER_KIND_HAIL) {
-                    canvas.drawCircle(p.x, p.y, p.size, paint)
-                } else {
-                    // Rain streaks
+            // Snow and hail come from the pre-allocated pool; rain/sleet stay as streaks.
+            val pool = snowHailPool
+            if (pool != null) {
+                pool.draw(canvas, paint, contribution)
+            } else {
+                for (p in particles) {
+                    paint.color = if (daytime) 0xAAFFFFFF.toInt() else 0x77FFFFFF.toInt()
+                    paint.alpha = (p.alpha * 255 * contribution).toInt()
                     paint.strokeWidth = p.size
                     canvas.drawLine(p.x, p.y, p.x + p.speedX * 0.02f, p.y + p.speedY * 0.02f, paint)
                 }
