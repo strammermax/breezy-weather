@@ -22,8 +22,11 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.asRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.net.URLEncoder
 
 /**
@@ -72,6 +75,50 @@ class RemoveSkyProvider(
         } catch (e: Throwable) {
             log("health error for $apiBase/health: ${e.message}")
             null
+        }
+    }
+
+    suspend fun uploadFile(
+        file: File,
+        latitude: Double?,
+        longitude: Double?,
+        location: String? = null,
+    ): RemoveSkyUploadResult = withContext(Dispatchers.IO) {
+        val form = MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+            .addFormDataPart(
+                "file",
+                file.name,
+                file.asRequestBody("image/jpeg".toMediaTypeOrNull()),
+            )
+            .apply {
+                location?.takeIf { it.isNotBlank() }?.let { addFormDataPart("location", it) }
+                latitude?.let { addFormDataPart("lat", it.toString()) }
+                longitude?.let { addFormDataPart("lon", it.toString()) }
+            }
+            .build()
+        val request = Request.Builder()
+            .url("$apiBase/upload")
+            .post(form)
+            .header("User-Agent", USER_AGENT)
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            val body = response.body?.string().orEmpty()
+            if (!response.isSuccessful) {
+                throw RemoveSkyHttpException(response.code, body)
+            }
+            val json = JSONObject(body)
+            val url = json.optString("url").ifBlank {
+                throw RemoveSkyHttpException(response.code, "Missing processed image URL")
+            }
+            val resolvedLocation = json.optString("location").trim().ifBlank {
+                throw RemoveSkyHttpException(response.code, "Missing processed image location")
+            }
+            RemoveSkyUploadResult(
+                processedUrl = normalizeServiceUrl(url),
+                location = resolvedLocation,
+            )
         }
     }
 
@@ -204,3 +251,13 @@ class RemoveSkyProvider(
                 "based on Breezy Weather)"
     }
 }
+
+data class RemoveSkyUploadResult(
+    val processedUrl: String,
+    val location: String,
+)
+
+class RemoveSkyHttpException(
+    val statusCode: Int,
+    val responseBody: String,
+) : Exception("RemoveSky HTTP $statusCode")

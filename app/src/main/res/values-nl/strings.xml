@@ -816,6 +816,9 @@
     <string name="settings_main_background_title">Weergebaseerde achtergrond</string>
     <string name="settings_weather_source_no_longer_exists">%s (bestaat niet meer)</string>
     <!-- LiveWallpaperWeather: regenradar + wallpaper -->
+    <string name="camera_set_live_wallpaper">Zet als live wallpaper</string>
+    <string name="camera_close">Sluiten</string>
+    <string name="camera_live_wallpaper_unavailable">Live wallpaper kon niet worden geopend</string>
     <string name="action_radar">Regenradar</string>
     <string name="radar_title">Regenradar</string>
     <string name="radar_section_radar_map">Radarkaart (RainViewer)</string>

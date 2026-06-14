@@ -155,14 +155,42 @@ class WallpaperRepository(
             }
             cacheFile.setLastModified(System.currentTimeMillis())
             store.recordRecentUrl(placeKey, url)
-            store.cachedPhotoUrl = url
-            store.cachedPhotoPath = cacheFile.absolutePath
-            store.cachedPhotoAttribution = result.attribution
+            store.activatePhoto(cacheFile.absolutePath, url, result.attribution)
             pruneLocationCache(cacheFile.parentFile, cacheFile)
             prunePhotoCache(cacheFile)
             return cacheFile
         }
         return null
+    }
+
+    /** Uploads a camera photo, caches the processed result, and activates it immediately. */
+    suspend fun uploadCameraPhoto(
+        file: File,
+        latitude: Double?,
+        longitude: Double?,
+    ): File {
+        val upload = removeSkyProvider().uploadFile(file, latitude, longitude)
+        val place = PlaceQuery(city = upload.location)
+        val bitmap = downloadSkyBitmap(upload.processedUrl, alreadyProcessed = true)
+            ?: throw IllegalStateException("Processed RemoveSky image could not be downloaded")
+        val cacheFile = cacheFile(place, upload.processedUrl)
+        try {
+            val written = cacheFile.outputStream().use {
+                bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it)
+            }
+            if (!written) {
+                cacheFile.delete()
+                throw IllegalStateException("Processed RemoveSky image could not be cached")
+            }
+        } finally {
+            bitmap.recycle()
+        }
+        cacheFile.setLastModified(System.currentTimeMillis())
+        store.recordRecentUrl(place.cacheFileName(), upload.processedUrl)
+        store.activatePhoto(cacheFile.absolutePath, upload.processedUrl, "Camera / RemoveSky")
+        pruneLocationCache(cacheFile.parentFile, cacheFile)
+        prunePhotoCache(cacheFile)
+        return cacheFile
     }
 
     /**
@@ -301,7 +329,8 @@ class WallpaperRepository(
         private fun defaultClient(store: WallpaperImageStore): OkHttpClient = OkHttpClient.Builder()
             .addInterceptor(RemoveSkyInterceptor(store))
             .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(90, TimeUnit.SECONDS)
+            .writeTimeout(90, TimeUnit.SECONDS)
             .build()
     }
 }

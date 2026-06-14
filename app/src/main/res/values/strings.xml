@@ -479,6 +479,9 @@
     <string name="camera_error_general">Upload failed: %s</string>
     <string name="camera_horizon_guide">Keep the sky above this line</string>
     <string name="camera_result_saved">Geschikt en opgeslagen</string>
+    <string name="camera_set_live_wallpaper">Set as live wallpaper</string>
+    <string name="camera_close">Close</string>
+    <string name="camera_live_wallpaper_unavailable">Live wallpaper settings could not be opened</string>
     <string name="camera_result_no_sky_at_top">Geen lucht bovenaan in beeld</string>
     <string name="camera_result_too_little_sky">Te weinig lucht bovenaan in beeld</string>
     <string name="camera_result_not_landscape">Geen landschapsfoto gedetecteerd</string>

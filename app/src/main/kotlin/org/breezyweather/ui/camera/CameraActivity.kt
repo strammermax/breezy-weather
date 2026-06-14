@@ -2,6 +2,7 @@ package org.breezyweather.ui.camera
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -26,13 +27,13 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
-import org.breezyweather.BuildConfig
 import org.breezyweather.R
 import org.breezyweather.databinding.ActivityCameraBinding
-import org.breezyweather.wallpaper.photo.RemoveSkyProvider
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.RequestBody.Companion.asRequestBody
+import org.breezyweather.wallpaper.LiveWallpaperConfigActivity
+import org.breezyweather.wallpaper.launchLiveWallpaperPicker
+import org.breezyweather.wallpaper.photo.RemoveSkyHttpException
+import org.breezyweather.wallpaper.photo.WallpaperRepository
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
@@ -51,11 +52,11 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var resultTextView: TextView
     private lateinit var progressBar: ProgressBar
     private lateinit var captureButton: View
+    private var captureInProgress = false
     
     companion object {
         private const val REQUEST_CODE_PERMISSIONS = 10
         private const val REQUEST_CODE_LOCATION_PERMISSIONS = 11
-        private const val UPLOAD_PATH = "/api/v1/upload"
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
         private val LOCATION_PERMISSIONS = arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -63,7 +64,7 @@ class CameraActivity : AppCompatActivity() {
         )
     }
 
-    private val httpClient = OkHttpClient()
+    private val wallpaperRepository by lazy { WallpaperRepository(applicationContext) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,13 +104,30 @@ class CameraActivity : AppCompatActivity() {
         binding.retakeButton.setOnClickListener {
             showCameraView()
         }
+
+        binding.setLiveWallpaperButton.setOnClickListener {
+            if (!launchLiveWallpaperPicker(this)) {
+                Toast.makeText(this, R.string.camera_live_wallpaper_unavailable, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.closeButton.setOnClickListener {
+            openLiveWallpaperSettings()
+        }
         
         binding.toolbar.setNavigationOnClickListener {
-            finish()
+            openLiveWallpaperSettings()
         }
+    }
+
+    private fun openLiveWallpaperSettings() {
+        startActivity(Intent(this, LiveWallpaperConfigActivity::class.java))
+        finish()
     }
     
     private fun showCameraView() {
+        captureInProgress = false
+        binding.captureButton.isEnabled = true
         binding.cameraPreviewView.visibility = View.VISIBLE
         binding.horizonGuideLine.visibility = View.VISIBLE
         binding.horizonGuideLabel.visibility = View.VISIBLE
@@ -117,6 +135,8 @@ class CameraActivity : AppCompatActivity() {
         binding.resultImageView.visibility = View.GONE
         binding.resultTextView.visibility = View.GONE
         binding.retakeButton.visibility = View.GONE
+        binding.setLiveWallpaperButton.visibility = View.GONE
+        binding.closeButton.visibility = View.GONE
         binding.resultContainer.visibility = View.GONE
     }
 
@@ -157,7 +177,11 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun takePhoto() {
+        if (captureInProgress) return
         val imageCapture = imageCapture ?: return
+
+        captureInProgress = true
+        binding.captureButton.isEnabled = false
         
         val photoFile = File(
             getExternalFilesDir(Environment.DIRECTORY_PICTURES),
@@ -175,6 +199,8 @@ class CameraActivity : AppCompatActivity() {
                 }
 
                 override fun onError(exception: ImageCaptureException) {
+                    captureInProgress = false
+                    binding.captureButton.isEnabled = true
                     Toast.makeText(this@CameraActivity, "Photo capture failed", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -269,54 +295,44 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun uploadImage(file: File, bitmap: Bitmap, location: Location?) {
+        var compressedFile: File? = null
         try {
             // Compress the (correctly oriented) image
-            val compressedFile = File.createTempFile("compressed_", ".jpg", cacheDir)
+            compressedFile = File.createTempFile("compressed_", ".jpg", cacheDir)
             val outputStream = FileOutputStream(compressedFile)
             bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
             outputStream.close()
 
-            // Upload to server using RemoveSky service
-            val formBuilder = okhttp3.MultipartBody.Builder()
-                .setType(okhttp3.MultipartBody.FORM)
-                .addFormDataPart(
-                    "file",
-                    file.name,
-                    compressedFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
+            runBlocking {
+                wallpaperRepository.uploadCameraPhoto(
+                    file = compressedFile,
+                    latitude = location?.latitude,
+                    longitude = location?.longitude,
                 )
-            if (location != null) {
-                formBuilder.addFormDataPart("lat", location.latitude.toString())
-                formBuilder.addFormDataPart("lon", location.longitude.toString())
-            }
-
-            val (isSuccessful, code, body) = httpClient.newCall(
-                okhttp3.Request.Builder()
-                    .url(RemoveSkyProvider.DEFAULT_BASE_URL + UPLOAD_PATH)
-                    .post(formBuilder.build())
-                    .header("CF-Access-Client-Id", BuildConfig.CF_ACCESS_CLIENT_ID)
-                    .header("CF-Access-Client-Secret", BuildConfig.CF_ACCESS_CLIENT_SECRET)
-                    .build()
-            ).execute().use { uploadResponse ->
-                Triple(uploadResponse.isSuccessful, uploadResponse.code, uploadResponse.body?.string())
             }
 
             runOnUiThread {
                 binding.progressBar.visibility = View.GONE
-                binding.resultTextView.text = formatUploadResult(isSuccessful, code, body)
+                binding.resultTextView.text = "✓ " + getString(R.string.camera_result_saved)
+                binding.setLiveWallpaperButton.visibility = View.VISIBLE
+                binding.closeButton.visibility = View.VISIBLE
             }
 
-            // Clean up
-            compressedFile.delete()
-            file.delete()
         } catch (e: Exception) {
             runOnUiThread {
                 binding.progressBar.visibility = View.GONE
+                binding.setLiveWallpaperButton.visibility = View.GONE
+                binding.closeButton.visibility = View.VISIBLE
                 resultTextView.text = when (e) {
+                    is RemoveSkyHttpException -> formatUploadResult(false, e.statusCode, e.responseBody)
                     is java.net.SocketTimeoutException -> getString(R.string.camera_error_timeout)
                     is java.net.UnknownHostException -> getString(R.string.camera_error_server_down)
                     else -> getString(R.string.camera_error_general, e.message ?: "Unknown error")
                 }
             }
+        } finally {
+            compressedFile?.delete()
+            file.delete()
         }
     }
 

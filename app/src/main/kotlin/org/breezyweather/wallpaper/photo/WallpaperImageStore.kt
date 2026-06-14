@@ -100,6 +100,16 @@ class WallpaperImageStore(context: Context) {
             config.edit().putString(KEY_CACHED_ATTRIBUTION, value).apply()
         }
 
+    /** Atomically switches the active wallpaper photo, avoiding partially updated cache state. */
+    fun activatePhoto(path: String, url: String, attribution: String?) {
+        config.edit()
+            .putBoolean(KEY_ENABLED, true)
+            .putString(KEY_CACHED_PATH, path)
+            .putString(KEY_CACHED_URL, url)
+            .putString(KEY_CACHED_ATTRIBUTION, attribution)
+            .apply()
+    }
+
     /** Most recently shown URLs for [placeKey], newest first. */
     fun recentUrlsFor(placeKey: String): List<String> = try {
         val values = recentUrlMap().optJSONArray(placeKey) ?: return emptyList()
