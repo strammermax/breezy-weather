@@ -823,7 +823,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val peakY = height * 0.12f
             val shortestSide = min(width, height).toFloat()
             val sunAlpha = sunVisibility(now)
-            val moonAlpha = 1f - sunAlpha
+            val moonAlpha = moonVisibility(now) * (1f - sunAlpha)
             val positionTime = now / 60_000L * 60_000L
 
             if (sunAlpha > 0.01f) {
@@ -898,6 +898,20 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 now < sunrise + crossFade -> fraction(now, sunrise - crossFade, sunrise + crossFade)
                 now < sunset - crossFade -> 1f
                 now < sunset + crossFade -> 1f - fraction(now, sunset - crossFade, sunset + crossFade)
+                else -> 0f
+            }
+        }
+
+        private fun moonVisibility(now: Long): Float {
+            val moonrise = mMoonriseMillis ?: return 0f
+            val moonset = mMoonsetMillis ?: return 0f
+            if (moonset <= moonrise) return 0f
+            val crossFade = 25L * 60L * 1000L
+            return when {
+                now < moonrise - crossFade -> 0f
+                now < moonrise + crossFade -> fraction(now, moonrise - crossFade, moonrise + crossFade)
+                now < moonset - crossFade -> 1f
+                now < moonset + crossFade -> 1f - fraction(now, moonset - crossFade, moonset + crossFade)
                 else -> 0f
             }
         }
