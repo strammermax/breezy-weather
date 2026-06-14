@@ -16,6 +16,9 @@
 
 package org.breezyweather.ui.details
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Box
@@ -76,7 +79,9 @@ import breezyweather.domain.location.model.Location
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.breezyweather.R
 import org.breezyweather.common.extensions.getCalendarMonth
 import org.breezyweather.common.extensions.getFormattedDate
@@ -91,6 +96,7 @@ import org.breezyweather.common.options.appearance.CalendarHelper
 import org.breezyweather.common.options.appearance.DetailScreen
 import org.breezyweather.common.source.PollenIndexSource
 import org.breezyweather.domain.weather.index.PollutantIndex
+import org.breezyweather.domain.location.model.isDaylight as locationIsDaylight
 import org.breezyweather.domain.weather.model.getConcentration
 import org.breezyweather.domain.weather.model.isToday
 import org.breezyweather.ui.common.widgets.Material3Scaffold
@@ -108,6 +114,10 @@ import org.breezyweather.ui.details.components.DetailsVisibility
 import org.breezyweather.ui.details.components.DetailsWind
 import org.breezyweather.ui.theme.ThemeManager
 import org.breezyweather.ui.theme.compose.BreezyWeatherTheme
+import org.breezyweather.ui.theme.weatherView.WeatherViewController
+import org.breezyweather.wallpaper.WallpaperSceneSnapshot
+import org.breezyweather.wallpaper.WallpaperSceneStateFactory
+import org.breezyweather.wallpaper.photo.WallpaperRepository
 import java.util.Calendar
 import java.util.Date
 
@@ -127,6 +137,43 @@ internal fun DailyWeatherScreen(
         if (detailsUiState.location != null && activity != null) {
             activity.window.setSystemBarStyle(isLightTheme)
         }
+    }
+
+    // ACT-014: like the home screen, replace the static sky-gradient background
+    // (set in DetailsActivity.onCreate as a fallback) with a one-time snapshot of
+    // the live wallpaper scene (sky gradient, sun/moon, weather pass, location
+    // photo) for the current location/weather, behind the glass scaffold/cards.
+    LaunchedEffect(detailsUiState.location?.weather) {
+        val location = detailsUiState.location
+        val weather = location?.weather
+        val width = context.resources.displayMetrics.widthPixels
+        val height = context.resources.displayMetrics.heightPixels
+        if (location == null || weather == null || activity == null || width <= 0 || height <= 0) {
+            return@LaunchedEffect
+        }
+
+        val daily = weather.dailyForecast.firstOrNull()
+        val sceneState = WallpaperSceneStateFactory.create(
+            weatherKind = WeatherViewController.getWeatherKind(location),
+            daylight = if (location.locationIsDaylight) 1f else 0f,
+            windSpeedMetersPerSecond = weather.current?.wind?.speed?.value?.toFloat() ?: 0f,
+            windGustMetersPerSecond = weather.current?.wind?.gusts?.value?.toFloat() ?: 0f,
+            windDirectionDegrees = weather.current?.wind?.degree?.toFloat(),
+            sunriseMillis = daily?.sun?.riseDate?.time,
+            sunsetMillis = daily?.sun?.setDate?.time,
+            moonriseMillis = daily?.moon?.riseDate?.time,
+            moonsetMillis = daily?.moon?.setDate?.time
+        )
+
+        val photo = withContext(Dispatchers.IO) {
+            WallpaperRepository(context).loadCachedBitmap()
+        }
+        val bitmap = withContext(Dispatchers.Default) {
+            Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
+                WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState)
+            }
+        }
+        activity.window.setBackgroundDrawable(BitmapDrawable(context.resources, bitmap))
     }
 
     BreezyWeatherTheme(!isLightTheme) {
