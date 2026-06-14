@@ -1,0 +1,110 @@
+/*
+ * This file is part of Breezy Weather.
+ *
+ * Breezy Weather is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation, version 3 of the License.
+ */
+
+package org.breezyweather.wallpaper
+
+/**
+ * Render parameters for a single horizontal fog/haze depth band.
+ *
+ * @property verticalCenter 0f = top of the scene, 1f = horizon/bottom.
+ * @property height relative height of the band.
+ * @property baseAlpha base opacity of this band (0f..1f).
+ * @property speedFactor relative horizontal drift speed.
+ * @property blurStrength soft-edge impression (0f..1f).
+ */
+data class FogBand(
+    val verticalCenter: Float,
+    val height: Float,
+    val baseAlpha: Float,
+    val speedFactor: Float,
+    val blurStrength: Float,
+)
+
+/** A full fog/haze field: a fixed set of depth bands plus shared drift direction. */
+data class FogFieldParams(
+    val bands: List<FogBand>,
+    val isHaze: Boolean,
+    val directionDegrees: Float,
+)
+
+/**
+ * Derives [FogFieldParams] from the [WallpaperSceneState] fog/haze fields as a pure function.
+ *
+ * Always returns the same number of bands so transitions never appear as a hard band-count pop:
+ * when both `fogIntensity` and `hazeIntensity` are 0, every band's alpha is 0.
+ */
+object FogFieldFactory {
+    private const val BAND_COUNT = 4
+    private const val DEFAULT_DIRECTION_DEGREES = 70f
+    private const val FOG_MAX_ALPHA = 0.50f
+    private const val HAZE_MAX_ALPHA = 0.30f
+
+    // Lower bands (near the horizon) are taller, denser and slower; higher bands are
+    // thinner, lighter and slightly faster.
+    private val VERTICAL_CENTER = floatArrayOf(0.92f, 0.76f, 0.60f, 0.42f)
+    private val HEIGHT = floatArrayOf(0.30f, 0.24f, 0.20f, 0.16f)
+    private val ALPHA_FRACTION = floatArrayOf(1.00f, 0.65f, 0.40f, 0.20f)
+    private val SPEED_FACTOR = floatArrayOf(0.06f, 0.10f, 0.16f, 0.24f)
+    private val BLUR_STRENGTH = floatArrayOf(0.75f, 0.58f, 0.42f, 0.28f)
+
+    // Fog: cooler, neutral grey/blue. Haze: warmer, light tan/brown.
+    private val FOG_DAY = floatArrayOf(0.80f, 0.87f, 0.90f)
+    private val FOG_NIGHT = floatArrayOf(0.36f, 0.42f, 0.50f)
+    private val HAZE_DAY = floatArrayOf(0.86f, 0.76f, 0.58f)
+    private val HAZE_NIGHT = floatArrayOf(0.48f, 0.43f, 0.43f)
+
+    fun fogFieldParams(
+        fogIntensity: Float,
+        hazeIntensity: Float,
+        windFactor: Float,
+        windDirectionDegrees: Float?,
+    ): FogFieldParams {
+        val fog = sanitizeUnit(fogIntensity)
+        val haze = sanitizeUnit(hazeIntensity)
+        val intensity = maxOf(fog, haze)
+        val isHaze = haze > fog
+        val maxAlpha = if (isHaze) HAZE_MAX_ALPHA else FOG_MAX_ALPHA
+        val wind = sanitizeNonNegative(windFactor)
+        val speedMultiplier = 0.4f + wind * 0.6f
+
+        val bands = (0 until BAND_COUNT).map { i ->
+            FogBand(
+                verticalCenter = VERTICAL_CENTER[i],
+                height = HEIGHT[i],
+                baseAlpha = (intensity * ALPHA_FRACTION[i] * maxAlpha).coerceIn(0f, 1f),
+                speedFactor = SPEED_FACTOR[i] * speedMultiplier,
+                blurStrength = BLUR_STRENGTH[i],
+            )
+        }
+
+        return FogFieldParams(
+            bands = bands,
+            isHaze = isHaze,
+            directionDegrees = normalizeDegrees(windDirectionDegrees),
+        )
+    }
+
+    /** Returns the band color as normalized `[r, g, b]` (0f..1f), blended by `daylight`. */
+    fun fogColor(isHaze: Boolean, daylight: Float): FloatArray {
+        val d = sanitizeUnit(daylight)
+        val day = if (isHaze) HAZE_DAY else FOG_DAY
+        val night = if (isHaze) HAZE_NIGHT else FOG_NIGHT
+        return FloatArray(3) { night[it] + (day[it] - night[it]) * d }
+    }
+
+    private fun sanitizeUnit(value: Float): Float =
+        if (value.isFinite()) value.coerceIn(0f, 1f) else 0f
+
+    private fun sanitizeNonNegative(value: Float): Float =
+        if (value.isFinite()) value.coerceAtLeast(0f) else 0f
+
+    private fun normalizeDegrees(value: Float?): Float {
+        if (value == null || !value.isFinite()) return DEFAULT_DIRECTION_DEGREES
+        return ((value % 360f) + 360f) % 360f
+    }
+}

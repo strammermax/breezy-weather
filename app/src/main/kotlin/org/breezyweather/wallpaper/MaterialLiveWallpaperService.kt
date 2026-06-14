@@ -516,6 +516,12 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         windFactor = sceneState.windFactor,
                         windDirectionDegrees = sceneState.windDirectionDegrees,
                     ),
+                    fogField = FogFieldFactory.fogFieldParams(
+                        fogIntensity = sceneState.fogIntensity,
+                        hazeIntensity = sceneState.hazeIntensity,
+                        windFactor = sceneState.windFactor,
+                        windDirectionDegrees = sceneState.windDirectionDegrees,
+                    ),
                 )
             } else {
                 null
@@ -652,8 +658,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
         }
 
         /**
-         * Places the complete processed photo at the bottom of a transparent full-screen bitmap.
-         * Its height is kept near half the display; wide photos are cropped only at the sides.
+         * Places the complete processed photo at the bottom of a transparent full-screen bitmap,
+         * covering the full width (cropping sides for wide photos, or the top for narrow/tall
+         * photos) so no transparent gaps appear next to the photo.
          */
         private fun buildPhotoForeground(): Drawable? {
             if (!mWallpaperImageStore.photoBackgroundEnabled) {
@@ -713,9 +720,15 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private fun positionPhotoAtBottom(source: Bitmap, targetWidth: Int, targetHeight: Int): Bitmap {
             val result = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(result)
-            val photoHeight = targetHeight * photoHeightFraction
-            val scale = photoHeight / source.height
+            // Cover the full width even if that makes the photo taller than
+            // photoHeightFraction; excess height is cropped off the top since
+            // the photo stays anchored to the bottom edge.
+            val scale = maxOf(
+                targetWidth.toFloat() / source.width,
+                (targetHeight * photoHeightFraction) / source.height,
+            )
             val photoWidth = source.width * scale
+            val photoHeight = source.height * scale
             val left = (targetWidth - photoWidth) / 2f
             canvas.drawBitmap(
                 source,

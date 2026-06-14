@@ -36,6 +36,12 @@ internal class WallpaperWeatherEffectRenderer(
         windFactor = cloudSpeedFactor,
         windDirectionDegrees = null,
     ),
+    private val fogField: FogFieldParams = FogFieldFactory.fogFieldParams(
+        fogIntensity = 0f,
+        hazeIntensity = 0f,
+        windFactor = cloudSpeedFactor,
+        windDirectionDegrees = null,
+    ),
 ) {
     private var daylight = daylight.coerceIn(0f, 1f)
     private val daytime: Boolean
@@ -54,10 +60,10 @@ internal class WallpaperWeatherEffectRenderer(
                 }
             } catch (error: Throwable) {
                 Log.w(LOG_TAG, "Weather RuntimeShader unavailable; using Canvas fallback", error)
-                canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField)
+                canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField)
             }
         } else {
-            canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField)
+            canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField)
         }
     }
 
@@ -131,6 +137,12 @@ internal class WallpaperWeatherEffectRenderer(
             s.setFloatUniform("layerDarkness", FloatArray(3) { cloudField.layers[it].darkness })
             s.setFloatUniform("layerVerticalOffset", FloatArray(3) { cloudField.layers[it].verticalOffset })
             s.setFloatUniform("windDirection", cloudField.directionDegrees)
+            s.setFloatUniform("fogBandCount", fogField.bands.count { it.baseAlpha > 0f }.toFloat())
+            s.setFloatUniform("fogVerticalCenter", FloatArray(4) { fogField.bands[it].verticalCenter })
+            s.setFloatUniform("fogHeight", FloatArray(4) { fogField.bands[it].height })
+            s.setFloatUniform("fogBandAlpha", FloatArray(4) { fogField.bands[it].baseAlpha })
+            s.setFloatUniform("fogSpeed", FloatArray(4) { fogField.bands[it].speedFactor })
+            s.setFloatUniform("fogColor", FogFieldFactory.fogColor(fogField.isHaze, daylight))
             canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), sp)
         } else {
             if (pass == WEATHER_PASS_BACKGROUND) {
@@ -148,6 +160,7 @@ internal class WallpaperWeatherEffectRenderer(
         var daylight: Float,
         val cloudSpeedFactor: Float,
         val cloudField: CloudFieldParams,
+        val fogField: FogFieldParams,
     ) {
         val daytime: Boolean
             get() = daylight >= 0.5f
@@ -156,6 +169,7 @@ internal class WallpaperWeatherEffectRenderer(
         private val clouds = mutableListOf<CloudParticle>()
         private val screenDrops = mutableListOf<ScreenDrop>()
         private var lightningAlpha = 0f
+        private var fogElapsedSeconds = 0f
         private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         private var lastWidth = 0
         private var lastHeight = 0
@@ -167,6 +181,7 @@ internal class WallpaperWeatherEffectRenderer(
 
         fun update(deltaMillis: Long, effectiveLayers: Float) {
             val deltaSec = deltaMillis / 1000f
+            fogElapsedSeconds += deltaSec
 
             if (lastWidth <= 0 || lastHeight <= 0) return
 
@@ -257,20 +272,25 @@ internal class WallpaperWeatherEffectRenderer(
             lastHeight = canvas.height
 
             if (weatherKind == WeatherView.WEATHER_KIND_FOG || weatherKind == WeatherView.WEATHER_KIND_HAZE) {
-                paint.color = if (weatherKind == WeatherView.WEATHER_KIND_FOG) {
-                    if (daytime) Color.rgb(205, 220, 225) else Color.rgb(92, 106, 124)
-                } else {
-                    if (daytime) Color.rgb(218, 198, 164) else Color.rgb(104, 96, 96)
-                }
-                val baseAlpha = if (weatherKind == WeatherView.WEATHER_KIND_FOG) 42 else 28
-                repeat(3) { layer ->
-                    paint.alpha = ((baseAlpha + layer * 12) * contribution).toInt()
-                    val top = lastHeight * (0.33f + layer * 0.13f)
+                val rgb = FogFieldFactory.fogColor(fogField.isHaze, daylight)
+                paint.color = Color.rgb(
+                    (rgb[0] * 255f).toInt().coerceIn(0, 255),
+                    (rgb[1] * 255f).toInt().coerceIn(0, 255),
+                    (rgb[2] * 255f).toInt().coerceIn(0, 255),
+                )
+                val dirSign = if (kotlin.math.cos(Math.toRadians(fogField.directionDegrees.toDouble())) >= 0) 1f else -1f
+                for (band in fogField.bands) {
+                    if (band.baseAlpha <= 0f) continue
+                    paint.alpha = (band.baseAlpha * 255f * contribution).toInt().coerceIn(0, 255)
+                    val centerY = band.verticalCenter * lastHeight
+                    val halfHeight = band.height * lastHeight * 0.5f
+                    val driftX = (fogElapsedSeconds * band.speedFactor * cloudSpeedFactor * dirSign * lastWidth * 0.01f) %
+                        (lastWidth * 0.18f)
                     canvas.drawOval(
-                        -lastWidth * 0.18f,
-                        top,
-                        lastWidth * 1.18f,
-                        top + lastHeight * (0.18f + layer * 0.05f),
+                        -lastWidth * 0.18f + driftX,
+                        centerY - halfHeight,
+                        lastWidth * 1.18f + driftX,
+                        centerY + halfHeight,
                         paint,
                     )
                 }
@@ -478,6 +498,12 @@ internal class WallpaperWeatherEffectRenderer(
             uniform float layerDarkness[3];
             uniform float layerVerticalOffset[3];
             uniform float windDirection;
+            uniform float fogBandCount;
+            uniform float fogVerticalCenter[4];
+            uniform float fogHeight[4];
+            uniform float fogBandAlpha[4];
+            uniform float fogSpeed[4];
+            uniform float fogColor[3];
 
             float hash21(float2 p) {
                 p = fract(p * float2(123.34, 456.21));
@@ -577,20 +603,23 @@ internal class WallpaperWeatherEffectRenderer(
                     smoothstep(0.38, 0.78, midBank) * midMask * 0.64;
             }
 
-            float hazeLayer(float2 uv) {
-                float wave = noise21(float2(uv.x * 2.0 + time * 0.010, uv.y * 4.2));
-                float horizon = smoothstep(0.10, 0.48, uv.y) * (1.0 - smoothstep(0.82, 1.16, uv.y));
-                return (0.36 + wave * 0.26) * horizon;
-            }
 
-            float hazeDust(float2 uv, float scale, float seed) {
-                float2 p = uv * scale;
-                p.x += time * 0.008;
-                float2 cell = floor(p);
-                float2 local = fract(p) - 0.5;
-                float random = hash21(cell + seed);
-                local += (float2(random, hash21(cell + seed + 9.0)) - 0.5) * 0.62;
-                return smoothstep(0.045, 0.0, length(local)) * smoothstep(0.72, 0.98, random);
+            // ACT-005: mist/haze as horizontal depth bands. Lower bands (closer to
+            // verticalCenter = 1, the horizon) are denser, taller and slower; higher
+            // bands are thinner, lighter and drift slightly faster.
+            float fogHazeBands(float2 uv, float2 aspectUv) {
+                float dirSign = cos(radians(windDirection)) >= 0.0 ? 1.0 : -1.0;
+                float result = 0.0;
+                for (int i = 0; i < 4; i++) {
+                    if (fogBandAlpha[i] <= 0.0) continue;
+                    float drift = aspectUv.x + time * fogSpeed[i] * windFactor * dirSign * 0.02;
+                    float n = noise21(float2(drift * 2.2, uv.y * 4.0 + float(i) * 13.0));
+                    float halfHeight = fogHeight[i] * 0.5;
+                    float band = smoothstep(fogVerticalCenter[i] - halfHeight, fogVerticalCenter[i] - halfHeight * 0.3, uv.y)
+                        * (1.0 - smoothstep(fogVerticalCenter[i] + halfHeight * 0.3, fogVerticalCenter[i] + halfHeight, uv.y));
+                    result += band * (0.55 + n * 0.45) * fogBandAlpha[i];
+                }
+                return result;
             }
 
             float cloudCircle(float2 point, float2 center, float radius, float softness) {
@@ -665,18 +694,19 @@ internal class WallpaperWeatherEffectRenderer(
                     color = float3(0.96, 0.98, 1.0);
                 }
 
-                if (weatherPass == 1.0 && (mode == 3.0 || mode == 4.0)) {
+                if (weatherPass == 1.0 && mode == 4.0) {
                     float fog = fogLayer(aspectUv);
-                    alpha += fog * (mode == 4.0 ? 0.16 : 0.58);
+                    alpha += fog * 0.16;
                     color = mix(color, daylight > 0.5 ? float3(0.82, 0.89, 0.91) : float3(0.42, 0.50, 0.62), 0.58);
                 }
 
-                if (weatherPass == 1.0 && mode == 10.0) {
-                    float haze = hazeLayer(uv);
-                    float dust = hazeDust(aspectUv, 31.0, 17.0) * 0.16;
-                    dust += hazeDust(aspectUv, 47.0, 43.0) * 0.10;
-                    alpha += haze * 0.40 + dust;
-                    color = daylight > 0.5 ? float3(0.86, 0.76, 0.58) : float3(0.48, 0.43, 0.43);
+                // ACT-005: fog and haze as horizontal depth bands, fading near the
+                // horizon. Each band's alpha already accounts for fog/haze intensity,
+                // so a fully clear scene (fogBandCount == 0) draws nothing here.
+                if (weatherPass == 1.0 && (mode == 3.0 || mode == 10.0) && fogBandCount > 0.0) {
+                    float bands = fogHazeBands(uv, aspectUv);
+                    alpha += bands;
+                    color = float3(fogColor[0], fogColor[1], fogColor[2]);
                 }
 
                 if (weatherPass == 1.0 && mode == 9.0) {
