@@ -205,6 +205,10 @@ class MaterialLiveWallpaperService : WallpaperService() {
         @WeatherKindRule
         private var mWeatherKind = 0
         private var mDaytime = false
+        private var mSceneState = WallpaperSceneStateFactory.create(
+            weatherKind = WeatherView.WEATHER_KIND_CLEAR,
+            daylight = 1f,
+        )
         private var mVisible = false
         private var mAnimate = false
         private var mRotatingWeather = false
@@ -400,6 +404,22 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private fun setWeather(@WeatherKindRule weatherKind: Int, daytime: Boolean) {
             mWeatherKind = weatherKind
             mDaytime = daytime
+            rebuildSceneState()
+        }
+
+        private fun rebuildSceneState() {
+            val wind = mLastLocation?.weather?.current?.wind
+            mSceneState = WallpaperSceneStateFactory.create(
+                weatherKind = mWeatherKind,
+                daylight = if (mDaytime) 1f else 0f,
+                windSpeedMetersPerSecond = wind?.speed?.inMetersPerSecond?.toFloat() ?: 0f,
+                windGustMetersPerSecond = wind?.gusts?.inMetersPerSecond?.toFloat() ?: 0f,
+                windDirectionDegrees = wind?.degree?.toFloat(),
+                sunriseMillis = mSunriseMillis,
+                sunsetMillis = mSunsetMillis,
+                moonriseMillis = mMoonriseMillis,
+                moonsetMillis = mMoonsetMillis,
+            )
         }
 
         private fun drawRotatingWeatherLabel(canvas: Canvas) {
@@ -448,21 +468,26 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
         private fun setWeatherImplementor() {
             hasDrawn = false
-            mWallpaperEffectRenderer = if (WallpaperWeatherEffectRenderer.supports(mWeatherKind)) {
-                WallpaperWeatherEffectRenderer(mWeatherKind, mDaytime, cloudSpeedFactor())
+            val sceneState = mSceneState
+            mWallpaperEffectRenderer = if (WallpaperWeatherEffectRenderer.supports(sceneState.weatherKind)) {
+                WallpaperWeatherEffectRenderer(
+                    sceneState.weatherKind,
+                    sceneState.daytime,
+                    sceneState.windFactor,
+                )
             } else {
                 null
             }
             // The scene layer draws its own time-positioned sun. Avoid the old fixed clear-day sun.
             mImplementor = if (mWallpaperEffectRenderer != null ||
-                mWeatherKind == WeatherView.WEATHER_KIND_CLEAR && mDaytime
+                sceneState.weatherKind == WeatherView.WEATHER_KIND_CLEAR && sceneState.daytime
             ) {
                 null
             } else {
                 WeatherImplementorFactory.getWeatherImplementor(
                     applicationContext,
-                    mWeatherKind,
-                    mDaytime,
+                    sceneState.weatherKind,
+                    sceneState.daytime,
                     mAdaptiveSize,
                     mAnimate
                 )
@@ -649,26 +674,6 @@ class MaterialLiveWallpaperService : WallpaperService() {
             override fun getOpacity(): Int = PixelFormat.OPAQUE
         }
 
-        private fun cloudSpeedFactor(): Float {
-            val windMetersPerSecond = maxOf(
-                mLastLocation?.weather?.current?.wind?.speed?.inMetersPerSecond ?: 0.0,
-                mLastLocation?.weather?.current?.wind?.gusts?.inMetersPerSecond ?: 0.0,
-            )
-            val measuredFactor = when {
-                windMetersPerSecond < 8.0 -> 1f
-                windMetersPerSecond < 14.0 ->
-                    (1.0 + (windMetersPerSecond - 8.0) / 6.0 * 1.8).toFloat()
-                else -> 3.6f
-            }
-            return when (mWeatherKind) {
-                WeatherView.WEATHER_KIND_THUNDER,
-                WeatherView.WEATHER_KIND_THUNDERSTORM,
-                -> max(measuredFactor, 2.8f)
-                WeatherView.WEATHER_KIND_WIND -> max(measuredFactor, 4.2f)
-                else -> measuredFactor
-            }
-        }
-
         private fun skyColors(now: Long): IntArray {
             val night = intArrayOf(Color.rgb(3, 12, 35), Color.rgb(31, 55, 94))
             val dawn = intArrayOf(Color.rgb(78, 78, 126), Color.rgb(242, 145, 104))
@@ -786,6 +791,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val daytime = visualDaytime(now)
             if (daytime == mDaytime) return
             mDaytime = daytime
+            rebuildSceneState()
             mForegroundKey = null
             setWeatherImplementor()
             lwwLog { "automatic day/night changed daytime=$daytime" }
@@ -806,6 +812,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mSunsetMillis = sun?.second
             mMoonriseMillis = moon?.first
             mMoonsetMillis = moon?.second
+            rebuildSceneState()
             val intervals = if (mDaytime) {
                 sunIntervals
             } else {
