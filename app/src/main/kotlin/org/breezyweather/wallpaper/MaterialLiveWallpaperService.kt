@@ -135,7 +135,13 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mIntervalComputer: IntervalComputer? = null
         private var mRotators: Array<MaterialWeatherView.RotateController>? = null
         private var mImplementor: MaterialWeatherView.WeatherAnimationImplementor? = null
-        private var mWallpaperEffectRenderer: WallpaperWeatherEffectRenderer? = null
+        private var mCurrentEffectRenderer: WallpaperWeatherEffectRenderer? = null
+        private var mOutgoingEffectRenderer: WallpaperWeatherEffectRenderer? = null
+        private var mCurrentEffectFamily: WallpaperWeatherFamily? = null
+        private var mCurrentRendererWeatherKind: Int? = null
+        private var mCurrentRendererWindFactor = Float.NaN
+        private var mHasSceneTarget = false
+        private val mTransitionManager = TransitionManager()
         private var mBackground: Drawable? = null
         // The processed location photo is the middle layer: sky and celestial body behind it,
         // weather effects in front of it.
@@ -154,10 +160,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mParallaxEnabled = false
         private var mXOffset = 0.5f
 
-        // Identity of the currently built photo foreground (path|mtime|size|parallax|daytime).
+        // Identity of the currently built photo foreground (path|mtime|size|parallax).
         // A null key with photo enabled means "needs (re)build"; ensureForeground() recovers
         // automatically once the surface has a real size and a cached photo exists.
         private var mForegroundKey: String? = null
+        private var mForegroundNightTint = Float.NaN
         private var mCurrentLocationData: Location? = null
         private var mLoggedForegroundMissing = false
 
@@ -195,6 +202,10 @@ class MaterialLiveWallpaperService : WallpaperService() {
         @WeatherKindRule
         private var mWeatherKind = 0
         private var mDaytime = false
+        private var mSceneState = WallpaperSceneStateFactory.create(
+            weatherKind = WeatherView.WEATHER_KIND_CLEAR,
+            daylight = 1f,
+        )
         private var mVisible = false
         private var mAnimate = false
         private var mRotatingWeather = false
@@ -227,7 +238,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             try {
                 canvas = if (
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-                    (mRotatingWeather || mWallpaperEffectRenderer != null)
+                    (mRotatingWeather || mCurrentEffectRenderer != null || mOutgoingEffectRenderer != null)
                 ) {
                     mHolder?.lockHardwareCanvas()
                 } else {
@@ -261,8 +272,19 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     it.withTranslation(-celestialOffset, 0f) {
                         drawCelestialBody(it)
                     }
-                    mWallpaperEffectRenderer?.drawBackgroundWeatherPass(it)
+                    val transitionProgress = mTransitionManager.transitionProgress()
+                    if (transitionProgress == null && mOutgoingEffectRenderer != null) {
+                        // Transition finished: drop the outgoing renderer (keep at most one).
+                        mOutgoingEffectRenderer = null
+                    }
+                    if (transitionProgress != null && mOutgoingEffectRenderer != null) {
+                        mOutgoingEffectRenderer?.drawBackgroundWeatherPass(it, 1f - transitionProgress)
+                        mCurrentEffectRenderer?.drawBackgroundWeatherPass(it, transitionProgress)
+                    } else {
+                        mCurrentEffectRenderer?.drawBackgroundWeatherPass(it)
+                    }
                     it.withTranslation(-fgOffset, 0f) {
+                        updateForegroundNightTint()
                         mForeground?.draw(it)
                     }
                     if (mIntervalComputer != null && mRotators != null) {
@@ -295,12 +317,18 @@ class MaterialLiveWallpaperService : WallpaperService() {
                             )
                         }
                     }
-                    mWallpaperEffectRenderer?.update(
-                        mIntervalComputer?.interval?.toLong() ?: 0L,
-                        mAnimate,
-                    )
-                    mWallpaperEffectRenderer?.drawForegroundWeatherPass(it)
-                    mWallpaperEffectRenderer?.drawGlassRainDrops(it)
+                    val frameInterval = mIntervalComputer?.interval?.toLong() ?: 0L
+                    mCurrentEffectRenderer?.update(frameInterval, mAnimate)
+                    if (transitionProgress != null && mOutgoingEffectRenderer != null) {
+                        mOutgoingEffectRenderer?.update(frameInterval, mAnimate)
+                        mOutgoingEffectRenderer?.drawForegroundWeatherPass(it, 1f - transitionProgress)
+                        mCurrentEffectRenderer?.drawForegroundWeatherPass(it, transitionProgress)
+                        mOutgoingEffectRenderer?.drawGlassRainDrops(it, 1f - transitionProgress)
+                        mCurrentEffectRenderer?.drawGlassRainDrops(it, transitionProgress)
+                    } else {
+                        mCurrentEffectRenderer?.drawForegroundWeatherPass(it)
+                        mCurrentEffectRenderer?.drawGlassRainDrops(it)
+                    }
                     drawRotatingWeatherLabel(it)
                 }
             } catch (e: Throwable) {
@@ -317,7 +345,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 if (!mVisible || !mRotatingWeather) return
                 mRotatingWeatherIndex = (mRotatingWeatherIndex + 1) % ROTATING_WEATHER_KINDS.size
                 setWeather(ROTATING_WEATHER_KINDS[mRotatingWeatherIndex], mDaytime)
-                setWeatherImplementor()
+                setWeatherImplementor(SceneTransitionReason.ROTATING_TEST)
                 mHandler?.post(mDrawableRunnable)
                 mHandler?.postDelayed(this, ROTATING_WEATHER_INTERVAL_MILLIS)
             }
@@ -387,9 +415,36 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 }
             }
 
-        private fun setWeather(@WeatherKindRule weatherKind: Int, daytime: Boolean) {
+        private fun setWeather(
+            @WeatherKindRule weatherKind: Int,
+            daytime: Boolean,
+            submitTarget: Boolean = true,
+        ) {
             mWeatherKind = weatherKind
             mDaytime = daytime
+            mHasSceneTarget = submitTarget
+            rebuildSceneState()
+        }
+
+        private fun rebuildSceneState(now: Long = System.currentTimeMillis()) {
+            val wind = mCurrentLocationData?.weather?.current?.wind
+            mSceneState = WallpaperSceneStateFactory.create(
+                weatherKind = mWeatherKind,
+                daylight = if (mAutomaticDayNight) {
+                    sunVisibility(now)
+                } else if (mDaytime) {
+                    1f
+                } else {
+                    0f
+                },
+                windSpeedMetersPerSecond = wind?.speed?.inMetersPerSecond?.toFloat() ?: 0f,
+                windGustMetersPerSecond = wind?.gusts?.inMetersPerSecond?.toFloat() ?: 0f,
+                windDirectionDegrees = wind?.degree?.toFloat(),
+                sunriseMillis = mSunriseMillis,
+                sunsetMillis = mSunsetMillis,
+                moonriseMillis = mMoonriseMillis,
+                moonsetMillis = mMoonsetMillis,
+            )
         }
 
         private fun drawRotatingWeatherLabel(canvas: Canvas) {
@@ -436,23 +491,76 @@ class MaterialLiveWallpaperService : WallpaperService() {
             else -> "Unknown"
         }
 
-        private fun setWeatherImplementor() {
+        private fun setWeatherImplementor(
+            reason: SceneTransitionReason = SceneTransitionReason.WEATHER_DATA_CHANGED,
+        ) {
+            if (!mHasSceneTarget) return
             hasDrawn = false
-            mWallpaperEffectRenderer = if (WallpaperWeatherEffectRenderer.supports(mWeatherKind)) {
-                WallpaperWeatherEffectRenderer(mWeatherKind, mDaytime, cloudSpeedFactor())
+            val sceneState = mSceneState
+            val rendererMatchesTarget = mCurrentEffectRenderer != null &&
+                mCurrentRendererWeatherKind == sceneState.weatherKind &&
+                abs(mCurrentRendererWindFactor - sceneState.windFactor) < 0.001f
+            if (rendererMatchesTarget) {
+                updateRendererDaylight(sceneState.daylight)
+                return
+            }
+            val newRenderer = if (WallpaperWeatherEffectRenderer.supports(sceneState.weatherKind)) {
+                WallpaperWeatherEffectRenderer(
+                    sceneState.weatherKind,
+                    sceneState.daylight,
+                    sceneState.windFactor,
+                    cloudField = CloudFieldFactory.cloudFieldParams(
+                        family = sceneState.weatherFamily,
+                        cloudDensity = sceneState.cloudDensity,
+                        cloudDarkness = sceneState.cloudDarkness,
+                        windFactor = sceneState.windFactor,
+                        windDirectionDegrees = sceneState.windDirectionDegrees,
+                    ),
+                )
             } else {
                 null
             }
+            val newFamily = sceneState.weatherFamily
+            val duration = transitionDurationMillis(
+                from = mCurrentEffectFamily,
+                to = newFamily,
+                reason = reason,
+                animationsEnabled = mAnimate,
+            )
+
+            if (mCurrentEffectRenderer != null && newRenderer != null && duration > 0L &&
+                newFamily != mCurrentEffectFamily
+            ) {
+                // Keep at most two renderers. If a transition is already running, the renderer
+                // with the larger current contribution becomes the new outgoing renderer.
+                val activeProgress = mTransitionManager.transitionProgress()
+                mOutgoingEffectRenderer = if (activeProgress != null && activeProgress >= 0.5f) {
+                    mCurrentEffectRenderer
+                } else {
+                    mOutgoingEffectRenderer ?: mCurrentEffectRenderer
+                }
+                mCurrentEffectRenderer = newRenderer
+                mTransitionManager.startTransition(duration)
+                lwwLog { "transition $mCurrentEffectFamily -> $newFamily duration=${duration}ms reason=$reason" }
+            } else {
+                mOutgoingEffectRenderer = null
+                mCurrentEffectRenderer = newRenderer
+                mTransitionManager.cancelTransition()
+            }
+            mCurrentEffectFamily = newFamily
+            mCurrentRendererWeatherKind = sceneState.weatherKind
+            mCurrentRendererWindFactor = sceneState.windFactor
+
             // The scene layer draws its own time-positioned sun. Avoid the old fixed clear-day sun.
-            mImplementor = if (mWallpaperEffectRenderer != null ||
-                mWeatherKind == WeatherView.WEATHER_KIND_CLEAR && mDaytime
+            mImplementor = if (mCurrentEffectRenderer != null ||
+                sceneState.weatherKind == WeatherView.WEATHER_KIND_CLEAR && sceneState.daytime
             ) {
                 null
             } else {
                 WeatherImplementorFactory.getWeatherImplementor(
                     applicationContext,
-                    mWeatherKind,
-                    mDaytime,
+                    sceneState.weatherKind,
+                    sceneState.daytime,
                     mAdaptiveSize,
                     mAnimate
                 )
@@ -461,6 +569,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 DelayRotateController(mRotation2D.toDouble()),
                 DelayRotateController(mRotation3D.toDouble())
             )
+        }
+
+        private fun updateRendererDaylight(daylight: Float = mSceneState.daylight) {
+            mCurrentEffectRenderer?.setDaylight(daylight)
+            mOutgoingEffectRenderer?.setDaylight(daylight)
         }
 
         private fun setWeatherBackgroundDrawable() {
@@ -502,11 +615,13 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 return
             }
 
-            val key = "$path|${file.lastModified()}|${mSizes[0]}x${mSizes[1]}|$mParallaxEnabled|$mDaytime"
+            val key = "$path|${file.lastModified()}|${mSizes[0]}x${mSizes[1]}|$mParallaxEnabled"
             if (key == mForegroundKey && mForeground != null) return
 
             mForeground = buildPhotoForeground()
             mForegroundKey = if (mForeground != null) key else null
+            mForegroundNightTint = Float.NaN
+            updateForegroundNightTint()
             updateLayerBounds()
             lwwLog { "foreground rebuilt success=${mForeground != null} key=$key" }
         }
@@ -564,19 +679,35 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 }
                 val positioned = positionPhotoAtBottom(source, width, mSizes[1])
                 lwwLog { "buildPhotoForeground ok: src=${source.width}x${source.height} -> ${width}x${mSizes[1]}" }
-                BitmapDrawable(resources, positioned).apply {
-                    if (!mDaytime) {
-                        colorFilter = ColorMatrixColorFilter(
-                            ColorMatrix().apply { setScale(0.58f, 0.62f, 0.72f, 1f) }
-                        )
-                    }
-                }
+                BitmapDrawable(resources, positioned)
             } catch (e: Throwable) {
                 lwwLog { "buildPhotoForeground failed: ${e.message}" }
                 null
             } finally {
                 source.recycle()
             }
+        }
+
+        private fun updateForegroundNightTint() {
+            val foreground = mForeground ?: return
+            val nightTint = mSceneState.photoNightTint.coerceIn(0f, 1f)
+            if (abs(nightTint - mForegroundNightTint) < 0.001f) return
+
+            foreground.colorFilter = if (nightTint <= 0.001f) {
+                null
+            } else {
+                ColorMatrixColorFilter(
+                    ColorMatrix().apply {
+                        setScale(
+                            lerp(1f, 0.58f, nightTint),
+                            lerp(1f, 0.62f, nightTint),
+                            lerp(1f, 0.72f, nightTint),
+                            1f,
+                        )
+                    }
+                )
+            }
+            mForegroundNightTint = nightTint
         }
 
         private fun positionPhotoAtBottom(source: Bitmap, targetWidth: Int, targetHeight: Int): Bitmap {
@@ -631,26 +762,6 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
             @Deprecated("Deprecated in Android")
             override fun getOpacity(): Int = PixelFormat.OPAQUE
-        }
-
-        private fun cloudSpeedFactor(): Float {
-            val windMetersPerSecond = maxOf(
-                mCurrentLocationData?.weather?.current?.wind?.speed?.inMetersPerSecond ?: 0.0,
-                mCurrentLocationData?.weather?.current?.wind?.gusts?.inMetersPerSecond ?: 0.0,
-            )
-            val measuredFactor = when {
-                windMetersPerSecond < 8.0 -> 1f
-                windMetersPerSecond < 14.0 ->
-                    (1.0 + (windMetersPerSecond - 8.0) / 6.0 * 1.8).toFloat()
-                else -> 3.6f
-            }
-            return when (mWeatherKind) {
-                WeatherView.WEATHER_KIND_THUNDER,
-                WeatherView.WEATHER_KIND_THUNDERSTORM,
-                -> max(measuredFactor, 2.8f)
-                WeatherView.WEATHER_KIND_WIND -> max(measuredFactor, 4.2f)
-                else -> measuredFactor
-            }
         }
 
         private fun skyColors(now: Long): IntArray {
@@ -799,10 +910,13 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mLastDayNightCheckMinute = minute
 
             val daytime = visualDaytime(now)
+            rebuildSceneState(now)
+            updateRendererDaylight()
             if (daytime == mDaytime) return
             mDaytime = daytime
-            mForegroundKey = null
-            setWeatherImplementor()
+            rebuildSceneState(now)
+            updateRendererDaylight()
+            setWeatherImplementor(SceneTransitionReason.AUTO_DAY_NIGHT)
             lwwLog { "automatic day/night changed daytime=$daytime" }
         }
 
@@ -822,6 +936,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mSunsetMillis = sun?.second
             mMoonriseMillis = moon?.first
             mMoonsetMillis = moon?.second
+            rebuildSceneState(now)
             lwwLog {
                 "celestial timing sunrise=${mSunriseMillis?.let(::formatDebugTime)} " +
                     "sunset=${mSunsetMillis?.let(::formatDebugTime)} sourceIntervals=${sunIntervals.size}"
@@ -950,7 +1065,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                             val configManager = LiveWallpaperConfigManager(this@MaterialLiveWallpaperService)
                             mAnimate = configManager.animationsEnabled
                             mParallaxEnabled = configManager.parallaxEnabled
-                            setWeatherImplementor()
+                            setWeatherImplementor(SceneTransitionReason.SURFACE_RECREATED)
 
                             // Drawables are owned by the render thread; serialize mutations there
                             // instead of racing it from this (main-thread) callback.
@@ -975,7 +1090,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 mGravitySensor = it.getDefaultSensor(Sensor.TYPE_GRAVITY)
             }
             mVisible = false
-            setWeather(WeatherView.WEATHER_KIND_NULL, true)
+            setWeather(WeatherView.WEATHER_KIND_NULL, true, submitTarget = false)
         }
 
         override fun onVisibilityChanged(visible: Boolean) {
@@ -1051,7 +1166,13 @@ class MaterialLiveWallpaperService : WallpaperService() {
             )
             updateCelestialTiming(location)
 
-            setWeatherImplementor()
+            val transitionReason = when {
+                mCurrentEffectFamily == null -> SceneTransitionReason.INITIAL
+                configManager.weatherKind != "auto" || configManager.dayNightType != "auto" ->
+                    SceneTransitionReason.USER_FORCED_MODE
+                else -> SceneTransitionReason.WEATHER_DATA_CHANGED
+            }
+            setWeatherImplementor(transitionReason)
             setIntervalComputer()
             setOpenGravitySensor(settingsManager.isGravitySensorEnabled)
             if (mOpenGravitySensor) {

@@ -474,6 +474,18 @@
     <string name="action_radar">Rain radar</string>
     <!-- Label shown when sharing coordinates from a maps app to Breezy Weather -->
     <string name="action_add_as_location">Add as location</string>
+    <string name="action_camera">Camera</string>
+    <string name="action_retake">Retake</string>
+    <string name="camera_uploading">Uploading photo...</string>
+    <string name="camera_upload_success">Photo uploaded</string>
+    <string name="camera_error_timeout">Could not connect to server (timeout)</string>
+    <string name="camera_error_server_down">Server is unavailable</string>
+    <string name="camera_error_general">Upload failed: %s</string>
+    <string name="camera_horizon_guide">Keep the sky above this line</string>
+    <string name="camera_result_saved">Geschikt en opgeslagen</string>
+    <string name="camera_result_no_sky_at_top">Geen lucht bovenaan in beeld</string>
+    <string name="camera_result_too_little_sky">Te weinig lucht bovenaan in beeld</string>
+    <string name="camera_result_not_landscape">Geen landschapsfoto gedetecteerd</string>
     <string name="action_add_debug_location" translatable="false">Add debug location</string>
     <string name="action_edit_location">Edit this location</string>
     <string name="action_open_in_other_app">Open in another app</string>

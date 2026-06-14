@@ -83,6 +83,11 @@
     <color name="colorTextSubtitle">#b2b2b2</color>
 
     <color name="colorMainCardBackground">#FDFCFF</color>
+
+    <!-- ACT-013: glassmorphic card styling for the home weather cards. -->
+    <color name="colorGlassCardBackground">#29FFFFFF</color>
+    <color name="colorGlassCardStroke">#59FFFFFF</color>
+
     <color name="colorPrecipitationProbability">@color/md_theme_primary</color>
 
     <color name="colorNotificationSecondary">@color/secondary_text_default_material_light</color>

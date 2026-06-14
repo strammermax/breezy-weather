@@ -27,9 +27,19 @@ import kotlin.math.min
  */
 internal class WallpaperWeatherEffectRenderer(
     private val weatherKind: Int,
-    private val daytime: Boolean,
+    daylight: Float,
     private val cloudSpeedFactor: Float = 1f,
+    private val cloudField: CloudFieldParams = CloudFieldFactory.cloudFieldParams(
+        family = WallpaperSceneStateFactory.weatherFamily(weatherKind),
+        cloudDensity = 0f,
+        cloudDarkness = 0f,
+        windFactor = cloudSpeedFactor,
+        windDirectionDegrees = null,
+    ),
 ) {
+    private var daylight = daylight.coerceIn(0f, 1f)
+    private val daytime: Boolean
+        get() = daylight >= 0.5f
     private var shader: RuntimeShader? = null
     private var shaderPaint: Paint? = null
     private var canvasRenderer: CanvasRenderer? = null
@@ -44,10 +54,10 @@ internal class WallpaperWeatherEffectRenderer(
                 }
             } catch (error: Throwable) {
                 Log.w(LOG_TAG, "Weather RuntimeShader unavailable; using Canvas fallback", error)
-                canvasRenderer = CanvasRenderer(weatherKind, daytime, cloudSpeedFactor)
+                canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField)
             }
         } else {
-            canvasRenderer = CanvasRenderer(weatherKind, daytime, cloudSpeedFactor)
+            canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField)
         }
     }
 
@@ -57,12 +67,17 @@ internal class WallpaperWeatherEffectRenderer(
     private var qualityEvaluationMillis = 0L
     private var stableFrameMillis = 0L
 
+    fun setDaylight(daylight: Float) {
+        this.daylight = daylight.coerceIn(0f, 1f)
+        canvasRenderer?.daylight = this.daylight
+    }
+
     fun update(intervalMillis: Long, animate: Boolean) {
         if (animate) {
             val delta = min(intervalMillis, MAX_FRAME_INTERVAL_MILLIS).coerceAtLeast(0L)
             elapsedSeconds += delta / 1000f
-            canvasRenderer?.update(delta)
             updateAdaptivePrecipitationQuality(intervalMillis)
+            canvasRenderer?.update(delta, precipitationLayerCount)
         }
     }
 
@@ -88,14 +103,15 @@ internal class WallpaperWeatherEffectRenderer(
         }
     }
 
-    fun drawBackgroundWeatherPass(canvas: Canvas) = draw(canvas, WEATHER_PASS_BACKGROUND)
+    fun drawBackgroundWeatherPass(canvas: Canvas, alpha: Float = 1f) = draw(canvas, WEATHER_PASS_BACKGROUND, alpha)
 
-    fun drawForegroundWeatherPass(canvas: Canvas) = draw(canvas, WEATHER_PASS_FOREGROUND)
+    fun drawForegroundWeatherPass(canvas: Canvas, alpha: Float = 1f) = draw(canvas, WEATHER_PASS_FOREGROUND, alpha)
 
-    fun drawGlassRainDrops(canvas: Canvas) = draw(canvas, WEATHER_PASS_GLASS)
+    fun drawGlassRainDrops(canvas: Canvas, alpha: Float = 1f) = draw(canvas, WEATHER_PASS_GLASS, alpha)
 
-    private fun draw(canvas: Canvas, pass: Float) {
+    private fun draw(canvas: Canvas, pass: Float, alpha: Float = 1f) {
         if (canvas.width <= 0 || canvas.height <= 0) return
+        if (alpha <= 0f) return
 
         val s = shader
         val sp = shaderPaint
@@ -103,27 +119,38 @@ internal class WallpaperWeatherEffectRenderer(
             s.setFloatUniform("resolution", canvas.width.toFloat(), canvas.height.toFloat())
             s.setFloatUniform("time", elapsedSeconds)
             s.setFloatUniform("mode", shaderMode(weatherKind))
-            s.setFloatUniform("daylight", if (daytime) 1f else 0f)
+            s.setFloatUniform("daylight", daylight)
             s.setFloatUniform("windFactor", cloudSpeedFactor)
             s.setFloatUniform("weatherPass", pass)
             s.setFloatUniform("precipitationLayers", precipitationLayerCount)
+            s.setFloatUniform("transitionAlpha", alpha.coerceIn(0f, 1f))
+            s.setFloatUniform("layerCount", cloudField.layers.count { it.alpha > 0f }.toFloat())
+            s.setFloatUniform("layerScale", FloatArray(3) { cloudField.layers[it].scale })
+            s.setFloatUniform("layerSpeed", FloatArray(3) { cloudField.layers[it].speedFactor })
+            s.setFloatUniform("layerAlpha", FloatArray(3) { cloudField.layers[it].alpha })
+            s.setFloatUniform("layerDarkness", FloatArray(3) { cloudField.layers[it].darkness })
+            s.setFloatUniform("layerVerticalOffset", FloatArray(3) { cloudField.layers[it].verticalOffset })
+            s.setFloatUniform("windDirection", cloudField.directionDegrees)
             canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), sp)
         } else {
             if (pass == WEATHER_PASS_BACKGROUND) {
-                canvasRenderer?.drawClouds(canvas)
+                canvasRenderer?.drawClouds(canvas, alpha)
             } else if (pass == WEATHER_PASS_FOREGROUND) {
-                canvasRenderer?.drawForegroundEffects(canvas)
+                canvasRenderer?.drawForegroundEffects(canvas, alpha)
             } else {
-                canvasRenderer?.drawGlassRainDrops(canvas)
+                canvasRenderer?.drawGlassRainDrops(canvas, alpha)
             }
         }
     }
 
     private class CanvasRenderer(
         val weatherKind: Int,
-        val daytime: Boolean,
+        var daylight: Float,
         val cloudSpeedFactor: Float,
+        val cloudField: CloudFieldParams,
     ) {
+        val daytime: Boolean
+            get() = daylight >= 0.5f
         private val random = Random()
         private val particles = mutableListOf<Particle>()
         private val clouds = mutableListOf<CloudParticle>()
@@ -132,61 +159,66 @@ internal class WallpaperWeatherEffectRenderer(
         private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         private var lastWidth = 0
         private var lastHeight = 0
+        private val snowHailPool: WallpaperParticlePool? = when (weatherKind) {
+            WeatherView.WEATHER_KIND_SNOW -> WallpaperParticlePool(WallpaperParticleKind.SNOW)
+            WeatherView.WEATHER_KIND_HAIL -> WallpaperParticlePool(WallpaperParticleKind.HAIL)
+            else -> null
+        }
 
-        fun update(deltaMillis: Long) {
+        fun update(deltaMillis: Long, effectiveLayers: Float) {
             val deltaSec = deltaMillis / 1000f
 
             if (lastWidth <= 0 || lastHeight <= 0) return
 
-            // Initial clouds/fog if needed
-            if (clouds.isEmpty() && (
-                weatherKind == WeatherView.WEATHER_KIND_FOG ||
-                weatherKind == WeatherView.WEATHER_KIND_HAZE ||
-                weatherKind == WeatherView.WEATHER_KIND_CLOUD ||
-                weatherKind == WeatherView.WEATHER_KIND_CLOUDY ||
-                weatherKind == WeatherView.WEATHER_KIND_RAINY ||
-                weatherKind == WeatherView.WEATHER_KIND_SNOW ||
-                weatherKind == WeatherView.WEATHER_KIND_SLEET ||
-                weatherKind == WeatherView.WEATHER_KIND_HAIL ||
-                weatherKind == WeatherView.WEATHER_KIND_WIND ||
-                weatherKind == WeatherView.WEATHER_KIND_THUNDER ||
-                weatherKind == WeatherView.WEATHER_KIND_THUNDERSTORM
-            )) {
-                val count = when (weatherKind) {
-                    WeatherView.WEATHER_KIND_CLOUD -> 3
-                    WeatherView.WEATHER_KIND_WIND -> 5
-                    WeatherView.WEATHER_KIND_CLOUDY -> 7
-                    else -> 6
-                }
-                for (i in 0 until count) {
-                    clouds.add(CloudParticle(random, lastWidth, lastHeight))
+            // Initial cloud mass layers (ACT-003): a few blobs per visible layer, sized and
+            // positioned from that layer's CloudFieldParams.
+            if (clouds.isEmpty()) {
+                cloudField.layers.forEach { layer ->
+                    if (layer.alpha <= 0f) return@forEach
+                    val count = 2 + (layer.depth * 2f).toInt()
+                    repeat(count) {
+                        clouds.add(CloudParticle(random, lastWidth, lastHeight, layer))
+                    }
                 }
             }
 
-            // Update particles (rain/snow)
-            if (particles.isEmpty()) {
-                spawnInitialParticles()
-            }
-
-            val it = particles.iterator()
-            while (it.hasNext()) {
-                val p = it.next()
-                p.y += p.speedY * deltaSec
-                p.x += p.speedX * deltaSec
-                if (p.y > lastHeight + 100) {
-                    p.y = -100f
-                    p.x = random.nextFloat() * lastWidth
+            // Snow and hail use the pre-allocated particle pool (ACT-004); rain/sleet keep the
+            // lightweight streak particles below.
+            val pool = snowHailPool
+            if (pool != null) {
+                pool.configure(
+                    lastWidth,
+                    lastHeight,
+                    cloudField.directionDegrees,
+                    cloudSpeedFactor,
+                    effectiveLayers,
+                )
+                pool.update(deltaSec)
+            } else {
+                if (particles.isEmpty()) {
+                    spawnInitialParticles()
                 }
-                if (p.x > lastWidth + 100f) p.x = -100f
-                if (p.x < -100f) p.x = lastWidth + 100f
+                val it = particles.iterator()
+                while (it.hasNext()) {
+                    val p = it.next()
+                    p.y += p.speedY * deltaSec
+                    p.x += p.speedX * deltaSec
+                    if (p.y > lastHeight + 100) {
+                        p.y = -100f
+                        p.x = random.nextFloat() * lastWidth
+                    }
+                    if (p.x > lastWidth + 100f) p.x = -100f
+                    if (p.x < -100f) p.x = lastWidth + 100f
+                }
             }
 
-            // Update clouds
+            // Update cloud mass layers: deeper (back) layers move slower for parallax.
             for (c in clouds) {
-                c.x += c.speedX * cloudSpeedFactor * deltaSec
+                c.x += c.speedX * deltaSec
                 if (c.x > lastWidth + c.radius) {
                     c.x = -c.radius
-                    c.y = random.nextFloat() * lastHeight * 0.5f // Keep clouds in upper half
+                } else if (c.x < -c.radius) {
+                    c.x = lastWidth + c.radius
                 }
             }
 
@@ -204,6 +236,9 @@ internal class WallpaperWeatherEffectRenderer(
             }
         }
 
+        private fun lerpInt(from: Int, to: Int, t: Float): Int =
+            (from + (to - from) * t.coerceIn(0f, 1f)).toInt().coerceIn(0, 255)
+
         private fun spawnInitialParticles() {
             val count = when (weatherKind) {
                 WeatherView.WEATHER_KIND_RAINY, WeatherView.WEATHER_KIND_THUNDERSTORM -> 80
@@ -217,7 +252,7 @@ internal class WallpaperWeatherEffectRenderer(
             }
         }
 
-        fun drawClouds(canvas: Canvas) {
+        fun drawClouds(canvas: Canvas, contribution: Float = 1f) {
             lastWidth = canvas.width
             lastHeight = canvas.height
 
@@ -229,7 +264,7 @@ internal class WallpaperWeatherEffectRenderer(
                 }
                 val baseAlpha = if (weatherKind == WeatherView.WEATHER_KIND_FOG) 42 else 28
                 repeat(3) { layer ->
-                    paint.alpha = baseAlpha + layer * 12
+                    paint.alpha = ((baseAlpha + layer * 12) * contribution).toInt()
                     val top = lastHeight * (0.33f + layer * 0.13f)
                     canvas.drawOval(
                         -lastWidth * 0.18f,
@@ -242,21 +277,19 @@ internal class WallpaperWeatherEffectRenderer(
                 return
             }
 
+            // Layered cloud masses (ACT-003): each layer's own alpha/darkness drives a
+            // light-to-dark blend so Cloud/Cloudy/Rain/Thunderstorm/Wind read differently.
             for (c in clouds) {
-                val stormy = weatherKind == WeatherView.WEATHER_KIND_RAINY ||
-                    weatherKind == WeatherView.WEATHER_KIND_SNOW ||
-                    weatherKind == WeatherView.WEATHER_KIND_SLEET ||
-                    weatherKind == WeatherView.WEATHER_KIND_HAIL ||
-                    weatherKind == WeatherView.WEATHER_KIND_THUNDER ||
-                    weatherKind == WeatherView.WEATHER_KIND_THUNDERSTORM
-                paint.color = when {
-                    stormy && daytime -> Color.rgb(118, 136, 158)
-                    stormy -> Color.rgb(61, 73, 94)
-                    daytime -> Color.WHITE
-                    else -> Color.LTGRAY
-                }
-                val alpha = if (weatherKind == WeatherView.WEATHER_KIND_FOG || weatherKind == WeatherView.WEATHER_KIND_HAZE) 0.3f else 0.5f
-                paint.alpha = (alpha * 255 * c.alphaMod).toInt()
+                val layer = c.layer
+                val light = if (daytime) Triple(255, 255, 255) else Triple(196, 202, 214)
+                val dark = if (daytime) Triple(110, 128, 150) else Triple(58, 70, 92)
+                val darkness = layer.darkness
+                paint.color = Color.rgb(
+                    lerpInt(light.first, dark.first, darkness),
+                    lerpInt(light.second, dark.second, darkness),
+                    lerpInt(light.third, dark.third, darkness),
+                )
+                paint.alpha = (layer.alpha * 255 * contribution).toInt().coerceIn(0, 255)
                 canvas.drawCircle(c.x - c.radius * 0.52f, c.y + c.radius * 0.08f, c.radius * 0.48f, paint)
                 canvas.drawCircle(c.x - c.radius * 0.12f, c.y - c.radius * 0.18f, c.radius * 0.62f, paint)
                 canvas.drawCircle(c.x + c.radius * 0.38f, c.y - c.radius * 0.06f, c.radius * 0.52f, paint)
@@ -270,32 +303,25 @@ internal class WallpaperWeatherEffectRenderer(
             }
         }
 
-        fun drawForegroundEffects(canvas: Canvas) {
+        fun drawForegroundEffects(canvas: Canvas, contribution: Float = 1f) {
             lastWidth = canvas.width
             lastHeight = canvas.height
 
             // Draw lightning flash
             if (lightningAlpha > 0) {
                 paint.color = Color.WHITE
-                paint.alpha = (lightningAlpha * 255).toInt()
+                paint.alpha = (lightningAlpha * 255 * contribution).toInt()
                 canvas.drawRect(0f, 0f, lastWidth.toFloat(), lastHeight.toFloat(), paint)
             }
 
-            // Draw particles
-            for (p in particles) {
-                paint.color = if (weatherKind == WeatherView.WEATHER_KIND_RAINY ||
-                    weatherKind == WeatherView.WEATHER_KIND_THUNDERSTORM ||
-                    weatherKind == WeatherView.WEATHER_KIND_SLEET
-                ) {
-                    if (daytime) 0xAAFFFFFF.toInt() else 0x77FFFFFF.toInt()
-                } else {
-                    Color.WHITE
-                }
-                paint.alpha = (p.alpha * 255).toInt()
-                if (weatherKind == WeatherView.WEATHER_KIND_SNOW || weatherKind == WeatherView.WEATHER_KIND_HAIL) {
-                    canvas.drawCircle(p.x, p.y, p.size, paint)
-                } else {
-                    // Rain streaks
+            // Snow and hail come from the pre-allocated pool; rain/sleet stay as streaks.
+            val pool = snowHailPool
+            if (pool != null) {
+                pool.draw(canvas, paint, contribution)
+            } else {
+                for (p in particles) {
+                    paint.color = if (daytime) 0xAAFFFFFF.toInt() else 0x77FFFFFF.toInt()
+                    paint.alpha = (p.alpha * 255 * contribution).toInt()
                     paint.strokeWidth = p.size
                     canvas.drawLine(p.x, p.y, p.x + p.speedX * 0.02f, p.y + p.speedY * 0.02f, paint)
                 }
@@ -303,7 +329,7 @@ internal class WallpaperWeatherEffectRenderer(
 
         }
 
-        fun drawGlassRainDrops(canvas: Canvas) {
+        fun drawGlassRainDrops(canvas: Canvas, contribution: Float = 1f) {
             lastWidth = canvas.width
             lastHeight = canvas.height
             if (weatherKind == WeatherView.WEATHER_KIND_RAINY ||
@@ -318,12 +344,12 @@ internal class WallpaperWeatherEffectRenderer(
                 paint.strokeWidth = 2f
                 for (drop in screenDrops) {
                     paint.color = Color.rgb(24, 38, 58)
-                    paint.alpha = 78
+                    paint.alpha = (78 * contribution).toInt()
                     canvas.drawArc(drop.bounds, 12f, 156f, false, paint)
                     paint.color = Color.WHITE
-                    paint.alpha = 46
+                    paint.alpha = (46 * contribution).toInt()
                     canvas.drawOval(drop.bounds, paint)
-                    paint.alpha = 115
+                    paint.alpha = (115 * contribution).toInt()
                     canvas.drawArc(drop.highlight, 195f, 82f, false, paint)
                 }
                 paint.style = Paint.Style.FILL
@@ -359,12 +385,11 @@ internal class WallpaperWeatherEffectRenderer(
             }
         }
 
-        private class CloudParticle(r: Random, w: Int, h: Int) {
+        private class CloudParticle(r: Random, w: Int, h: Int, val layer: CloudLayer) {
             var x = r.nextFloat() * w
-            var y = r.nextFloat() * h * 0.48f
-            val radius = w * 0.10f + r.nextFloat() * w * 0.12f
-            val speedX = 10f + r.nextFloat() * 20f
-            val alphaMod = 0.55f + r.nextFloat() * 0.30f
+            var y = (0.18f + layer.depth * 0.10f + layer.verticalOffset + r.nextFloat() * 0.20f) * h
+            val radius = w * (0.06f * layer.scale) + r.nextFloat() * w * (0.07f * layer.scale)
+            val speedX = (8f + r.nextFloat() * 16f) * layer.speedFactor
         }
 
         private class ScreenDrop(r: Random, w: Int, h: Int) {
@@ -409,6 +434,7 @@ internal class WallpaperWeatherEffectRenderer(
         private const val WEATHER_PASS_GLASS = 2f
 
         fun supports(weatherKind: Int): Boolean = weatherKind in setOf(
+            WeatherView.WEATHER_KIND_CLEAR,
             WeatherView.WEATHER_KIND_RAINY,
             WeatherView.WEATHER_KIND_SLEET,
             WeatherView.WEATHER_KIND_SNOW,
@@ -444,6 +470,14 @@ internal class WallpaperWeatherEffectRenderer(
             uniform float windFactor;
             uniform float weatherPass;
             uniform float precipitationLayers;
+            uniform float transitionAlpha;
+            uniform float layerCount;
+            uniform float layerScale[3];
+            uniform float layerSpeed[3];
+            uniform float layerAlpha[3];
+            uniform float layerDarkness[3];
+            uniform float layerVerticalOffset[3];
+            uniform float windDirection;
 
             float hash21(float2 p) {
                 p = fract(p * float2(123.34, 456.21));
@@ -670,29 +704,30 @@ internal class WallpaperWeatherEffectRenderer(
                     color = float3(0.88, 0.94, 1.0);
                 }
 
-                if (weatherPass == 0.0 && (mode == 1.0 || mode == 2.0 || mode == 4.0 || mode == 5.0 ||
-                    mode == 6.0 || mode == 7.0 || mode == 8.0 || mode == 9.0)) {
-                    float clouds = driftingCloud(aspectUv, 0.19, 0.22, 0.006 * windFactor, 0.08) * 0.42;
-                    clouds = max(clouds, driftingCloud(aspectUv, 0.34, 0.31, 0.004 * windFactor, 0.53) * 0.50);
-                    clouds = max(clouds, driftingCloud(aspectUv, 0.48, 0.18, 0.008 * windFactor, 0.79) * 0.34);
-                    if (mode == 7.0) {
-                        clouds = max(clouds, driftingCloud(aspectUv, 0.26, 0.38, 0.003, 0.31) * 0.58);
-                        clouds = max(clouds, driftingCloud(aspectUv, 0.55, 0.28, 0.005, 0.93) * 0.46);
-                    }
-                    if (mode == 1.0 || mode == 2.0 || mode == 4.0 || mode == 5.0) {
-                        clouds = max(clouds, driftingCloud(aspectUv, 0.28, 0.40, 0.004 * windFactor, 0.31) * 0.62);
-                        clouds = max(clouds, driftingCloud(aspectUv, 0.47, 0.34, 0.005 * windFactor, 0.66) * 0.54);
-                    }
-                    if (mode == 8.0) {
-                        clouds = driftingCloud(aspectUv, 0.18, 0.13, 0.022 * windFactor, 0.08) * 0.34;
-                        clouds = max(clouds, driftingCloud(aspectUv, 0.34, 0.16, 0.030 * windFactor, 0.53) * 0.40);
-                        clouds = max(clouds, driftingCloud(aspectUv, 0.50, 0.11, 0.039 * windFactor, 0.93) * 0.30);
+                // Layered cloud mass: back/mid/front layers with their own scale, speed,
+                // alpha and darkness (ACT-003). A layer with alpha 0 contributes nothing,
+                // so transitions between weather families never pop a layer in or out.
+                if (weatherPass == 0.0 && layerCount > 0.0) {
+                    float dirSign = cos(radians(windDirection)) >= 0.0 ? 1.0 : -1.0;
+                    float clouds = 0.0;
+                    float darknessSum = 0.0;
+                    float alphaSum = 0.0;
+                    for (int i = 0; i < 3; i++) {
+                        if (layerAlpha[i] <= 0.0) continue;
+                        float y = 0.16 + float(i) * 0.13 + layerVerticalOffset[i];
+                        float size = 0.16 + layerScale[i] * 0.14;
+                        float speed = 0.005 * layerSpeed[i] * dirSign;
+                        float seed = 0.08 + float(i) * 0.41;
+                        float shape = driftingCloud(aspectUv, y, size, speed, seed) * layerAlpha[i];
+                        clouds = max(clouds, shape);
+                        darknessSum += layerDarkness[i] * shape;
+                        alphaSum += shape;
                     }
                     alpha += clouds;
-                    float stormy = (mode == 1.0 || mode == 2.0 || mode == 4.0 || mode == 5.0 || mode == 9.0) ? 1.0 : 0.0;
+                    float weightedDarkness = alphaSum > 0.0 ? darknessSum / alphaSum : 0.0;
                     float3 fairColor = daylight > 0.5 ? float3(0.94, 0.97, 1.0) : float3(0.48, 0.54, 0.64);
                     float3 stormColor = daylight > 0.5 ? float3(0.48, 0.55, 0.64) : float3(0.24, 0.29, 0.38);
-                    color = mix(fairColor, stormColor, stormy);
+                    color = mix(fairColor, stormColor, weightedDarkness);
                 }
 
                 if (weatherPass == 1.0 && mode == 4.0) {
@@ -714,6 +749,10 @@ internal class WallpaperWeatherEffectRenderer(
                 premultiplied = premultiplied * (1.0 - glassHighlight)
                     + float3(0.86, 0.93, 1.0) * glassHighlight;
                 a = a + glassHighlight * (1.0 - a);
+                // Global crossfade contribution. Output is premultiplied, so scale both the
+                // premultiplied color and alpha to keep transparent pixels invisible.
+                premultiplied = premultiplied * transitionAlpha;
+                a = a * transitionAlpha;
                 return half4(half3(premultiplied), half(a));
             }
         """

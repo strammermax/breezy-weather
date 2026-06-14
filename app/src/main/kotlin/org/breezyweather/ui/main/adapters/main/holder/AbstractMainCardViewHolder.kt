@@ -21,6 +21,7 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.annotation.CallSuper
+import androidx.core.content.ContextCompat
 import breezyweather.domain.location.model.Location
 import com.google.android.material.card.MaterialCardView
 import org.breezyweather.R
@@ -44,21 +45,22 @@ abstract class AbstractMainCardViewHolder(
     ) {
         super.onBindView(activity, location, provider, listAnimationEnabled, itemAnimationEnabled)
         mLocation = location
-        // LiveWallpaperWeather: render the home cards as one continuous block (flat, no
-        // elevation, no rounded corners, no vertical gaps) instead of separate tiles.
+        // ACT-013: render the home cards as floating "glass" tiles with a semi-transparent
+        // background, a subtle light border and rounded corners, instead of an opaque
+        // continuous block. See docs/ACT-013 - Glassmorphic kaartontwerp voor weergegevens.md.
         if (itemView is MaterialCardView) {
             (itemView as MaterialCardView).apply {
-                elevation = 0f
-                radius = 0f
+                radius = context.dpToPx(GLASS_CORNER_RADIUS_DP)
+                cardElevation = context.dpToPx(GLASS_ELEVATION_DP)
+                strokeWidth = context.dpToPx(GLASS_STROKE_WIDTH_DP).toInt()
+                strokeColor = ContextCompat.getColor(context, R.color.colorGlassCardStroke)
+                setCardBackgroundColor(ContextCompat.getColor(context, R.color.colorGlassCardBackground))
             }
         }
         val params = itemView.layoutParams as MarginLayoutParams
-        params.setMargins(
-            context.resources.getDimensionPixelSize(R.dimen.small_margin),
-            0,
-            context.resources.getDimensionPixelSize(R.dimen.small_margin),
-            0
-        )
+        val sideMargin = context.resources.getDimensionPixelSize(R.dimen.small_margin)
+        val verticalMargin = context.dpToPx(GLASS_CARD_SPACING_DP).toInt()
+        params.setMargins(sideMargin, verticalMargin, sideMargin, verticalMargin)
         itemView.layoutParams = params
     }
 
@@ -84,5 +86,13 @@ abstract class AbstractMainCardViewHolder(
         itemAnimationEnabled: Boolean,
     ) {
         throw RuntimeException("Deprecated method.")
+    }
+
+    companion object {
+        // ACT-013 glass surface style values (dag-variant; zie ACT-013 sectie 9).
+        private const val GLASS_CORNER_RADIUS_DP = 22f
+        private const val GLASS_STROKE_WIDTH_DP = 1f
+        private const val GLASS_ELEVATION_DP = 2f
+        private const val GLASS_CARD_SPACING_DP = 6f
     }
 }
