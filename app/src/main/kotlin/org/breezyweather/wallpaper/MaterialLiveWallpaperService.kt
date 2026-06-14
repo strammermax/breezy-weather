@@ -509,6 +509,13 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     sceneState.weatherKind,
                     sceneState.daylight,
                     sceneState.windFactor,
+                    cloudField = CloudFieldFactory.cloudFieldParams(
+                        family = sceneState.weatherFamily,
+                        cloudDensity = sceneState.cloudDensity,
+                        cloudDarkness = sceneState.cloudDarkness,
+                        windFactor = sceneState.windFactor,
+                        windDirectionDegrees = sceneState.windDirectionDegrees,
+                    ),
                 )
             } else {
                 null
