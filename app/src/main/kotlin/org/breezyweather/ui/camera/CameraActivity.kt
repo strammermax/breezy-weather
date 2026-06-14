@@ -1,11 +1,15 @@
 package org.breezyweather.ui.camera
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.location.Location
+import android.location.LocationManager
 import android.media.ExifInterface
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
@@ -21,6 +25,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.location.LocationManagerCompat
 import org.breezyweather.BuildConfig
 import org.breezyweather.R
 import org.breezyweather.databinding.ActivityCameraBinding
@@ -28,6 +33,7 @@ import org.breezyweather.wallpaper.photo.RemoveSkyProvider
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.asRequestBody
+import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -48,8 +54,13 @@ class CameraActivity : AppCompatActivity() {
     
     companion object {
         private const val REQUEST_CODE_PERMISSIONS = 10
+        private const val REQUEST_CODE_LOCATION_PERMISSIONS = 11
         private const val UPLOAD_PATH = "/api/v1/upload"
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+        private val LOCATION_PERMISSIONS = arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
     }
 
     private val httpClient = OkHttpClient()
@@ -71,7 +82,16 @@ class CameraActivity : AppCompatActivity() {
         } else {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
-        
+
+        // Location is optional (used so the server can geo-tag and sort the saved photo),
+        // so it's requested but doesn't block the camera from starting.
+        if (LOCATION_PERMISSIONS.none {
+                ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
+            }
+        ) {
+            ActivityCompat.requestPermissions(this, LOCATION_PERMISSIONS, REQUEST_CODE_LOCATION_PERMISSIONS)
+        }
+
         setupClickListeners()
     }
     
@@ -186,12 +206,69 @@ class CameraActivity : AppCompatActivity() {
                 binding.resultTextView.text = getString(R.string.camera_uploading)
                 binding.progressBar.visibility = View.VISIBLE
                 showResultView()
+
+                fetchLocation { location ->
+                    cameraExecutor.execute {
+                        uploadImage(file, bitmap, location)
+                    }
+                }
             }
-            uploadImage(file, bitmap)
         }
     }
 
-    private fun uploadImage(file: File, bitmap: Bitmap) {
+    /**
+     * Best-effort current location, used so the server can geo-tag and sort the saved photo.
+     * Returns null (without blocking the upload) if permission is missing, location services
+     * are off, or no fix is available.
+     */
+    @SuppressLint("MissingPermission")
+    private fun fetchLocation(callback: (Location?) -> Unit) {
+        if (LOCATION_PERMISSIONS.none {
+                ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
+            }
+        ) {
+            callback(null)
+            return
+        }
+
+        val locationManager = getSystemService(LocationManager::class.java)
+        if (locationManager == null || !LocationManagerCompat.isLocationEnabled(locationManager)) {
+            callback(null)
+            return
+        }
+
+        val provider = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                locationManager.allProviders.contains(LocationManager.FUSED_PROVIDER) -> LocationManager.FUSED_PROVIDER
+            locationManager.allProviders.contains(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
+            locationManager.allProviders.contains(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
+            else -> LocationManager.PASSIVE_PROVIDER
+        }
+
+        LocationManagerCompat.getCurrentLocation(
+            locationManager,
+            provider,
+            null as android.os.CancellationSignal?,
+            ContextCompat.getMainExecutor(this),
+            androidx.core.util.Consumer<Location?> { location ->
+                callback(location ?: lastKnownLocation(locationManager))
+            }
+        )
+    }
+
+    private fun lastKnownLocation(locationManager: LocationManager): Location? {
+        val fused = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            locationManager.getLastKnownLocation(LocationManager.FUSED_PROVIDER)
+        } else {
+            null
+        }
+        return fused
+            ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            ?: locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            ?: locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+    }
+
+    private fun uploadImage(file: File, bitmap: Bitmap, location: Location?) {
         try {
             // Compress the (correctly oriented) image
             val compressedFile = File.createTempFile("compressed_", ".jpg", cacheDir)
@@ -200,34 +277,32 @@ class CameraActivity : AppCompatActivity() {
             outputStream.close()
 
             // Upload to server using RemoveSky service
-            val form = okhttp3.MultipartBody.Builder()
+            val formBuilder = okhttp3.MultipartBody.Builder()
                 .setType(okhttp3.MultipartBody.FORM)
                 .addFormDataPart(
                     "file",
                     file.name,
                     compressedFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
                 )
-                .build()
+            if (location != null) {
+                formBuilder.addFormDataPart("lat", location.latitude.toString())
+                formBuilder.addFormDataPart("lon", location.longitude.toString())
+            }
 
-            val response = httpClient.newCall(
+            val (isSuccessful, code, body) = httpClient.newCall(
                 okhttp3.Request.Builder()
                     .url(RemoveSkyProvider.DEFAULT_BASE_URL + UPLOAD_PATH)
-                    .post(form)
+                    .post(formBuilder.build())
                     .header("CF-Access-Client-Id", BuildConfig.CF_ACCESS_CLIENT_ID)
                     .header("CF-Access-Client-Secret", BuildConfig.CF_ACCESS_CLIENT_SECRET)
                     .build()
             ).execute().use { uploadResponse ->
-                if (uploadResponse.isSuccessful) {
-                    uploadResponse.body?.string() ?: getString(R.string.camera_upload_success)
-                } else {
-                    val errorBody = uploadResponse.body?.string()?.takeIf { it.isNotBlank() }
-                    throw Exception("HTTP ${uploadResponse.code}${errorBody?.let { ": $it" } ?: ""}")
-                }
+                Triple(uploadResponse.isSuccessful, uploadResponse.code, uploadResponse.body?.string())
             }
 
             runOnUiThread {
                 binding.progressBar.visibility = View.GONE
-                binding.resultTextView.text = response
+                binding.resultTextView.text = formatUploadResult(isSuccessful, code, body)
             }
 
             // Clean up
@@ -242,6 +317,26 @@ class CameraActivity : AppCompatActivity() {
                     else -> getString(R.string.camera_error_general, e.message ?: "Unknown error")
                 }
             }
+        }
+    }
+
+    /** Maps the server response to a short, user-facing verdict with a ✓/✗ marker. */
+    private fun formatUploadResult(isSuccessful: Boolean, code: Int, body: String?): String {
+        if (isSuccessful) {
+            return "✓ " + getString(R.string.camera_result_saved)
+        }
+        val reason = body?.takeIf { it.isNotBlank() }?.let {
+            try {
+                JSONObject(it).optJSONObject("detail")?.optString("reason")
+            } catch (e: Exception) {
+                null
+            }
+        }
+        return when (reason) {
+            "no_sky_at_top" -> "✗ " + getString(R.string.camera_result_no_sky_at_top)
+            "insufficient_sky_in_top_region" -> "✗ " + getString(R.string.camera_result_too_little_sky)
+            "clip_not_landscape" -> "✗ " + getString(R.string.camera_result_not_landscape)
+            else -> getString(R.string.camera_error_general, "HTTP $code${body?.let { ": $it" } ?: ""}")
         }
     }
 
@@ -263,6 +358,8 @@ class CameraActivity : AppCompatActivity() {
                 finish()
             }
         }
+        // No special handling needed for REQUEST_CODE_LOCATION_PERMISSIONS: location is
+        // optional and simply omitted from the upload if it wasn't granted.
     }
 
     override fun onDestroy() {
