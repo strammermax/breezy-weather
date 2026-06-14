@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACT-013 Glassmorphic mockup</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    background: #111;
+    color: #fff;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 24px;
+    justify-content: center;
+  }
+  h2 {
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    margin: 8px 0;
+    color: #ccc;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .phone {
+    width: 340px;
+    height: 700px;
+    border-radius: 28px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---- backgrounds ---- */
+  .bg-day {
+    background: linear-gradient(180deg, #6db8e8 0%, #a9d8f0 35%, #e8c98f 70%, #d98c5f 100%);
+  }
+  .bg-night {
+    background: linear-gradient(180deg, #0a1430 0%, #142048 40%, #1f2c52 100%);
+  }
+  .bg-day::after, .bg-night::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 75% 15%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 12%),
+      repeating-linear-gradient(115deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 40px);
+    pointer-events: none;
+  }
+  .bg-night::after {
+    background-image:
+      radial-gradient(2px 2px at 20% 20%, #fff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 70% 10%, #fff 50%, transparent 51%),
+      radial-gradient(2px 2px at 40% 35%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 85% 28%, #fff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 55% 5%, #fff 50%, transparent 51%),
+      radial-gradient(circle at 78% 18%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 10%);
+  }
+
+  .content {
+    position: relative;
+    z-index: 1;
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    height: 100%;
+    overflow: hidden;
+  }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+  .topbar .icons { font-size: 14px; opacity: 0.85; letter-spacing: 6px; }
+
+  /* ---- glass card base ---- */
+  .glass {
+    border-radius: 22px;
+    border: 1px solid rgba(255,255,255,0.30);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+    padding: 14px 16px;
+  }
+
+  /* day variant card fill */
+  .bg-day .glass {
+    background: rgba(255,255,255,0.16);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.20);
+  }
+  /* night variant card fill */
+  .bg-night .glass {
+    background: rgba(10,20,48,0.30);
+    border-color: rgba(255,255,255,0.18);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  .now-card .temp { font-size: 44px; font-weight: 700; line-height: 1; }
+  .now-card .desc { font-size: 14px; opacity: 0.9; margin-top: 2px; }
+  .now-row { display: flex; justify-content: space-between; align-items: flex-end; }
+  .now-meta { text-align: right; font-size: 12px; opacity: 0.85; line-height: 1.6; }
+
+  /* accent card */
+  .accent {
+    border-radius: 22px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .bg-day .accent {
+    background: rgba(255,255,255,0.28);
+    border: 1px solid rgba(255,255,255,0.35);
+  }
+  .bg-night .accent {
+    background: rgba(255,150,40,0.55);
+    border: 1px solid rgba(255,255,255,0.20);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  }
+  .accent .dot {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #ff7a00;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; flex-shrink: 0;
+  }
+  .accent .arrow { margin-left: auto; opacity: 0.8; }
+
+  /* daily forecast */
+  .daily-header {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; opacity: 0.85; margin-bottom: 10px;
+  }
+  .daily-row { display: flex; justify-content: space-between; text-align: center; }
+  .daily-row .day { font-size: 11px; opacity: 0.8; margin-bottom: 6px; }
+  .daily-row .icon { font-size: 18px; margin-bottom: 6px; }
+  .daily-row .pct { font-size: 11px; opacity: 0.8; }
+  .daily-row .item.active .day { color: #ffb347; font-weight: 700; opacity: 1; }
+
+  /* hourly */
+  .hourly-header { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .hourly-row { display: flex; justify-content: space-between; text-align: center; }
+  .hourly-row .hour { font-size: 11px; opacity: 0.8; margin-bottom: 6px; }
+  .hourly-row .icon { font-size: 16px; margin-bottom: 6px; }
+  .hourly-row .pct { font-size: 11px; opacity: 0.75; }
+  .hourly-temp-line {
+    margin-top: 12px;
+    height: 36px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, rgba(255,138,61,0.55), rgba(255,138,61,0.15));
+    position: relative;
+  }
+
+  /* aqi + comfort row */
+  .small-row { display: flex; gap: 12px; }
+  .small-card { flex: 1; }
+  .aqi-ring {
+    width: 60px; height: 60px; border-radius: 50%;
+    border: 6px solid rgba(120,220,140,0.85);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; margin: 6px auto;
+  }
+  .small-title { font-size: 11px; opacity: 0.8; margin-bottom: 4px; }
+  .small-value { font-size: 12px; text-align: center; opacity: 0.9; }
+
+  .legend {
+    width: 340px;
+    font-size: 12px;
+    color: #ccc;
+    line-height: 1.6;
+  }
+  .legend code { color: #9fd1ff; }
+  .legend .swatch {
+    display: inline-block; width: 12px; height: 12px; border-radius: 3px;
+    margin-right: 6px; vertical-align: -1px; border: 1px solid rgba(255,255,255,0.3);
+  }
+</style>
+</head>
+<body>
+
+<div>
+  <h2>Dag-variant</h2>
+  <div class="phone bg-day">
+    <div class="content">
+      <div class="topbar">
+        <span>&#9776; Hoofddorp &#9662;</span>
+        <span class="icons">&#8599; &#8942;</span>
+      </div>
+
+      <div class="glass now-card">
+        <div class="now-row">
+          <div>
+            <div class="temp">61&deg;F</div>
+            <div class="desc">Partly cloudy</div>
+          </div>
+          <div class="now-meta">
+            Feels like 61&deg;F<br>
+            &#9748; 33% &middot; 18 mph<br>
+            &#128167; 68%
+          </div>
+        </div>
+      </div>
+
+      <div class="accent">
+        <span class="dot">&#9733;</span>
+        Weather Tomorrow
+        <span class="arrow">&rarr;</span>
+      </div>
+
+      <div class="glass">
+        <div class="daily-header">
+          <strong>Daily forecast</strong>
+          <span>Foreca.com &#9881;</span>
+        </div>
+        <div class="daily-row">
+          <div class="item active"><div class="day">SUN</div><div class="icon">&#9728;&#65039;</div><div class="pct">47%</div></div>
+          <div class="item"><div class="day">MON</div><div class="icon">&#127780;&#65039;</div><div class="pct">31%</div></div>
+          <div class="item"><div class="day">TUE</div><div class="icon">&#127780;&#65039;</div><div class="pct">21%</div></div>
+          <div class="item"><div class="day">WED</div><div class="icon">&#127783;&#65039;</div><div class="pct">35%</div></div>
+          <div class="item"><div class="day">THU</div><div class="icon">&#127780;&#65039;</div><div class="pct">7%</div></div>
+          <div class="item"><div class="day">FRI</div><div class="icon">&#127783;&#65039;</div><div class="pct">62%</div></div>
+          <div class="item"><div class="day">SAT</div><div class="icon">&#9728;&#65039;</div><div class="pct">36%</div></div>
+        </div>
+      </div>
+
+      <div class="glass">
+        <div class="hourly-header">Hourly forecast</div>
+        <div class="hourly-row">
+          <div><div class="hour">2 PM</div><div class="icon">&#127780;&#65039;</div><div class="pct">33%</div></div>
+          <div><div class="hour">3 PM</div><div class="icon">&#127780;&#65039;</div><div class="pct">27%</div></div>
+          <div><div class="hour">4 PM</div><div class="icon">&#9925;&#65039;</div><div class="pct">20%</div></div>
+          <div><div class="hour">5 PM</div><div class="icon">&#9925;&#65039;</div><div class="pct">14%</div></div>
+          <div><div class="hour">6 PM</div><div class="icon">&#9925;&#65039;</div><div class="pct">11%</div></div>
+          <div><div class="hour">7 PM</div><div class="icon">&#127780;&#65039;</div><div class="pct">8%</div></div>
+        </div>
+        <div class="hourly-temp-line"></div>
+      </div>
+
+      <div class="small-row">
+        <div class="glass small-card">
+          <div class="small-title">Air quality</div>
+          <div class="aqi-ring">7</div>
+          <div class="small-value">Good &middot; Ozone</div>
+        </div>
+        <div class="glass small-card">
+          <div class="small-title">Comfort level</div>
+          <div class="small-value" style="margin-top:18px">Humidity 68%<br>Heat index 60&deg;</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div>
+  <h2>Nacht-variant</h2>
+  <div class="phone bg-night">
+    <div class="content">
+      <div class="topbar">
+        <span>&#9776; Hoofddorp &#9662;</span>
+        <span class="icons">&#8599; &#8942;</span>
+      </div>
+
+      <div class="glass now-card">
+        <div class="now-row">
+          <div>
+            <div class="temp">52&deg;F</div>
+            <div class="desc">Clear</div>
+          </div>
+          <div class="now-meta">
+            Feels like 51&deg;F<br>
+            &#9748; 5% &middot; 9 mph<br>
+            &#128167; 74%
+          </div>
+        </div>
+      </div>
+
+      <div class="accent">
+        <span class="dot">&#9733;</span>
+        Weather Tomorrow
+        <span class="arrow">&rarr;</span>
+      </div>
+
+      <div class="glass">
+        <div class="daily-header">
+          <strong>Daily forecast</strong>
+          <span>Foreca.com &#9881;</span>
+        </div>
+        <div class="daily-row">
+          <div class="item active"><div class="day">SUN</div><div class="icon">&#127769;</div><div class="pct">47%</div></div>
+          <div class="item"><div class="day">MON</div><div class="icon">&#9729;&#65039;</div><div class="pct">31%</div></div>
+          <div class="item"><div class="day">TUE</div><div class="icon">&#9729;&#65039;</div><div class="pct">21%</div></div>
+          <div class="item"><div class="day">WED</div><div class="icon">&#127783;&#65039;</div><div class="pct">35%</div></div>
+          <div class="item"><div class="day">THU</div><div class="icon">&#9729;&#65039;</div><div class="pct">7%</div></div>
+          <div class="item"><div class="day">FRI</div><div class="icon">&#127783;&#65039;</div><div class="pct">62%</div></div>
+          <div class="item"><div class="day">SAT</div><div class="icon">&#127769;</div><div class="pct">36%</div></div>
+        </div>
+      </div>
+
+      <div class="glass">
+        <div class="hourly-header">Hourly forecast</div>
+        <div class="hourly-row">
+          <div><div class="hour">10 PM</div><div class="icon">&#127769;</div><div class="pct">5%</div></div>
+          <div><div class="hour">11 PM</div><div class="icon">&#127769;</div><div class="pct">4%</div></div>
+          <div><div class="hour">12 AM</div><div class="icon">&#127769;</div><div class="pct">3%</div></div>
+          <div><div class="hour">1 AM</div><div class="icon">&#9729;&#65039;</div><div class="pct">6%</div></div>
+          <div><div class="hour">2 AM</div><div class="icon">&#9729;&#65039;</div><div class="pct">8%</div></div>
+          <div><div class="hour">3 AM</div><div class="icon">&#9729;&#65039;</div><div class="pct">10%</div></div>
+        </div>
+        <div class="hourly-temp-line" style="background: linear-gradient(90deg, rgba(120,170,255,0.45), rgba(120,170,255,0.10));"></div>
+      </div>
+
+      <div class="small-row">
+        <div class="glass small-card">
+          <div class="small-title">Air quality</div>
+          <div class="aqi-ring">12</div>
+          <div class="small-value">Good &middot; PM2.5</div>
+        </div>
+        <div class="glass small-card">
+          <div class="small-title">Comfort level</div>
+          <div class="small-value" style="margin-top:18px">Humidity 74%<br>Heat index 51&deg;</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <h2 style="text-align:left">Legenda / waarden</h2>
+  <p><span class="swatch" style="background:rgba(255,255,255,0.16); border-color:rgba(255,255,255,0.35)"></span>
+     Dag-kaart: <code>#FFFFFF @ 16%</code>, rand <code>@ 35%</code>, blur <code>20dp</code>, radius <code>22dp</code></p>
+  <p><span class="swatch" style="background:rgba(10,20,48,0.30); border-color:rgba(255,255,255,0.18)"></span>
+     Nacht-kaart: <code>#0A1430 @ 30%</code>, rand <code>@ 18%</code>, blur <code>24dp</code></p>
+  <p><span class="swatch" style="background:rgba(255,255,255,0.28); border-color:rgba(255,255,255,0.35)"></span>
+     Accentkaart (dag): wit glas <code>@ 28%</code> &mdash; in de echte app de bestaande accentkleur <code>@ 85-90%</code></p>
+  <p style="margin-top:12px">
+     Dit is een browser-prototype (HTML/CSS <code>backdrop-filter</code>) ter illustratie van het
+     ACT-013-voorstel. De achtergrond is hier een gradient i.p.v. een echte locatiefoto; in de app
+     komt daar de bestaande RemoveSky-foto of wallpaperscene voor in de plaats. Open dit bestand
+     in een browser (Chrome/Edge) om de blur live te zien &mdash; op Firefox kan
+     <code>backdrop-filter</code> uitgeschakeld staan via <code>about:config</code>.
+  </p>
+</div>
+
+</body>
+</html>
