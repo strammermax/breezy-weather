@@ -22,12 +22,9 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Shader
 import androidx.annotation.ColorInt
-import androidx.core.graphics.ColorUtils
 import androidx.core.view.isNotEmpty
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
-import org.breezyweather.R
-import org.breezyweather.common.extensions.getThemeColor
 
 class TrendRecyclerViewScrollBar : ItemDecoration() {
     private val mPaint = Paint().apply {
@@ -44,17 +41,13 @@ class TrendRecyclerViewScrollBar : ItemDecoration() {
     private var mCenterColor = 0
     fun resetColor(context: Context) {
         mThemeChanged = true
-        mEndPointsColor = context.getThemeColor(R.attr.colorMainCardBackground)
-        mCenterColor = org.breezyweather.common.utils.ColorUtils.blendColor(
-            // lightTheme
-            //        ? Color.argb((int) (0.02 * 255), 0, 0, 0)
-            //        : Color.argb((int) (0.08 * 255), 0, 0, 0),
-            ColorUtils.setAlphaComponent(
-                context.getThemeColor(androidx.appcompat.R.attr.colorPrimary),
-                (0.05 * 255).toInt()
-            ),
-            context.getThemeColor(R.attr.colorMainCardBackground)
-        )
+        // ACT-013: this decoration drew a colorMainCardBackground-tinted overlay
+        // over one full item column as a scroll-position hint. Against the
+        // transparent glass cards it showed up as a dark/black bar. The glass
+        // design has no equivalent "card background" to blend into, so drop the
+        // overlay entirely (fully transparent) rather than tint the card.
+        mEndPointsColor = android.graphics.Color.TRANSPARENT
+        mCenterColor = android.graphics.Color.TRANSPARENT
     }
 
     override fun onDraw(

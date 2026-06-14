@@ -13,6 +13,9 @@
     <color name="colorGlassCardBackground">#4D0A1430</color>
     <color name="colorGlassCardStroke">#2EFFFFFF</color>
 
+    <!-- ACT-014: top bar text/icon color over the sky-gradient background. -->
+    <color name="colorGlassTopBarText">#FFFFFF</color>
+
     <color name="colorNotificationSecondary">@color/secondary_text_default_material_dark</color>
 
     <!-- widget S. -->

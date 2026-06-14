@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ACT-014: night-variant sky gradient behind the ACT-013 glass cards.
+     Mirrors docs/prototypes/act-013-glass-mockup.html .bg-night gradient. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:type="linear"
+        android:angle="270"
+        android:startColor="#0a1430"
+        android:centerColor="#142048"
+        android:endColor="#1f2c52" />
+</shape>

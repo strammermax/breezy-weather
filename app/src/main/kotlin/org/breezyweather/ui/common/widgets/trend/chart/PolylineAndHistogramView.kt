@@ -519,7 +519,11 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         private const val HISTOGRAM_TEXT_SIZE_DIP = 12f
         private const val CHART_LINE_SIZE_DIP = 1f
         private const val TEXT_MARGIN_DIP = 2f
-        private const val SHADOW_ALPHA_FACTOR_LIGHT = 0.15f
-        private const val SHADOW_ALPHA_FACTOR_DARK = 0.3f
+        // ACT-013: glass cards show the live-wallpaper snapshot through their
+        // transparent background, so the high/low-temperature area shading (which
+        // used to read as a subtle tint on an opaque card) now reads as a dark
+        // blotch/bar over the photo. Lower both factors to keep a faint area hint.
+        private const val SHADOW_ALPHA_FACTOR_LIGHT = 0.08f
+        private const val SHADOW_ALPHA_FACTOR_DARK = 0.12f
     }
 }

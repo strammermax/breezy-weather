@@ -20,7 +20,10 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -48,6 +51,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.isVisible
@@ -64,9 +68,11 @@ import breezyweather.data.weather.WeatherRepository
 import breezyweather.domain.location.model.Location
 import org.breezyweather.domain.location.model.isDaylight as locationIsDaylight
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.breezyweather.BreezyWeather
 import org.breezyweather.BuildConfig
 import org.breezyweather.Migrations
@@ -75,7 +81,6 @@ import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.common.bus.EventBus
 import org.breezyweather.common.extensions.conditional
 import org.breezyweather.common.extensions.doOnApplyWindowInsets
-import org.breezyweather.common.extensions.getThemeColor
 import org.breezyweather.common.extensions.hasPermission
 import org.breezyweather.common.extensions.isLandscape
 import org.breezyweather.common.extensions.isRtl
@@ -96,6 +101,10 @@ import org.breezyweather.ui.main.fragments.PushedManagementFragment
 import org.breezyweather.ui.search.SearchActivity
 import org.breezyweather.ui.theme.ThemeManager
 import org.breezyweather.ui.theme.compose.BreezyWeatherTheme
+import org.breezyweather.ui.theme.weatherView.WeatherViewController
+import org.breezyweather.wallpaper.WallpaperSceneSnapshot
+import org.breezyweather.wallpaper.WallpaperSceneStateFactory
+import org.breezyweather.wallpaper.photo.WallpaperRepository
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -363,6 +372,15 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
                 // collecting when the lifecycle is STOPPED
                 viewModel.validLocationList.collect {
                     refreshBackgroundViews(it)
+                }
+            }
+        }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.currentLocation.collect {
+                    if (it?.location?.weather != null) {
+                        updateLiveWallpaperBackground()
+                    }
                 }
             }
         }
@@ -821,7 +839,52 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
             // insets are applied in landscape mode.
             binding.root.setBackgroundColor(Color.BLACK)
         } else {
-            binding.root.setBackgroundColor(getThemeColor(android.R.attr.colorBackground))
+            // ACT-014: show the day/night sky gradient behind the ACT-013 glass cards as a
+            // fallback while the live-wallpaper snapshot (below) is generated/refreshed.
+            binding.root.background = ContextCompat.getDrawable(this, R.drawable.bg_glass_sky)
+            updateLiveWallpaperBackground()
+        }
+    }
+
+    /**
+     * ACT-014: renders a one-time snapshot of the live wallpaper scene (sky gradient, sun/moon,
+     * weather background pass, location photo) for the current location/weather and sets it as
+     * the home screen's background behind the ACT-013 glass cards.
+     */
+    private fun updateLiveWallpaperBackground() {
+        val location = viewModel.currentLocation.value?.location
+        val weather = location?.weather
+        val width = binding.root.width
+        val height = binding.root.height
+        if (weather == null || width <= 0 || height <= 0) {
+            return
+        }
+
+        val daily = weather.dailyForecast.firstOrNull()
+        val sceneState = WallpaperSceneStateFactory.create(
+            weatherKind = WeatherViewController.getWeatherKind(location),
+            daylight = if (location.locationIsDaylight) 1f else 0f,
+            windSpeedMetersPerSecond = weather.current?.wind?.speed?.value?.toFloat() ?: 0f,
+            windGustMetersPerSecond = weather.current?.wind?.gusts?.value?.toFloat() ?: 0f,
+            windDirectionDegrees = weather.current?.wind?.degree?.toFloat(),
+            sunriseMillis = daily?.sun?.riseDate?.time,
+            sunsetMillis = daily?.sun?.setDate?.time,
+            moonriseMillis = daily?.moon?.riseDate?.time,
+            moonsetMillis = daily?.moon?.setDate?.time,
+        )
+
+        lifecycleScope.launch {
+            val photo = withContext(Dispatchers.IO) {
+                WallpaperRepository(this@MainActivity).loadCachedBitmap()
+            }
+            val bitmap = withContext(Dispatchers.Default) {
+                Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
+                    WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState)
+                }
+            }
+            if (this@MainActivity.getResources().configuration.orientation != 2) {
+                binding.root.background = BitmapDrawable(resources, bitmap)
+            }
         }
     }
 

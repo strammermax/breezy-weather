@@ -405,6 +405,17 @@ class HomeFragment : MainModuleFragment() {
         }
     }
 
+    // ACT-014: each MaterialPainterView inside weatherView sets its own opaque sky
+    // background (WeatherImplementorFactory.getBackgroundId), fully covering the
+    // activity root's background (our live-wallpaper snapshot). Strip it so the
+    // snapshot shows through behind the animated weather layer.
+    private fun clearWeatherViewBackground() {
+        val viewGroup = weatherView as? ViewGroup ?: return
+        for (i in 0 until viewGroup.childCount) {
+            viewGroup.getChildAt(i).background = null
+        }
+    }
+
     private fun updatePreviewSubviews() {
         val location = viewModel.getValidLocation(previewOffset.value)
         val daylight = WeatherViewController.isDaylight(location)
@@ -423,6 +434,7 @@ class HomeFragment : MainModuleFragment() {
             (if (location?.isCurrentPosition == true && requireContext().isTabletDevice) " ⊙" else "")
 
         weatherView.setWeather(backgroundWeatherKind, daylight, requireContext().isDarkMode)
+        clearWeatherViewBackground()
         binding.refreshLayout.setColorSchemeColors(
             ThemeManager
                 .getInstance(requireContext())

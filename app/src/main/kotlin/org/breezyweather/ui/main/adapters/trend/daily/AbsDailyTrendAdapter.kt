@@ -51,6 +51,9 @@ abstract class AbsDailyTrendAdapter(
             position: Int,
         ) {
             val context = itemView.context
+            // ACT-013: against the transparent glass card, a leftover opaque item
+            // background (seen on the trailing day column) reads as a solid black bar.
+            itemView.background = null
             val weather = location.weather
             val daily = weather!!.dailyForecast[position]
             val todayIndex = weather.todayIndex

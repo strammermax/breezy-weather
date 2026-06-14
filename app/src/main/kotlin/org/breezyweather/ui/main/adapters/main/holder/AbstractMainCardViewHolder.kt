@@ -51,7 +51,9 @@ abstract class AbstractMainCardViewHolder(
         if (itemView is MaterialCardView) {
             (itemView as MaterialCardView).apply {
                 radius = context.dpToPx(GLASS_CORNER_RADIUS_DP)
-                cardElevation = context.dpToPx(GLASS_ELEVATION_DP)
+                // No elevation: Material's default elevation shadow reads as a thick dark
+                // border against a vivid photo background. Only the thin stroke below remains.
+                cardElevation = 0f
                 strokeWidth = context.dpToPx(GLASS_STROKE_WIDTH_DP).toInt()
                 strokeColor = ContextCompat.getColor(context, R.color.colorGlassCardStroke)
                 setCardBackgroundColor(ContextCompat.getColor(context, R.color.colorGlassCardBackground))
@@ -92,7 +94,6 @@ abstract class AbstractMainCardViewHolder(
         // ACT-013 glass surface style values (dag-variant; zie ACT-013 sectie 9).
         private const val GLASS_CORNER_RADIUS_DP = 22f
         private const val GLASS_STROKE_WIDTH_DP = 1f
-        private const val GLASS_ELEVATION_DP = 2f
         private const val GLASS_CARD_SPACING_DP = 6f
     }
 }
