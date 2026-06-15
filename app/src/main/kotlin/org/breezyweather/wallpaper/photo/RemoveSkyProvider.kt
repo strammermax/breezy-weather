@@ -34,8 +34,11 @@ import java.net.URLEncoder
  * (https://removesky.vanburik.info).
  *
  * RemoveSky does both halves of the job server-side:
- *  - `GET /api/v1/search?location=|lat=&lon=` finds landscape photos for a place (it aggregates
- *    Wikimedia Commons, Flickr, Openverse and Unsplash);
+ *  - `GET /api/v1/search?source=local&location=|lat=&lon=` returns only already-processed photos
+ *    from RemoveSky's local database for that place. If the local database has nothing for this
+ *    location, RemoveSky itself starts a background task that searches external providers
+ *    (Wikimedia Commons, Flickr, Openverse, Unsplash), validates and processes suitable
+ *    candidates, so a later search finds them locally.
  *  - `POST /api/v1/upload` removes the sky from a chosen photo and returns a **transparent PNG**.
  *
  * So the [ImageResult] returned here already has its sky erased — the caller must NOT run the
@@ -59,11 +62,11 @@ class RemoveSkyProvider(
 
     override suspend fun searchImage(query: String): ImageResult? {
         if (query.isBlank()) return null
-        return resolve("$apiBase/search?source=all&limit=$LIMIT&location=${enc(query)}")
+        return resolve("$apiBase/search?source=local&limit=$LIMIT&location=${enc(query)}")
     }
 
     override suspend fun searchImageByLocation(latitude: Double, longitude: Double): ImageResult? {
-        return resolve("$apiBase/search?source=all&limit=$LIMIT&lat=$latitude&lon=$longitude")
+        return resolve("$apiBase/search?source=local&limit=$LIMIT&lat=$latitude&lon=$longitude")
     }
 
     suspend fun healthStatus(): String? = withContext(Dispatchers.IO) {
