@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -55,6 +56,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -545,76 +547,58 @@ private fun AirQualitySwitcher(
     setSelectedPollutant: (PollutantIndex?) -> Unit,
     selectedPollutant: PollutantIndex?,
 ) {
-    ButtonGroup(
-        horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
-        overflowIndicator = { menuState ->
-            ToggleButton(
-                checked = false,
-                onCheckedChange = {
-                    if (menuState.isShowing) {
-                        menuState.dismiss()
-                    } else {
-                        menuState.show()
-                    }
-                },
-                shapes = ButtonGroupDefaults.connectedTrailingButtonShapes()
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.MoreVert,
-                    contentDescription = stringResource(R.string.action_more)
-                )
-            }
-        }
-    ) {
-        customItem(
-            buttonGroupContent = {
+    // ACT-013: the default unchecked ToggleButton colors come from
+    // colorScheme.surfaceContainer/onSurfaceVariant, which we don't override for
+    // the glass theme - against the sky-gradient background that renders as a
+    // near-opaque white pill with low-contrast text. Use the same translucent
+    // glass colors as the cards for the unchecked state instead.
+    val glassContainer = colorResource(R.color.colorGlassCardBackground)
+    val glassContent = colorResource(R.color.colorGlassTopBarText)
+    val toggleColors = ToggleButtonDefaults.toggleButtonColors(
+        containerColor = glassContainer,
+        contentColor = glassContent,
+        disabledContainerColor = glassContainer.copy(alpha = glassContainer.alpha * 0.5f),
+        disabledContentColor = glassContent.copy(alpha = 0.38f)
+    )
+    // Make every button in the group (not just the checked one) a fully rounded pill,
+    // and tint the overflow dropdown menu with the same translucent glass colors instead
+    // of the default near-opaque surface.
+    val glassColorScheme = MaterialTheme.colorScheme.copy(
+        surfaceContainer = glassContainer,
+        onSurface = glassContent
+    )
+    MaterialTheme(colorScheme = glassColorScheme) {
+        ButtonGroup(
+            horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
+            overflowIndicator = { menuState ->
                 ToggleButton(
-                    checked = selectedPollutant == null,
-                    onCheckedChange = { setSelectedPollutant(null) },
-                    shapes = ButtonGroupDefaults.connectedLeadingButtonShapes()
+                    checked = false,
+                    onCheckedChange = {
+                        if (menuState.isShowing) {
+                            menuState.dismiss()
+                        } else {
+                            menuState.show()
+                        }
+                    },
+                    colors = toggleColors,
+                    shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(shape = CircleShape)
                 ) {
-                    if (selectedPollutant == null) {
-                        Icon(
-                            Icons.Filled.Check,
-                            contentDescription = stringResource(R.string.settings_enabled)
-                        )
-                        Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
-                    }
-                    Text(
-                        text = stringResource(R.string.air_quality_index_short),
-                        modifier = Modifier.alignByBaseline()
+                    Icon(
+                        imageVector = Icons.Filled.MoreVert,
+                        contentDescription = stringResource(R.string.action_more)
                     )
                 }
-            },
-            menuContent = { state ->
-                DropdownMenuItem(
-                    leadingIcon = if (selectedPollutant == null) {
-                        {
-                            Icon(
-                                Icons.Filled.Check,
-                                contentDescription = stringResource(R.string.settings_enabled)
-                            )
-                        }
-                    } else {
-                        null
-                    },
-                    text = { Text(stringResource(R.string.air_quality_index_short)) },
-                    onClick = {
-                        setSelectedPollutant(null)
-                        state.dismiss()
-                    }
-                )
             }
-        )
-        supportedPollutants.forEach { pollutant ->
+        ) {
             customItem(
                 buttonGroupContent = {
                     ToggleButton(
-                        checked = selectedPollutant == pollutant,
-                        onCheckedChange = { setSelectedPollutant(pollutant) },
-                        shapes = ButtonGroupDefaults.connectedMiddleButtonShapes()
+                        checked = selectedPollutant == null,
+                        onCheckedChange = { setSelectedPollutant(null) },
+                        colors = toggleColors,
+                        shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(shape = CircleShape)
                     ) {
-                        if (selectedPollutant == pollutant) {
+                        if (selectedPollutant == null) {
                             Icon(
                                 Icons.Filled.Check,
                                 contentDescription = stringResource(R.string.settings_enabled)
@@ -622,13 +606,14 @@ private fun AirQualitySwitcher(
                             Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
                         }
                         Text(
-                            text = UnitUtils.formatPollutantName(stringResource(pollutant.shortName))
+                            text = stringResource(R.string.air_quality_index_short),
+                            modifier = Modifier.alignByBaseline()
                         )
                     }
                 },
                 menuContent = { state ->
                     DropdownMenuItem(
-                        leadingIcon = if (selectedPollutant == pollutant) {
+                        leadingIcon = if (selectedPollutant == null) {
                             {
                                 Icon(
                                     Icons.Filled.Check,
@@ -638,18 +623,60 @@ private fun AirQualitySwitcher(
                         } else {
                             null
                         },
-                        text = {
-                            Text(
-                                text = UnitUtils.formatPollutantName(stringResource(pollutant.shortName))
-                            )
-                        },
+                        text = { Text(stringResource(R.string.air_quality_index_short)) },
                         onClick = {
-                            setSelectedPollutant(pollutant)
+                            setSelectedPollutant(null)
                             state.dismiss()
                         }
                     )
                 }
             )
+            supportedPollutants.forEach { pollutant ->
+                customItem(
+                    buttonGroupContent = {
+                        ToggleButton(
+                            checked = selectedPollutant == pollutant,
+                            onCheckedChange = { setSelectedPollutant(pollutant) },
+                            colors = toggleColors,
+                            shapes = ButtonGroupDefaults.connectedMiddleButtonShapes(shape = CircleShape)
+                        ) {
+                            if (selectedPollutant == pollutant) {
+                                Icon(
+                                    Icons.Filled.Check,
+                                    contentDescription = stringResource(R.string.settings_enabled)
+                                )
+                                Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
+                            }
+                            Text(
+                                text = UnitUtils.formatPollutantName(stringResource(pollutant.shortName))
+                            )
+                        }
+                    },
+                    menuContent = { state ->
+                        DropdownMenuItem(
+                            leadingIcon = if (selectedPollutant == pollutant) {
+                                {
+                                    Icon(
+                                        Icons.Filled.Check,
+                                        contentDescription = stringResource(R.string.settings_enabled)
+                                    )
+                                }
+                            } else {
+                                null
+                            },
+                            text = {
+                                Text(
+                                    text = UnitUtils.formatPollutantName(stringResource(pollutant.shortName))
+                                )
+                            },
+                            onClick = {
+                                setSelectedPollutant(pollutant)
+                                state.dismiss()
+                            }
+                        )
+                    }
+                )
+            }
         }
     }
 }
