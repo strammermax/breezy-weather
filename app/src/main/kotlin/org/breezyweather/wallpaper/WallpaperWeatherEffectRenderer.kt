@@ -374,15 +374,28 @@ internal class WallpaperWeatherEffectRenderer(
                 val light = if (daytime) Triple(255, 255, 255) else Triple(196, 202, 214)
                 val dark = if (daytime) Triple(110, 128, 150) else Triple(58, 70, 92)
                 val darkness = layer.darkness
-                paint.color = Color.rgb(
+                val topColor = Color.rgb(
                     lerpInt(light.first, dark.first, darkness),
                     lerpInt(light.second, dark.second, darkness),
                     lerpInt(light.third, dark.third, darkness),
                 )
-                paint.alpha = (layer.alpha * 255 * contribution).toInt().coerceIn(0, 255)
+                // Volumetric look: shade the lower body/base of the cloud darker than the
+                // puffy top, mirroring the AGSL shader's vertical shade gradient.
+                val baseColor = Color.rgb(
+                    (Color.red(topColor) * 0.78f).toInt().coerceIn(0, 255),
+                    (Color.green(topColor) * 0.78f).toInt().coerceIn(0, 255),
+                    (Color.blue(topColor) * 0.78f).toInt().coerceIn(0, 255),
+                )
+                val alpha = (layer.alpha * 255 * contribution).toInt().coerceIn(0, 255)
+
+                paint.color = topColor
+                paint.alpha = alpha
                 canvas.drawCircle(c.x - c.radius * 0.52f, c.y + c.radius * 0.08f, c.radius * 0.48f, paint)
                 canvas.drawCircle(c.x - c.radius * 0.12f, c.y - c.radius * 0.18f, c.radius * 0.62f, paint)
                 canvas.drawCircle(c.x + c.radius * 0.38f, c.y - c.radius * 0.06f, c.radius * 0.52f, paint)
+
+                paint.color = baseColor
+                paint.alpha = alpha
                 canvas.drawOval(
                     c.x - c.radius,
                     c.y,
@@ -796,21 +809,33 @@ internal class WallpaperWeatherEffectRenderer(
                 return smoothstep(radius + softness, radius - softness, length(point - center));
             }
 
-            float cloudShape(float2 uv, float2 center, float size) {
+            // Returns (silhouette, shade): silhouette is the cloud mask (0..1), shade is a
+            // 0 (bright top) .. 1 (dark base) vertical gradient giving the puffy cumulus a
+            // volumetric top-lit look instead of a flat fill.
+            float2 cloudShape(float2 uv, float2 center, float size, float seed) {
                 float2 p = (uv - center) / size;
-                float cloud = cloudCircle(p, float2(-0.58, 0.08), 0.42, 0.12);
-                cloud = max(cloud, cloudCircle(p, float2(-0.20, -0.18), 0.56, 0.13));
-                cloud = max(cloud, cloudCircle(p, float2(0.25, -0.08), 0.68, 0.14));
-                cloud = max(cloud, cloudCircle(p, float2(0.68, 0.12), 0.40, 0.12));
-                cloud = max(cloud, smoothstep(0.38, 0.18, abs(p.y - 0.18))
-                    * smoothstep(1.10, 0.72, abs(p.x)));
-                return cloud;
+                float cloud = cloudCircle(p, float2(-0.62, 0.10), 0.40, 0.12);
+                cloud = max(cloud, cloudCircle(p, float2(-0.30, -0.22), 0.50, 0.13));
+                cloud = max(cloud, cloudCircle(p, float2(0.02, -0.30), 0.52, 0.13));
+                cloud = max(cloud, cloudCircle(p, float2(0.34, -0.16), 0.56, 0.13));
+                cloud = max(cloud, cloudCircle(p, float2(0.66, 0.08), 0.42, 0.12));
+                // Two extra lobes whose positions vary per instance (via seed), so different
+                // drifting clouds get a slightly different fluffy silhouette.
+                float h1 = hash21(float2(seed, 11.0));
+                float h2 = hash21(float2(seed, 23.0));
+                cloud = max(cloud, cloudCircle(p, float2(mix(-0.92, -0.46, h1), 0.18), 0.30, 0.11));
+                cloud = max(cloud, cloudCircle(p, float2(mix(0.46, 0.98, h2), 0.20), 0.32, 0.11));
+                // Flatten the base of the cloud.
+                cloud = max(cloud, smoothstep(0.40, 0.16, abs(p.y - 0.20))
+                    * smoothstep(1.18, 0.78, abs(p.x)));
+                float shade = smoothstep(-0.40, 0.85, p.y);
+                return float2(cloud, shade);
             }
 
-            float driftingCloud(float2 uv, float y, float size, float speed, float seed) {
+            float2 driftingCloud(float2 uv, float y, float size, float speed, float seed) {
                 float travel = resolution.x / resolution.y + size * 2.7;
                 float x = fract(seed + time * speed) * travel - size * 1.35;
-                return cloudShape(uv, float2(x, y), size);
+                return cloudShape(uv, float2(x, y), size, seed);
             }
 
             half4 main(float2 fragCoord) {
@@ -918,6 +943,7 @@ internal class WallpaperWeatherEffectRenderer(
                     if (layerCount > 0.0) {
                         float dirSign = cos(radians(windDirection)) >= 0.0 ? 1.0 : -1.0;
                         float darknessSum = 0.0;
+                        float shadeSum = 0.0;
                         float alphaSum = 0.0;
                         for (int i = 0; i < 3; i++) {
                             if (layerAlpha[i] <= 0.0) continue;
@@ -925,15 +951,43 @@ internal class WallpaperWeatherEffectRenderer(
                             float size = 0.16 + layerScale[i] * 0.14;
                             float speed = 0.005 * layerSpeed[i] * dirSign;
                             float seed = 0.08 + float(i) * 0.41;
-                            float shape = driftingCloud(aspectUv, y, size, speed, seed) * layerAlpha[i];
-                            clouds = max(clouds, shape);
-                            darknessSum += layerDarkness[i] * shape;
-                            alphaSum += shape;
+
+                            // Density-driven coverage: at low layerAlpha only one cloud mass
+                            // drifts through (half bewolkt). As density rises, extra masses
+                            // fade in and overlap, merging into larger clusters (meer
+                            // bewolkt) and, at the highest densities, a near-continuous
+                            // ceiling (vol bewolkt) — all from the existing layerAlpha,
+                            // with no new uniforms.
+                            float2 shape = driftingCloud(aspectUv, y, size, speed, seed) * layerAlpha[i];
+                            float shapeMask = shape.x;
+                            float shadeAcc = shape.x * shape.y;
+                            float weightAcc = shape.x;
+
+                            if (layerAlpha[i] > 0.45) {
+                                float2 extra1 = driftingCloud(aspectUv, y + 0.05, size * 0.92, speed * 1.18, seed + 0.27) * layerAlpha[i];
+                                shapeMask = max(shapeMask, extra1.x);
+                                shadeAcc += extra1.x * extra1.y;
+                                weightAcc += extra1.x;
+                            }
+                            if (layerAlpha[i] > 0.75) {
+                                float2 extra2 = driftingCloud(aspectUv, y - 0.06, size * 1.08, speed * 0.84, seed + 0.59) * layerAlpha[i];
+                                shapeMask = max(shapeMask, extra2.x);
+                                shadeAcc += extra2.x * extra2.y;
+                                weightAcc += extra2.x;
+                            }
+
+                            clouds = max(clouds, shapeMask);
+                            darknessSum += layerDarkness[i] * shapeMask;
+                            shadeSum += (weightAcc > 0.0 ? shadeAcc / weightAcc : 0.0) * shapeMask;
+                            alphaSum += shapeMask;
                         }
                         float weightedDarkness = alphaSum > 0.0 ? darknessSum / alphaSum : 0.0;
+                        float weightedShade = alphaSum > 0.0 ? shadeSum / alphaSum : 0.0;
                         float3 fairColor = daylight > 0.5 ? float3(0.94, 0.97, 1.0) : float3(0.48, 0.54, 0.64);
                         float3 stormColor = daylight > 0.5 ? float3(0.48, 0.55, 0.64) : float3(0.24, 0.29, 0.38);
                         cloudColor = mix(fairColor, stormColor, weightedDarkness);
+                        // Darken the lower part of the cloud mass for a volumetric, top-lit look.
+                        cloudColor *= mix(1.0, 0.74, weightedShade);
                     }
 
                     // ACT-014: stars fade in at night and are occluded by clouds.

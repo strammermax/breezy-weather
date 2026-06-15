@@ -27,7 +27,6 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.RectF
-import android.graphics.RadialGradient
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
@@ -217,7 +216,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private val mRotatingLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val mSunGlowPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val mSunCorePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.rgb(255, 255, 246)
+            CelestialGlow.configureCorePaint(this)
         }
         private val mMoonDrawable = MoonDrawable()
         private var mCelestialPaintMinute = Long.MIN_VALUE
@@ -1061,36 +1060,20 @@ class MaterialLiveWallpaperService : WallpaperService() {
             shortestSide: Float,
             visibility: Float,
         ) {
-            val glowRadius = shortestSide * 0.345f
-            val coreRadius = shortestSide * 0.0525f
+            val glowRadius = shortestSide * CelestialGlow.GLOW_RADIUS_FRACTION
+            val coreRadius = shortestSide * CelestialGlow.CORE_RADIUS_FRACTION
             val alpha = (visibility * 255).toInt()
             val minute = System.currentTimeMillis() / 60_000L
             if (minute != mCelestialPaintMinute || centerX != mSunPaintCenterX ||
                 centerY != mSunPaintCenterY || alpha != mSunPaintAlpha
             ) {
-                mSunGlowPaint.shader = RadialGradient(
-                    centerX,
-                    centerY,
-                    glowRadius,
-                    intArrayOf(
-                        Color.argb(245, 255, 255, 244),
-                        Color.argb(178, 255, 252, 226),
-                        Color.argb(82, 255, 247, 205),
-                        Color.argb(24, 255, 242, 190),
-                        Color.TRANSPARENT,
-                    ),
-                    floatArrayOf(0f, 0.13f, 0.34f, 0.68f, 1f),
-                    Shader.TileMode.CLAMP,
-                )
+                mSunGlowPaint.shader = CelestialGlow.glowShader(centerX, centerY, glowRadius)
                 mCelestialPaintMinute = minute
                 mSunPaintCenterX = centerX
                 mSunPaintCenterY = centerY
                 mSunPaintAlpha = alpha
             }
-            mSunGlowPaint.alpha = alpha
-            mSunCorePaint.alpha = alpha
-            canvas.drawCircle(centerX, centerY, glowRadius, mSunGlowPaint)
-            canvas.drawCircle(centerX, centerY, coreRadius, mSunCorePaint)
+            CelestialGlow.draw(canvas, centerX, centerY, glowRadius, coreRadius, alpha, mSunGlowPaint, mSunCorePaint)
         }
 
         private fun sunVisibility(now: Long): Float {

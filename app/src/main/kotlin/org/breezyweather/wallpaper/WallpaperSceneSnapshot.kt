@@ -10,10 +10,8 @@ package org.breezyweather.wallpaper
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
-import android.graphics.RadialGradient
 import android.graphics.RectF
 import android.graphics.Shader
 import org.breezyweather.ui.common.images.MoonDrawable
@@ -135,33 +133,17 @@ internal object WallpaperSceneSnapshot {
     }
 
     private fun drawSun(canvas: Canvas, centerX: Float, centerY: Float, shortestSide: Float, visibility: Float) {
-        val glowRadius = shortestSide * 0.345f
-        val coreRadius = shortestSide * 0.0525f
+        val glowRadius = shortestSide * CelestialGlow.GLOW_RADIUS_FRACTION
+        val coreRadius = shortestSide * CelestialGlow.CORE_RADIUS_FRACTION
         val alpha = (visibility * 255).toInt()
 
         val glowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            shader = RadialGradient(
-                centerX,
-                centerY,
-                glowRadius,
-                intArrayOf(
-                    Color.argb(245, 255, 255, 244),
-                    Color.argb(178, 255, 252, 226),
-                    Color.argb(82, 255, 247, 205),
-                    Color.argb(24, 255, 242, 190),
-                    Color.TRANSPARENT,
-                ),
-                floatArrayOf(0f, 0.13f, 0.34f, 0.68f, 1f),
-                Shader.TileMode.CLAMP,
-            )
-            this.alpha = alpha
+            shader = CelestialGlow.glowShader(centerX, centerY, glowRadius)
         }
         val corePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.rgb(255, 255, 246)
-            this.alpha = alpha
+            CelestialGlow.configureCorePaint(this)
         }
-        canvas.drawCircle(centerX, centerY, glowRadius, glowPaint)
-        canvas.drawCircle(centerX, centerY, coreRadius, corePaint)
+        CelestialGlow.draw(canvas, centerX, centerY, glowRadius, coreRadius, alpha, glowPaint, corePaint)
     }
 
     private fun sunVisibility(now: Long, sceneState: WallpaperSceneState): Float {
