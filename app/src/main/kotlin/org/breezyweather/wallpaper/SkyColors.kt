@@ -24,8 +24,8 @@ object SkyColors {
     // Overcast grey tones the sky blends towards as cloud cover/darkness increases
     // (e.g. for rain/thunder), so the background reads as a grey, heavy-cloud sky
     // rather than the usual clear-sky blue/dark colors.
-    private val OVERCAST_DAY = intArrayOf(Color.rgb(110, 114, 122), Color.rgb(146, 150, 156))
-    private val OVERCAST_NIGHT = intArrayOf(Color.rgb(28, 30, 36), Color.rgb(46, 49, 56))
+    private val OVERCAST_DAY = intArrayOf(Color.rgb(92, 96, 104), Color.rgb(128, 132, 140))
+    private val OVERCAST_NIGHT = intArrayOf(Color.rgb(24, 26, 32), Color.rgb(40, 43, 50))
 
     fun blendSky(from: IntArray, to: IntArray, amount: Float): IntArray = intArrayOf(
         blendColor(from[0], to[0], amount),
@@ -50,7 +50,7 @@ object SkyColors {
     fun applyOvercastTint(colors: IntArray, cloudDarkness: Float, daytime: Boolean): IntArray {
         if (cloudDarkness <= 0f) return colors
         val overcast = if (daytime) OVERCAST_DAY else OVERCAST_NIGHT
-        val amount = (cloudDarkness * 0.6f).coerceIn(0f, 1f)
+        val amount = (cloudDarkness * 0.85f).coerceIn(0f, 1f)
         return blendSky(colors, overcast, amount)
     }
 }

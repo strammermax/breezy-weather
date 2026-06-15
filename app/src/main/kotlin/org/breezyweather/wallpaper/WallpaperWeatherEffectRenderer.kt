@@ -724,16 +724,20 @@ internal class WallpaperWeatherEffectRenderer(
                 return float3(highlight, shadow, refraction);
             }
 
+            // Hail sits visually between snow (slow, round, drifting flakes) and rain (fast,
+            // long streaks): falls noticeably faster than snow and is shaped as small,
+            // vertically-elongated pellets rather than round flakes or full streaks.
             float hailLayer(float2 uv, float scale, float speed, float seed) {
                 float2 p = uv * scale;
                 p.x -= time * 0.08 * windFactor;
-                p.y -= time * speed;
+                p.y -= time * speed * 1.9;
                 float2 cell = floor(p);
                 float2 local = fract(p) - 0.5;
                 float random = hash21(cell + seed);
-                local.x += (random - 0.5) * 0.58;
-                float radius = mix(0.035, 0.080, random);
-                return smoothstep(radius, radius * 0.68, length(local)) * smoothstep(0.42, 0.96, random);
+                local.x += (random - 0.5) * 0.50;
+                float radius = mix(0.028, 0.060, random);
+                float2 pellet = local * float2(1.15, 0.62);
+                return smoothstep(radius, radius * 0.55, length(pellet)) * smoothstep(0.42, 0.96, random);
             }
 
             float snowLayer(float2 uv, float scale, float speed, float drift, float seed) {
@@ -984,8 +988,12 @@ internal class WallpaperWeatherEffectRenderer(
                         float weightedDarkness = alphaSum > 0.0 ? darknessSum / alphaSum : 0.0;
                         float weightedShade = alphaSum > 0.0 ? shadeSum / alphaSum : 0.0;
                         float3 fairColor = daylight > 0.5 ? float3(0.94, 0.97, 1.0) : float3(0.48, 0.54, 0.64);
-                        float3 stormColor = daylight > 0.5 ? float3(0.48, 0.55, 0.64) : float3(0.24, 0.29, 0.38);
-                        cloudColor = mix(fairColor, stormColor, weightedDarkness);
+                        // Heavier, greyer storm color for rain/very cloudy/thunder, with a curve
+                        // that pushes mid-to-high darkness values towards a flatter grey rather
+                        // than the brighter blue-grey used for light cloud cover.
+                        float3 stormColor = daylight > 0.5 ? float3(0.38, 0.40, 0.45) : float3(0.16, 0.18, 0.24);
+                        float greyness = pow(weightedDarkness, 0.8);
+                        cloudColor = mix(fairColor, stormColor, greyness);
                         // Darken the lower part of the cloud mass for a volumetric, top-lit look.
                         cloudColor *= mix(1.0, 0.74, weightedShade);
                     }

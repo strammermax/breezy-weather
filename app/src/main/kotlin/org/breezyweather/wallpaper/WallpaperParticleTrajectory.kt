@@ -55,7 +55,7 @@ object WallpaperParticleTrajectory {
         val d = depth.coerceIn(0f, 1f)
         return when (kind) {
             WallpaperParticleKind.SNOW -> 26f + d * 120f
-            WallpaperParticleKind.HAIL -> 260f + d * 420f
+            WallpaperParticleKind.HAIL -> 340f + d * 560f
         }
     }
 
