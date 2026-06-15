@@ -72,18 +72,14 @@ import org.breezyweather.wallpaper.photo.WallpaperRepository
 import java.io.File
 import java.time.Instant
 import java.time.ZoneId
-import java.util.Calendar
-import java.util.TimeZone
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.acos
-import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
-import kotlin.math.tan
 
 // Parallax travel per layer as a fraction of the screen width. The same constants drive the
 // extra layer width (updateLayerBounds), the foreground bitmap width (buildPhotoForeground)
@@ -230,7 +226,6 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mSunPaintAlpha = -1
         private val photoHeightFraction = 0.52f
         private val celestialSizeFraction = 0.14f
-        private val dayMillis = 24L * 60L * 60L * 1000L
         private val fallbackCelestialDuration = 12L * 60L * 60L * 1000L
 
         @Size(2)
@@ -1163,16 +1158,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
         private fun updateCelestialTiming(location: Location?) {
             val now = System.currentTimeMillis()
-            val daily = location?.weather?.dailyForecast.orEmpty()
-            val sunIntervals = daily.mapNotNull { day ->
-                astroInterval(day.sun?.riseDate?.time, day.sun?.setDate?.time, now)
-            }
-            val moonIntervals = daily.mapNotNull { day ->
-                astroInterval(day.moon?.riseDate?.time, day.moon?.setDate?.time, now)
-            }
-            val sun = closestAstroInterval(sunIntervals, now)
-                ?: location?.let { approximateSunInterval(it, now) }
-            val moon = closestAstroInterval(moonIntervals, now)
+            val sunIntervals = CelestialTiming.sunIntervals(location, now)
+            val moonIntervals = CelestialTiming.moonIntervals(location, now)
+            val sun = CelestialTiming.closestAstroInterval(sunIntervals, now)
+                ?: location?.let { CelestialTiming.approximateSunInterval(it, now) }
+            val moon = CelestialTiming.closestAstroInterval(moonIntervals, now)
             mSunriseMillis = sun?.first
             mSunsetMillis = sun?.second
             mMoonriseMillis = moon?.first
@@ -1187,7 +1177,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             } else {
                 moonIntervals
             }
-            val active = closestAstroInterval(intervals, now)
+            val active = CelestialTiming.closestAstroInterval(intervals, now)
 
             if (active != null) {
                 mCelestialStartMillis = active.first
@@ -1200,59 +1190,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mCelestialEndMillis = now + fallbackCelestialDuration / 2
         }
 
-        private fun approximateSunInterval(location: Location, now: Long): Pair<Long, Long>? {
-            if (!location.isCurrentPosition && location.latitude == 0.0 && location.longitude == 0.0) return null
-            val timeZone = TimeZone.getDefault()
-            val calendar = Calendar.getInstance(timeZone).apply { timeInMillis = now }
-            val dayOfYear = calendar[Calendar.DAY_OF_YEAR]
-            val gamma = 2.0 * Math.PI / 365.0 * (dayOfYear - 1)
-            val equationOfTime = 229.18 * (
-                0.000075 + 0.001868 * cos(gamma) - 0.032077 * sin(gamma) -
-                    0.014615 * cos(2.0 * gamma) - 0.040849 * sin(2.0 * gamma)
-                )
-            val declination = 0.006918 - 0.399912 * cos(gamma) + 0.070257 * sin(gamma) -
-                0.006758 * cos(2.0 * gamma) + 0.000907 * sin(2.0 * gamma) -
-                0.002697 * cos(3.0 * gamma) + 0.00148 * sin(3.0 * gamma)
-            val latitudeRadians = Math.toRadians(location.latitude.coerceIn(-89.0, 89.0))
-            val zenith = Math.toRadians(90.833)
-            val hourAngleCos = (
-                cos(zenith) / (cos(latitudeRadians) * cos(declination)) -
-                    tan(latitudeRadians) * tan(declination)
-                ).coerceIn(-1.0, 1.0)
-            val hourAngleDegrees = Math.toDegrees(acos(hourAngleCos))
-            val offsetMinutes = timeZone.getOffset(now) / 60_000.0
-            val solarNoonMinutes = 720.0 - 4.0 * location.longitude - equationOfTime + offsetMinutes
-            val sunriseMinutes = solarNoonMinutes - hourAngleDegrees * 4.0
-            val sunsetMinutes = solarNoonMinutes + hourAngleDegrees * 4.0
-            val midnight = Calendar.getInstance(timeZone).apply {
-                timeInMillis = now
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }.timeInMillis
-            return (midnight + (sunriseMinutes * 60_000.0).toLong()) to
-                (midnight + (sunsetMinutes * 60_000.0).toLong())
-        }
-
         private fun formatDebugTime(timeMillis: Long): String =
             java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", java.util.Locale.US).format(timeMillis)
-
-        private fun closestAstroInterval(intervals: List<Pair<Long, Long>>, now: Long): Pair<Long, Long>? =
-            intervals.firstOrNull { now in it.first..it.second }
-                ?: intervals.minByOrNull { interval -> min(abs(now - interval.first), abs(now - interval.second)) }
-
-        private fun astroInterval(rise: Long?, set: Long?, now: Long): Pair<Long, Long>? {
-            if (rise == null || set == null) return null
-            var start = rise
-            var end = set
-            if (end <= start) end += dayMillis
-            if (now < start && now + dayMillis <= end) {
-                start -= dayMillis
-                end -= dayMillis
-            }
-            return start to end
-        }
 
         private fun setIntervalComputer() {
             val animationsEnabled = LiveWallpaperConfigManager(applicationContext).animationsEnabled

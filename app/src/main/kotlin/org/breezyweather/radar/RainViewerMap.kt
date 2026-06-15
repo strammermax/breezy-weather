@@ -51,11 +51,7 @@ internal object RainViewerMap {
         } else {
             ""
         }
-        val animation = if (compact) {
-            ""
-        } else {
-            "setInterval(function(){ idx=(idx+1)%frames.length; show(idx); },700);"
-        }
+        val animation = "setInterval(function(){ idx=(idx+1)%frames.length; show(idx); },700);"
         return """
 <!DOCTYPE html><html><head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">

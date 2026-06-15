@@ -103,6 +103,7 @@ import org.breezyweather.ui.search.SearchActivity
 import org.breezyweather.ui.theme.ThemeManager
 import org.breezyweather.ui.theme.compose.BreezyWeatherTheme
 import org.breezyweather.ui.theme.weatherView.WeatherViewController
+import org.breezyweather.wallpaper.CelestialTiming
 import org.breezyweather.wallpaper.WallpaperSceneSnapshot
 import org.breezyweather.wallpaper.WallpaperSceneStateFactory
 import org.breezyweather.wallpaper.photo.WallpaperImageStore
@@ -870,17 +871,23 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
             return
         }
 
-        val daily = weather.dailyForecast.firstOrNull()
+        // Resolve sun/moon intervals the same way the live wallpaper does, so the snapshot
+        // background renders the same sky gradient (rather than naively trusting the first
+        // daily forecast entry, whose astro times may already lie outside "now").
+        val now = System.currentTimeMillis()
+        val sunInterval = CelestialTiming.closestAstroInterval(CelestialTiming.sunIntervals(location, now), now)
+            ?: CelestialTiming.approximateSunInterval(location, now)
+        val moonInterval = CelestialTiming.closestAstroInterval(CelestialTiming.moonIntervals(location, now), now)
         val sceneState = WallpaperSceneStateFactory.create(
             weatherKind = WeatherViewController.getWeatherKind(location),
             daylight = if (location.locationIsDaylight) 1f else 0f,
             windSpeedMetersPerSecond = weather.current?.wind?.speed?.value?.toFloat() ?: 0f,
             windGustMetersPerSecond = weather.current?.wind?.gusts?.value?.toFloat() ?: 0f,
             windDirectionDegrees = weather.current?.wind?.degree?.toFloat(),
-            sunriseMillis = daily?.sun?.riseDate?.time,
-            sunsetMillis = daily?.sun?.setDate?.time,
-            moonriseMillis = daily?.moon?.riseDate?.time,
-            moonsetMillis = daily?.moon?.setDate?.time,
+            sunriseMillis = sunInterval?.first,
+            sunsetMillis = sunInterval?.second,
+            moonriseMillis = moonInterval?.first,
+            moonsetMillis = moonInterval?.second,
         )
 
         lifecycleScope.launch {
