@@ -141,49 +141,6 @@ internal fun DailyWeatherScreen(
         }
     }
 
-    // ACT-014: like the home screen, replace the static sky-gradient background
-    // (set in DetailsActivity.onCreate as a fallback) with a one-time snapshot of
-    // the live wallpaper scene (sky gradient, sun/moon, weather pass, location
-    // photo) for the current location/weather, behind the glass scaffold/cards.
-    LaunchedEffect(detailsUiState.location?.weather) {
-        val location = detailsUiState.location
-        val weather = location?.weather
-        val width = context.resources.displayMetrics.widthPixels
-        val height = context.resources.displayMetrics.heightPixels
-        if (location == null || weather == null || activity == null || width <= 0 || height <= 0) {
-            return@LaunchedEffect
-        }
-
-        // Resolve sun/moon intervals the same way the live wallpaper does, so the snapshot
-        // background renders the same sky gradient (rather than naively trusting the first
-        // daily forecast entry, whose astro times may already lie outside "now").
-        val now = System.currentTimeMillis()
-        val sunInterval = CelestialTiming.closestAstroInterval(CelestialTiming.sunIntervals(location, now), now)
-            ?: CelestialTiming.approximateSunInterval(location, now)
-        val moonInterval = CelestialTiming.closestAstroInterval(CelestialTiming.moonIntervals(location, now), now)
-        val sceneState = WallpaperSceneStateFactory.create(
-            weatherKind = WeatherViewController.getWeatherKind(location),
-            daylight = if (location.locationIsDaylight) 1f else 0f,
-            windSpeedMetersPerSecond = weather.current?.wind?.speed?.value?.toFloat() ?: 0f,
-            windGustMetersPerSecond = weather.current?.wind?.gusts?.value?.toFloat() ?: 0f,
-            windDirectionDegrees = weather.current?.wind?.degree?.toFloat(),
-            sunriseMillis = sunInterval?.first,
-            sunsetMillis = sunInterval?.second,
-            moonriseMillis = moonInterval?.first,
-            moonsetMillis = moonInterval?.second
-        )
-
-        val photo = withContext(Dispatchers.IO) {
-            WallpaperRepository(context).loadCachedBitmap()
-        }
-        val bitmap = withContext(Dispatchers.Default) {
-            Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
-                WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState)
-            }
-        }
-        activity.window.setBackgroundDrawable(BitmapDrawable(context.resources, bitmap))
-    }
-
     BreezyWeatherTheme(!isLightTheme) {
         // ACT-013: text color for content placed directly on the sky-gradient
         // background (outside any glass card), e.g. the top bar title and the
@@ -229,6 +186,69 @@ internal fun DailyWeatherScreen(
                 val pagerPage by remember {
                     derivedStateOf { pagerState.currentPage }
                 }
+
+                // ACT-014: like the home screen, replace the static sky-gradient background
+                // (set in DetailsActivity.onCreate as a fallback) with a one-time snapshot of
+                // the live wallpaper scene (sky gradient, sun/moon, weather pass, location
+                // photo), behind the glass scaffold/cards. Re-rendered whenever the selected
+                // day in the pager changes, so the background reflects that day's forecast
+                // rather than always today's current weather.
+                LaunchedEffect(loc.weather, pagerPage) {
+                    val weather = loc.weather
+                    val width = context.resources.displayMetrics.widthPixels
+                    val height = context.resources.displayMetrics.heightPixels
+                    if (weather == null || activity == null || width <= 0 || height <= 0) {
+                        return@LaunchedEffect
+                    }
+
+                    val selectedDaily = weather.dailyForecast.getOrNull(pagerPage)
+                    val isToday = pagerPage == weather.todayIndex
+
+                    // Resolve sun/moon intervals the same way the live wallpaper does, so the
+                    // snapshot background renders the same sky gradient (rather than naively
+                    // trusting the first daily forecast entry, whose astro times may already
+                    // lie outside "now").
+                    val now = System.currentTimeMillis()
+                    val sunInterval = CelestialTiming.closestAstroInterval(CelestialTiming.sunIntervals(loc, now), now)
+                        ?: CelestialTiming.approximateSunInterval(loc, now)
+                    val moonInterval = CelestialTiming.closestAstroInterval(CelestialTiming.moonIntervals(loc, now), now)
+
+                    val daylight = if (loc.locationIsDaylight) 1f else 0f
+                    val halfDay = if (loc.locationIsDaylight) {
+                        selectedDaily?.day
+                    } else {
+                        selectedDaily?.night ?: selectedDaily?.day
+                    }
+                    val weatherKind = if (isToday) {
+                        WeatherViewController.getWeatherKind(loc)
+                    } else {
+                        WeatherViewController.getWeatherKind(halfDay?.weatherCode)
+                    }
+                    val wind = if (isToday) weather.current?.wind else halfDay?.wind
+
+                    val sceneState = WallpaperSceneStateFactory.create(
+                        weatherKind = weatherKind,
+                        daylight = daylight,
+                        windSpeedMetersPerSecond = wind?.speed?.value?.toFloat() ?: 0f,
+                        windGustMetersPerSecond = wind?.gusts?.value?.toFloat() ?: 0f,
+                        windDirectionDegrees = wind?.degree?.toFloat(),
+                        sunriseMillis = sunInterval?.first,
+                        sunsetMillis = sunInterval?.second,
+                        moonriseMillis = moonInterval?.first,
+                        moonsetMillis = moonInterval?.second
+                    )
+
+                    val photo = withContext(Dispatchers.IO) {
+                        WallpaperRepository(context).loadCachedBitmap()
+                    }
+                    val bitmap = withContext(Dispatchers.Default) {
+                        Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
+                            WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState)
+                        }
+                    }
+                    activity.window.setBackgroundDrawable(BitmapDrawable(context.resources, bitmap))
+                }
+
                 // ACT-013: override the surface/outline colors so the cards and tab bar
                 // inside this screen render as translucent glass over the sky-gradient
                 // background, with light text that stays readable on the photo/gradient.

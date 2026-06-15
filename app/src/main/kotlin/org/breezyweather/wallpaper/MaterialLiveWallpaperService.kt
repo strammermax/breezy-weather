@@ -1035,8 +1035,12 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val horizonY = height * 0.48f
             val peakY = height * 0.12f
             val shortestSide = min(width, height).toFloat()
-            val sunAlpha = sunVisibility(now)
-            val moonAlpha = moonVisibility(now) * (1f - sunAlpha)
+            // Heavy cloud cover should mostly hide the sun/moon disc rather than show it
+            // shining through a near-opaque overcast/storm ceiling.
+            val celestialOcclusion = (mSceneState.cloudDensity * mSceneState.cloudDarkness).coerceIn(0f, 1f)
+            val celestialVisibility = 1f - celestialOcclusion
+            val sunAlpha = sunVisibility(now) * celestialVisibility
+            val moonAlpha = moonVisibility(now) * (1f - sunAlpha) * celestialVisibility
             val positionTime = now / 60_000L * 60_000L
 
             if (sunAlpha > 0.01f) {

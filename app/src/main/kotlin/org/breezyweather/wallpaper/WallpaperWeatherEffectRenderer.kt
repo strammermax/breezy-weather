@@ -985,9 +985,12 @@ internal class WallpaperWeatherEffectRenderer(
                 float h2 = hash21(float2(seed, 23.0));
                 cloud = max(cloud, cloudCircle(p, float2(mix(-0.92, -0.46, h1), 0.18), 0.30, 0.11));
                 cloud = max(cloud, cloudCircle(p, float2(mix(0.46, 0.98, h2), 0.20), 0.32, 0.11));
-                // Flatten the base of the cloud.
-                cloud = max(cloud, smoothstep(0.40, 0.16, abs(p.y - 0.20))
-                    * smoothstep(1.18, 0.78, abs(p.x)));
+                // Flatten the base of the cloud, but only where the circular lobes already
+                // provide coverage (dilated slightly) - otherwise this axis-aligned term
+                // shows through as a standalone soft-edged square/rectangle in the sky.
+                float flatBase = smoothstep(0.40, 0.16, abs(p.y - 0.20))
+                    * smoothstep(1.18, 0.78, abs(p.x));
+                cloud = max(cloud, flatBase * smoothstep(0.0, 0.35, cloud + 0.15));
                 float shade = smoothstep(-0.40, 0.85, p.y);
                 return float2(cloud, shade);
             }
