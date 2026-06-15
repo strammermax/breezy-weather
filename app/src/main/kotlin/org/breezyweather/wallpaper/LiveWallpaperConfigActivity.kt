@@ -244,6 +244,9 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 )
             }
             if (file != null) {
+                val refreshedAt = System.currentTimeMillis()
+                wallpaperImageStore.setPhotoRefreshedAt(location.formattedId, refreshedAt)
+                photoRefreshedAtValue.value = refreshedAt
                 previewBitmapValue.value = withContext(Dispatchers.IO) {
                     wallpaperRepository.loadCachedBitmap()
                 }

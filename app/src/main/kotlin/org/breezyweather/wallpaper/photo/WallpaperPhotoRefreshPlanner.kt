@@ -52,4 +52,7 @@ object WallpaperPhotoRefreshPlanner {
      * dropped (ACT-010 section 7: documented fallback for locations without valid data).
      */
     fun locationsToProcess(locations: List<Location>): List<Location> = locations.filter { it.isUsable }
+
+    /** Only the first/current location may replace the globally active wallpaper photo. */
+    fun shouldActivateLocation(index: Int): Boolean = index == 0
 }

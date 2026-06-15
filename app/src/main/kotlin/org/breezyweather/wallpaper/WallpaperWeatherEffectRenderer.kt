@@ -194,6 +194,7 @@ internal class WallpaperWeatherEffectRenderer(
             s.setFloatUniform("fogColor", FogFieldFactory.fogColor(fogField.isHaze, daylight))
             s.setFloatUniform("starVisibility", StarFieldFactory.starVisibility(daylight))
             s.setFloatUniform("starSeed", starField.seed)
+            s.setFloatUniform("effectSeed", ((randomSeed ?: 0L) % 100_000L).toFloat())
             s.setFloatUniform("glassRainIntensity", glassRainIntensity)
             s.setFloatUniform("glassTrailLength", glassRainProfile.trailLength)
             s.setFloatUniform("glassHighlightStrength", glassRainProfile.highlightStrength)
@@ -631,12 +632,14 @@ internal class WallpaperWeatherEffectRenderer(
             uniform float fogColor[3];
             uniform float starVisibility;
             uniform float starSeed;
+            uniform float effectSeed;
             uniform float glassRainIntensity;
             uniform float glassTrailLength;
             uniform float glassHighlightStrength;
             uniform float glassRefractionStrength;
 
             float hash21(float2 p) {
+                p += effectSeed * float2(0.017, 0.031);
                 p = fract(p * float2(123.34, 456.21));
                 p += dot(p, p + 45.32);
                 return fract(p.x * p.y);

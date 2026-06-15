@@ -128,6 +128,7 @@ class WallpaperRepository(
         longitude: Double,
         place: PlaceQuery,
         forceRefresh: Boolean = false,
+        activate: Boolean = true,
     ): File? {
         val placeKey = place.cacheFileName()
         val tried = HashSet<String>()
@@ -155,7 +156,9 @@ class WallpaperRepository(
             }
             cacheFile.setLastModified(System.currentTimeMillis())
             store.recordRecentUrl(placeKey, url)
-            store.activatePhoto(cacheFile.absolutePath, url, result.attribution)
+            if (activate) {
+                store.activatePhoto(cacheFile.absolutePath, url, result.attribution)
+            }
             pruneLocationCache(cacheFile.parentFile, cacheFile)
             prunePhotoCache(cacheFile)
             return cacheFile

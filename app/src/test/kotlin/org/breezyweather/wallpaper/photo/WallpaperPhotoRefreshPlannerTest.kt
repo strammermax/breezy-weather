@@ -87,4 +87,11 @@ class WallpaperPhotoRefreshPlannerTest {
 
         first shouldBe second
     }
+
+    @Test
+    fun `only the first current location activates the global wallpaper`() {
+        WallpaperPhotoRefreshPlanner.shouldActivateLocation(0) shouldBe true
+        WallpaperPhotoRefreshPlanner.shouldActivateLocation(1) shouldBe false
+        WallpaperPhotoRefreshPlanner.shouldActivateLocation(4) shouldBe false
+    }
 }
