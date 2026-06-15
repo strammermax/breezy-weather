@@ -69,6 +69,23 @@ class RemoveSkyProvider(
         return resolve("$apiBase/search?source=local&limit=$LIMIT&lat=$latitude&lon=$longitude")
     }
 
+    /**
+     * Returns the full set of currently `enabled` processed-image URLs RemoveSky knows for this
+     * location, or null when the request failed (caller must then skip pruning — a failed
+     * request is not evidence that images were disabled).
+     */
+    suspend fun fetchEnabledUrls(latitude: Double, longitude: Double): Set<String>? =
+        withContext(Dispatchers.IO) {
+            val url = "$apiBase/search?source=local&limit=$MAX_ENABLED_URLS&lat=$latitude&lon=$longitude"
+            val results = search(url) ?: return@withContext null
+            buildSet {
+                for (i in 0 until results.length()) {
+                    val processedUrl = normalizeServiceUrl(results.getJSONObject(i).optString("processed_url"))
+                    if (processedUrl.isNotBlank()) add(processedUrl)
+                }
+            }
+        }
+
     suspend fun healthStatus(): String? = withContext(Dispatchers.IO) {
         try {
             client.newCall(get("$apiBase/health")).execute().use { response ->
@@ -249,6 +266,9 @@ class RemoveSkyProvider(
         private const val API_PATH = "/api/v1"
         private const val LIMIT = 12
         private const val MAX_PROCESS_ATTEMPTS = 6
+
+        /** Upper bound when fetching all enabled URLs for a location to prune the local cache. */
+        private const val MAX_ENABLED_URLS = 50
         private const val USER_AGENT =
             "LiveWallpaperWeather/1.0 (https://github.com/strammermax/breezy-weather; " +
                 "based on Breezy Weather)"

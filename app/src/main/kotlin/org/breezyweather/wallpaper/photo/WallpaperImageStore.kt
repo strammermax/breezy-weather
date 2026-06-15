@@ -130,6 +130,17 @@ class WallpaperImageStore(context: Context) {
         config.edit().putString(KEY_RECENT_URLS, map.toString()).apply()
     }
 
+    /** Replaces the recent-URL history for [placeKey] with [urls] (already capped/ordered). */
+    fun setRecentUrls(placeKey: String, urls: List<String>) {
+        val map = recentUrlMap()
+        if (urls.isEmpty()) {
+            map.remove(placeKey)
+        } else {
+            map.put(placeKey, JSONArray(urls.take(RECENT_URL_COUNT)))
+        }
+        config.edit().putString(KEY_RECENT_URLS, map.toString()).apply()
+    }
+
     private fun recentUrlMap(): JSONObject = try {
         config.getString(KEY_RECENT_URLS, null)?.let(::JSONObject) ?: JSONObject()
     } catch (e: Throwable) {

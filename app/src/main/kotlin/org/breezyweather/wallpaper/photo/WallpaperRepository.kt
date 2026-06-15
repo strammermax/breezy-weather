@@ -215,6 +215,42 @@ class WallpaperRepository(
         erased // null => too little sky => skip this candidate
     }
 
+    /**
+     * Removes cached photos for [place] that RemoveSky no longer reports as `enabled`.
+     * Returns true when the currently active photo for this place was removed (caller should
+     * trigger a forced [refreshFor] to pick a replacement).
+     */
+    suspend fun pruneDisabledPhotos(latitude: Double, longitude: Double, place: PlaceQuery): Boolean {
+        val enabled = removeSkyProvider().fetchEnabledUrls(latitude, longitude) ?: return false
+        val placeKey = place.cacheFileName()
+
+        // 1. Trim recent-URL history to only still-enabled URLs.
+        val recent = store.recentUrlsFor(placeKey)
+        val keptRecent = recent.filter { it in enabled }
+        if (keptRecent != recent) store.setRecentUrls(placeKey, keptRecent)
+
+        // 2. Delete cached files whose URL is no longer enabled.
+        val locationDir = File(photoCacheDir(), placeKey.substringBeforeLast('.'))
+        val activeFile = store.cachedPhotoPath?.let(::File)
+        val allowedNames = enabled.map { "${it.sha256Prefix()}.webp" }.toSet()
+        locationDir.listFiles()?.forEach { file ->
+            if (file.isFile && file.name !in allowedNames && file != activeFile) {
+                file.delete()
+            }
+        }
+
+        // 3. If the active photo for this place is no longer enabled, deactivate it.
+        val activeUrl = store.cachedPhotoUrl
+        if (activeUrl != null && activeUrl !in enabled && activeFile?.parentFile == locationDir) {
+            activeFile.delete()
+            store.cachedPhotoPath = null
+            store.cachedPhotoUrl = null
+            store.cachedPhotoAttribution = null
+            return true
+        }
+        return false
+    }
+
     /** Back-compatible overload taking a single place name. */
     suspend fun refreshFor(
         latitude: Double,

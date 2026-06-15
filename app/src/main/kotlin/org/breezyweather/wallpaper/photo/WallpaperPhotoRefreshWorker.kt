@@ -75,19 +75,25 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                 locationRepository.getXLocations(MAX_LOCATIONS)
             )
             locations.forEachIndexed { index, location ->
+                val place = location.toWallpaperPlaceQuery()
+                val activeRemoved = repository.pruneDisabledPhotos(
+                    latitude = location.latitude,
+                    longitude = location.longitude,
+                    place = place,
+                )
+
                 val lastRefreshedAt = store.photoRefreshedAtFor(location.formattedId)
-                if (!WallpaperPhotoRefreshPlanner.needsRefresh(lastRefreshedAt, now)) {
+                if (!WallpaperPhotoRefreshPlanner.needsRefresh(lastRefreshedAt, now) && !activeRemoved) {
                     skippedCount++
                     return@forEachIndexed
                 }
 
-                val place = location.toWallpaperPlaceQuery()
                 val file = repository.refreshFor(
                     latitude = location.latitude,
                     longitude = location.longitude,
                     place = place,
                     forceRefresh = true,
-                    activate = WallpaperPhotoRefreshPlanner.shouldActivateLocation(index),
+                    activate = WallpaperPhotoRefreshPlanner.shouldActivateLocation(index) || activeRemoved,
                 )
                 if (file != null) {
                     store.setPhotoRefreshedAt(location.formattedId, now)

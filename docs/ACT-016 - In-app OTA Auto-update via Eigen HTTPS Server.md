@@ -1,4 +1,4 @@
-# ACT-014 - In-app OTA Auto-update via Eigen HTTPS Server
+# ACT-016 - In-app OTA Auto-update via Eigen HTTPS Server
 
 ## Status
 
