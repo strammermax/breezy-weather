@@ -128,7 +128,7 @@ object WallpaperSceneStateFactory {
         // colors as the sky darkens at night AND as cloud cover/darkness increases, so
         // overcast/rainy/stormy scenes don't look like a sunny photo with rain on top.
         val nightDimming = 1f - safeDaylight
-        val cloudDimming = adjustedCloudDensity * adjustedCloudDarkness
+        val cloudDimming = (adjustedCloudDensity * adjustedCloudDarkness * 1.3f).coerceIn(0f, 1f)
         val photoDimming = (1f - (1f - nightDimming) * (1f - cloudDimming)).coerceIn(0f, 1f)
 
         return WallpaperSceneState(
@@ -220,7 +220,7 @@ object WallpaperSceneStateFactory {
         )
         WallpaperWeatherFamily.SNOW -> EffectProfile(
             cloudDensity = 0.90f,
-            cloudDarkness = 0.35f,
+            cloudDarkness = 0.45f,
             precipitationIntensity = 0.75f,
         )
         WallpaperWeatherFamily.SLEET -> EffectProfile(
@@ -231,12 +231,12 @@ object WallpaperSceneStateFactory {
         )
         WallpaperWeatherFamily.HAIL -> EffectProfile(
             cloudDensity = 1f,
-            cloudDarkness = 0.60f,
+            cloudDarkness = 0.70f,
             precipitationIntensity = 0.90f,
         )
         WallpaperWeatherFamily.FOG -> EffectProfile(
             cloudDensity = 0.65f,
-            cloudDarkness = 0.20f,
+            cloudDarkness = 0.35f,
             fogIntensity = 0.85f,
         )
         WallpaperWeatherFamily.HAZE -> EffectProfile(
