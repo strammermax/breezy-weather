@@ -124,6 +124,7 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainActivityViewModel
+    private var liveWallpaperPhotoRefreshInProgress = false
 
     private val _dialogPerLocationSettingsOpen = MutableStateFlow(false)
     val dialogPerLocationSettingsOpen = _dialogPerLocationSettingsOpen.asStateFlow()
@@ -382,7 +383,7 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.currentLocation.collect {
                     if (it?.location?.weather != null) {
-                        updateLiveWallpaperBackground(forcePhotoRefresh = viewModel.consumePhotoRefreshRequest())
+                        updateLiveWallpaperBackground()
                     }
                 }
             }
@@ -855,11 +856,17 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
      * the home screen's background behind the ACT-013 glass cards.
      */
     private fun updateLiveWallpaperBackground(forcePhotoRefresh: Boolean = false) {
+        if (!forcePhotoRefresh && liveWallpaperPhotoRefreshInProgress) return
+        if (forcePhotoRefresh) {
+            if (liveWallpaperPhotoRefreshInProgress) return
+            liveWallpaperPhotoRefreshInProgress = true
+        }
         val location = viewModel.currentLocation.value?.location
         val weather = location?.weather
         val width = binding.root.width
         val height = binding.root.height
         if (weather == null || width <= 0 || height <= 0) {
+            liveWallpaperPhotoRefreshInProgress = false
             return
         }
 
@@ -877,33 +884,47 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
         )
 
         lifecycleScope.launch {
-            val repository = WallpaperRepository(this@MainActivity)
-            if (forcePhotoRefresh) {
-                withContext(Dispatchers.IO) {
-                    val store = WallpaperImageStore(this@MainActivity)
-                    if (store.photoBackgroundEnabled && this@MainActivity.isOnline()) {
-                        repository.refreshFor(
-                            latitude = location.latitude,
-                            longitude = location.longitude,
-                            place = location.toWallpaperPlaceQuery(),
-                            forceRefresh = true,
-                            activate = true
-                        )
+            try {
+                val repository = WallpaperRepository(this@MainActivity)
+                if (forcePhotoRefresh) {
+                    withContext(Dispatchers.IO) {
+                        val store = WallpaperImageStore(this@MainActivity)
+                        if (store.photoBackgroundEnabled && this@MainActivity.isOnline()) {
+                            val file = repository.refreshFor(
+                                latitude = location.latitude,
+                                longitude = location.longitude,
+                                place = location.toWallpaperPlaceQuery(),
+                                forceRefresh = true,
+                                activate = true
+                            )
+                            if (file != null) {
+                                store.setPhotoRefreshedAt(location.formattedId, System.currentTimeMillis())
+                            }
+                        }
                     }
                 }
-            }
-            val photo = withContext(Dispatchers.IO) {
-                repository.loadCachedBitmap()
-            }
-            val bitmap = withContext(Dispatchers.Default) {
-                Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
-                    WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState)
+                val photo = withContext(Dispatchers.IO) {
+                    repository.loadCachedBitmap()
+                }
+                val bitmap = withContext(Dispatchers.Default) {
+                    Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
+                        WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState)
+                    }
+                }
+                if (this@MainActivity.getResources().configuration.orientation != 2) {
+                    binding.root.background = BitmapDrawable(resources, bitmap)
+                }
+            } finally {
+                if (forcePhotoRefresh) {
+                    liveWallpaperPhotoRefreshInProgress = false
                 }
             }
-            if (this@MainActivity.getResources().configuration.orientation != 2) {
-                binding.root.background = BitmapDrawable(resources, bitmap)
-            }
         }
+    }
+
+    /** Pull-to-refresh also requests and activates a different RemoveSky image immediately. */
+    fun refreshLiveWallpaperPhoto() {
+        updateLiveWallpaperBackground(forcePhotoRefresh = true)
     }
 
     private val isOrWillManagementFragmentVisible: Boolean

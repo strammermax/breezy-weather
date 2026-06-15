@@ -226,7 +226,7 @@ class HomeFragment : MainModuleFragment() {
         }
 
         binding.refreshLayout.setOnRefreshListener {
-            viewModel.requestPhotoRefresh()
+            (activity as? MainActivity)?.refreshLiveWallpaperPhoto()
             viewModel.updateWithUpdatingChecking(
                 triggeredByUser = true,
                 checkPermissions = true
