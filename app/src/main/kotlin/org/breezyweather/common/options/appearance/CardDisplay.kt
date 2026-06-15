@@ -51,6 +51,7 @@ enum class CardDisplay(
     CARD_SUN("sun", R.string.ephemeris_sun),
     CARD_MOON("moon", R.string.ephemeris_moon),
     CARD_CLOCK("clock", R.string.clock),
+    CARD_RADAR("radar", R.string.action_radar),
     ;
 
     companion object {
