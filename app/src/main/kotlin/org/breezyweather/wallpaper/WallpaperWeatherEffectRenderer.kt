@@ -107,6 +107,14 @@ internal class WallpaperWeatherEffectRenderer(
         qualityBudget = WallpaperQualityProfileFactory.budgetFor(degradationTracker.effectiveProfile)
     }
 
+    /** Effective quality profile after temporary degradation (ACT-009 telemetry). */
+    val effectiveQualityProfile: WallpaperQualityProfile
+        get() = degradationTracker.effectiveProfile
+
+    /** Current degradation level, 0 = no degradation (ACT-009 telemetry). */
+    val qualityDegradationLevel: Int
+        get() = degradationTracker.degradationLevel
+
     fun update(intervalMillis: Long, animate: Boolean) {
         if (!animate) return
         val delta = min(intervalMillis, MAX_FRAME_INTERVAL_MILLIS).coerceAtLeast(0L)

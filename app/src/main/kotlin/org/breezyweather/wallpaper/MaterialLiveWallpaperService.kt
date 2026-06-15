@@ -89,6 +89,9 @@ private const val PARALLAX_BG_FACTOR = 0.05f
 private const val PARALLAX_FG_FACTOR = 0.15f
 private const val PARALLAX_CELESTIAL_FACTOR = 0.02f
 
+/** ACT-009: minimum interval between periodic debug telemetry summaries. */
+private const val TELEMETRY_LOG_INTERVAL_MILLIS = 5_000L
+
 @AndroidEntryPoint
 class MaterialLiveWallpaperService : WallpaperService() {
     @Inject
@@ -168,6 +171,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mCurrentLocationData: Location? = null
         private var mLoggedForegroundMissing = false
 
+        // ACT-009: debug-only frame time / lifecycle telemetry, no-op in release builds.
+        private val mFrameTelemetry = FrameTelemetry()
+        private val mLifecycleTelemetry = WallpaperLifecycleTelemetry()
+        private var mLastTelemetryLogMillis = 0L
+
         /** Debug-only logging (single tag), compiled out of release builds. */
         private inline fun lwwLog(message: () -> String) {
             if (BuildConfig.DEBUG) android.util.Log.d("LWW", message())
@@ -232,6 +240,14 @@ class MaterialLiveWallpaperService : WallpaperService() {
             if (mRotators != null && mIntervalComputer != null) {
                 mRotators!![0].updateRotation(mRotation2D.toDouble(), mIntervalComputer!!.interval)
                 mRotators!![1].updateRotation(mRotation3D.toDouble(), mIntervalComputer!!.interval)
+            }
+
+            // ACT-009: cheap timing capture, recorded into mFrameTelemetry only in debug builds.
+            val telemetryStartNanos = if (BuildConfig.DEBUG) System.nanoTime() else 0L
+            val telemetryDegradationBefore = if (BuildConfig.DEBUG) {
+                mCurrentEffectRenderer?.qualityDegradationLevel ?: 0
+            } else {
+                0
             }
 
             var canvas: Canvas? = null
@@ -337,6 +353,42 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 }
             } finally {
                 canvas?.let { mHolder?.unlockCanvasAndPost(it) }
+                if (BuildConfig.DEBUG) {
+                    if (canvas != null) {
+                        val frameMillis = (System.nanoTime() - telemetryStartNanos) / 1_000_000f
+                        mFrameTelemetry.recordFrame(frameMillis)
+                        val degradationAfter = mCurrentEffectRenderer?.qualityDegradationLevel ?: 0
+                        if (degradationAfter > telemetryDegradationBefore) {
+                            mFrameTelemetry.recordDegradation()
+                        } else if (degradationAfter < telemetryDegradationBefore) {
+                            mFrameTelemetry.recordRecovery()
+                        }
+                    } else {
+                        mFrameTelemetry.recordDroppedFrame()
+                    }
+                    maybeLogFrameTelemetry()
+                }
+            }
+        }
+
+        /** Debug-only periodic summary; never logs per-frame (ACT-009 section 11/12). */
+        private fun maybeLogFrameTelemetry() {
+            val now = System.currentTimeMillis()
+            if (now - mLastTelemetryLogMillis < TELEMETRY_LOG_INTERVAL_MILLIS) return
+            mLastTelemetryLogMillis = now
+            val profile = mCurrentEffectRenderer?.effectiveQualityProfile ?: WallpaperQualityProfile.BALANCED
+            val snapshot = mFrameTelemetry.snapshot(profile)
+            lwwLog {
+                "telemetry avg=%.1fms p95=%.1fms dropped=%d/%d profile=%s degrade=%d recover=%d family=%s".format(
+                    snapshot.averageFrameTimeMillis,
+                    snapshot.p95FrameTimeMillis,
+                    snapshot.droppedFrames,
+                    snapshot.totalFrames,
+                    profile,
+                    snapshot.degradationEvents,
+                    snapshot.recoveryEvents,
+                    mCurrentEffectFamily,
+                )
             }
         }
 
@@ -1130,6 +1182,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
         override fun onVisibilityChanged(visible: Boolean) {
             if (mVisible == visible) return
 
+            if (BuildConfig.DEBUG) {
+                val event = mLifecycleTelemetry.recordVisibilityChanged(visible)
+                lwwLog { "lifecycle visible=${event.visible} t=${event.timestampMillis}" }
+            }
+
             mVisible = visible
             if (!visible) {
                 mIntervalController?.let {
@@ -1139,6 +1196,23 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 mHandler?.removeCallbacksAndMessages(null)
                 sensorManager?.unregisterListener(mGravityListener, mGravitySensor)
                 mOrientationListener.disable()
+                if (BuildConfig.DEBUG) {
+                    // Final summary before counters reset: confirms the renderer stopped
+                    // (totalFrames stays at this value while invisible).
+                    val profile = mCurrentEffectRenderer?.effectiveQualityProfile ?: WallpaperQualityProfile.BALANCED
+                    val snapshot = mFrameTelemetry.snapshot(profile)
+                    lwwLog {
+                        "telemetry final (now invisible) avg=%.1fms p95=%.1fms dropped=%d/%d profile=%s".format(
+                            snapshot.averageFrameTimeMillis,
+                            snapshot.p95FrameTimeMillis,
+                            snapshot.droppedFrames,
+                            snapshot.totalFrames,
+                            profile,
+                        )
+                    }
+                    mFrameTelemetry.reset()
+                    mLastTelemetryLogMillis = 0L
+                }
                 return
             }
 
