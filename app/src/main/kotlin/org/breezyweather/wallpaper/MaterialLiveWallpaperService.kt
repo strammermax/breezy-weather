@@ -914,24 +914,24 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
         private fun updateForegroundNightTint() {
             val foreground = mForeground ?: return
-            val nightTint = mSceneState.photoNightTint.coerceIn(0f, 1f)
-            if (abs(nightTint - mForegroundNightTint) < 0.001f) return
+            val dimming = mSceneState.photoDimming.coerceIn(0f, 1f)
+            if (abs(dimming - mForegroundNightTint) < 0.001f) return
 
-            foreground.colorFilter = if (nightTint <= 0.001f) {
+            foreground.colorFilter = if (dimming <= 0.001f) {
                 null
             } else {
                 ColorMatrixColorFilter(
                     ColorMatrix().apply {
                         setScale(
-                            lerp(1f, 0.58f, nightTint),
-                            lerp(1f, 0.62f, nightTint),
-                            lerp(1f, 0.72f, nightTint),
+                            lerp(1f, 0.58f, dimming),
+                            lerp(1f, 0.62f, dimming),
+                            lerp(1f, 0.72f, dimming),
                             1f,
                         )
                     }
                 )
             }
-            mForegroundNightTint = nightTint
+            mForegroundNightTint = dimming
         }
 
         private fun positionPhotoAtBottom(source: Bitmap, targetWidth: Int, targetHeight: Int): Bitmap {

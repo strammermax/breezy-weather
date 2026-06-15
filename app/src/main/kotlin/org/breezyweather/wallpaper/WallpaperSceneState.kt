@@ -52,7 +52,12 @@ data class WallpaperSceneState(
      * 1 as wind strength approaches storm force, sign follows the wind direction.
      */
     val precipitationTiltSlope: Float,
-    val photoNightTint: Float,
+    /**
+     * How much to darken the bottom photo, 0f (no change) .. 1f (darkest). Combines how
+     * far into the night it is with how dense/dark the current cloud cover is, so a
+     * sunny-day photo reads as overcast/rainy under heavy clouds and dark at night.
+     */
+    val photoDimming: Float,
     val sunriseMillis: Long?,
     val sunsetMillis: Long?,
     val moonriseMillis: Long?,
@@ -116,6 +121,15 @@ object WallpaperSceneStateFactory {
             profile.glassRainIntensity
         }
         val cloudFactor = if (isPrecipitating) lerp(1f, precipFactor, 0.5f) else 1f
+        val adjustedCloudDensity = (profile.cloudDensity * cloudFactor).coerceIn(0f, 1f)
+        val adjustedCloudDarkness = (profile.cloudDarkness * cloudFactor).coerceIn(0f, 1f)
+
+        // Source photos are typically shot in bright daylight: darken them towards night
+        // colors as the sky darkens at night AND as cloud cover/darkness increases, so
+        // overcast/rainy/stormy scenes don't look like a sunny photo with rain on top.
+        val nightDimming = 1f - safeDaylight
+        val cloudDimming = adjustedCloudDensity * adjustedCloudDarkness
+        val photoDimming = (1f - (1f - nightDimming) * (1f - cloudDimming)).coerceIn(0f, 1f)
 
         return WallpaperSceneState(
             weatherKind = normalizedKind,
@@ -125,15 +139,15 @@ object WallpaperSceneStateFactory {
             windGustMetersPerSecond = safeWindGust,
             windDirectionDegrees = normalizeDegrees(windDirectionDegrees),
             windFactor = windFactor(family, safeWindSpeed, safeWindGust),
-            cloudDensity = (profile.cloudDensity * cloudFactor).coerceIn(0f, 1f),
-            cloudDarkness = (profile.cloudDarkness * cloudFactor).coerceIn(0f, 1f),
+            cloudDensity = adjustedCloudDensity,
+            cloudDarkness = adjustedCloudDarkness,
             precipitationIntensity = adjustedPrecipitationIntensity,
             fogIntensity = profile.fogIntensity,
             hazeIntensity = profile.hazeIntensity,
             thunderIntensity = profile.thunderIntensity,
             glassRainIntensity = adjustedGlassRainIntensity,
             precipitationTiltSlope = precipitationTiltSlope(safeWindSpeed, safeWindGust, windDirectionDegrees),
-            photoNightTint = 1f - safeDaylight,
+            photoDimming = photoDimming,
             sunriseMillis = sunriseMillis,
             sunsetMillis = sunsetMillis,
             moonriseMillis = moonriseMillis,

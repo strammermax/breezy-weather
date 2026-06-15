@@ -58,7 +58,7 @@ class WallpaperSceneStateTest {
                 state.hazeIntensity,
                 state.thunderIntensity,
                 state.glassRainIntensity,
-                state.photoNightTint,
+                state.photoDimming,
             ).forEach {
                 it.shouldBeGreaterThanOrEqual(0f)
                 it.shouldBeLessThanOrEqual(1f)
@@ -142,11 +142,11 @@ class WallpaperSceneStateTest {
         val invalid = WallpaperSceneStateFactory.create(WeatherView.WEATHER_KIND_CLEAR, Float.NaN)
 
         night.daylight shouldBe 0f
-        night.photoNightTint shouldBe 1f
+        night.photoDimming shouldBe 1f
         day.daylight shouldBe 1f
-        day.photoNightTint shouldBe 0f
+        day.photoDimming shouldBe 0f
         invalid.daylight shouldBe 1f
-        invalid.photoNightTint shouldBe 0f
+        invalid.photoDimming shouldBe 0f
     }
 
     @Test
