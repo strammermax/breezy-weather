@@ -11,6 +11,7 @@ package org.breezyweather.wallpaper
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.RuntimeShader
 import android.graphics.Shader
@@ -230,6 +231,8 @@ internal class WallpaperWeatherEffectRenderer(
         private var qualityBudget = WallpaperQualityProfileFactory.budgetFor(WallpaperQualityProfile.BALANCED)
         private var glassRainProfile = GlassRainFieldFactory.BALANCED
         private var lightningAlpha = 0f
+        private var lightningBoltPath: Path? = null
+        private var lightningBranchPath: Path? = null
         private var fogElapsedSeconds = 0f
         private var starElapsedSeconds = 0f
         private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -313,8 +316,37 @@ internal class WallpaperWeatherEffectRenderer(
                     lightningAlpha -= deltaSec * 2f
                 } else if (random.nextFloat() < 0.005f) {
                     lightningAlpha = 0.8f
+                    generateLightningBolt()
                 }
             }
+        }
+
+        /**
+         * Builds a jagged lightning bolt (with one branch) from the top of the screen
+         * down to a randomly chosen point, for the Canvas fallback's lightning flash.
+         */
+        private fun generateLightningBolt() {
+            if (lastWidth <= 0 || lastHeight <= 0) return
+            val startX = lastWidth * (0.18f + random.nextFloat() * 0.64f)
+            val endY = lastHeight * (0.40f + random.nextFloat() * 0.45f)
+            lightningBoltPath = jaggedLightningPath(startX, 0f, endY)
+
+            val branchStartY = endY * (0.30f + random.nextFloat() * 0.30f)
+            val branchEndY = branchStartY + lastHeight * (0.10f + random.nextFloat() * 0.15f)
+            lightningBranchPath = jaggedLightningPath(startX, branchStartY, branchEndY)
+        }
+
+        private fun jaggedLightningPath(startX: Float, startY: Float, endY: Float): Path {
+            val path = Path()
+            path.moveTo(startX, startY)
+            var x = startX
+            val steps = 12
+            val stepHeight = (endY - startY) / steps
+            for (i in 1..steps) {
+                x += (random.nextFloat() - 0.5f) * lastWidth * 0.06f
+                path.lineTo(x, startY + stepHeight * i)
+            }
+            return path
         }
 
         private fun lerpInt(from: Int, to: Int, t: Float): Int =
@@ -423,11 +455,34 @@ internal class WallpaperWeatherEffectRenderer(
             lastWidth = canvas.width
             lastHeight = canvas.height
 
-            // Draw lightning flash
+            // Draw lightning flash and bolt
             if (lightningAlpha > 0) {
                 paint.color = Color.WHITE
-                paint.alpha = (lightningAlpha * 255 * contribution).toInt()
+                paint.alpha = (lightningAlpha * 255 * contribution * 0.55f).toInt().coerceIn(0, 255)
                 canvas.drawRect(0f, 0f, lastWidth.toFloat(), lastHeight.toFloat(), paint)
+
+                val bolt = lightningBoltPath
+                if (bolt != null) {
+                    paint.style = Paint.Style.STROKE
+                    paint.strokeCap = Paint.Cap.ROUND
+
+                    // Soft outer glow.
+                    paint.color = Color.rgb(220, 235, 255)
+                    paint.strokeWidth = lastWidth * 0.018f
+                    paint.alpha = (lightningAlpha * 255 * contribution * 0.5f).toInt().coerceIn(0, 255)
+                    canvas.drawPath(bolt, paint)
+                    lightningBranchPath?.let { canvas.drawPath(it, paint) }
+
+                    // Bright core.
+                    paint.color = Color.WHITE
+                    paint.strokeWidth = lastWidth * 0.004f
+                    paint.alpha = (lightningAlpha * 255 * contribution).toInt().coerceIn(0, 255)
+                    canvas.drawPath(bolt, paint)
+                    lightningBranchPath?.let { canvas.drawPath(it, paint) }
+
+                    paint.style = Paint.Style.FILL
+                    paint.strokeCap = Paint.Cap.BUTT
+                }
             }
 
             // Snow and hail come from the pre-allocated pool; rain/sleet stay as streaks.
@@ -809,6 +864,45 @@ internal class WallpaperWeatherEffectRenderer(
                 return clamp(stars, 0.0, 1.0);
             }
 
+            // Wandering horizontal displacement for a lightning bolt, built from a few
+            // octaves of value noise so the channel zigzags down the screen instead of
+            // following a straight line.
+            float boltOffset(float y, float seed) {
+                float o = 0.0;
+                o += (noise21(float2(y * 7.0, seed)) - 0.5) * 0.16;
+                o += (noise21(float2(y * 17.0, seed + 5.0)) - 0.5) * 0.07;
+                o += (noise21(float2(y * 41.0, seed + 11.0)) - 0.5) * 0.03;
+                return o;
+            }
+
+            // A single jagged lightning stroke from yStart to yEnd, centered on x0 with
+            // wandering offsets from boltOffset. Returns a bright core plus a soft glow,
+            // faded in/out at both ends so the stroke doesn't end abruptly.
+            float lightningStroke(float2 uv, float x0, float seed, float yStart, float yEnd, float width) {
+                if (uv.y < yStart || uv.y > yEnd) return 0.0;
+                float x = x0 + boltOffset(uv.y, seed) * smoothstep(yStart, yStart + 0.04, uv.y);
+                float dist = abs(uv.x - x);
+                float core = smoothstep(width, width * 0.15, dist);
+                float glow = smoothstep(width * 6.0, 0.0, dist) * 0.35;
+                float fade = smoothstep(yStart, yStart + 0.02, uv.y) * smoothstep(yEnd, yEnd - 0.12, uv.y);
+                return (core + glow) * fade;
+            }
+
+            // Procedural lightning bolt with one branch, repositioned each time the
+            // lightning flash cycle restarts (driven by cycleSeed).
+            float lightningBolt(float2 uv, float cycleSeed) {
+                float x0 = mix(0.18, 0.82, hash21(float2(cycleSeed, 2.0)));
+                float yEnd = mix(0.40, 0.85, hash21(float2(cycleSeed, 4.0)));
+                float bolt = lightningStroke(uv, x0, cycleSeed, 0.0, yEnd, 0.005);
+
+                float yBranch = yEnd * mix(0.30, 0.60, hash21(float2(cycleSeed, 6.0)));
+                float branchX = x0 + boltOffset(yBranch, cycleSeed);
+                float branchEnd = yBranch + mix(0.10, 0.25, hash21(float2(cycleSeed, 8.0)));
+                bolt += lightningStroke(uv, branchX, cycleSeed + 31.0, yBranch, branchEnd, 0.0035) * 0.8;
+
+                return clamp(bolt, 0.0, 1.0);
+            }
+
             float cloudCircle(float2 point, float2 center, float radius, float softness) {
                 return smoothstep(radius + softness, radius - softness, length(point - center));
             }
@@ -1013,11 +1107,21 @@ internal class WallpaperWeatherEffectRenderer(
                 }
 
                 if (weatherPass == 1.0 && mode == 4.0) {
-                    float cycle = fract(time / 8.7);
+                    float cycleLength = 8.7;
+                    float cycle = fract(time / cycleLength);
                     float lightning = smoothstep(0.032, 0.0, abs(cycle - 0.018));
                     lightning += smoothstep(0.018, 0.0, abs(cycle - 0.056)) * 0.45;
                     color = mix(color, float3(0.78, 0.84, 1.0), lightning);
                     alpha = min(0.82, alpha + lightning * 0.48);
+
+                    // Visible lightning bolt: a jagged channel from the cloud base down
+                    // through the sky, flashing in sync with the screen flash above. The
+                    // shape is re-derived each cycle from cycleSeed, so each flash strikes
+                    // a different, randomly placed bolt.
+                    float cycleSeed = floor(time / cycleLength) + effectSeed * 0.137;
+                    float bolt = lightningBolt(uv, cycleSeed) * clamp(lightning, 0.0, 1.0);
+                    color = mix(color, float3(0.92, 0.96, 1.0), bolt);
+                    alpha = max(alpha, min(0.95, alpha + bolt));
                 }
 
                 // Skia composites shader output as PREMULTIPLIED alpha. Returning straight
