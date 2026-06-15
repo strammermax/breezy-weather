@@ -59,6 +59,7 @@ internal class WallpaperParticlePool(
     private var height = 0
     private var initialized = false
     private var windComponent = 0f
+    private var tiltSlope = 0f
     private var activeCount = 0
     private var elapsedSeconds = 0f
 
@@ -75,9 +76,11 @@ internal class WallpaperParticlePool(
         windDirectionDegrees: Float,
         windFactor: Float,
         effectiveLayers: Float,
+        tiltSlope: Float = 0f,
     ) {
         if (width <= 0 || height <= 0) return
         windComponent = WallpaperParticleTrajectory.horizontalWindComponent(windDirectionDegrees, windFactor)
+        this.tiltSlope = if (tiltSlope.isFinite()) tiltSlope else 0f
         activeCount = WallpaperParticleTrajectory.activeParticleCount(kind, effectiveLayers, minActive, capacity)
 
         if (!initialized || width != this.width || height != this.height) {
@@ -93,6 +96,7 @@ internal class WallpaperParticlePool(
             for (i in 0 until capacity) {
                 val depth = depthFromRadius(radius[i])
                 vx[i] = WallpaperParticleTrajectory.driftSpeed(kind, depth, windComponent) +
+                    vy[i] * this.tiltSlope +
                     (random.nextFloat() - 0.5f) * HORIZONTAL_JITTER
             }
         }
@@ -152,6 +156,7 @@ internal class WallpaperParticlePool(
             vy[i] = WallpaperParticleTrajectory.fallSpeed(kind, depth) *
                 (0.9f + random.nextFloat() * 0.2f)
             vx[i] = WallpaperParticleTrajectory.driftSpeed(kind, depth, windComponent) +
+                vy[i] * tiltSlope +
                 (random.nextFloat() - 0.5f) * HORIZONTAL_JITTER
             radius[i] = WallpaperParticleTrajectory.radius(kind, depth) *
                 (0.85f + random.nextFloat() * 0.3f)

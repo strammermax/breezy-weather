@@ -108,6 +108,7 @@ internal object WallpaperSceneRenderer {
             ),
             starField = StarFieldFactory.starFieldParams(locationSeed = seed),
             glassRainIntensity = state.glassRainIntensity,
+            precipitationTiltSlope = state.precipitationTiltSlope,
             qualityProfile = qualityProfile,
             randomSeed = seed,
         )

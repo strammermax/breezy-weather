@@ -45,6 +45,11 @@ internal class WallpaperWeatherEffectRenderer(
     ),
     private val starField: StarFieldParams = StarFieldFactory.starFieldParams(locationSeed = 0L),
     private val glassRainIntensity: Float = 0f,
+    /**
+     * Signed horizontal shear (dx/dy) applied to falling rain/snow/hail, from
+     * [WallpaperSceneState.precipitationTiltSlope]. 0 = straight down.
+     */
+    private val precipitationTiltSlope: Float = 0f,
     private val qualityProfile: WallpaperQualityProfile = WallpaperQualityProfile.BALANCED,
     /** Seeds the Canvas-fallback particle/drop randomness for reproducible visual regression tests (ACT-008). */
     private val randomSeed: Long? = null,
@@ -66,10 +71,10 @@ internal class WallpaperWeatherEffectRenderer(
                 }
             } catch (error: Throwable) {
                 Log.w(LOG_TAG, "Weather RuntimeShader unavailable; using Canvas fallback", error)
-                canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField, glassRainIntensity, randomSeed)
+                canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField, glassRainIntensity, precipitationTiltSlope, randomSeed)
             }
         } else {
-            canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField, glassRainIntensity, randomSeed)
+            canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField, glassRainIntensity, precipitationTiltSlope, randomSeed)
         }
     }
 
@@ -201,6 +206,7 @@ internal class WallpaperWeatherEffectRenderer(
             s.setFloatUniform("glassTrailLength", glassRainProfile.trailLength)
             s.setFloatUniform("glassHighlightStrength", glassRainProfile.highlightStrength)
             s.setFloatUniform("glassRefractionStrength", glassRainProfile.refractionStrength)
+            s.setFloatUniform("precipTilt", precipitationTiltSlope)
             canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), sp)
         } else {
             if (pass == WEATHER_PASS_BACKGROUND) {
@@ -221,6 +227,7 @@ internal class WallpaperWeatherEffectRenderer(
         val fogField: FogFieldParams,
         val starField: StarFieldParams,
         val glassRainIntensity: Float,
+        val precipitationTiltSlope: Float = 0f,
         val randomSeed: Long? = null,
     ) {
         val daytime: Boolean
@@ -276,6 +283,7 @@ internal class WallpaperWeatherEffectRenderer(
                     cloudField.directionDegrees,
                     cloudSpeedFactor,
                     effectiveLayers,
+                    precipitationTiltSlope,
                 )
                 pool.update(deltaSec)
             } else {
@@ -618,7 +626,7 @@ internal class WallpaperWeatherEffectRenderer(
                     (r.nextFloat() - 0.5f) * (18f + layer * 8f) +
                         cloudSpeedFactor * (10f + layer * 8f)
                 WeatherView.WEATHER_KIND_HAIL -> cloudSpeedFactor * (20f + layer * 12f)
-                else -> 20f // Slight slant for rain
+                else -> 20f + speedY * precipitationTiltSlope // Slant for rain, wind-driven
             }
         }
 
@@ -751,6 +759,7 @@ internal class WallpaperWeatherEffectRenderer(
             uniform float glassTrailLength;
             uniform float glassHighlightStrength;
             uniform float glassRefractionStrength;
+            uniform float precipTilt;
 
             float hash21(float2 p) {
                 p += effectSeed * float2(0.017, 0.031);
@@ -772,7 +781,7 @@ internal class WallpaperWeatherEffectRenderer(
 
             float rainLayer(float2 uv, float scale, float speed, float seed) {
                 float2 p = uv * float2(scale, scale * 0.72);
-                p.x += p.y * 0.16;
+                p.x += p.y * (0.16 + precipTilt);
                 float2 cell = floor(p);
                 float2 local = fract(p) - 0.5;
                 float random = hash21(cell + seed);
@@ -830,6 +839,7 @@ internal class WallpaperWeatherEffectRenderer(
             // vertically-elongated pellets rather than round flakes or full streaks.
             float hailLayer(float2 uv, float scale, float speed, float seed) {
                 float2 p = uv * scale;
+                p.x += p.y * precipTilt;
                 p.x -= time * 0.08 * windFactor;
                 p.y -= time * speed * 1.9;
                 float2 cell = floor(p);
@@ -843,6 +853,7 @@ internal class WallpaperWeatherEffectRenderer(
 
             float snowLayer(float2 uv, float scale, float speed, float drift, float seed) {
                 float2 p = uv * scale;
+                p.x += p.y * precipTilt;
                 p.x -= time * drift * windFactor;
                 p.x += sin(time * mix(0.35, 0.72, drift) + p.y * 0.8 + seed) * (0.06 + drift * 0.06);
                 p.y -= time * speed;

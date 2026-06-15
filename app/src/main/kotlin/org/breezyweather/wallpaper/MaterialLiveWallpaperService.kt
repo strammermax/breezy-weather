@@ -737,6 +737,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         } ?: 0L,
                     ),
                     glassRainIntensity = sceneState.glassRainIntensity,
+                    precipitationTiltSlope = sceneState.precipitationTiltSlope,
                     qualityProfile = LiveWallpaperConfigManager(applicationContext).qualityProfile,
                 )
             } else {

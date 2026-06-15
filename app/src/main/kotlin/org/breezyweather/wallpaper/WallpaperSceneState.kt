@@ -10,7 +10,10 @@ package org.breezyweather.wallpaper
 
 import breezyweather.domain.weather.model.Precipitation
 import org.breezyweather.ui.theme.weatherView.WeatherView
+import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.pow
+import kotlin.math.tan
 
 enum class WallpaperWeatherFamily {
     CLEAR,
@@ -43,6 +46,12 @@ data class WallpaperSceneState(
     val hazeIntensity: Float,
     val thunderIntensity: Float,
     val glassRainIntensity: Float,
+    /**
+     * Signed horizontal shear (dx/dy) applied to falling rain/snow/hail, derived from wind
+     * speed (Beaufort scale) and direction. 0 = falls straight down, magnitude grows towards
+     * 1 as wind strength approaches storm force, sign follows the wind direction.
+     */
+    val precipitationTiltSlope: Float,
     val photoNightTint: Float,
     val sunriseMillis: Long?,
     val sunsetMillis: Long?,
@@ -123,6 +132,7 @@ object WallpaperSceneStateFactory {
             hazeIntensity = profile.hazeIntensity,
             thunderIntensity = profile.thunderIntensity,
             glassRainIntensity = adjustedGlassRainIntensity,
+            precipitationTiltSlope = precipitationTiltSlope(safeWindSpeed, safeWindGust, windDirectionDegrees),
             photoNightTint = 1f - safeDaylight,
             sunriseMillis = sunriseMillis,
             sunsetMillis = sunsetMillis,
@@ -259,6 +269,33 @@ object WallpaperSceneStateFactory {
             mm < rainstorm -> lerp(1.15f, 1.3f, (mm - heavy) / (rainstorm - heavy))
             else -> 1.3f
         }
+    }
+
+    /**
+     * Converts wind speed/gust to a signed shear slope for falling precipitation.
+     *
+     * Wind speed is converted to the Beaufort scale ("windkracht") via `B = (v/0.836)^(2/3)`,
+     * then mapped to a tilt fraction matching: 0 Bft -> 0% (straight down), 8 Bft -> 45%,
+     * 12 Bft -> 90% (horizontal). The fraction is converted to an angle (`fraction * 90deg`)
+     * and then to a shear slope (`tan(angle)`), signed by wind direction.
+     */
+    private fun precipitationTiltSlope(
+        windSpeedMetersPerSecond: Float,
+        windGustMetersPerSecond: Float,
+        windDirectionDegrees: Float?,
+    ): Float {
+        val wind = max(windSpeedMetersPerSecond, windGustMetersPerSecond)
+        val beaufort = (wind / 0.836f).toDouble().pow(2.0 / 3.0).toFloat().coerceIn(0f, 12f)
+        val tiltFraction = if (beaufort <= 8f) {
+            beaufort / 8f * 0.45f
+        } else {
+            0.45f + (beaufort - 8f) / 4f * 0.45f
+        }.coerceIn(0f, 0.90f)
+        val angleRadians = Math.toRadians((tiltFraction * 90.0).toDouble())
+        val magnitude = tan(angleRadians).toFloat()
+        val direction = normalizeDegrees(windDirectionDegrees)
+        val sign = if (direction == null || cos(Math.toRadians(direction.toDouble())) >= 0.0) 1f else -1f
+        return magnitude * sign
     }
 
     private fun lerp(from: Float, to: Float, t: Float): Float =
