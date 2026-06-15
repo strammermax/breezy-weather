@@ -57,7 +57,7 @@
     </style>
 
     <style name="BreezyWeatherTheme.Main" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/colorSplashScreen</item>
+        <item name="windowSplashScreenBackground">@android:color/transparent</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
         <item name="postSplashScreenTheme">@style/BreezyWeatherTheme</item>
     </style>
