@@ -70,6 +70,8 @@ import org.breezyweather.BuildConfig
 import org.breezyweather.wallpaper.photo.WallpaperImageStore
 import org.breezyweather.wallpaper.photo.WallpaperRepository
 import java.io.File
+import java.time.Instant
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.TimeZone
 import javax.inject.Inject
@@ -78,6 +80,7 @@ import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.math.tan
@@ -91,6 +94,22 @@ private const val PARALLAX_CELESTIAL_FACTOR = 0.02f
 
 /** ACT-009: minimum interval between periodic debug telemetry summaries. */
 private const val TELEMETRY_LOG_INTERVAL_MILLIS = 5_000L
+
+/** ACT-012: how long an enable/disable toggle or a season change takes to fade in/out. */
+private const val SEASON_GRADING_FADE_MILLIS = 3_000L
+
+/** How strongly [SeasonGrading.warmthShift] shifts the red/blue channel scale. */
+private const val SEASON_GRADING_WARMTH_SCALE = 0.3f
+
+/** How strongly [SeasonGrading.brightnessShift] shifts the RGB channel offsets (0..255 range). */
+private const val SEASON_GRADING_BRIGHTNESS_SCALE = 80f
+
+private val SEASON_GRADING_IDENTITY_MATRIX = floatArrayOf(
+    1f, 0f, 0f, 0f, 0f,
+    0f, 1f, 0f, 0f, 0f,
+    0f, 0f, 1f, 0f, 0f,
+    0f, 0f, 0f, 1f, 0f,
+)
 
 @AndroidEntryPoint
 class MaterialLiveWallpaperService : WallpaperService() {
@@ -170,6 +189,21 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mForegroundNightTint = Float.NaN
         private var mCurrentLocationData: Location? = null
         private var mLoggedForegroundMissing = false
+
+        // ACT-012: experimental seasonal colour/light grading, applied as the last layer on top
+        // of the scene (sky through glass rain drops), before the rotating test label.
+        private var mSeasonGradingEnabled = false
+        private var mSeasonGradingStrength = 0.5f
+        private var mSeasonGradingLoggedSeason: WallpaperSeason? = null
+        private val mSeasonGradingTransition = TransitionManager()
+        private var mSeasonGradingEnabledFrom = 0f
+        private var mSeasonGradingEnabledTo = 0f
+        private var mSeasonGradingFrom = SeasonGrading.NEUTRAL
+        private var mSeasonGradingTo = SeasonGrading.NEUTRAL
+        private val mSeasonGradingLayerPaint = Paint()
+        private val mSeasonGradingTintPaint = Paint()
+        private val mSeasonGradingColorMatrix = ColorMatrix()
+        private var mSeasonGradingMatrixKey: String? = null
 
         // ACT-009: debug-only frame time / lifecycle telemetry, no-op in release builds.
         private val mFrameTelemetry = FrameTelemetry()
@@ -282,6 +316,15 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     val fgOffset = parallaxOffset(PARALLAX_FG_FACTOR)
                     val celestialOffset = parallaxOffset(PARALLAX_CELESTIAL_FACTOR)
 
+                    // ACT-012: optional seasonal grading, applied as the last layer over the
+                    // whole scene (sky through glass rain drops). saveLayer only runs while the
+                    // grading is actually visible, so the disabled path has no extra cost.
+                    val seasonGradingAlpha = updateSeasonGrading(System.currentTimeMillis())
+                    val useSeasonGrading = seasonGradingAlpha > 0.001f
+                    if (useSeasonGrading) {
+                        it.saveLayer(null, mSeasonGradingLayerPaint)
+                    }
+
                     it.withTranslation(-bgOffset, 0f) {
                         mBackground?.draw(it)
                     }
@@ -344,6 +387,12 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     } else {
                         mCurrentEffectRenderer?.drawForegroundWeatherPass(it)
                         mCurrentEffectRenderer?.drawGlassRainDrops(it)
+                    }
+                    if (useSeasonGrading) {
+                        it.restore()
+                        if (mSeasonGradingTintPaint.alpha > 0) {
+                            it.drawRect(0f, 0f, width.toFloat(), height.toFloat(), mSeasonGradingTintPaint)
+                        }
                     }
                     drawRotatingWeatherLabel(it)
                 }
@@ -497,7 +546,112 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 moonriseMillis = mMoonriseMillis,
                 moonsetMillis = mMoonsetMillis,
                 weatherRefreshedAtMillis = mCurrentLocationData?.weather?.base?.refreshTime?.time,
+                latitude = mCurrentLocationData?.latitude,
             )
+        }
+
+        /**
+         * Recomputes the seasonal grading target whenever the season, the experiment flag or the
+         * configured strength changed, advances the enable/disable and season-change fade, and
+         * returns the current overall grading alpha (`0f..1f`). A return value of `0f` means the
+         * grading layer should be skipped entirely this frame.
+         */
+        private fun updateSeasonGrading(now: Long): Float {
+            val date = Instant.ofEpochMilli(now).atZone(ZoneId.systemDefault()).toLocalDate()
+            val season = WallpaperSeasonGrading.seasonFor(date, mSceneState.latitude)
+            val targetGrading = WallpaperSeasonGrading.effectiveGrading(
+                WallpaperSeasonGrading.baseGradingFor(season),
+                mSeasonGradingStrength,
+            )
+            val targetEnabledFactor = if (mSeasonGradingEnabled) 1f else 0f
+
+            if (season != mSeasonGradingLoggedSeason ||
+                targetGrading != mSeasonGradingTo ||
+                targetEnabledFactor != mSeasonGradingEnabledTo
+            ) {
+                // Capture the currently interpolated values as the new starting point, so a
+                // re-trigger (e.g. toggling twice quickly) never produces a jump.
+                val progress = mSeasonGradingTransition.transitionProgress() ?: 1f
+                mSeasonGradingFrom = WallpaperSeasonGrading.lerpGrading(mSeasonGradingFrom, mSeasonGradingTo, progress)
+                mSeasonGradingEnabledFrom = lerp(mSeasonGradingEnabledFrom, mSeasonGradingEnabledTo, progress)
+                mSeasonGradingTo = targetGrading
+                mSeasonGradingEnabledTo = targetEnabledFactor
+                mSeasonGradingTransition.startTransition(if (mAnimate) SEASON_GRADING_FADE_MILLIS else 0L)
+
+                if (season != mSeasonGradingLoggedSeason) {
+                    mSeasonGradingLoggedSeason = season
+                    lwwLog {
+                        val hemisphere = if ((mSceneState.latitude ?: 0.0) < 0.0) "south" else "north"
+                        "season grading season=$season hemisphere=$hemisphere " +
+                            "enabled=$mSeasonGradingEnabled strength=$mSeasonGradingStrength"
+                    }
+                }
+            }
+
+            val progress = mSeasonGradingTransition.transitionProgress() ?: 1f
+            val enabledFactor = lerp(mSeasonGradingEnabledFrom, mSeasonGradingEnabledTo, progress)
+            if (enabledFactor <= 0.001f && mSeasonGradingEnabledTo <= 0.001f) return 0f
+
+            val grading = WallpaperSeasonGrading.lerpGrading(mSeasonGradingFrom, mSeasonGradingTo, progress)
+            val dayNightFactor = WallpaperSeasonGrading.gradingAlpha(true, mSceneState.daylight)
+            val alpha = (enabledFactor * dayNightFactor).coerceIn(0f, 1f)
+            if (alpha <= 0.001f) return 0f
+
+            updateSeasonGradingPaints(grading, alpha)
+            return alpha
+        }
+
+        /**
+         * Rebuilds the reused [mSeasonGradingLayerPaint] color filter and [mSeasonGradingTintPaint]
+         * only when [grading] or [alpha] actually changed (ACT-012 performance requirement: no new
+         * Paint/ColorMatrix/ColorFilter per frame).
+         */
+        private fun updateSeasonGradingPaints(grading: SeasonGrading, alpha: Float) {
+            val key = "${grading.warmthShift}|${grading.brightnessShift}|${grading.saturationShift}|$alpha"
+            if (key == mSeasonGradingMatrixKey) return
+            mSeasonGradingMatrixKey = key
+
+            val gradingMatrix = ColorMatrix()
+            gradingMatrix.setSaturation((1f + grading.saturationShift).coerceAtLeast(0f))
+            val warmthAndBrightness = ColorMatrix(
+                floatArrayOf(
+                    1f + grading.warmthShift * SEASON_GRADING_WARMTH_SCALE,
+                    0f,
+                    0f,
+                    0f,
+                    grading.brightnessShift * SEASON_GRADING_BRIGHTNESS_SCALE,
+                    0f,
+                    1f,
+                    0f,
+                    0f,
+                    grading.brightnessShift * SEASON_GRADING_BRIGHTNESS_SCALE,
+                    0f,
+                    0f,
+                    1f - grading.warmthShift * SEASON_GRADING_WARMTH_SCALE,
+                    0f,
+                    grading.brightnessShift * SEASON_GRADING_BRIGHTNESS_SCALE,
+                    0f,
+                    0f,
+                    0f,
+                    1f,
+                    0f,
+                )
+            )
+            gradingMatrix.postConcat(warmthAndBrightness)
+
+            // Blending an affine matrix with the identity matrix element-wise yields the affine
+            // matrix for `mix(color, gradedColor, alpha)`, in a single colour filter.
+            val gradingValues = gradingMatrix.array
+            val blended = FloatArray(20)
+            for (i in 0 until 20) {
+                blended[i] = SEASON_GRADING_IDENTITY_MATRIX[i] +
+                    (gradingValues[i] - SEASON_GRADING_IDENTITY_MATRIX[i]) * alpha
+            }
+            mSeasonGradingColorMatrix.set(blended)
+            mSeasonGradingLayerPaint.colorFilter = ColorMatrixColorFilter(mSeasonGradingColorMatrix)
+
+            mSeasonGradingTintPaint.color = grading.tint
+            mSeasonGradingTintPaint.alpha = (grading.tintStrength * alpha * 255f).roundToInt().coerceIn(0, 255)
         }
 
         private fun drawRotatingWeatherLabel(canvas: Canvas) {
@@ -1152,6 +1306,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
                             val configManager = LiveWallpaperConfigManager(this@MaterialLiveWallpaperService)
                             mAnimate = configManager.animationsEnabled
                             mParallaxEnabled = configManager.parallaxEnabled
+                            mSeasonGradingEnabled = configManager.seasonGradingEnabled
+                            mSeasonGradingStrength = configManager.seasonGradingStrength
                             setWeatherImplementor(SceneTransitionReason.SURFACE_RECREATED)
 
                             // Drawables are owned by the render thread; serialize mutations there
@@ -1263,6 +1419,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mAutomaticDayNight = configManager.dayNightType == "auto"
             mLastDayNightCheckMinute = Long.MIN_VALUE
             mParallaxEnabled = configManager.parallaxEnabled
+            mSeasonGradingEnabled = configManager.seasonGradingEnabled
+            mSeasonGradingStrength = configManager.seasonGradingStrength
             mCurrentLocationData = location
             lwwLog {
                 "onVisibilityChanged visible=true parallax=$mParallaxEnabled " +

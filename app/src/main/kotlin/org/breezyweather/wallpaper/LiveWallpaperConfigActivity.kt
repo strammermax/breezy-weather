@@ -135,6 +135,10 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
     private lateinit var weatherRefreshedAtValue: MutableState<Long?>
     private lateinit var photoRefreshedAtValue: MutableState<Long?>
 
+    /** ACT-012: experimental seasonal colour/light grading. */
+    private lateinit var seasonGradingEnabledValue: MutableState<Boolean>
+    private lateinit var seasonGradingStrengthValue: MutableState<Float>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -149,6 +153,9 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
 
         animationsEnabledValue = mutableStateOf(liveWallpaperConfigManager.animationsEnabled)
         parallaxEnabledValue = mutableStateOf(liveWallpaperConfigManager.parallaxEnabled)
+
+        seasonGradingEnabledValue = mutableStateOf(liveWallpaperConfigManager.seasonGradingEnabled)
+        seasonGradingStrengthValue = mutableFloatStateOf(liveWallpaperConfigManager.seasonGradingStrength)
 
         wallpaperImageStore = WallpaperImageStore(this)
         photoBackgroundEnabledValue = mutableStateOf(wallpaperImageStore.photoBackgroundEnabled)
@@ -271,7 +278,9 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
             weatherKindValueNow.value,
             dayNightTypeValueNow.value,
             animationsEnabledValue.value,
-            parallaxEnabledValue.value
+            parallaxEnabledValue.value,
+            seasonGradingEnabled = seasonGradingEnabledValue.value,
+            seasonGradingStrength = seasonGradingStrengthValue.value,
         )
         wallpaperImageStore.photoBackgroundEnabled = photoBackgroundEnabledValue.value
         wallpaperImageStore.photoCacheLimitMb = photoCacheLimitMbValue.value.roundToInt()
@@ -361,6 +370,51 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         card = false
                     ) { newValue ->
                         photoBackgroundEnabledValue.value = newValue
+                    }
+                }
+                item {
+                    Column(
+                        modifier = Modifier.padding(
+                            horizontal = dimensionResource(R.dimen.normal_margin)
+                        )
+                    ) {
+                        Text(
+                            text = "Experimental",
+                            color = MaterialTheme.colorScheme.secondary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                item {
+                    SwitchPreferenceView(
+                        title = "Seasonal grading (experimental)",
+                        summary = { _: Context, _: Boolean ->
+                            "Subtle, season-based colour and light shift on top of the scene. " +
+                                "Does not change the background photo."
+                        },
+                        checked = seasonGradingEnabledValue.value,
+                        withState = false,
+                        card = false
+                    ) { newValue ->
+                        seasonGradingEnabledValue.value = newValue
+                    }
+                }
+                if (seasonGradingEnabledValue.value) {
+                    item {
+                        Column(
+                            modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
+                        ) {
+                            Text(
+                                text = "Grading strength: " +
+                                    "${(seasonGradingStrengthValue.value * 100).roundToInt()}%",
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Slider(
+                                value = seasonGradingStrengthValue.value,
+                                onValueChange = { seasonGradingStrengthValue.value = it },
+                                valueRange = 0f..1f,
+                            )
+                        }
                     }
                 }
                 item {

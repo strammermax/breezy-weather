@@ -53,6 +53,11 @@ data class WallpaperSceneState(
      * same timestamp).
      */
     val weatherRefreshedAtMillis: Long? = null,
+    /**
+     * Latitude of the active location, or null if unknown (ACT-012: used to determine the
+     * hemisphere for the seasonal grading experiment; never logged exactly).
+     */
+    val latitude: Double? = null,
 ) {
     val daytime: Boolean
         get() = daylight >= 0.5f
@@ -70,6 +75,7 @@ object WallpaperSceneStateFactory {
         moonriseMillis: Long? = null,
         moonsetMillis: Long? = null,
         weatherRefreshedAtMillis: Long? = null,
+        latitude: Double? = null,
     ): WallpaperSceneState {
         val family = weatherFamily(weatherKind)
         val normalizedKind = weatherKindFor(family)
@@ -99,6 +105,7 @@ object WallpaperSceneStateFactory {
             moonriseMillis = moonriseMillis,
             moonsetMillis = moonsetMillis,
             weatherRefreshedAtMillis = weatherRefreshedAtMillis,
+            latitude = latitude,
         )
     }
 

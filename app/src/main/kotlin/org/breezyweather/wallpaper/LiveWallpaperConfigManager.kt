@@ -26,6 +26,12 @@ class LiveWallpaperConfigManager(context: Context) {
     val parallaxEnabled: Boolean
     val qualityProfile: WallpaperQualityProfile
 
+    /** ACT-012: experimental seasonal colour/light grading, off by default. */
+    val seasonGradingEnabled: Boolean
+
+    /** ACT-012: user-chosen strength in 0f..1f, scaled down by [WallpaperSeasonGrading.MAX_SEASON_GRADING_STRENGTH]. */
+    val seasonGradingStrength: Float
+
     init {
         val config = ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
         weatherKind = config.getString(KEY_WEATHER_KIND, null) ?: "auto"
@@ -33,6 +39,9 @@ class LiveWallpaperConfigManager(context: Context) {
         animationsEnabled = config.getBoolean(KEY_ANIMATIONS_ENABLED, false)
         parallaxEnabled = config.getBoolean(KEY_PARALLAX_ENABLED, false)
         qualityProfile = WallpaperQualityProfileFactory.fromName(config.getString(KEY_QUALITY_PROFILE, null))
+        seasonGradingEnabled = config.getBoolean(KEY_SEASON_GRADING_ENABLED, false)
+        seasonGradingStrength = config.getFloat(KEY_SEASON_GRADING_STRENGTH, DEFAULT_SEASON_GRADING_STRENGTH)
+            .coerceIn(0f, 1f)
     }
 
     companion object {
@@ -42,6 +51,9 @@ class LiveWallpaperConfigManager(context: Context) {
         private const val KEY_ANIMATIONS_ENABLED = "animations_enabled"
         private const val KEY_PARALLAX_ENABLED = "parallax_enabled"
         private const val KEY_QUALITY_PROFILE = "quality_profile"
+        private const val KEY_SEASON_GRADING_ENABLED = "season_grading_enabled"
+        private const val KEY_SEASON_GRADING_STRENGTH = "season_grading_strength"
+        private const val DEFAULT_SEASON_GRADING_STRENGTH = 0.5f
 
         fun update(
             context: Context,
@@ -50,6 +62,8 @@ class LiveWallpaperConfigManager(context: Context) {
             animationsEnabled: Boolean,
             parallaxEnabled: Boolean,
             qualityProfile: WallpaperQualityProfile? = null,
+            seasonGradingEnabled: Boolean? = null,
+            seasonGradingStrength: Float? = null,
         ) {
             val editor = ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
                 .edit()
@@ -59,6 +73,12 @@ class LiveWallpaperConfigManager(context: Context) {
                 .putBoolean(KEY_PARALLAX_ENABLED, parallaxEnabled)
             if (qualityProfile != null) {
                 editor.putString(KEY_QUALITY_PROFILE, qualityProfile.name)
+            }
+            if (seasonGradingEnabled != null) {
+                editor.putBoolean(KEY_SEASON_GRADING_ENABLED, seasonGradingEnabled)
+            }
+            if (seasonGradingStrength != null) {
+                editor.putFloat(KEY_SEASON_GRADING_STRENGTH, seasonGradingStrength.coerceIn(0f, 1f))
             }
             editor.apply()
         }
