@@ -79,6 +79,7 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
+import kotlin.time.Duration.Companion.hours
 
 // Parallax travel per layer as a fraction of the screen width. The same constants drive the
 // extra layer width (updateLayerBounds), the foreground bitmap width (buildPhotoForeground)
@@ -523,6 +524,12 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
         private fun rebuildSceneState(now: Long = System.currentTimeMillis()) {
             val wind = mCurrentLocationData?.weather?.current?.wind
+            // ACT-XXX: the current hour's forecasted precipitation amount (mm) drives how
+            // light/heavy rain, snow, sleet, hail and thunderstorms render, on top of the
+            // base profile for the weather family.
+            val currentHourPrecipitationMillimeters = mCurrentLocationData?.weather?.hourlyForecast
+                ?.firstOrNull { it.date.time >= now - 1.hours.inWholeMilliseconds }
+                ?.precipitation?.total?.inMillimeters?.toFloat()
             mSceneState = WallpaperSceneStateFactory.create(
                 weatherKind = mWeatherKind,
                 daylight = if (mAutomaticDayNight) {
@@ -535,6 +542,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 windSpeedMetersPerSecond = wind?.speed?.inMetersPerSecond?.toFloat() ?: 0f,
                 windGustMetersPerSecond = wind?.gusts?.inMetersPerSecond?.toFloat() ?: 0f,
                 windDirectionDegrees = wind?.degree?.toFloat(),
+                precipitationMillimetersPerHour = currentHourPrecipitationMillimeters,
                 sunriseMillis = mSunriseMillis,
                 sunsetMillis = mSunsetMillis,
                 moonriseMillis = mMoonriseMillis,
@@ -1316,7 +1324,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                             weather = weatherRepository.getWeatherByLocationId(
                                 it.formattedId,
                                 withDaily = true,
-                                withHourly = false,
+                                withHourly = true,
                                 withMinutely = false,
                                 withAlerts = false,
                                 withNormals = false

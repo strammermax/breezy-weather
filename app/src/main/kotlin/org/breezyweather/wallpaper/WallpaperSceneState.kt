@@ -8,6 +8,7 @@
 
 package org.breezyweather.wallpaper
 
+import breezyweather.domain.weather.model.Precipitation
 import org.breezyweather.ui.theme.weatherView.WeatherView
 import kotlin.math.max
 
@@ -70,6 +71,12 @@ object WallpaperSceneStateFactory {
         windSpeedMetersPerSecond: Float = 0f,
         windGustMetersPerSecond: Float = 0f,
         windDirectionDegrees: Float? = null,
+        /**
+         * Forecasted precipitation for the current hour, in mm. Drives how light/heavy
+         * rain, snow, sleet, hail and thunderstorms render, on top of each family's base
+         * profile. Null (no data) leaves the base profile untouched.
+         */
+        precipitationMillimetersPerHour: Float? = null,
         sunriseMillis: Long? = null,
         sunsetMillis: Long? = null,
         moonriseMillis: Long? = null,
@@ -84,6 +91,23 @@ object WallpaperSceneStateFactory {
         val safeWindGust = normalizedNonNegative(windGustMetersPerSecond)
         val profile = effectProfile(family)
 
+        // ACT-XXX: scale the precipitation-driven parts of the profile by how light or
+        // heavy the current hour's forecast actually is, so a drizzle and a downpour of
+        // the same WeatherCode no longer render identically.
+        val precipFactor = precipitationIntensityFactor(precipitationMillimetersPerHour)
+        val isPrecipitating = profile.precipitationIntensity > 0f
+        val adjustedPrecipitationIntensity = if (isPrecipitating) {
+            (profile.precipitationIntensity * precipFactor).coerceIn(0.1f, 1f)
+        } else {
+            profile.precipitationIntensity
+        }
+        val adjustedGlassRainIntensity = if (isPrecipitating && profile.glassRainIntensity > 0f) {
+            (profile.glassRainIntensity * precipFactor).coerceIn(0.1f, 1f)
+        } else {
+            profile.glassRainIntensity
+        }
+        val cloudFactor = if (isPrecipitating) lerp(1f, precipFactor, 0.5f) else 1f
+
         return WallpaperSceneState(
             weatherKind = normalizedKind,
             weatherFamily = family,
@@ -92,13 +116,13 @@ object WallpaperSceneStateFactory {
             windGustMetersPerSecond = safeWindGust,
             windDirectionDegrees = normalizeDegrees(windDirectionDegrees),
             windFactor = windFactor(family, safeWindSpeed, safeWindGust),
-            cloudDensity = profile.cloudDensity,
-            cloudDarkness = profile.cloudDarkness,
-            precipitationIntensity = profile.precipitationIntensity,
+            cloudDensity = (profile.cloudDensity * cloudFactor).coerceIn(0f, 1f),
+            cloudDarkness = (profile.cloudDarkness * cloudFactor).coerceIn(0f, 1f),
+            precipitationIntensity = adjustedPrecipitationIntensity,
             fogIntensity = profile.fogIntensity,
             hazeIntensity = profile.hazeIntensity,
             thunderIntensity = profile.thunderIntensity,
-            glassRainIntensity = profile.glassRainIntensity,
+            glassRainIntensity = adjustedGlassRainIntensity,
             photoNightTint = 1f - safeDaylight,
             sunriseMillis = sunriseMillis,
             sunsetMillis = sunsetMillis,
@@ -210,6 +234,35 @@ object WallpaperSceneStateFactory {
         )
         WallpaperWeatherFamily.WIND -> EffectProfile(cloudDensity = 0.55f, cloudDarkness = 0.15f)
     }
+
+    /**
+     * Maps an hourly precipitation amount (mm) to a relative intensity factor around 1.0,
+     * using the same light/medium/heavy/rainstorm thresholds as the rest of the app
+     * ([Precipitation]'s `PRECIPITATION_HOURLY_*` constants). Missing data (null or <= 0)
+     * returns 1.0 so the family's base profile renders unchanged.
+     */
+    private fun precipitationIntensityFactor(precipitationMillimetersPerHour: Float?): Float {
+        if (precipitationMillimetersPerHour == null || !precipitationMillimetersPerHour.isFinite() ||
+            precipitationMillimetersPerHour <= 0f
+        ) {
+            return 1f
+        }
+        val light = Precipitation.PRECIPITATION_HOURLY_LIGHT.toFloat()
+        val medium = Precipitation.PRECIPITATION_HOURLY_MEDIUM.toFloat()
+        val heavy = Precipitation.PRECIPITATION_HOURLY_HEAVY.toFloat()
+        val rainstorm = Precipitation.PRECIPITATION_HOURLY_RAINSTORM.toFloat()
+        val mm = precipitationMillimetersPerHour
+        return when {
+            mm < light -> lerp(0.55f, 0.80f, mm / light)
+            mm < medium -> lerp(0.80f, 1.0f, (mm - light) / (medium - light))
+            mm < heavy -> lerp(1.0f, 1.15f, (mm - medium) / (heavy - medium))
+            mm < rainstorm -> lerp(1.15f, 1.3f, (mm - heavy) / (rainstorm - heavy))
+            else -> 1.3f
+        }
+    }
+
+    private fun lerp(from: Float, to: Float, t: Float): Float =
+        from + (to - from) * t.coerceIn(0f, 1f)
 
     private fun normalizedUnit(value: Float, fallback: Float): Float =
         if (value.isFinite()) value.coerceIn(0f, 1f) else fallback
