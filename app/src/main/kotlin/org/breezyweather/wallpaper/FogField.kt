@@ -30,6 +30,11 @@ data class FogFieldParams(
     val bands: List<FogBand>,
     val isHaze: Boolean,
     val directionDegrees: Float,
+    /**
+     * Flat fog/haze tint applied across the entire scene (sky and photo foreground
+     * alike), on top of the denser near-horizon [bands]. 0f = no global tint.
+     */
+    val globalAlpha: Float,
 )
 
 /**
@@ -43,6 +48,12 @@ object FogFieldFactory {
     private const val DEFAULT_DIRECTION_DEGREES = 70f
     private const val FOG_MAX_ALPHA = 0.50f
     private const val HAZE_MAX_ALPHA = 0.30f
+
+    // Flat tint covering the whole scene (sky and photo foreground), separate from
+    // the denser near-horizon bands below, so fog/haze reads as a uniform atmosphere
+    // rather than only a low-lying band.
+    private const val FOG_GLOBAL_FRACTION = 0.45f
+    private const val HAZE_GLOBAL_FRACTION = 0.35f
 
     // Lower bands (near the horizon) are taller, denser and slower; higher bands are
     // thinner, lighter and slightly faster.
@@ -82,10 +93,12 @@ object FogFieldFactory {
             )
         }
 
+        val globalFraction = if (isHaze) HAZE_GLOBAL_FRACTION else FOG_GLOBAL_FRACTION
         return FogFieldParams(
             bands = bands,
             isHaze = isHaze,
             directionDegrees = normalizeDegrees(windDirectionDegrees),
+            globalAlpha = (intensity * globalFraction * maxAlpha).coerceIn(0f, 1f),
         )
     }
 

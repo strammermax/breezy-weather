@@ -193,6 +193,7 @@ internal class WallpaperWeatherEffectRenderer(
             s.setFloatUniform("fogBandAlpha", FloatArray(4) { if (it < qualityBudget.fogBands) fogField.bands[it].baseAlpha * qualityBudget.blurStrength else 0f })
             s.setFloatUniform("fogSpeed", FloatArray(4) { fogField.bands[it].speedFactor })
             s.setFloatUniform("fogColor", FogFieldFactory.fogColor(fogField.isHaze, daylight))
+            s.setFloatUniform("fogGlobalAlpha", fogField.globalAlpha * qualityBudget.blurStrength)
             s.setFloatUniform("starVisibility", StarFieldFactory.starVisibility(daylight))
             s.setFloatUniform("starSeed", starField.seed)
             s.setFloatUniform("effectSeed", ((randomSeed ?: 0L) % 100_000L).toFloat())
@@ -371,31 +372,9 @@ internal class WallpaperWeatherEffectRenderer(
 
             drawStars(canvas, contribution)
 
+            // Fog/haze is drawn in the foreground pass (drawForegroundEffects) so it
+            // covers the photo foreground too, matching the AGSL renderer.
             if (weatherKind == WeatherView.WEATHER_KIND_FOG || weatherKind == WeatherView.WEATHER_KIND_HAZE) {
-                val rgb = FogFieldFactory.fogColor(fogField.isHaze, daylight)
-                paint.color = Color.rgb(
-                    (rgb[0] * 255f).toInt().coerceIn(0, 255),
-                    (rgb[1] * 255f).toInt().coerceIn(0, 255),
-                    (rgb[2] * 255f).toInt().coerceIn(0, 255),
-                )
-                val dirSign = if (kotlin.math.cos(Math.toRadians(fogField.directionDegrees.toDouble())) >= 0) 1f else -1f
-                // ACT-007: cap visible bands at qualityBudget.fogBands and scale their
-                // opacity by blurStrength (lower in Battery saver).
-                fogField.bands.take(qualityBudget.fogBands).forEach { band ->
-                    if (band.baseAlpha <= 0f) return@forEach
-                    paint.alpha = (band.baseAlpha * qualityBudget.blurStrength * 255f * contribution).toInt().coerceIn(0, 255)
-                    val centerY = band.verticalCenter * lastHeight
-                    val halfHeight = band.height * lastHeight * 0.5f
-                    val driftX = (fogElapsedSeconds * band.speedFactor * cloudSpeedFactor * dirSign * lastWidth * 0.01f) %
-                        (lastWidth * 0.18f)
-                    canvas.drawOval(
-                        -lastWidth * 0.18f + driftX,
-                        centerY - halfHeight,
-                        lastWidth * 1.18f + driftX,
-                        centerY + halfHeight,
-                        paint,
-                    )
-                }
                 return
             }
 
@@ -451,9 +430,51 @@ internal class WallpaperWeatherEffectRenderer(
             }
         }
 
+        /**
+         * Draws fog/haze as a flat tint over the whole screen (covering the photo
+         * foreground, since this runs in the foreground pass) plus denser
+         * near-horizon bands, mirroring the AGSL renderer's fogHazeBands.
+         */
+        private fun drawFog(canvas: Canvas, contribution: Float) {
+            val rgb = FogFieldFactory.fogColor(fogField.isHaze, daylight)
+            paint.color = Color.rgb(
+                (rgb[0] * 255f).toInt().coerceIn(0, 255),
+                (rgb[1] * 255f).toInt().coerceIn(0, 255),
+                (rgb[2] * 255f).toInt().coerceIn(0, 255),
+            )
+
+            if (fogField.globalAlpha > 0f) {
+                paint.alpha = (fogField.globalAlpha * qualityBudget.blurStrength * 255f * contribution).toInt().coerceIn(0, 255)
+                canvas.drawRect(0f, 0f, lastWidth.toFloat(), lastHeight.toFloat(), paint)
+            }
+
+            val dirSign = if (kotlin.math.cos(Math.toRadians(fogField.directionDegrees.toDouble())) >= 0) 1f else -1f
+            // ACT-007: cap visible bands at qualityBudget.fogBands and scale their
+            // opacity by blurStrength (lower in Battery saver).
+            fogField.bands.take(qualityBudget.fogBands).forEach { band ->
+                if (band.baseAlpha <= 0f) return@forEach
+                paint.alpha = (band.baseAlpha * qualityBudget.blurStrength * 255f * contribution).toInt().coerceIn(0, 255)
+                val centerY = band.verticalCenter * lastHeight
+                val halfHeight = band.height * lastHeight * 0.5f
+                val driftX = (fogElapsedSeconds * band.speedFactor * cloudSpeedFactor * dirSign * lastWidth * 0.01f) %
+                    (lastWidth * 0.18f)
+                canvas.drawOval(
+                    -lastWidth * 0.18f + driftX,
+                    centerY - halfHeight,
+                    lastWidth * 1.18f + driftX,
+                    centerY + halfHeight,
+                    paint,
+                )
+            }
+        }
+
         fun drawForegroundEffects(canvas: Canvas, contribution: Float = 1f) {
             lastWidth = canvas.width
             lastHeight = canvas.height
+
+            if (weatherKind == WeatherView.WEATHER_KIND_FOG || weatherKind == WeatherView.WEATHER_KIND_HAZE) {
+                drawFog(canvas, contribution)
+            }
 
             // Draw lightning flash and bolt
             if (lightningAlpha > 0) {
@@ -698,6 +719,7 @@ internal class WallpaperWeatherEffectRenderer(
             uniform float fogBandAlpha[4];
             uniform float fogSpeed[4];
             uniform float fogColor[3];
+            uniform float fogGlobalAlpha;
             uniform float starVisibility;
             uniform float starSeed;
             uniform float effectSeed;
@@ -836,7 +858,12 @@ internal class WallpaperWeatherEffectRenderer(
                         * (1.0 - smoothstep(fogVerticalCenter[i] + halfHeight * 0.3, fogVerticalCenter[i] + halfHeight, uv.y));
                     result += band * (0.55 + n * 0.45) * fogBandAlpha[i];
                 }
-                return result;
+                // Flat tint across the whole scene (including the photo foreground,
+                // drawn before this pass), so fog/haze reads as a uniform atmosphere
+                // rather than only a low-lying band near the horizon.
+                float globalNoise = noise21(float2(aspectUv.x * 1.6 + time * 0.01, uv.y * 2.4));
+                result += fogGlobalAlpha * (0.8 + globalNoise * 0.2);
+                return clamp(result, 0.0, 1.0);
             }
 
             // ACT-014: procedural (not astronomically-accurate) star field, three layers of
@@ -1001,7 +1028,7 @@ internal class WallpaperWeatherEffectRenderer(
                 // ACT-005: fog and haze as horizontal depth bands, fading near the
                 // horizon. Each band's alpha already accounts for fog/haze intensity,
                 // so a fully clear scene (fogBandCount == 0) draws nothing here.
-                if (weatherPass == 1.0 && (mode == 3.0 || mode == 10.0) && fogBandCount > 0.0) {
+                if (weatherPass == 1.0 && (mode == 3.0 || mode == 10.0) && (fogBandCount > 0.0 || fogGlobalAlpha > 0.0)) {
                     float bands = fogHazeBands(uv, aspectUv);
                     alpha += bands;
                     color = float3(fogColor[0], fogColor[1], fogColor[2]);
