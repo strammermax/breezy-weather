@@ -21,6 +21,7 @@ import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -115,6 +116,7 @@ import org.breezyweather.ui.details.components.DetailsWind
 import org.breezyweather.ui.theme.ThemeManager
 import org.breezyweather.ui.theme.compose.BreezyWeatherTheme
 import org.breezyweather.ui.theme.weatherView.WeatherViewController
+import org.breezyweather.wallpaper.CelestialTiming
 import org.breezyweather.wallpaper.WallpaperSceneSnapshot
 import org.breezyweather.wallpaper.WallpaperSceneStateFactory
 import org.breezyweather.wallpaper.photo.WallpaperRepository
@@ -152,17 +154,23 @@ internal fun DailyWeatherScreen(
             return@LaunchedEffect
         }
 
-        val daily = weather.dailyForecast.firstOrNull()
+        // Resolve sun/moon intervals the same way the live wallpaper does, so the snapshot
+        // background renders the same sky gradient (rather than naively trusting the first
+        // daily forecast entry, whose astro times may already lie outside "now").
+        val now = System.currentTimeMillis()
+        val sunInterval = CelestialTiming.closestAstroInterval(CelestialTiming.sunIntervals(location, now), now)
+            ?: CelestialTiming.approximateSunInterval(location, now)
+        val moonInterval = CelestialTiming.closestAstroInterval(CelestialTiming.moonIntervals(location, now), now)
         val sceneState = WallpaperSceneStateFactory.create(
             weatherKind = WeatherViewController.getWeatherKind(location),
             daylight = if (location.locationIsDaylight) 1f else 0f,
             windSpeedMetersPerSecond = weather.current?.wind?.speed?.value?.toFloat() ?: 0f,
             windGustMetersPerSecond = weather.current?.wind?.gusts?.value?.toFloat() ?: 0f,
             windDirectionDegrees = weather.current?.wind?.degree?.toFloat(),
-            sunriseMillis = daily?.sun?.riseDate?.time,
-            sunsetMillis = daily?.sun?.setDate?.time,
-            moonriseMillis = daily?.moon?.riseDate?.time,
-            moonsetMillis = daily?.moon?.setDate?.time
+            sunriseMillis = sunInterval?.first,
+            sunsetMillis = sunInterval?.second,
+            moonriseMillis = moonInterval?.first,
+            moonsetMillis = moonInterval?.second
         )
 
         val photo = withContext(Dispatchers.IO) {
@@ -254,17 +262,26 @@ internal fun DailyWeatherScreen(
                             todayIndex = loc.weather!!.todayIndex
                         )
                         HorizontalPager(state = pagerState) { page ->
-                            DailyPagerContent(
-                                location = loc,
-                                selected = page,
-                                selectedChart = detailsUiState.selectedChart,
-                                setSelectedChart = { chart -> detailsViewModel.setSelectedChart(chart) },
-                                selectedPollutant = detailsUiState.selectedPollutant,
-                                setSelectedPollutant = { pollutant ->
-                                    detailsViewModel.setSelectedPollutant(pollutant)
-                                },
-                                pollenIndexSource = detailsViewModel.getPollenIndexSource(loc)
-                            )
+                            // Subtle translucent backdrop behind the detail content, so the
+                            // text remains readable over the sky-gradient/photo background
+                            // (lighter than the glass card background used for the tabs).
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(colorResource(R.color.colorGlassContentBackground))
+                            ) {
+                                DailyPagerContent(
+                                    location = loc,
+                                    selected = page,
+                                    selectedChart = detailsUiState.selectedChart,
+                                    setSelectedChart = { chart -> detailsViewModel.setSelectedChart(chart) },
+                                    selectedPollutant = detailsUiState.selectedPollutant,
+                                    setSelectedPollutant = { pollutant ->
+                                        detailsViewModel.setSelectedPollutant(pollutant)
+                                    },
+                                    pollenIndexSource = detailsViewModel.getPollenIndexSource(loc)
+                                )
+                            }
                         }
                     }
                 }

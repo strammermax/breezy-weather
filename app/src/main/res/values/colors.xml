@@ -88,6 +88,11 @@
     <color name="colorGlassCardBackground">#40FFFFFF</color>
     <color name="colorGlassCardStroke">#59FFFFFF</color>
 
+    <!-- Lighter glass overlay behind the detail screen content, for text readability
+         over the sky-gradient/photo background without obscuring it as much as
+         colorGlassCardBackground. -->
+    <color name="colorGlassContentBackground">#20FFFFFF</color>
+
     <!-- ACT-014: top bar text/icon color over the sky-gradient background. -->
     <color name="colorGlassTopBarText">#FFFFFF</color>
 
