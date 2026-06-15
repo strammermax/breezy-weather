@@ -528,6 +528,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         } ?: 0L,
                     ),
                     glassRainIntensity = sceneState.glassRainIntensity,
+                    qualityProfile = LiveWallpaperConfigManager(applicationContext).qualityProfile,
                 )
             } else {
                 null
@@ -1140,6 +1141,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 mOrientationListener.disable()
                 return
             }
+
+            // ACT-007: a device that degraded quality before going invisible starts
+            // fresh at the chosen profile when it becomes visible again.
+            mCurrentEffectRenderer?.resetQualityDegradation()
+            mOutgoingEffectRenderer?.resetQualityDegradation()
 
             val settingsManager = SettingsManager.getInstance(applicationContext)
             val configManager = LiveWallpaperConfigManager(this@MaterialLiveWallpaperService)

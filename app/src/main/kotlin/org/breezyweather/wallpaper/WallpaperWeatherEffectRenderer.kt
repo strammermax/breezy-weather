@@ -44,6 +44,7 @@ internal class WallpaperWeatherEffectRenderer(
     ),
     private val starField: StarFieldParams = StarFieldFactory.starFieldParams(locationSeed = 0L),
     private val glassRainIntensity: Float = 0f,
+    private val qualityProfile: WallpaperQualityProfile = WallpaperQualityProfile.BALANCED,
 ) {
     private var daylight = daylight.coerceIn(0f, 1f)
     private val daytime: Boolean
@@ -71,23 +72,51 @@ internal class WallpaperWeatherEffectRenderer(
 
     private var elapsedSeconds = 0f
     private var precipitationLayerCount = DEFAULT_PRECIPITATION_LAYERS
+    private val degradationTracker = QualityDegradationTracker(qualityProfile)
+    private var qualityBudget = WallpaperQualityProfileFactory.budgetFor(qualityProfile)
+    private val precipitationLayerCap: Float
+        get() = when (qualityBudget.maxSnowParticles) {
+            WallpaperQualityProfileFactory.budgetFor(WallpaperQualityProfile.BATTERY_SAVER).maxSnowParticles -> 14f
+            WallpaperQualityProfileFactory.budgetFor(WallpaperQualityProfile.HIGH).maxSnowParticles -> MAX_PRECIPITATION_LAYERS
+            else -> 17f
+        }
     private val glassRainProfile: GlassRainProfile
-        get() = GlassRainFieldFactory.profileFor(precipitationLayerCount)
+        get() {
+            val profile = GlassRainFieldFactory.profileFor(precipitationLayerCount)
+            return if (profile.maxDrops > qualityBudget.maxGlassDrops) {
+                profile.copy(maxDrops = qualityBudget.maxGlassDrops)
+            } else {
+                profile
+            }
+        }
     private var averageFrameMillis = TARGET_FRAME_MILLIS
     private var qualityEvaluationMillis = 0L
     private var stableFrameMillis = 0L
+    private var canvasUpdateAccumulatorMillis = 0L
 
     fun setDaylight(daylight: Float) {
         this.daylight = daylight.coerceIn(0f, 1f)
         canvasRenderer?.daylight = this.daylight
     }
 
+    /** Resets temporary quality degradation, e.g. when the wallpaper becomes visible again. */
+    fun resetQualityDegradation() {
+        degradationTracker.reset()
+        qualityBudget = WallpaperQualityProfileFactory.budgetFor(degradationTracker.effectiveProfile)
+    }
+
     fun update(intervalMillis: Long, animate: Boolean) {
-        if (animate) {
-            val delta = min(intervalMillis, MAX_FRAME_INTERVAL_MILLIS).coerceAtLeast(0L)
-            elapsedSeconds += delta / 1000f
-            updateAdaptivePrecipitationQuality(intervalMillis)
-            canvasRenderer?.update(delta, precipitationLayerCount)
+        if (!animate) return
+        val delta = min(intervalMillis, MAX_FRAME_INTERVAL_MILLIS).coerceAtLeast(0L)
+        elapsedSeconds += delta / 1000f
+        qualityBudget = WallpaperQualityProfileFactory.budgetFor(degradationTracker.recordFrame(delta.toFloat()))
+        updateAdaptivePrecipitationQuality(intervalMillis)
+
+        canvasUpdateAccumulatorMillis += delta
+        val updateIntervalMillis = 1000L / qualityBudget.effectUpdateHz
+        if (canvasUpdateAccumulatorMillis >= updateIntervalMillis) {
+            canvasRenderer?.update(canvasUpdateAccumulatorMillis, precipitationLayerCount, qualityBudget)
+            canvasUpdateAccumulatorMillis = 0L
         }
     }
 
@@ -106,11 +135,14 @@ internal class WallpaperWeatherEffectRenderer(
                 precipitationLayerCount = (precipitationLayerCount - 2f).coerceAtLeast(MIN_PRECIPITATION_LAYERS)
                 stableFrameMillis = 0L
             } else if (stableFrameMillis >= QUALITY_INCREASE_MILLIS) {
-                precipitationLayerCount = (precipitationLayerCount + 1f).coerceAtMost(MAX_PRECIPITATION_LAYERS)
+                precipitationLayerCount = (precipitationLayerCount + 1f)
+                    .coerceAtMost(MAX_PRECIPITATION_LAYERS)
+                    .coerceAtMost(precipitationLayerCap)
                 stableFrameMillis = 0L
             }
             qualityEvaluationMillis = 0L
         }
+        precipitationLayerCount = precipitationLayerCount.coerceAtMost(precipitationLayerCap)
     }
 
     fun drawBackgroundWeatherPass(canvas: Canvas, alpha: Float = 1f) = draw(canvas, WEATHER_PASS_BACKGROUND, alpha)
@@ -134,17 +166,20 @@ internal class WallpaperWeatherEffectRenderer(
             s.setFloatUniform("weatherPass", pass)
             s.setFloatUniform("precipitationLayers", precipitationLayerCount)
             s.setFloatUniform("transitionAlpha", alpha.coerceIn(0f, 1f))
-            s.setFloatUniform("layerCount", cloudField.layers.count { it.alpha > 0f }.toFloat())
+            // ACT-007: layers/bands at or beyond the active quality budget contribute
+            // zero alpha, so they fall out of the cloud/fog blends below without any
+            // other shader changes.
+            s.setFloatUniform("layerCount", cloudField.layers.count { it.alpha > 0f }.toFloat().coerceAtMost(qualityBudget.cloudLayers.toFloat()))
             s.setFloatUniform("layerScale", FloatArray(3) { cloudField.layers[it].scale })
             s.setFloatUniform("layerSpeed", FloatArray(3) { cloudField.layers[it].speedFactor })
-            s.setFloatUniform("layerAlpha", FloatArray(3) { cloudField.layers[it].alpha })
+            s.setFloatUniform("layerAlpha", FloatArray(3) { if (it < qualityBudget.cloudLayers) cloudField.layers[it].alpha else 0f })
             s.setFloatUniform("layerDarkness", FloatArray(3) { cloudField.layers[it].darkness })
             s.setFloatUniform("layerVerticalOffset", FloatArray(3) { cloudField.layers[it].verticalOffset })
             s.setFloatUniform("windDirection", cloudField.directionDegrees)
-            s.setFloatUniform("fogBandCount", fogField.bands.count { it.baseAlpha > 0f }.toFloat())
+            s.setFloatUniform("fogBandCount", fogField.bands.count { it.baseAlpha > 0f }.toFloat().coerceAtMost(qualityBudget.fogBands.toFloat()))
             s.setFloatUniform("fogVerticalCenter", FloatArray(4) { fogField.bands[it].verticalCenter })
             s.setFloatUniform("fogHeight", FloatArray(4) { fogField.bands[it].height })
-            s.setFloatUniform("fogBandAlpha", FloatArray(4) { fogField.bands[it].baseAlpha })
+            s.setFloatUniform("fogBandAlpha", FloatArray(4) { if (it < qualityBudget.fogBands) fogField.bands[it].baseAlpha * qualityBudget.blurStrength else 0f })
             s.setFloatUniform("fogSpeed", FloatArray(4) { fogField.bands[it].speedFactor })
             s.setFloatUniform("fogColor", FogFieldFactory.fogColor(fogField.isHaze, daylight))
             s.setFloatUniform("starVisibility", StarFieldFactory.starVisibility(daylight))
@@ -180,6 +215,7 @@ internal class WallpaperWeatherEffectRenderer(
         private val particles = mutableListOf<Particle>()
         private val clouds = mutableListOf<CloudParticle>()
         private val screenDrops = mutableListOf<ScreenDrop>()
+        private var qualityBudget = WallpaperQualityProfileFactory.budgetFor(WallpaperQualityProfile.BALANCED)
         private var glassRainProfile = GlassRainFieldFactory.BALANCED
         private var lightningAlpha = 0f
         private var fogElapsedSeconds = 0f
@@ -193,7 +229,8 @@ internal class WallpaperWeatherEffectRenderer(
             else -> null
         }
 
-        fun update(deltaMillis: Long, effectiveLayers: Float) {
+        fun update(deltaMillis: Long, effectiveLayers: Float, budget: QualityBudget) {
+            qualityBudget = budget
             val deltaSec = deltaMillis / 1000f
             fogElapsedSeconds += deltaSec
             starElapsedSeconds += deltaSec
@@ -201,9 +238,10 @@ internal class WallpaperWeatherEffectRenderer(
             if (lastWidth <= 0 || lastHeight <= 0) return
 
             // Initial cloud mass layers (ACT-003): a few blobs per visible layer, sized and
-            // positioned from that layer's CloudFieldParams.
+            // positioned from that layer's CloudFieldParams. Capped to qualityBudget.cloudLayers
+            // (ACT-007); the remaining layers are simply never added.
             if (clouds.isEmpty()) {
-                cloudField.layers.forEach { layer ->
+                cloudField.layers.take(qualityBudget.cloudLayers).forEach { layer ->
                     if (layer.alpha <= 0f) return@forEach
                     val count = 2 + (layer.depth * 2f).toInt()
                     repeat(count) {
@@ -297,9 +335,11 @@ internal class WallpaperWeatherEffectRenderer(
                     (rgb[2] * 255f).toInt().coerceIn(0, 255),
                 )
                 val dirSign = if (kotlin.math.cos(Math.toRadians(fogField.directionDegrees.toDouble())) >= 0) 1f else -1f
-                for (band in fogField.bands) {
-                    if (band.baseAlpha <= 0f) continue
-                    paint.alpha = (band.baseAlpha * 255f * contribution).toInt().coerceIn(0, 255)
+                // ACT-007: cap visible bands at qualityBudget.fogBands and scale their
+                // opacity by blurStrength (lower in Battery saver).
+                fogField.bands.take(qualityBudget.fogBands).forEach { band ->
+                    if (band.baseAlpha <= 0f) return@forEach
+                    paint.alpha = (band.baseAlpha * qualityBudget.blurStrength * 255f * contribution).toInt().coerceIn(0, 255)
                     val centerY = band.verticalCenter * lastHeight
                     val halfHeight = band.height * lastHeight * 0.5f
                     val driftX = (fogElapsedSeconds * band.speedFactor * cloudSpeedFactor * dirSign * lastWidth * 0.01f) %
@@ -391,8 +431,10 @@ internal class WallpaperWeatherEffectRenderer(
             ) {
                 if (screenDrops.isEmpty()) {
                     val staticRatio = GlassRainFieldFactory.staticRatio(glassRainIntensity)
-                    repeat(glassRainProfile.maxDrops) { index ->
-                        val isSliding = index >= glassRainProfile.maxDrops * staticRatio
+                    // ACT-007: never exceed the active quality budget's drop count.
+                    val dropCount = glassRainProfile.maxDrops.coerceAtMost(qualityBudget.maxGlassDrops)
+                    repeat(dropCount) { index ->
+                        val isSliding = index >= dropCount * staticRatio
                         screenDrops.add(ScreenDrop(random, lastWidth, lastHeight, isSliding))
                     }
                 }

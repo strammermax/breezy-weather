@@ -24,6 +24,7 @@ class LiveWallpaperConfigManager(context: Context) {
     val dayNightType: String
     val animationsEnabled: Boolean
     val parallaxEnabled: Boolean
+    val qualityProfile: WallpaperQualityProfile
 
     init {
         val config = ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
@@ -31,6 +32,7 @@ class LiveWallpaperConfigManager(context: Context) {
         dayNightType = config.getString(KEY_DAY_NIGHT_TYPE, null) ?: "auto"
         animationsEnabled = config.getBoolean(KEY_ANIMATIONS_ENABLED, false)
         parallaxEnabled = config.getBoolean(KEY_PARALLAX_ENABLED, false)
+        qualityProfile = WallpaperQualityProfileFactory.fromName(config.getString(KEY_QUALITY_PROFILE, null))
     }
 
     companion object {
@@ -39,21 +41,26 @@ class LiveWallpaperConfigManager(context: Context) {
         private const val KEY_DAY_NIGHT_TYPE = "day_night_type"
         private const val KEY_ANIMATIONS_ENABLED = "animations_enabled"
         private const val KEY_PARALLAX_ENABLED = "parallax_enabled"
+        private const val KEY_QUALITY_PROFILE = "quality_profile"
 
         fun update(
             context: Context,
             weatherKind: String?,
             dayNightType: String?,
             animationsEnabled: Boolean,
-            parallaxEnabled: Boolean
+            parallaxEnabled: Boolean,
+            qualityProfile: WallpaperQualityProfile? = null,
         ) {
-            ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
+            val editor = ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
                 .edit()
                 .putString(KEY_WEATHER_KIND, weatherKind)
                 .putString(KEY_DAY_NIGHT_TYPE, dayNightType)
                 .putBoolean(KEY_ANIMATIONS_ENABLED, animationsEnabled)
                 .putBoolean(KEY_PARALLAX_ENABLED, parallaxEnabled)
-                .apply()
+            if (qualityProfile != null) {
+                editor.putString(KEY_QUALITY_PROFILE, qualityProfile.name)
+            }
+            editor.apply()
         }
     }
 }
