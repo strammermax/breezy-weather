@@ -31,6 +31,8 @@ import org.breezyweather.common.options.appearance.HourlyTrendDisplay
 import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.sources.SourceManager
 import org.breezyweather.ui.main.utils.StatementManager
+import org.breezyweather.wallpaper.photo.WallpaperImageStore
+import org.breezyweather.wallpaper.photo.WallpaperPhotoRefreshWorker
 import java.io.File
 
 object Migrations {
@@ -298,6 +300,9 @@ object Migrations {
             WeatherUpdateJob.setupTask(context) // This will also refresh data immediately
             TodayForecastNotificationJob.setupTask(context, false)
             TomorrowForecastNotificationJob.setupTask(context, false)
+            if (WallpaperImageStore(context).photoBackgroundEnabled) {
+                WallpaperPhotoRefreshWorker.setupTask(context)
+            }
 
             return oldVersion != 0
         }

@@ -147,6 +147,25 @@ class WallpaperImageStore(context: Context) {
         locationData = locationData + item
     }
 
+    /**
+     * Timestamp (epoch millis) of the last automatic photo refresh for [locationId], or 0 if the
+     * photo for this location was never (auto-)refreshed (ACT-010 freshness signal for ACT-011).
+     */
+    fun photoRefreshedAtFor(locationId: String): Long = photoRefreshedAtMap().optLong(locationId, 0L)
+
+    /** Records that [locationId]'s photo was (re)checked/refreshed at [timestampMillis]. */
+    fun setPhotoRefreshedAt(locationId: String, timestampMillis: Long) {
+        val map = photoRefreshedAtMap()
+        map.put(locationId, timestampMillis)
+        config.edit().putString(KEY_PHOTO_REFRESHED_AT, map.toString()).apply()
+    }
+
+    private fun photoRefreshedAtMap(): JSONObject = try {
+        config.getString(KEY_PHOTO_REFRESHED_AT, null)?.let(::JSONObject) ?: JSONObject()
+    } catch (e: Throwable) {
+        JSONObject()
+    }
+
     companion object {
         private const val SP_NAME = "live_wallpaper_photo"
         private const val KEY_ENABLED = "photo_background_enabled"
@@ -157,6 +176,7 @@ class WallpaperImageStore(context: Context) {
         private const val KEY_CACHED_ATTRIBUTION = "cached_photo_attribution"
         private const val KEY_RECENT_URLS = "recent_urls"
         private const val KEY_LOCATION_DATA = "location_data"
+        private const val KEY_PHOTO_REFRESHED_AT = "photo_refreshed_at"
 
         /** File name used for the cached background bitmap inside the app files dir. */
         const val CACHE_FILE_NAME = "wallpaper_location_photo.jpg"

@@ -77,6 +77,7 @@ import org.breezyweather.ui.theme.compose.themeRipple
 import org.breezyweather.unit.formatting.format
 import org.breezyweather.wallpaper.photo.PlaceQuery
 import org.breezyweather.wallpaper.photo.WallpaperImageStore
+import org.breezyweather.wallpaper.photo.WallpaperPhotoRefreshWorker
 import org.breezyweather.wallpaper.photo.WallpaperRepository
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
@@ -242,6 +243,11 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         wallpaperImageStore.photoBackgroundEnabled = photoBackgroundEnabledValue.value
         wallpaperImageStore.photoCacheLimitMb = photoCacheLimitMbValue.value.roundToInt()
         wallpaperImageStore.maxCachedPhotosPerLocation = maxPhotosPerLocationValue.value.roundToInt()
+        if (photoBackgroundEnabledValue.value) {
+            WallpaperPhotoRefreshWorker.setupTask(this)
+        } else {
+            WallpaperPhotoRefreshWorker.cancel(this)
+        }
         finish()
     }
 
