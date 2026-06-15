@@ -226,6 +226,7 @@ class HomeFragment : MainModuleFragment() {
         }
 
         binding.refreshLayout.setOnRefreshListener {
+            viewModel.requestPhotoRefresh()
             viewModel.updateWithUpdatingChecking(
                 triggeredByUser = true,
                 checkPermissions = true

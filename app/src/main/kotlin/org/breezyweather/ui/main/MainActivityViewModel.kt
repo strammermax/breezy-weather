@@ -77,6 +77,23 @@ class MainActivityViewModel @Inject constructor(
     // flow
     private val _currentLocation: MutableStateFlow<DayNightLocation?> = MutableStateFlow(null)
     val currentLocation = _currentLocation.asStateFlow()
+
+    /**
+     * ACT-014: set when the user pulls to refresh, so the next live-wallpaper background
+     * snapshot also fetches a different background photo instead of reusing the cached one.
+     */
+    private var photoRefreshRequested = false
+
+    fun requestPhotoRefresh() {
+        photoRefreshRequested = true
+    }
+
+    /** Returns whether a photo refresh was requested, and resets the flag. */
+    fun consumePhotoRefreshRequest(): Boolean {
+        val requested = photoRefreshRequested
+        photoRefreshRequested = false
+        return requested
+    }
     private val _validLocationList = MutableStateFlow<List<Location>>(emptyList())
     val validLocationList = _validLocationList.asStateFlow()
 

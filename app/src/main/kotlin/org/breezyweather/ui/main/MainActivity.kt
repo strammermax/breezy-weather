@@ -83,6 +83,7 @@ import org.breezyweather.common.extensions.conditional
 import org.breezyweather.common.extensions.doOnApplyWindowInsets
 import org.breezyweather.common.extensions.hasPermission
 import org.breezyweather.common.extensions.isLandscape
+import org.breezyweather.common.extensions.isOnline
 import org.breezyweather.common.extensions.isRtl
 import org.breezyweather.common.snackbar.SnackbarContainer
 import org.breezyweather.common.utils.helpers.IntentHelper
@@ -104,7 +105,9 @@ import org.breezyweather.ui.theme.compose.BreezyWeatherTheme
 import org.breezyweather.ui.theme.weatherView.WeatherViewController
 import org.breezyweather.wallpaper.WallpaperSceneSnapshot
 import org.breezyweather.wallpaper.WallpaperSceneStateFactory
+import org.breezyweather.wallpaper.photo.WallpaperImageStore
 import org.breezyweather.wallpaper.photo.WallpaperRepository
+import org.breezyweather.wallpaper.photo.toWallpaperPlaceQuery
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -379,7 +382,7 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.currentLocation.collect {
                     if (it?.location?.weather != null) {
-                        updateLiveWallpaperBackground()
+                        updateLiveWallpaperBackground(forcePhotoRefresh = viewModel.consumePhotoRefreshRequest())
                     }
                 }
             }
@@ -851,7 +854,7 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
      * weather background pass, location photo) for the current location/weather and sets it as
      * the home screen's background behind the ACT-013 glass cards.
      */
-    private fun updateLiveWallpaperBackground() {
+    private fun updateLiveWallpaperBackground(forcePhotoRefresh: Boolean = false) {
         val location = viewModel.currentLocation.value?.location
         val weather = location?.weather
         val width = binding.root.width
@@ -874,8 +877,23 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
         )
 
         lifecycleScope.launch {
+            val repository = WallpaperRepository(this@MainActivity)
+            if (forcePhotoRefresh) {
+                withContext(Dispatchers.IO) {
+                    val store = WallpaperImageStore(this@MainActivity)
+                    if (store.photoBackgroundEnabled && this@MainActivity.isOnline()) {
+                        repository.refreshFor(
+                            latitude = location.latitude,
+                            longitude = location.longitude,
+                            place = location.toWallpaperPlaceQuery(),
+                            forceRefresh = true,
+                            activate = true
+                        )
+                    }
+                }
+            }
             val photo = withContext(Dispatchers.IO) {
-                WallpaperRepository(this@MainActivity).loadCachedBitmap()
+                repository.loadCachedBitmap()
             }
             val bitmap = withContext(Dispatchers.Default) {
                 Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
