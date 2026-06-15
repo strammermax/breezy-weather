@@ -47,6 +47,12 @@ data class WallpaperSceneState(
     val sunsetMillis: Long?,
     val moonriseMillis: Long?,
     val moonsetMillis: Long?,
+    /**
+     * When the weather data behind this snapshot was last refreshed, or null if unknown
+     * (ACT-011 snapshot-consistency: sun/moon, location and weather all derive from this
+     * same timestamp).
+     */
+    val weatherRefreshedAtMillis: Long? = null,
 ) {
     val daytime: Boolean
         get() = daylight >= 0.5f
@@ -63,6 +69,7 @@ object WallpaperSceneStateFactory {
         sunsetMillis: Long? = null,
         moonriseMillis: Long? = null,
         moonsetMillis: Long? = null,
+        weatherRefreshedAtMillis: Long? = null,
     ): WallpaperSceneState {
         val family = weatherFamily(weatherKind)
         val normalizedKind = weatherKindFor(family)
@@ -91,6 +98,7 @@ object WallpaperSceneStateFactory {
             sunsetMillis = sunsetMillis,
             moonriseMillis = moonriseMillis,
             moonsetMillis = moonsetMillis,
+            weatherRefreshedAtMillis = weatherRefreshedAtMillis,
         )
     }
 

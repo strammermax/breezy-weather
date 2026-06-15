@@ -684,6 +684,8 @@
     <string name="widget_live_wallpaper_refresh_ok">Photo updated</string>
     <string name="widget_live_wallpaper_refresh_none">No photo found for this location</string>
     <string name="widget_live_wallpaper_refresh_no_location">No location available yet</string>
+    <string name="live_wallpaper_data_age_unknown">unknown</string>
+    <string name="live_wallpaper_data_stale">stale</string>
     <!-- Precipitation radar -->
     <string name="action_radar">Rain radar</string>
     <string name="forecast_toggle_daily" translatable="false">Ver. 24u</string>

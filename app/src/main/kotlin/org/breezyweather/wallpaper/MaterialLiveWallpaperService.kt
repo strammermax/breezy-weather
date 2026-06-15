@@ -496,6 +496,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 sunsetMillis = mSunsetMillis,
                 moonriseMillis = mMoonriseMillis,
                 moonsetMillis = mMoonsetMillis,
+                weatherRefreshedAtMillis = mCurrentLocationData?.weather?.base?.refreshTime?.time,
             )
         }
 

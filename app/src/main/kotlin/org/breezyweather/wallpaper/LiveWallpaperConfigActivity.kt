@@ -89,7 +89,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import breezyweather.data.location.LocationRepository
+import breezyweather.data.weather.WeatherRepository
 import dagger.hilt.android.AndroidEntryPoint
+import org.breezyweather.common.extensions.getRelativeTime
+import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -101,6 +104,9 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
 
     @Inject
     lateinit var locationRepository: LocationRepository
+
+    @Inject
+    lateinit var weatherRepository: WeatherRepository
 
     private lateinit var wallpaperRepository: WallpaperRepository
     private lateinit var previewBitmapValue: MutableState<Bitmap?>
@@ -124,6 +130,10 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
 
     private lateinit var wallpaperImageStore: WallpaperImageStore
     private lateinit var photoBackgroundEnabledValue: MutableState<Boolean>
+
+    /** ACT-011: when the current location's weather/photo were last refreshed, or null if unknown. */
+    private lateinit var weatherRefreshedAtValue: MutableState<Long?>
+    private lateinit var photoRefreshedAtValue: MutableState<Long?>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -152,6 +162,8 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         photoCacheLimitMbValue = mutableFloatStateOf(wallpaperImageStore.photoCacheLimitMb.toFloat())
         maxPhotosPerLocationValue =
             mutableFloatStateOf(wallpaperImageStore.maxCachedPhotosPerLocation.toFloat())
+        weatherRefreshedAtValue = mutableStateOf(null)
+        photoRefreshedAtValue = mutableStateOf(null)
         // Preload the currently cached photo (decode off the main thread).
         lifecycleScope.launch {
             val (bitmap, location) = withContext(Dispatchers.IO) {
@@ -161,6 +173,14 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
             previewBitmapValue.value = bitmap
             currentLocationValue.value = location?.city?.takeIf { it.isNotBlank() }
                 ?: location?.country.orEmpty()
+
+            if (location != null) {
+                photoRefreshedAtValue.value = wallpaperImageStore.photoRefreshedAtFor(location.formattedId)
+                    .takeIf { it > 0L }
+                weatherRefreshedAtValue.value = withContext(Dispatchers.IO) {
+                    weatherRepository.getWeatherByLocationId(location.formattedId)
+                }?.base?.refreshTime?.time
+            }
         }
 
         setContent {
@@ -230,6 +250,19 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
             }
             refreshBusyValue.value = false
         }
+    }
+
+    /**
+     * Compact "X ago"-style label for [refreshedAtMillis], with a stale marker (ACT-011 section 9).
+     * Never shows an exact timestamp or location.
+     */
+    private fun dataAgeLabel(context: Context, refreshedAtMillis: Long?, isStale: Boolean): String {
+        val age = if (refreshedAtMillis != null) {
+            Date(refreshedAtMillis).getRelativeTime(context)
+        } else {
+            getString(R.string.live_wallpaper_data_age_unknown)
+        }
+        return if (isStale) "$age (${getString(R.string.live_wallpaper_data_stale)})" else age
     }
 
     private fun saveAndFinish() {
@@ -383,6 +416,25 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             },
                         )
                         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
+                        run {
+                            val context = LocalContext.current
+                            val freshness = DataFreshness.create(
+                                weatherRefreshedAtMillis = weatherRefreshedAtValue.value,
+                                photoRefreshedAtMillis = photoRefreshedAtValue.value,
+                                nowMillis = System.currentTimeMillis(),
+                            )
+                            Text(
+                                text = "Weather: " + dataAgeLabel(context, weatherRefreshedAtValue.value, freshness.isWeatherStale),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            Text(
+                                text = "Photo: " + dataAgeLabel(context, photoRefreshedAtValue.value, freshness.isPhotoStale),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.small_margin)))
+                        }
                         if (currentLocationValue.value.isNotBlank()) {
                             Text(
                                 text = "Current location: ${currentLocationValue.value}",
