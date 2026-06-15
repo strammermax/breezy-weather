@@ -75,40 +75,31 @@ internal object WallpaperSceneSnapshot {
     }
 
     private fun skyColors(sceneState: WallpaperSceneState): IntArray {
-        val night = intArrayOf(Color.rgb(3, 12, 35), Color.rgb(31, 55, 94))
-        val dawn = intArrayOf(Color.rgb(78, 78, 126), Color.rgb(242, 145, 104))
-        val day = intArrayOf(Color.rgb(42, 125, 196), Color.rgb(174, 221, 244))
-        val dusk = intArrayOf(Color.rgb(54, 61, 108), Color.rgb(230, 113, 76))
+        val night = SkyColors.NIGHT
+        val dawn = SkyColors.DAWN
+        val day = SkyColors.DAY
+        val dusk = SkyColors.DUSK
 
         val now = System.currentTimeMillis()
-        val sunrise = sceneState.sunriseMillis ?: return if (sceneState.daytime) day else night
-        val sunset = sceneState.sunsetMillis ?: return if (sceneState.daytime) day else night
+        val sunrise = sceneState.sunriseMillis
+        val sunset = sceneState.sunsetMillis
         val transition = 45L * 60L * 1000L
 
-        return when {
-            now < sunrise - transition -> night
-            now < sunrise -> blendSky(night, dawn, fraction(now, sunrise - transition, sunrise))
-            now < sunrise + transition -> blendSky(dawn, day, fraction(now, sunrise, sunrise + transition))
-            now < sunset - transition -> day
-            now < sunset -> blendSky(day, dusk, fraction(now, sunset - transition, sunset))
-            now < sunset + transition -> blendSky(dusk, night, fraction(now, sunset, sunset + transition))
-            else -> night
+        val colors = if (sunrise == null || sunset == null) {
+            if (sceneState.daytime) day else night
+        } else {
+            when {
+                now < sunrise - transition -> night
+                now < sunrise -> SkyColors.blendSky(night, dawn, SkyColors.fraction(now, sunrise - transition, sunrise))
+                now < sunrise + transition -> SkyColors.blendSky(dawn, day, SkyColors.fraction(now, sunrise, sunrise + transition))
+                now < sunset - transition -> day
+                now < sunset -> SkyColors.blendSky(day, dusk, SkyColors.fraction(now, sunset - transition, sunset))
+                now < sunset + transition -> SkyColors.blendSky(dusk, night, SkyColors.fraction(now, sunset, sunset + transition))
+                else -> night
+            }
         }
+        return SkyColors.applyOvercastTint(colors, sceneState.cloudDarkness, sceneState.daytime)
     }
-
-    private fun blendSky(from: IntArray, to: IntArray, amount: Float): IntArray = intArrayOf(
-        blendColor(from[0], to[0], amount),
-        blendColor(from[1], to[1], amount),
-    )
-
-    private fun blendColor(from: Int, to: Int, amount: Float): Int = Color.rgb(
-        (Color.red(from) + (Color.red(to) - Color.red(from)) * amount).toInt(),
-        (Color.green(from) + (Color.green(to) - Color.green(from)) * amount).toInt(),
-        (Color.blue(from) + (Color.blue(to) - Color.blue(from)) * amount).toInt(),
-    )
-
-    private fun fraction(value: Long, start: Long, end: Long): Float =
-        ((value - start).toFloat() / (end - start)).coerceIn(0f, 1f)
 
     private fun drawCelestialBody(canvas: Canvas, width: Int, height: Int, sceneState: WallpaperSceneState) {
         val now = System.currentTimeMillis()
@@ -179,9 +170,9 @@ internal object WallpaperSceneSnapshot {
         val crossFade = 25L * 60L * 1000L
         return when {
             now < sunrise - crossFade -> 0f
-            now < sunrise + crossFade -> fraction(now, sunrise - crossFade, sunrise + crossFade)
+            now < sunrise + crossFade -> SkyColors.fraction(now, sunrise - crossFade, sunrise + crossFade)
             now < sunset - crossFade -> 1f
-            now < sunset + crossFade -> 1f - fraction(now, sunset - crossFade, sunset + crossFade)
+            now < sunset + crossFade -> 1f - SkyColors.fraction(now, sunset - crossFade, sunset + crossFade)
             else -> 0f
         }
     }

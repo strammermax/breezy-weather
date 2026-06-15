@@ -987,37 +987,33 @@ class MaterialLiveWallpaperService : WallpaperService() {
         }
 
         private fun skyColors(now: Long): IntArray {
-            val night = intArrayOf(Color.rgb(3, 12, 35), Color.rgb(31, 55, 94))
-            val dawn = intArrayOf(Color.rgb(78, 78, 126), Color.rgb(242, 145, 104))
-            val day = intArrayOf(Color.rgb(42, 125, 196), Color.rgb(174, 221, 244))
-            val dusk = intArrayOf(Color.rgb(54, 61, 108), Color.rgb(230, 113, 76))
+            val night = SkyColors.NIGHT
+            val dawn = SkyColors.DAWN
+            val day = SkyColors.DAY
+            val dusk = SkyColors.DUSK
 
-            if (!mAutomaticDayNight) return if (mDaytime) day else night
-            val sunrise = mSunriseMillis ?: return if (mDaytime) day else night
-            val sunset = mSunsetMillis ?: return if (mDaytime) day else night
-            val transition = 45L * 60L * 1000L
-
-            return when {
-                now < sunrise - transition -> night
-                now < sunrise -> blendSky(night, dawn, fraction(now, sunrise - transition, sunrise))
-                now < sunrise + transition -> blendSky(dawn, day, fraction(now, sunrise, sunrise + transition))
-                now < sunset - transition -> day
-                now < sunset -> blendSky(day, dusk, fraction(now, sunset - transition, sunset))
-                now < sunset + transition -> blendSky(dusk, night, fraction(now, sunset, sunset + transition))
-                else -> night
+            val colors = if (!mAutomaticDayNight) {
+                if (mDaytime) day else night
+            } else {
+                val sunrise = mSunriseMillis
+                val sunset = mSunsetMillis
+                if (sunrise == null || sunset == null) {
+                    if (mDaytime) day else night
+                } else {
+                    val transition = 45L * 60L * 1000L
+                    when {
+                        now < sunrise - transition -> night
+                        now < sunrise -> SkyColors.blendSky(night, dawn, fraction(now, sunrise - transition, sunrise))
+                        now < sunrise + transition -> SkyColors.blendSky(dawn, day, fraction(now, sunrise, sunrise + transition))
+                        now < sunset - transition -> day
+                        now < sunset -> SkyColors.blendSky(day, dusk, fraction(now, sunset - transition, sunset))
+                        now < sunset + transition -> SkyColors.blendSky(dusk, night, fraction(now, sunset, sunset + transition))
+                        else -> night
+                    }
+                }
             }
+            return SkyColors.applyOvercastTint(colors, mSceneState.cloudDarkness, mDaytime)
         }
-
-        private fun blendSky(from: IntArray, to: IntArray, amount: Float): IntArray = intArrayOf(
-            blendColor(from[0], to[0], amount),
-            blendColor(from[1], to[1], amount),
-        )
-
-        private fun blendColor(from: Int, to: Int, amount: Float): Int = Color.rgb(
-            (Color.red(from) + (Color.red(to) - Color.red(from)) * amount).toInt(),
-            (Color.green(from) + (Color.green(to) - Color.green(from)) * amount).toInt(),
-            (Color.blue(from) + (Color.blue(to) - Color.blue(from)) * amount).toInt(),
-        )
 
         private fun fraction(value: Long, start: Long, end: Long): Float =
             ((value - start).toFloat() / (end - start)).coerceIn(0f, 1f)
