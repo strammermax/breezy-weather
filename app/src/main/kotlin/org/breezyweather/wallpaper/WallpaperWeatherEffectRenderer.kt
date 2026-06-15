@@ -353,6 +353,11 @@ internal class WallpaperWeatherEffectRenderer(
         private fun lerpInt(from: Int, to: Int, t: Float): Int =
             (from + (to - from) * t.coerceIn(0f, 1f)).toInt().coerceIn(0, 255)
 
+        private fun smoothstep(edge0: Float, edge1: Float, x: Float): Float {
+            val t = ((x - edge0) / (edge1 - edge0)).coerceIn(0f, 1f)
+            return t * t * (3f - 2f * t)
+        }
+
         private fun spawnInitialParticles() {
             val count = when (weatherKind) {
                 WeatherView.WEATHER_KIND_RAINY, WeatherView.WEATHER_KIND_THUNDERSTORM -> 80
@@ -376,6 +381,25 @@ internal class WallpaperWeatherEffectRenderer(
             // covers the photo foreground too, matching the AGSL renderer.
             if (weatherKind == WeatherView.WEATHER_KIND_FOG || weatherKind == WeatherView.WEATHER_KIND_HAZE) {
                 return
+            }
+
+            // Heavy overcast/rain/thunder coverage: as the densest layer's alpha
+            // approaches full, paint a flat ceiling behind the cloud shapes so the
+            // sky reads as fully overcast with no blue gaps, mirroring the AGSL
+            // shader's coverageFloor.
+            val maxLayerAlpha = cloudField.layers.maxOf { it.alpha }
+            val coverageFloor = (smoothstep(0.65f, 0.95f, maxLayerAlpha) * maxLayerAlpha).coerceIn(0f, 1f)
+            if (coverageFloor > 0f) {
+                val floorDarkness = cloudField.layers.map { it.darkness }.average().toFloat()
+                val light = if (daytime) Triple(255, 255, 255) else Triple(196, 202, 214)
+                val dark = if (daytime) Triple(110, 128, 150) else Triple(58, 70, 92)
+                paint.color = Color.rgb(
+                    lerpInt(light.first, dark.first, floorDarkness),
+                    lerpInt(light.second, dark.second, floorDarkness),
+                    lerpInt(light.third, dark.third, floorDarkness),
+                )
+                paint.alpha = (coverageFloor * 255 * contribution).toInt().coerceIn(0, 255)
+                canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), paint)
             }
 
             // Layered cloud masses (ACT-003): each layer's own alpha/darkness drives a
@@ -1108,6 +1132,20 @@ internal class WallpaperWeatherEffectRenderer(
                         }
                         float weightedDarkness = alphaSum > 0.0 ? darknessSum / alphaSum : 0.0;
                         float weightedShade = alphaSum > 0.0 ? shadeSum / alphaSum : 0.0;
+
+                        // Heavy overcast/rain/thunder coverage: as the densest layer's
+                        // alpha approaches full, raise a flat "ceiling" floor so the
+                        // cloud mask covers the whole sky with no blue gaps, using the
+                        // average layer darkness for any pixels not already covered by
+                        // a cloud shape.
+                        float maxLayerAlpha = max(max(layerAlpha[0], layerAlpha[1]), layerAlpha[2]);
+                        float coverageFloor = smoothstep(0.65, 0.95, maxLayerAlpha) * maxLayerAlpha;
+                        if (coverageFloor > clouds) {
+                            float floorDarkness = (layerDarkness[0] + layerDarkness[1] + layerDarkness[2]) / 3.0;
+                            weightedDarkness = mix(floorDarkness, weightedDarkness, clouds / max(coverageFloor, 0.0001));
+                            clouds = coverageFloor;
+                        }
+
                         float3 fairColor = daylight > 0.5 ? float3(0.94, 0.97, 1.0) : float3(0.48, 0.54, 0.64);
                         // Heavier, greyer storm color for rain/very cloudy/thunder, with a curve
                         // that pushes mid-to-high darkness values towards a flatter grey rather
