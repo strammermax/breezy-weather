@@ -45,6 +45,8 @@ internal class WallpaperWeatherEffectRenderer(
     private val starField: StarFieldParams = StarFieldFactory.starFieldParams(locationSeed = 0L),
     private val glassRainIntensity: Float = 0f,
     private val qualityProfile: WallpaperQualityProfile = WallpaperQualityProfile.BALANCED,
+    /** Seeds the Canvas-fallback particle/drop randomness for reproducible visual regression tests (ACT-008). */
+    private val randomSeed: Long? = null,
 ) {
     private var daylight = daylight.coerceIn(0f, 1f)
     private val daytime: Boolean
@@ -63,10 +65,10 @@ internal class WallpaperWeatherEffectRenderer(
                 }
             } catch (error: Throwable) {
                 Log.w(LOG_TAG, "Weather RuntimeShader unavailable; using Canvas fallback", error)
-                canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField, glassRainIntensity)
+                canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField, glassRainIntensity, randomSeed)
             }
         } else {
-            canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField, glassRainIntensity)
+            canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField, glassRainIntensity, randomSeed)
         }
     }
 
@@ -208,10 +210,11 @@ internal class WallpaperWeatherEffectRenderer(
         val fogField: FogFieldParams,
         val starField: StarFieldParams,
         val glassRainIntensity: Float,
+        val randomSeed: Long? = null,
     ) {
         val daytime: Boolean
             get() = daylight >= 0.5f
-        private val random = Random()
+        private val random = if (randomSeed != null) Random(randomSeed) else Random()
         private val particles = mutableListOf<Particle>()
         private val clouds = mutableListOf<CloudParticle>()
         private val screenDrops = mutableListOf<ScreenDrop>()

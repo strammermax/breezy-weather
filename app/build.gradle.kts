@@ -517,6 +517,9 @@ dependencies {
     testImplementation(libs.bundles.test)
     testRuntimeOnly(libs.junit.platform)
 
+    // visual regression tests (ACT-008).
+    androidTestImplementation(libs.bundles.android.test)
+
     // preference.
     implementation(libs.preference.ktx)
 
