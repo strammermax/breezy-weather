@@ -23,7 +23,6 @@ import breezyweather.domain.location.model.Location
 import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.common.extensions.getHour
-import org.breezyweather.common.extensions.getHourIn24Format
 import org.breezyweather.common.extensions.getThemeColor
 import org.breezyweather.common.options.appearance.DetailScreen
 import org.breezyweather.common.utils.helpers.IntentHelper
@@ -53,10 +52,10 @@ abstract class AbsHourlyTrendAdapter(
                 .append(context.getString(org.breezyweather.unit.R.string.locale_separator))
                 .append(hourly.date.getHour(location, activity))
             hourlyItem.setHourText(hourly.date.getHour(location, activity))
-            val useAccentColorForDate = position == 0 || hourly.date.getHourIn24Format(location) == "0"
-            hourlyItem.setTextColor(
-                context.getThemeColor(if (useAccentColorForDate) R.attr.colorTitleText else R.attr.colorBodyText)
-            )
+            // Hour text is always shown in the title color (white), matching the
+            // live wallpaper background.
+            hourlyItem.setTextColor(context.getThemeColor(R.attr.colorTitleText))
+            hourlyItem.setHighlighted(position == 0)
         }
 
         protected fun onItemClicked(

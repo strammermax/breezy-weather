@@ -73,13 +73,16 @@ abstract class AbsDailyTrendAdapter(
             } else {
                 dailyItem.setWeekText(daily.getWeek(location, context))
             }
+            dailyItem.setHighlighted(position == todayIndex)
             talkBackBuilder.append(context.getString(org.breezyweather.unit.R.string.locale_separator))
                 .append(daily.date.getFormattedFullDayAndMonth(location, context))
             dailyItem.setDateText(daily.date.getFormattedShortDayAndMonth(location, context))
             val useAccentColorForDate = daily.isToday(location) || daily.date > Date()
             dailyItem.setTextColor(
                 activity.getThemeColor(if (useAccentColorForDate) R.attr.colorTitleText else R.attr.colorBodyText),
-                activity.getThemeColor(if (useAccentColorForDate) R.attr.colorBodyText else R.attr.colorCaptionText)
+                // Date text is always shown in the title color (white), matching the
+                // live wallpaper background regardless of whether the day is "today".
+                activity.getThemeColor(R.attr.colorTitleText)
             )
         }
 

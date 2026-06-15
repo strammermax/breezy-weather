@@ -17,10 +17,14 @@
 package org.breezyweather.ui.main.adapters.trend.hourly
 
 import android.content.Context
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Size
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.ContextCompat
 import breezyweather.domain.location.model.Location
 import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
@@ -29,12 +33,13 @@ import org.breezyweather.common.extensions.formatPercent
 import org.breezyweather.common.extensions.getCalendarMonth
 import org.breezyweather.common.extensions.getThemeColor
 import org.breezyweather.common.options.appearance.DetailScreen
+import org.breezyweather.domain.weather.model.drawableArrow
+import org.breezyweather.domain.weather.model.getColor
 import org.breezyweather.ui.common.widgets.trend.TrendRecyclerView
 import org.breezyweather.ui.common.widgets.trend.chart.PolylineAndHistogramView
 import org.breezyweather.ui.theme.ThemeManager
 import org.breezyweather.ui.theme.resource.ResourceHelper
 import org.breezyweather.ui.theme.resource.providers.ResourceProvider
-import org.breezyweather.ui.theme.weatherView.WeatherViewController
 import org.breezyweather.unit.formatting.UnitWidth
 import org.breezyweather.unit.temperature.TemperatureUnit
 import java.util.Date
@@ -100,28 +105,22 @@ class HourlyTemperatureAdapter(
                 null,
                 mHighestTemperature,
                 mLowestTemperature,
-                p?.takeIf { it.value > 0 && showPrecipitationProbability }?.inPercent?.toFloat(),
-                p?.takeIf { it.value > 0 && showPrecipitationProbability }?.formatPercent(activity, UnitWidth.NARROW),
+                null,
+                null,
                 100f,
                 0f
             )
-            val themeColors = ThemeManager
-                .getInstance(itemView.context)
-                .weatherThemeDelegate
-                .getThemeColors(
-                    itemView.context,
-                    WeatherViewController.getWeatherKind(location),
-                    WeatherViewController.isDaylight(location)
-                )
             val lightTheme = ThemeManager.isLightTheme(itemView.context, location)
+            val dayColor = ContextCompat.getColor(itemView.context, R.color.colorTemperatureDay)
+            val nightColor = ContextCompat.getColor(itemView.context, R.color.colorTemperatureNight)
             mPolylineAndHistogramView.setLineColors(
-                themeColors[if (lightTheme) 1 else 2],
-                themeColors[2],
+                dayColor,
+                nightColor,
                 activity.getThemeColor(com.google.android.material.R.attr.colorOutline)
             )
             mPolylineAndHistogramView.setShadowColors(
-                themeColors[if (lightTheme) 1 else 2],
-                themeColors[2],
+                dayColor,
+                nightColor,
                 lightTheme
             )
             mPolylineAndHistogramView.setTextColors(
@@ -130,6 +129,18 @@ class HourlyTemperatureAdapter(
                 activity.getThemeColor(R.attr.colorPrecipitationProbability)
             )
             mPolylineAndHistogramView.setHistogramAlpha(if (lightTheme) 0.2f else 0.5f)
+            hourlyItem.setPrecipitationProbability(
+                p?.takeIf { showPrecipitationProbability }?.formatPercent(activity, UnitWidth.NARROW)
+            )
+            hourlyItem.setPrecipitationProbabilityColor(
+                activity.getThemeColor(R.attr.colorTitleText)
+            )
+            val wind = hourly.wind
+            val windIcon = wind?.drawableArrow?.let {
+                AppCompatResources.getDrawable(activity, it)
+            }
+            windIcon?.colorFilter = PorterDuffColorFilter(wind?.getColor(activity) ?: 0, PorterDuff.Mode.SRC_ATOP)
+            hourlyItem.setWindDirection(windIcon)
             hourlyItem.contentDescription = talkBackBuilder.toString()
             hourlyItem.setOnClickListener {
                 onItemClicked(activity, location, bindingAdapterPosition, DetailScreen.TAG_CONDITIONS)

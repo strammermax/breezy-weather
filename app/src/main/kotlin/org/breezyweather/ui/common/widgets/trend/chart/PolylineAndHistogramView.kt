@@ -74,6 +74,7 @@ class PolylineAndHistogramView @JvmOverloads constructor(
     private val mHistogramTextSize: Int
     private val mChartLineWidth: Int
     private val mTextMargin: Int
+    private val mDotRadius: Float
     private val mLineColors: IntArray = intArrayOf(Color.BLACK, Color.DKGRAY, Color.LTGRAY)
     private val mShadowColors: IntArray = intArrayOf(Color.BLACK, Color.WHITE)
     private var mHighTextColor = 0
@@ -93,6 +94,7 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         mHistogramWidth = getContext().dpToPx(HISTOGRAM_WIDTH_DIP).toInt()
         mChartLineWidth = getContext().dpToPx(CHART_LINE_SIZE_DIP).toInt()
         mTextMargin = getContext().dpToPx(TEXT_MARGIN_DIP).toInt()
+        mDotRadius = getContext().dpToPx(DOT_RADIUS_DIP)
         mPaint.typeface = getContext().getTypefaceFromTextAppearance(R.style.title_text)
         mShaderWrapper = DayNightShaderWrapper(measuredWidth, measuredHeight)
         setShadowColors(Color.BLACK, Color.GRAY, true)
@@ -167,8 +169,18 @@ class PolylineAndHistogramView @JvmOverloads constructor(
             mPath.apply {
                 reset()
                 moveTo(getRTLCompactX(0f), mHighPolylineY[0].toFloat())
-                lineTo(getRTLCompactX((measuredWidth / 2.0).toFloat()), mHighPolylineY[1].toFloat())
-                lineTo(getRTLCompactX(measuredWidth.toFloat()), mHighPolylineY[2].toFloat())
+                smoothLineTo(
+                    getRTLCompactX(0f),
+                    mHighPolylineY[0].toFloat(),
+                    getRTLCompactX((measuredWidth / 2.0).toFloat()),
+                    mHighPolylineY[1].toFloat()
+                )
+                smoothLineTo(
+                    getRTLCompactX((measuredWidth / 2.0).toFloat()),
+                    mHighPolylineY[1].toFloat(),
+                    getRTLCompactX(measuredWidth.toFloat()),
+                    mHighPolylineY[2].toFloat()
+                )
             }
             canvas.drawPath(mPath, mPaint)
         } else if (mHighPolylineValues!![0] == null) {
@@ -198,7 +210,12 @@ class PolylineAndHistogramView @JvmOverloads constructor(
             mPath.apply {
                 reset()
                 moveTo(getRTLCompactX((measuredWidth / 2.0).toFloat()), mHighPolylineY[1].toFloat())
-                lineTo(getRTLCompactX(measuredWidth.toFloat()), mHighPolylineY[2].toFloat())
+                smoothLineTo(
+                    getRTLCompactX((measuredWidth / 2.0).toFloat()),
+                    mHighPolylineY[1].toFloat(),
+                    getRTLCompactX(measuredWidth.toFloat()),
+                    mHighPolylineY[2].toFloat()
+                )
             }
             canvas.drawPath(mPath, mPaint)
         } else {
@@ -228,10 +245,18 @@ class PolylineAndHistogramView @JvmOverloads constructor(
             mPath.apply {
                 reset()
                 moveTo(getRTLCompactX(0f), mHighPolylineY[0].toFloat())
-                lineTo(getRTLCompactX((measuredWidth / 2.0).toFloat()), mHighPolylineY[1].toFloat())
+                smoothLineTo(
+                    getRTLCompactX(0f),
+                    mHighPolylineY[0].toFloat(),
+                    getRTLCompactX((measuredWidth / 2.0).toFloat()),
+                    mHighPolylineY[1].toFloat()
+                )
             }
             canvas.drawPath(mPath, mPaint)
         }
+
+        // dot marker for this day's value.
+        drawDot(canvas, (measuredWidth / 2.0).toFloat(), mHighPolylineY[1].toFloat(), mLineColors[0])
 
         // text.
         mPaint.apply {
@@ -267,11 +292,18 @@ class PolylineAndHistogramView @JvmOverloads constructor(
             mPath.apply {
                 reset()
                 moveTo(getRTLCompactX(0f), mLowPolylineY[0].toFloat())
-                lineTo(
+                smoothLineTo(
+                    getRTLCompactX(0f),
+                    mLowPolylineY[0].toFloat(),
                     getRTLCompactX((measuredWidth / 2.0).toFloat()),
                     mLowPolylineY[1].toFloat()
                 )
-                lineTo(getRTLCompactX(measuredWidth.toFloat()), mLowPolylineY[2].toFloat())
+                smoothLineTo(
+                    getRTLCompactX((measuredWidth / 2.0).toFloat()),
+                    mLowPolylineY[1].toFloat(),
+                    getRTLCompactX(measuredWidth.toFloat()),
+                    mLowPolylineY[2].toFloat()
+                )
             }
             canvas.drawPath(mPath, mPaint)
         } else if (mLowPolylineValues!![0] == null) {
@@ -287,7 +319,12 @@ class PolylineAndHistogramView @JvmOverloads constructor(
                     getRTLCompactX((measuredWidth / 2.0).toFloat()),
                     mLowPolylineY[1].toFloat()
                 )
-                lineTo(getRTLCompactX(measuredWidth.toFloat()), mLowPolylineY[2].toFloat())
+                smoothLineTo(
+                    getRTLCompactX((measuredWidth / 2.0).toFloat()),
+                    mLowPolylineY[1].toFloat(),
+                    getRTLCompactX(measuredWidth.toFloat()),
+                    mLowPolylineY[2].toFloat()
+                )
             }
             canvas.drawPath(mPath, mPaint)
         } else {
@@ -300,13 +337,18 @@ class PolylineAndHistogramView @JvmOverloads constructor(
             mPath.apply {
                 reset()
                 moveTo(getRTLCompactX(0f), mLowPolylineY[0].toFloat())
-                lineTo(
+                smoothLineTo(
+                    getRTLCompactX(0f),
+                    mLowPolylineY[0].toFloat(),
                     getRTLCompactX((measuredWidth / 2.0).toFloat()),
                     mLowPolylineY[1].toFloat()
                 )
             }
             canvas.drawPath(mPath, mPaint)
         }
+
+        // dot marker for this day's value.
+        drawDot(canvas, (measuredWidth / 2.0).toFloat(), mLowPolylineY[1].toFloat(), mLineColors[1])
 
         // text.
         mPaint.apply {
@@ -506,6 +548,25 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         return ((measuredHeight - marginBottom - (canvasHeight * (value - min) / (max - min)))).toInt()
     }
 
+    /**
+     * Adds a smooth (S-shaped) curve segment between two points, with flat tangents at
+     * both ends so consecutive segments connect without a visible kink — gives the
+     * polyline a rounded, "spline" look instead of straight angular segments.
+     */
+    private fun Path.smoothLineTo(fromX: Float, fromY: Float, toX: Float, toY: Float) {
+        val midX = fromX + (toX - fromX) / 2f
+        cubicTo(midX, fromY, midX, toY, toX, toY)
+    }
+
+    private fun drawDot(canvas: Canvas, x: Float, y: Float, @ColorInt color: Int) {
+        mPaint.apply {
+            shader = null
+            style = Paint.Style.FILL
+            this.color = color
+        }
+        canvas.drawCircle(getRTLCompactX(x), y, mDotRadius, mPaint)
+    }
+
     private fun getRTLCompactX(x: Float): Float {
         return if (layoutDirection == LAYOUT_DIRECTION_RTL) (measuredWidth - x) else x
     }
@@ -513,12 +574,13 @@ class PolylineAndHistogramView @JvmOverloads constructor(
     companion object {
         private const val MARGIN_TOP_DIP = 24f
         private const val MARGIN_BOTTOM_DIP = 36f
-        private const val POLYLINE_SIZE_DIP = 5f
+        private const val POLYLINE_SIZE_DIP = 1.5f
         private const val POLYLINE_TEXT_SIZE_DIP = 14f
         private const val HISTOGRAM_WIDTH_DIP = 4.5f
         private const val HISTOGRAM_TEXT_SIZE_DIP = 12f
         private const val CHART_LINE_SIZE_DIP = 1f
         private const val TEXT_MARGIN_DIP = 2f
+        private const val DOT_RADIUS_DIP = 3f
         // ACT-013: glass cards show the live-wallpaper snapshot through their
         // transparent background, so the high/low-temperature area shading (which
         // used to read as a subtle tint on an opaque card) now reads as a dark

@@ -24,6 +24,8 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import androidx.annotation.ColorInt
 import androidx.annotation.IntDef
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.graphics.withTranslation
 import org.breezyweather.R
 import org.breezyweather.common.extensions.dpToPx
@@ -43,11 +45,27 @@ class HourlyTrendItemView @JvmOverloads constructor(
     defStyleRes: Int = 0,
 ) : AbsTrendItemView(context, attrs, defStyleAttr, defStyleRes) {
     private var mChartItem: AbsChartItemView? = null
+    private val mHighlightPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.WHITE
+        alpha = (255 * 0.12f).toInt()
+    }
+    private var mHighlighted = false
+    private val mHighlightRadius: Float
     private val mHourTextPaint = Paint().apply {
         isAntiAlias = true
         textAlign = Paint.Align.CENTER
     }
+    private val mPrecipitationTextPaint = Paint().apply {
+        isAntiAlias = true
+        textAlign = Paint.Align.LEFT
+    }
     private var mHourText: String? = null
+    private var mPrecipitationText: String? = null
+    private val mPrecipitationIconDrawable: Drawable? = ContextCompat.getDrawable(context, R.drawable.ic_water)?.mutate()
+    private val mPrecipitationIconSize: Int
+    private var mWindIconDrawable: Drawable? = null
+    private val mWindIconSize: Int
 
     @IntDef(INVISIBLE, GONE)
     internal annotation class IconVisibility
@@ -63,6 +81,10 @@ class HourlyTrendItemView @JvmOverloads constructor(
     private var mIconLeft = 0f
     private var mIconTop = 0f
     private var mTrendViewTop = 0f
+    private var mPrecipitationRowTop = 0f
+    private var mPrecipitationRowHeight = 0f
+    private var mWindRowTop = 0f
+    private var mWindRowHeight = 0f
     private val mIconSize: Int
     override var chartTop: Int = 0
         private set
@@ -75,8 +97,16 @@ class HourlyTrendItemView @JvmOverloads constructor(
             typeface = getContext().getTypefaceFromTextAppearance(R.style.title_text)
             textSize = getContext().resources.getDimensionPixelSize(R.dimen.title_text_size).toFloat()
         }
+        mPrecipitationTextPaint.apply {
+            typeface = getContext().getTypefaceFromTextAppearance(R.style.content_text)
+            textSize = getContext().resources.getDimensionPixelSize(R.dimen.subtitle_text_size).toFloat()
+        }
         setTextColor(Color.BLACK)
+        setPrecipitationProbabilityColor(Color.GRAY)
         mIconSize = getContext().dpToPx(ICON_SIZE_DIP.toFloat()).toInt()
+        mPrecipitationIconSize = getContext().dpToPx(PRECIPITATION_ICON_SIZE_DIP.toFloat()).toInt()
+        mWindIconSize = getContext().dpToPx(WIND_ICON_SIZE_DIP.toFloat()).toInt()
+        mHighlightRadius = getContext().dpToPx(HIGHLIGHT_RADIUS_DIP.toFloat())
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -104,6 +134,23 @@ class HourlyTrendItemView @JvmOverloads constructor(
             y += mIconSize.toFloat()
             y += iconMargin
         }
+
+        // precipitation probability row (droplet icon + percentage), below the icon.
+        // Reserved unconditionally so the chart below stays aligned across all columns.
+        val precipFontMetrics = mPrecipitationTextPaint.fontMetrics
+        mPrecipitationRowHeight = maxOf(
+            mPrecipitationIconSize.toFloat(),
+            precipFontMetrics.bottom - precipFontMetrics.top
+        )
+        mPrecipitationRowTop = y
+        y += mPrecipitationRowHeight
+        y += textMargin
+
+        // wind direction row (arrow icon), below the precipitation row.
+        mWindRowHeight = mWindIconSize.toFloat()
+        mWindRowTop = y
+        y += mWindRowHeight
+        y += textMargin
 
         // margin bottom.
         val marginBottom = context.dpToPx(TrendRecyclerView.ITEM_MARGIN_BOTTOM_DIP.toFloat())
@@ -136,6 +183,19 @@ class HourlyTrendItemView @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas) {
+        // highlight background for the current hour's column.
+        if (mHighlighted) {
+            canvas.drawRoundRect(
+                0f,
+                0f,
+                measuredWidth.toFloat(),
+                measuredHeight.toFloat(),
+                mHighlightRadius,
+                mHighlightRadius,
+                mHighlightPaint
+            )
+        }
+
         // hour text.
         mHourText?.let {
             mHourTextPaint.color = mContentColor
@@ -148,6 +208,39 @@ class HourlyTrendItemView @JvmOverloads constructor(
                 it.draw(canvas)
             }
         }
+
+        // precipitation probability: droplet icon + percentage, centered as a group.
+        mPrecipitationText?.let { text ->
+            val icon = mPrecipitationIconDrawable
+            val textWidth = mPrecipitationTextPaint.measureText(text)
+            val iconWidth = icon?.let { mPrecipitationIconSize + mPrecipitationIconSize / 4f } ?: 0f
+            val groupWidth = iconWidth + textWidth
+            val groupLeft = (measuredWidth - groupWidth) / 2f
+            val rowCenterY = mPrecipitationRowTop + mPrecipitationRowHeight / 2f
+
+            icon?.let {
+                it.setBounds(0, 0, mPrecipitationIconSize, mPrecipitationIconSize)
+                canvas.withTranslation(groupLeft, rowCenterY - mPrecipitationIconSize / 2f) {
+                    it.draw(canvas)
+                }
+            }
+
+            val textFontMetrics = mPrecipitationTextPaint.fontMetrics
+            canvas.drawText(
+                text,
+                groupLeft + iconWidth,
+                rowCenterY - (textFontMetrics.top + textFontMetrics.bottom) / 2f,
+                mPrecipitationTextPaint
+            )
+        }
+
+        // wind direction arrow, centered below the precipitation row.
+        mWindIconDrawable?.let {
+            it.setBounds(0, 0, mWindIconSize, mWindIconSize)
+            canvas.withTranslation((measuredWidth - mWindIconSize) / 2f, mWindRowTop) {
+                it.draw(canvas)
+            }
+        }
     }
 
     fun setHourText(hourText: String?) {
@@ -157,6 +250,27 @@ class HourlyTrendItemView @JvmOverloads constructor(
 
     fun setTextColor(@ColorInt contentColor: Int) {
         mContentColor = contentColor
+        invalidate()
+    }
+
+    fun setPrecipitationProbability(text: String?) {
+        mPrecipitationText = text
+        invalidate()
+    }
+
+    fun setPrecipitationProbabilityColor(@ColorInt color: Int) {
+        mPrecipitationTextPaint.color = color
+        mPrecipitationIconDrawable?.let { DrawableCompat.setTint(it, color) }
+        invalidate()
+    }
+
+    fun setWindDirection(d: Drawable?) {
+        mWindIconDrawable = d
+        invalidate()
+    }
+
+    fun setHighlighted(highlighted: Boolean) {
+        mHighlighted = highlighted
         invalidate()
     }
 
@@ -189,5 +303,8 @@ class HourlyTrendItemView @JvmOverloads constructor(
         private const val ICON_SIZE_DIP = 32
         private const val TEXT_MARGIN_DIP = 2
         private const val ICON_MARGIN_DIP = 8
+        private const val HIGHLIGHT_RADIUS_DIP = 12
+        private const val PRECIPITATION_ICON_SIZE_DIP = 14
+        private const val WIND_ICON_SIZE_DIP = 16
     }
 }
