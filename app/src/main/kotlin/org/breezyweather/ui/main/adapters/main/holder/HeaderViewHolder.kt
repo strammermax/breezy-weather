@@ -88,60 +88,11 @@ class HeaderViewHolder(parent: ViewGroup) : AbstractMainViewHolder(
             } else {
                 mWeatherText.visibility = View.GONE
             }
-            current.temperature?.temperature?.let {
-                mTemperatureContainer.visibility = View.VISIBLE
-                mTemperatureContainer.contentDescription = it.formatMeasure(
-                    context,
-                    temperatureUnit,
-                    unitWidth = UnitWidth.LONG
-                )
-                mTemperatureFrom = mTemperatureTo
-                mTemperatureTo = it.toDouble(temperatureUnit).roundToInt()
-                mTemperature.isAnimEnabled = itemAnimationEnabled
-                mTemperature.duration = (abs(mTemperatureTo - mTemperatureFrom) * 20.0)
-                    .coerceAtLeast(1000.0) // at least 1 second
-                    .coerceAtMost(2000.0) // no longer than 2 seconds
-                    .milliseconds
-                mTemperatureUnitView.text = temperatureUnit.getNominativeUnit(context)
-            } ?: run {
-                mTemperatureContainer.visibility = View.GONE
-            }
-            current.temperature?.feelsLikeTemperature?.let { feelsLike ->
-                if (current.temperature!!.temperature?.toDouble(temperatureUnit)?.roundToInt() !=
-                    feelsLike.toDouble(temperatureUnit).roundToInt()
-                ) {
-                    mFeelsLike.visibility = View.VISIBLE
-                    mFeelsLike.text = context.getString(
-                        R.string.temperature_feels_like_with_unit,
-                        feelsLike.formatMeasure(
-                            context,
-                            temperatureUnit,
-                            valueWidth = UnitWidth.NARROW,
-                            unitWidth = UnitWidth.NARROW
-                        )
-                    )
-                    mFeelsLike.contentDescription = context.getString(R.string.temperature_feels_like) +
-                        context.getString(R.string.colon_separator) +
-                        feelsLike.formatMeasure(
-                            context,
-                            temperatureUnit,
-                            unitWidth = UnitWidth.LONG
-                        )
-                } else {
-                    mFeelsLike.visibility = View.GONE
-                }
-            } ?: run {
-                mFeelsLike.visibility = View.GONE
-            }
         }
 
-        location.weather!!.getTemperatureRangeSummary(context, location, temperatureUnit)?.let {
-            mTemperatureRange.visibility = View.VISIBLE
-            mTemperatureRange.text = it.first
-            mTemperatureRange.contentDescription = it.second
-        } ?: run {
-            mTemperatureRange.visibility = View.GONE
-        }
+        mTemperatureContainer.visibility = View.GONE
+        mFeelsLike.visibility = View.GONE
+        mTemperatureRange.visibility = View.GONE
     }
 
     override fun getEnterAnimator(pendingAnimatorList: List<Animator>): Animator {
