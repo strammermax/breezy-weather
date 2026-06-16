@@ -18,15 +18,20 @@ package org.breezyweather.ui.main.adapters.main.holder
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
+import android.widget.TextView
 import androidx.annotation.CallSuper
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
 import breezyweather.domain.location.model.Location
 import com.google.android.material.card.MaterialCardView
 import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.common.extensions.dpToPx
+import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.ui.theme.resource.providers.ResourceProvider
 
 @SuppressLint("ObjectAnimatorBinding")
@@ -48,16 +53,40 @@ abstract class AbstractMainCardViewHolder(
         // ACT-013: render the home cards as floating "glass" tiles with a semi-transparent
         // background, a subtle light border and rounded corners, instead of an opaque
         // continuous block. See docs/ACT-013 - Glassmorphic kaartontwerp voor weergegevens.md.
+        val settings = SettingsManager.getInstance(context)
+        val tileCardStyle = settings.tileCardStyle
+        val tileCardAlpha = settings.tileCardAlpha
+        val tileTextColor = settings.tileTextColor
+
         if (itemView is MaterialCardView) {
             (itemView as MaterialCardView).apply {
                 radius = context.dpToPx(GLASS_CORNER_RADIUS_DP)
-                // No elevation: Material's default elevation shadow reads as a thick dark
-                // border against a vivid photo background. Only the thin stroke below remains.
                 cardElevation = 0f
                 strokeWidth = context.dpToPx(GLASS_STROKE_WIDTH_DP).toInt()
                 strokeColor = ContextCompat.getColor(context, R.color.colorGlassCardStroke)
-                setCardBackgroundColor(ContextCompat.getColor(context, R.color.colorGlassCardBackground))
+                val alpha255 = (tileCardAlpha / 100f * 255).toInt()
+                when (tileCardStyle) {
+                    "light" -> setCardBackgroundColor(
+                        ColorUtils.setAlphaComponent(Color.WHITE, alpha255)
+                    )
+                    "dark" -> setCardBackgroundColor(
+                        ColorUtils.setAlphaComponent(Color.BLACK, alpha255)
+                    )
+                    "auto" -> setCardBackgroundColor(
+                        ColorUtils.setAlphaComponent(
+                            ContextCompat.getColor(context, R.color.colorGlassCardBackground),
+                            alpha255
+                        )
+                    )
+                    else -> setCardBackgroundColor(
+                        ContextCompat.getColor(context, R.color.colorGlassCardBackground)
+                    )
+                }
             }
+        }
+        if (tileTextColor != "auto") {
+            val color = if (tileTextColor == "light") Color.WHITE else Color.BLACK
+            applyTextColorToAllViews(itemView, color)
         }
         val params = itemView.layoutParams as MarginLayoutParams
         val sideMargin = context.resources.getDimensionPixelSize(R.dimen.small_margin)
@@ -95,5 +124,14 @@ abstract class AbstractMainCardViewHolder(
         private const val GLASS_CORNER_RADIUS_DP = 22f
         private const val GLASS_STROKE_WIDTH_DP = 1f
         private const val GLASS_CARD_SPACING_DP = 6f
+
+        fun applyTextColorToAllViews(view: View, color: Int) {
+            if (view is TextView) view.setTextColor(color)
+            if (view is ViewGroup) {
+                for (i in 0 until view.childCount) {
+                    applyTextColorToAllViews(view.getChildAt(i), color)
+                }
+            }
+        }
     }
 }

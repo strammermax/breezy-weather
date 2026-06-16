@@ -21,6 +21,8 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.graphics.Canvas
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import androidx.annotation.Px
@@ -39,6 +41,7 @@ import org.breezyweather.common.utils.ColorUtils
 import org.breezyweather.databinding.ActivityCardDisplayManageBinding
 import org.breezyweather.domain.settings.SettingsChangedMessage
 import org.breezyweather.domain.settings.SettingsManager
+import org.breezyweather.common.utils.helpers.IntentHelper
 import org.breezyweather.ui.common.adapters.TagAdapter
 import org.breezyweather.ui.common.decorations.GridMarginsDecoration
 import org.breezyweather.ui.common.decorations.ListDecoration
@@ -112,6 +115,15 @@ class CardDisplayManageActivity : BreezyActivity() {
             )
         )
         mBinding.toolbar.setNavigationOnClickListener { finish() }
+        mBinding.toolbar.inflateMenu(R.menu.activity_card_display_manage)
+        mBinding.toolbar.setOnMenuItemClickListener { item ->
+            if (item.itemId == R.id.action_tile_appearance) {
+                IntentHelper.startTileAppearanceActivity(this)
+                true
+            } else {
+                false
+            }
+        }
         val displayTags = SettingsManager.getInstance(this).cardDisplayList
         mCardDisplayAdapter = CardDisplayAdapter(
             displayTags.toMutableList(),

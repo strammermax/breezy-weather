@@ -40,6 +40,7 @@ import org.breezyweather.ui.settings.activities.HourlyTrendDisplayManageActivity
 import org.breezyweather.ui.settings.activities.PreviewIconActivity
 import org.breezyweather.ui.settings.activities.PrivacyPolicyActivity
 import org.breezyweather.ui.settings.activities.SettingsActivity
+import org.breezyweather.ui.settings.activities.TileAppearanceActivity
 import org.breezyweather.ui.settings.compose.SettingsScreenRouter
 
 /**
@@ -138,6 +139,10 @@ object IntentHelper {
 
     fun startCardDisplayManageActivity(activity: Activity) {
         activity.startActivity(Intent(activity, CardDisplayManageActivity::class.java))
+    }
+
+    fun startTileAppearanceActivity(activity: Activity) {
+        activity.startActivity(Intent(activity, TileAppearanceActivity::class.java))
     }
 
     fun startWidgetTileSelectActivity(activity: Activity) {

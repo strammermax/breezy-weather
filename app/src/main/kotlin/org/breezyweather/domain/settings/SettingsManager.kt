@@ -348,6 +348,28 @@ class SettingsManager private constructor(
             config.getString("background_animation_mode", "system") ?: ""
         )
 
+    // Tile card appearance
+    var tileCardStyle: String
+        set(value) {
+            config.edit().putString("tile_card_style", value).apply()
+            notifySettingsChanged()
+        }
+        get() = config.getString("tile_card_style", null) ?: "none"
+
+    var tileCardAlpha: Int
+        set(value) {
+            config.edit().putInt("tile_card_alpha", value).apply()
+            notifySettingsChanged()
+        }
+        get() = config.getInt("tile_card_alpha", 40)
+
+    var tileTextColor: String
+        set(value) {
+            config.edit().putString("tile_text_color", value).apply()
+            notifySettingsChanged()
+        }
+        get() = config.getString("tile_text_color", null) ?: "auto"
+
     var isGravitySensorEnabled: Boolean
         set(value) {
             config.edit().putBoolean("gravity_sensor_switch", value).apply()

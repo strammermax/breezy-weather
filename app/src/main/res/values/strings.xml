@@ -853,6 +853,9 @@
     <!-- Data is plural here -->
     <string name="settings_main_section_displayed_data">Displayed data</string>
     <string name="settings_main_cards_title">Blocks</string>
+    <string name="settings_tile_appearance_title">Block style</string>
+    <string name="settings_tile_card_alpha_label">Opacity: %d%%</string>
+    <string name="settings_tile_text_color_title">Text color</string>
     <string name="settings_main_daily_trends_title">Daily trends</string>
     <string name="settings_main_hourly_trends_title">Hourly trends</string>
     <string name="settings_main_section_options">Options</string>
