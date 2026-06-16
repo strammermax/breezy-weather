@@ -3,9 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item android:id="@+id/action_camera"
-        android:title="@string/action_camera"  
+        android:title="@string/action_camera"
         android:orderInCategory="40"
         android:icon="@drawable/ic_camera"
+        app:iconTint="@color/colorGlassTopBarText"
         app:showAsAction="always" />
 
     <item android:id="@+id/action_radar"

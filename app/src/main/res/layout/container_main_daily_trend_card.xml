@@ -29,24 +29,44 @@
             android:accessibilityHeading="true"
             android:textAppearance="?attr/textAppearanceTitleMedium"
             android:textColor="?attr/colorSurfaceInverse"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/large_margin"
             android:layout_marginStart="8dp"
             android:text="@string/daily_forecast"
             app:layout_constraintStart_toEndOf="@+id/daily_block_title_icon"
+            app:layout_constraintEnd_toStartOf="@+id/daily_block_controls_row"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <com.google.android.material.button.MaterialButtonGroup
-            android:id="@+id/daily_block_mode_group"
-            style="@style/Widget.Material3Expressive.MaterialButtonGroup.Connected"
-            android:layout_marginTop="@dimen/small_margin"
-            android:layout_marginStart="8dp"
+        <!-- Controls: toggle + dropdown, right-aligned, vertically centred with title -->
+        <LinearLayout
+            android:id="@+id/daily_block_controls_row"
+            android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/large_margin"
             android:gravity="center_vertical"
-            app:layout_constraintTop_toBottomOf="@+id/daily_block_title"
-            app:layout_constraintStart_toStartOf="@+id/daily_block_title_icon" />
+            app:layout_constraintTop_toTopOf="@+id/daily_block_title"
+            app:layout_constraintBottom_toBottomOf="@+id/daily_block_title"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.material.button.MaterialButtonGroup
+                android:id="@+id/daily_block_mode_group"
+                style="@style/Widget.Material3Expressive.MaterialButtonGroup.Connected"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical" />
+
+            <com.google.android.material.button.MaterialButtonGroup
+                android:id="@+id/daily_block_button_group"
+                style="@style/Widget.Material3Expressive.MaterialButtonGroup.Connected"
+                app:overflowMode="menu"
+                android:layout_marginStart="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical" />
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/daily_block_subtitle"
@@ -55,18 +75,7 @@
             android:layout_width="match_parent"
             style="@style/content_text"
             tools:text="Rain Wednesday evening"
-            app:layout_constraintTop_toBottomOf="@+id/daily_block_mode_group" />
-
-        <com.google.android.material.button.MaterialButtonGroup
-            android:id="@+id/daily_block_button_group"
-            style="@style/Widget.Material3Expressive.MaterialButtonGroup.Connected"
-            app:overflowMode="menu"
-            android:layout_marginTop="@dimen/small_margin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            app:layout_constraintTop_toBottomOf="@+id/daily_block_subtitle"
-            app:layout_constraintStart_toStartOf="@+id/daily_block_title_icon" />
+            app:layout_constraintTop_toBottomOf="@+id/daily_block_title" />
 
         <org.breezyweather.ui.common.widgets.trend.TrendRecyclerView
             android:id="@+id/daily_block_trendRecyclerView"
@@ -74,7 +83,7 @@
             android:layout_height="@dimen/daily_trend_item_height"
             android:layout_marginTop="@dimen/small_margin"
             tools:ignore="UnusedAttribute"
-            app:layout_constraintTop_toBottomOf="@+id/daily_block_button_group"
+            app:layout_constraintTop_toBottomOf="@+id/daily_block_subtitle"
             app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

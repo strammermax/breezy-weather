@@ -88,32 +88,30 @@ class DailyViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
         bindTrend()
     }
 
-    /** Builds the "Dag / Per uur" segmented toggle. */
+    /** Single toggle button: label shows the OTHER mode (tap to switch to it). */
     private fun setupModeToggle() {
         modeGroup.children.filter { it is MaterialButton }.toList().forEach { modeGroup.removeView(it) }
         modeGroup.visibility = View.VISIBLE
-        listOf(
-            false to context.getString(R.string.forecast_toggle_daily),
-            true to context.getString(R.string.forecast_toggle_hourly)
-        ).forEach { (isHourly, label) ->
-            modeGroup.addView(
-                MaterialButton(context, null, com.google.android.material.R.attr.materialButtonStyle).apply {
-                    text = label
-                    isCheckable = true
-                    isChecked = isHourly == hourlyMode
-                    setOnClickListener {
-                        if (hourlyMode != isHourly) {
-                            hourlyMode = isHourly
-                            // Trend type lists differ between modes, so reset the selection.
-                            selectedTabValue = null
-                            setSelectedTabCallback?.invoke(null)
-                            setupModeToggle()
-                            bindTrend()
-                        }
-                    }
-                }
-            )
+        // Show the label of the mode you'll switch TO when tapped.
+        val label = if (hourlyMode) {
+            context.getString(R.string.forecast_toggle_daily)
+        } else {
+            context.getString(R.string.forecast_toggle_hourly)
         }
+        modeGroup.addView(
+            MaterialButton(context, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                text = label
+                textSize = 11f
+                isCheckable = false
+                setOnClickListener {
+                    hourlyMode = !hourlyMode
+                    selectedTabValue = null
+                    setSelectedTabCallback?.invoke(null)
+                    setupModeToggle()
+                    bindTrend()
+                }
+            }
+        )
     }
 
     /** Binds the trend chart + trend-type dropdown for the currently selected mode. */
@@ -174,6 +172,7 @@ class DailyViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                 com.google.android.material.R.attr.materialButtonOutlinedStyle
             )
             dropdownButton.isCheckable = false
+            dropdownButton.textSize = 11f
             dropdownButton.text = displayNames.getOrNull(currentIndex)
             dropdownButton.contentDescription = context.getString(R.string.action_more)
             dropdownButton.setOnClickListener { anchor ->

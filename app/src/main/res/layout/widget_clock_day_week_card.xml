@@ -16,7 +16,9 @@
         android:layout_centerInParent="true"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/normal_margin"
+        android:paddingBottom="@dimen/normal_margin">
 
         <RelativeLayout
             android:layout_width="match_parent"

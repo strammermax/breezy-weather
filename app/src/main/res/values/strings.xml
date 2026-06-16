@@ -694,8 +694,8 @@
     <string name="live_wallpaper_data_stale">stale</string>
     <!-- Precipitation radar -->
     <string name="action_radar">Rain radar</string>
-    <string name="forecast_toggle_daily" translatable="false">Ver. 24u</string>
-    <string name="forecast_toggle_hourly" translatable="false">Ver. p1u</string>
+    <string name="forecast_toggle_daily" translatable="false">per dag</string>
+    <string name="forecast_toggle_hourly" translatable="false">per uur</string>
     <string name="radar_title">Precipitation radar</string>
     <string name="radar_section_rain_trend">Rain trend (Buienradar)</string>
     <string name="radar_section_radar_map">Radar map (RainViewer)</string>
