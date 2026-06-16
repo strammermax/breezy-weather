@@ -31,6 +31,7 @@ import org.breezyweather.common.options.appearance.DetailScreen
 import org.breezyweather.common.source.PollenIndexSource
 import org.breezyweather.domain.weather.index.PollutantIndex
 import org.breezyweather.sources.SourceManager
+import org.breezyweather.ui.theme.weatherView.WeatherView
 import javax.inject.Inject
 
 @HiltViewModel
@@ -48,6 +49,14 @@ class DetailsViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(DetailsUiState())
     val uiState: StateFlow<DetailsUiState> = _uiState.asStateFlow()
+
+    // Drives the animated weather layer (WeatherView) in DetailsActivity.
+    private val _backgroundState = MutableStateFlow(WeatherView.WEATHER_KIND_NULL to true)
+    val backgroundState: StateFlow<Pair<Int, Boolean>> = _backgroundState.asStateFlow()
+
+    fun updateBackground(weatherKind: Int, isDaylight: Boolean) {
+        _backgroundState.value = weatherKind to isDaylight
+    }
 
     init {
         reloadLocation()

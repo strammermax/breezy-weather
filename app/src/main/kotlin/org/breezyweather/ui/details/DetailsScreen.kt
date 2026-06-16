@@ -230,6 +230,9 @@ internal fun DailyWeatherScreen(
                     }
                     val wind = if (isToday) weather.current?.wind else halfDay?.wind
 
+                    // Drive the animated WeatherView in DetailsActivity with this day's weather.
+                    detailsViewModel.updateBackground(weatherKind, daylight > 0.5f)
+
                     val sceneState = WallpaperSceneStateFactory.create(
                         weatherKind = weatherKind,
                         daylight = daylight,
