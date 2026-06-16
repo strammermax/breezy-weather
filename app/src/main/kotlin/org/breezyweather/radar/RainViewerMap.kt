@@ -52,7 +52,7 @@ internal object RainViewerMap {
         } else {
             ""
         }
-        val mapBottom = if (compact) "0" else "54px"
+        val mapHeight = if (compact) "100vh" else "calc(100vh - 54px)"
         // Full-mode only: control bar HTML + player functions.
         val ctrlHtml = if (compact) "" else """
 <div class="ctrl">
@@ -90,15 +90,15 @@ internal object RainViewerMap {
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
- html,body{margin:0;padding:0;background:$pageBg;overflow:hidden;height:100%}
- #map{position:absolute;top:0;left:0;right:0;bottom:$mapBottom}
+ html,body{margin:0;padding:0;background:$pageBg;overflow:hidden}
+ #map{width:100%;height:$mapHeight}
  .ts{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:1000;pointer-events:none;
      background:$pillBg;color:$pillFg;padding:4px 12px;border-radius:14px;
      font:13px/1.6 sans-serif;white-space:nowrap;display:flex;align-items:center;gap:6px}
  .badge{padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700;letter-spacing:.3px}
  .badge.live{background:#e53935;color:#fff}
  .badge.fc{background:#1976d2;color:#fff}
- .ctrl{position:absolute;bottom:0;left:0;right:0;height:54px;display:flex;align-items:center;
+ .ctrl{width:100%;height:54px;display:flex;align-items:center;
        padding:0 12px;gap:8px;background:$ctrlBg;box-sizing:border-box}
  .btn{background:none;border:1px solid $btnFg;color:$btnFg;border-radius:8px;
       padding:6px 14px;font-size:15px;cursor:pointer;flex-shrink:0;line-height:1}

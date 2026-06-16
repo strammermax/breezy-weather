@@ -42,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -197,7 +198,7 @@ class RadarActivity : BreezyActivity() {
                         )
                     }
                 } else {
-                    BuienradarGadgetMap(modifier = Modifier.fillMaxWidth().height(480.dp))
+                    BuienradarGadgetMap()
                 }
 
                 // Rain trend chart — only shown for the RainViewer tab
@@ -258,17 +259,21 @@ class RadarActivity : BreezyActivity() {
         )
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint("SetJavaScriptEnabled", "DEPRECATION")
     @Composable
-    private fun BuienradarGadgetMap(modifier: Modifier = Modifier) {
+    private fun BuienradarGadgetMap() {
+        // Gadget designed for 256px wide × 406px tall. Scale up to fill screen width.
+        val screenWidthDp = LocalConfiguration.current.screenWidthDp
+        val scalePercent = (screenWidthDp / 256f * 100).toInt().coerceAtLeast(100)
+        val gadgetHeightDp = (406f * scalePercent / 100f).dp
         AndroidView(
-            modifier = modifier,
+            modifier = Modifier.fillMaxWidth().height(gadgetHeightDp),
             factory = { ctx ->
                 WebView(ctx).apply {
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
-                    settings.loadWithOverviewMode = true
-                    settings.useWideViewPort = true
+                    @Suppress("DEPRECATION")
+                    setInitialScale(scalePercent)
                     webViewClient = WebViewClient()
                     loadUrl("https://gadgets.buienradar.nl/gadget/radarfivedays")
                 }
