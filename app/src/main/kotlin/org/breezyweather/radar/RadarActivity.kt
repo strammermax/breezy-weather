@@ -21,6 +21,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -78,9 +79,10 @@ class RadarActivity : BreezyActivity() {
     private var placeName by mutableStateOf<String?>(null)
     private var latitude by mutableStateOf<Double?>(null)
     private var longitude by mutableStateOf<Double?>(null)
-    private var rainTrend by mutableStateOf<List<RainTrendPoint>>(emptyList()) // Buienradar 2h
-    private var hourlyTrend by mutableStateOf<List<RainTrendPoint>>(emptyList()) // forecast up to 24h
-    private var trendRange by mutableStateOf(2) // selected horizon in hours
+    private var rainTrend by mutableStateOf<List<RainTrendPoint>>(emptyList())
+    private var hourlyTrend by mutableStateOf<List<RainTrendPoint>>(emptyList())
+    private var trendRange by mutableStateOf(2)
+    private var radarSource by mutableStateOf("rainviewer") // "rainviewer" | "buienradar"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -163,42 +165,70 @@ class RadarActivity : BreezyActivity() {
                     return@Column
                 }
 
-                SectionTitle(stringResource(R.string.radar_section_radar_map))
-                val lat = latitude
-                val lon = longitude
-                if (lat != null && lon != null) {
-                    RadarMap(lat, lon, modifier = Modifier.fillMaxWidth().height(480.dp))
-                } else {
-                    Text(
-                        text = stringResource(R.string.radar_frames_unavailable),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                // Source selector
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = radarSource == "rainviewer",
+                        onClick = { radarSource = "rainviewer" },
+                        label = { Text(stringResource(R.string.radar_source_world)) }
+                    )
+                    FilterChip(
+                        selected = radarSource == "buienradar",
+                        onClick = { radarSource = "buienradar" },
+                        label = { Text(stringResource(R.string.radar_source_nl)) }
                     )
                 }
 
-                SectionTitle(stringResource(R.string.radar_section_rain_trend))
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    listOf(2, 3, 6, 12, 24).forEach { hours ->
-                        FilterChip(
-                            selected = trendRange == hours,
-                            onClick = { trendRange = hours },
-                            label = { Text("${hours}u") }
+                // Map — RainViewer (worldwide) or Buienradar gadget (NL, 5 days)
+                if (radarSource == "rainviewer") {
+                    val lat = latitude
+                    val lon = longitude
+                    if (lat != null && lon != null) {
+                        RadarMap(lat, lon, modifier = Modifier.fillMaxWidth().height(480.dp))
+                    } else {
+                        Text(
+                            text = stringResource(R.string.radar_frames_unavailable),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 8.dp)
                         )
                     }
+                } else {
+                    BuienradarGadgetMap(modifier = Modifier.fillMaxWidth().height(480.dp))
                 }
-                RainTrendChart(
-                    points = if (trendRange <= 2) rainTrend else hourlyTrend.take(trendRange),
-                    modifier = Modifier.fillMaxWidth()
-                )
+
+                // Rain trend chart — only shown for the RainViewer tab
+                if (radarSource == "rainviewer") {
+                    SectionTitle(stringResource(R.string.radar_section_rain_trend))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf(2, 3, 6, 12, 24).forEach { hours ->
+                            FilterChip(
+                                selected = trendRange == hours,
+                                onClick = { trendRange = hours },
+                                label = { Text("${hours}u") }
+                            )
+                        }
+                    }
+                    RainTrendChart(
+                        points = if (trendRange <= 2) rainTrend else hourlyTrend.take(trendRange),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
 
                 Text(
-                    text = stringResource(R.string.radar_attribution),
+                    text = stringResource(
+                        if (radarSource == "buienradar") R.string.radar_attribution_buienradar
+                        else R.string.radar_attribution
+                    ),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 24.dp)
+                    modifier = Modifier.padding(top = 16.dp)
                 )
             }
         }
@@ -223,6 +253,24 @@ class RadarActivity : BreezyActivity() {
             factory = { ctx ->
                 WebView(ctx).apply {
                     RainViewerMap.load(this, latitude, longitude, dark, compact = false)
+                }
+            }
+        )
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    @Composable
+    private fun BuienradarGadgetMap(modifier: Modifier = Modifier) {
+        AndroidView(
+            modifier = modifier,
+            factory = { ctx ->
+                WebView(ctx).apply {
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                    settings.loadWithOverviewMode = true
+                    settings.useWideViewPort = true
+                    webViewClient = WebViewClient()
+                    loadUrl("https://gadgets.buienradar.nl/gadget/radarfivedays")
                 }
             }
         )

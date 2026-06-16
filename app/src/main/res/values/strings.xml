@@ -702,6 +702,9 @@
     <string name="radar_frames_available">%1$d frames available, latest %2$s</string>
     <string name="radar_frames_unavailable">Radar frames unavailable</string>
     <string name="radar_attribution">Data: Buienradar.nl &amp; RainViewer.com</string>
+    <string name="radar_attribution_buienradar">Data: Buienradar.nl</string>
+    <string name="radar_source_world">Worldwide</string>
+    <string name="radar_source_nl">Netherlands (5 days)</string>
     <!-- Settings (new design) -->
     <string name="settings_section_general">General</string>
     <string name="settings_background_updates">Background updates</string>
