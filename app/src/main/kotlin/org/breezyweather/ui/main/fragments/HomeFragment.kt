@@ -99,7 +99,11 @@ class HomeFragment : MainModuleFragment() {
             if (snap != null && snap !== lastKnownSnapshot) {
                 lastKnownSnapshot = snap
                 wallpaperBitmap = snap
+                // Refresh visible cards immediately; off-screen cards pick up the new bitmap
+                // on their next onBindView call.
                 updateAllFrostBackgrounds(snap)
+                // Full rebind so RecyclerView's recycled cards also get the new snapshot.
+                adapter?.notifyDataSetChanged()
             }
             view?.postDelayed(this, 1000L)
         }
@@ -179,7 +183,17 @@ class HomeFragment : MainModuleFragment() {
     override fun onResume() {
         super.onResume()
         weatherView.setDrawable(!isHidden)
+        // Pick up the latest wallpaper snapshot BEFORE notifyDataSetChanged so that
+        // cards binding in the next layout pass already use the fresh bitmap.
+        WallpaperSnapshot.bitmap?.let { snap ->
+            if (snap !== lastKnownSnapshot) {
+                lastKnownSnapshot = snap
+                wallpaperBitmap = snap
+            }
+        }
         adapter?.notifyDataSetChanged()
+        // (Re)start the poller; remove first to avoid double-scheduling on repeated resumes.
+        view?.removeCallbacks(snapshotPoller)
         view?.post(snapshotPoller)
     }
 

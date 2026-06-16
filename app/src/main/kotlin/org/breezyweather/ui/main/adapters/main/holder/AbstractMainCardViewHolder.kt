@@ -139,15 +139,24 @@ abstract class AbstractMainCardViewHolder(
         fun updateFrostMatrix(bg: ImageView, bitmap: android.graphics.Bitmap) {
             val dm = bg.context.resources.displayMetrics
             val screenW = dm.widthPixels.toFloat()
-            // displayScale = how many screen pixels each bitmap pixel represents
+            // How many screen pixels one snapshot pixel represents (e.g. 4 for a 1/4-res snap).
             val displayScale = screenW / bitmap.width
             val pos = IntArray(2)
             bg.getLocationOnScreen(pos)
+            // Desired matrix: bitmap(bx,by) → view(bx*ds - pos[0], by*ds - pos[1])
+            // so view(0,0) samples bitmap pixel (pos[0]/ds, pos[1]/ds), which corresponds
+            // to wallpaper screen pixel (pos[0], pos[1]) — exactly where the card sits.
+            //
+            // Using setValues to avoid pre/post-concat confusion:
+            //   [[ds,  0,  -pos[0]],
+            //    [0,   ds, -pos[1]],
+            //    [0,   0,  1      ]]
             val matrix = android.graphics.Matrix()
-            // Scale up from snapshot resolution to screen resolution, then shift so the
-            // card's screen position (pos) aligns with the correct part of the snapshot.
-            matrix.setScale(displayScale, displayScale)
-            matrix.postTranslate(-pos[0].toFloat(), -pos[1].toFloat())
+            matrix.setValues(floatArrayOf(
+                displayScale, 0f, -pos[0].toFloat(),
+                0f, displayScale, -pos[1].toFloat(),
+                0f, 0f, 1f,
+            ))
             bg.imageMatrix = matrix
         }
     }
