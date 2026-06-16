@@ -57,6 +57,7 @@
 
     <TextView
         android:id="@+id/container_main_header_weather_condition_description"
+        android:visibility="gone"
         android:textStyle="bold"
         android:includeFontPadding="false"
         android:layout_width="wrap_content"
@@ -71,6 +72,7 @@
 
     <RelativeLayout
         android:id="@+id/container_main_header_temperature"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -108,6 +110,7 @@
 
     <TextView
         android:id="@+id/container_main_header_feels_like"
+        android:visibility="gone"
         android:textStyle="bold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -124,6 +127,7 @@
 
     <TextView
         android:id="@+id/container_main_header_temperature_range"
+        android:visibility="gone"
         android:textStyle="bold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
