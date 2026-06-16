@@ -125,7 +125,9 @@ class HomeFragment : MainModuleFragment() {
 
     override fun onResume() {
         super.onResume()
-        weatherView.setDrawable(!isHidden)
+        // The live wallpaper provides all weather animations (clouds, rain, snow, photo).
+        // Keep WeatherView paused so only the wallpaper shows through as background.
+        weatherView.setDrawable(false)
         adapter?.notifyDataSetChanged()
     }
 
@@ -143,7 +145,7 @@ class HomeFragment : MainModuleFragment() {
 
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
-        weatherView.setDrawable(!hidden)
+        weatherView.setDrawable(false)
     }
 
     override fun setSystemBarStyle() {
