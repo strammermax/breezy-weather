@@ -114,6 +114,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
     @Inject
     lateinit var weatherRepository: WeatherRepository
 
+    @Inject
+    lateinit var wallpaperRepository: WallpaperRepository
+
     private enum class DeviceOrientation {
         TOP,
         LEFT,
@@ -122,7 +125,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
     }
 
     override fun onCreateEngine(): Engine {
-        return WeatherEngine(locationRepository, weatherRepository)
+        return WeatherEngine(locationRepository, weatherRepository, wallpaperRepository)
     }
 
     companion object {
@@ -146,6 +149,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
     private inner class WeatherEngine(
         private val locationRepository: LocationRepository,
         private val weatherRepository: WeatherRepository,
+        private val mWallpaperRepository: WallpaperRepository,
     ) : Engine() {
 
         private var mHolder: SurfaceHolder? = null
@@ -212,7 +216,6 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
         // The renderer only reads the photo cache. Fetching is owned by the app data layer.
         private val mWallpaperImageStore = WallpaperImageStore(applicationContext)
-        private val mWallpaperRepository = WallpaperRepository(applicationContext)
         private val mRotatingLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val mSunGlowPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val mSunCorePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {

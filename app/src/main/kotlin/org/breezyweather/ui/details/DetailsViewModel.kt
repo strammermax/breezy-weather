@@ -16,6 +16,7 @@
 
 package org.breezyweather.ui.details
 
+import android.graphics.Bitmap
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -23,15 +24,18 @@ import breezyweather.data.location.LocationRepository
 import breezyweather.data.weather.WeatherRepository
 import breezyweather.domain.location.model.Location
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.breezyweather.common.options.appearance.DetailScreen
 import org.breezyweather.common.source.PollenIndexSource
 import org.breezyweather.domain.weather.index.PollutantIndex
 import org.breezyweather.sources.SourceManager
 import org.breezyweather.ui.theme.weatherView.WeatherView
+import org.breezyweather.wallpaper.photo.WallpaperRepository
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,6 +43,7 @@ class DetailsViewModel @Inject constructor(
     private val locationRepository: LocationRepository,
     private val weatherRepository: WeatherRepository,
     private val sourceManager: SourceManager,
+    private val wallpaperRepository: WallpaperRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val formattedId: String? = savedStateHandle.get<String>(DetailsActivity.KEY_FORMATTED_LOCATION_ID)
@@ -56,6 +61,10 @@ class DetailsViewModel @Inject constructor(
 
     fun updateBackground(weatherKind: Int, isDaylight: Boolean) {
         _backgroundState.value = weatherKind to isDaylight
+    }
+
+    suspend fun loadCachedPhoto(): Bitmap? = withContext(Dispatchers.IO) {
+        wallpaperRepository.loadCachedBitmap()
     }
 
     init {

@@ -119,7 +119,6 @@ import org.breezyweather.ui.theme.weatherView.WeatherViewController
 import org.breezyweather.wallpaper.CelestialTiming
 import org.breezyweather.wallpaper.WallpaperSceneSnapshot
 import org.breezyweather.wallpaper.WallpaperSceneStateFactory
-import org.breezyweather.wallpaper.photo.WallpaperRepository
 import java.util.Calendar
 import java.util.Date
 
@@ -242,9 +241,7 @@ internal fun DailyWeatherScreen(
                         moonsetMillis = moonInterval?.second
                     )
 
-                    val photo = withContext(Dispatchers.IO) {
-                        WallpaperRepository(context).loadCachedBitmap()
-                    }
+                    val photo = detailsViewModel.loadCachedPhoto()
                     val bitmap = withContext(Dispatchers.Default) {
                         Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
                             WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState)

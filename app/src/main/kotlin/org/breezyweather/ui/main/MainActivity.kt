@@ -123,6 +123,9 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
     @Inject
     lateinit var weatherRepository: WeatherRepository
 
+    @Inject
+    lateinit var wallpaperRepository: WallpaperRepository
+
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainActivityViewModel
     private var liveWallpaperPhotoRefreshInProgress = false
@@ -892,12 +895,11 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
 
         lifecycleScope.launch {
             try {
-                val repository = WallpaperRepository(this@MainActivity)
                 if (forcePhotoRefresh) {
                     withContext(Dispatchers.IO) {
                         val store = WallpaperImageStore(this@MainActivity)
                         if (store.photoBackgroundEnabled && this@MainActivity.isOnline()) {
-                            val file = repository.refreshFor(
+                            val file = wallpaperRepository.refreshFor(
                                 latitude = location.latitude,
                                 longitude = location.longitude,
                                 place = location.toWallpaperPlaceQuery(),
@@ -911,7 +913,7 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
                     }
                 }
                 val photo = withContext(Dispatchers.IO) {
-                    repository.loadCachedBitmap()
+                    wallpaperRepository.loadCachedBitmap()
                 }
                 val bitmap = withContext(Dispatchers.Default) {
                     Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {

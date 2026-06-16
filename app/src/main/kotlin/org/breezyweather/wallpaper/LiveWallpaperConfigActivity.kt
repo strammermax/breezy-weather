@@ -108,7 +108,8 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
     @Inject
     lateinit var weatherRepository: WeatherRepository
 
-    private lateinit var wallpaperRepository: WallpaperRepository
+    @Inject
+    lateinit var wallpaperRepository: WallpaperRepository
     private lateinit var previewBitmapValue: MutableState<Bitmap?>
     private lateinit var refreshBusyValue: MutableState<Boolean>
     private lateinit var refreshStatusValue: MutableState<String>
@@ -160,7 +161,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         wallpaperImageStore = WallpaperImageStore(this)
         photoBackgroundEnabledValue = mutableStateOf(wallpaperImageStore.photoBackgroundEnabled)
 
-        wallpaperRepository = WallpaperRepository(this)
         previewBitmapValue = mutableStateOf(null)
         refreshBusyValue = mutableStateOf(false)
         refreshStatusValue = mutableStateOf("")

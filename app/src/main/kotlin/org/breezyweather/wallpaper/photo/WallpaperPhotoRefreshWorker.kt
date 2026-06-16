@@ -52,6 +52,7 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted workerParams: WorkerParameters,
     private val locationRepository: LocationRepository,
+    private val wallpaperRepository: WallpaperRepository,
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
@@ -65,7 +66,6 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
             return Result.success()
         }
 
-        val repository = WallpaperRepository(context, store)
         val now = System.currentTimeMillis()
         var refreshedCount = 0
         var skippedCount = 0
@@ -76,7 +76,7 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
             )
             locations.forEachIndexed { index, location ->
                 val place = location.toWallpaperPlaceQuery()
-                val activeRemoved = repository.pruneDisabledPhotos(
+                val activeRemoved = wallpaperRepository.pruneDisabledPhotos(
                     latitude = location.latitude,
                     longitude = location.longitude,
                     place = place,
@@ -88,7 +88,7 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                     return@forEachIndexed
                 }
 
-                val file = repository.refreshFor(
+                val file = wallpaperRepository.refreshFor(
                     latitude = location.latitude,
                     longitude = location.longitude,
                     place = place,

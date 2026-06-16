@@ -27,6 +27,8 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import org.breezyweather.R
 import org.breezyweather.databinding.ActivityCameraBinding
 import org.breezyweather.wallpaper.LiveWallpaperConfigActivity
@@ -42,6 +44,7 @@ import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+@AndroidEntryPoint
 class CameraActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCameraBinding
@@ -64,7 +67,8 @@ class CameraActivity : AppCompatActivity() {
         )
     }
 
-    private val wallpaperRepository by lazy { WallpaperRepository(applicationContext) }
+    @Inject
+    lateinit var wallpaperRepository: WallpaperRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

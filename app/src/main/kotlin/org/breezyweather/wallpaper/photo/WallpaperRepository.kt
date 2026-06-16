@@ -20,6 +20,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -28,6 +29,8 @@ import org.breezyweather.BuildConfig
 import java.io.File
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * The brains of the location-to-image matching for the live wallpaper background.
@@ -48,11 +51,12 @@ import java.util.concurrent.TimeUnit
  * The keyless [WikimediaProvider] is always in the chain, so the feature keeps working even
  * when no API key is configured.
  */
-class WallpaperRepository(
-    private val context: Context,
-    private val store: WallpaperImageStore = WallpaperImageStore(context),
-    private val client: OkHttpClient = defaultClient(store),
+@Singleton
+class WallpaperRepository @Inject constructor(
+    @ApplicationContext private val context: Context,
 ) {
+    private val store: WallpaperImageStore = WallpaperImageStore(context)
+    private val client: OkHttpClient = defaultClient(store)
 
     /** Distance under which a non-containing [LocationData] still counts as a match. */
     var maxMatchDistanceKm: Double = 50.0
