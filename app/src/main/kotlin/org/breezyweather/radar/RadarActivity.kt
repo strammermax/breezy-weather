@@ -167,7 +167,7 @@ class RadarActivity : BreezyActivity() {
                 val lat = latitude
                 val lon = longitude
                 if (lat != null && lon != null) {
-                    RadarMap(lat, lon, modifier = Modifier.fillMaxWidth().height(420.dp))
+                    RadarMap(lat, lon, modifier = Modifier.fillMaxWidth().height(480.dp))
                 } else {
                     Text(
                         text = stringResource(R.string.radar_frames_unavailable),
