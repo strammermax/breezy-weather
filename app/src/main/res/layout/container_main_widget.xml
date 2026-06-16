@@ -7,12 +7,9 @@
     app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
     app:strokeWidth="0dp">
 
-    <FrameLayout
-        android:id="@+id/widget_tile_container"
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/widget_tile_compose"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:clipChildren="true"
-        android:clipToPadding="true"
-        android:padding="8dp" />
+        android:layout_height="wrap_content" />
 
 </com.google.android.material.card.MaterialCardView>
