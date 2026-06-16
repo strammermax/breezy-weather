@@ -61,12 +61,9 @@ class WidgetTileSelectActivity : BreezyActivity() {
             mutableStateOf(SettingsManager.getInstance(context).widgetTileType)
         }
 
-        val options = listOf(
-            WidgetTileType.DAY to stringResource(R.string.widget_tile_day),
-            WidgetTileType.CLOCK_DAY_VERTICAL to stringResource(R.string.widget_tile_clock_day_vertical),
-            WidgetTileType.CLOCK_DAY_HORIZONTAL to stringResource(R.string.widget_tile_clock_day_horizontal),
-            WidgetTileType.WEEK to stringResource(R.string.widget_tile_week),
-        )
+        val options = WidgetTileType.entries.map { type ->
+            type to stringResource(type.nameRes)
+        }
 
         Material3Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),

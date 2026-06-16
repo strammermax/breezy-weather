@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import breezyweather.domain.location.model.Location
 import breezyweather.domain.weather.model.Daily
+import breezyweather.domain.weather.model.Hourly
 import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.common.extensions.formatMeasure
@@ -77,13 +80,20 @@ private fun WidgetTileContent(
     provider: ResourceProvider,
 ) {
     val weather = location.weather ?: return
-    val textColor = Color.White
+    val textColor = MaterialTheme.colorScheme.onSurface
     when (widgetType) {
-        WidgetTileType.DAY,
-        WidgetTileType.CLOCK_DAY_VERTICAL,
-        WidgetTileType.CLOCK_DAY_HORIZONTAL,
-        -> CurrentWeatherTile(location, provider, textColor)
-        WidgetTileType.WEEK -> WeekForecastTile(location, provider, textColor)
+        WidgetTileType.TREND_HOURLY -> HourlyTrendTile(location, provider, textColor)
+
+        WidgetTileType.WEEK,
+        WidgetTileType.TREND_DAILY,
+        WidgetTileType.MATERIAL_YOU_FORECAST,
+        -> WeekForecastTile(location, provider, textColor)
+
+        WidgetTileType.DAY_WEEK,
+        WidgetTileType.CLOCK_DAY_WEEK,
+        -> DayWeekTile(location, provider, textColor)
+
+        else -> CurrentWeatherTile(location, provider, textColor)
     }
 }
 
@@ -190,6 +200,103 @@ private fun WeekForecastTile(
         days.forEach { daily ->
             DayColumn(daily, location, provider, temperatureUnit, textColor, ctx)
         }
+    }
+}
+
+@Composable
+private fun DayWeekTile(
+    location: Location,
+    provider: ResourceProvider,
+    textColor: Color,
+) {
+    Column {
+        CurrentWeatherTile(location, provider, textColor)
+        HorizontalDivider(
+            color = textColor.copy(alpha = 0.15f),
+            thickness = 0.5.dp,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
+        WeekForecastTile(location, provider, textColor)
+    }
+}
+
+@Composable
+private fun HourlyTrendTile(
+    location: Location,
+    provider: ResourceProvider,
+    textColor: Color,
+) {
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    val weather = location.weather ?: return
+    val temperatureUnit = SettingsManager.getInstance(ctx).getTemperatureUnit(ctx)
+    val now = java.util.Date()
+    val hours = weather.hourlyForecast.filter { it.date.after(now) }.take(6)
+    if (hours.isEmpty()) {
+        CurrentWeatherTile(location, provider, textColor)
+        return
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+    ) {
+        hours.forEach { hourly ->
+            HourColumn(hourly, location, provider, temperatureUnit, textColor, ctx)
+        }
+    }
+}
+
+@Composable
+private fun HourColumn(
+    hourly: Hourly,
+    location: Location,
+    provider: ResourceProvider,
+    temperatureUnit: org.breezyweather.unit.temperature.TemperatureUnit,
+    textColor: Color,
+    ctx: android.content.Context,
+) {
+    val hour = java.util.Calendar.getInstance(location.timeZone).also {
+        it.time = hourly.date
+    }[java.util.Calendar.HOUR_OF_DAY]
+    val label = String.format("%02d:00", hour)
+    val weatherCode = hourly.weatherCode
+    val daylight = location.isDaylight
+    val tempText = hourly.temperature?.temperature?.let {
+        it.toDouble(temperatureUnit).roundToInt().toString() + "°"
+    } ?: "-"
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(48.dp),
+    ) {
+        Text(
+            text = label,
+            color = textColor.copy(alpha = 0.8f),
+            fontSize = 10.sp,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+        )
+        Spacer(Modifier.height(4.dp))
+        if (weatherCode != null) {
+            AndroidView(
+                factory = { context -> android.widget.ImageView(context) },
+                update = { iv ->
+                    iv.setImageDrawable(ResourceHelper.getWeatherIcon(provider, weatherCode, daylight))
+                },
+                modifier = Modifier.size(28.dp),
+            )
+        } else {
+            Spacer(Modifier.size(28.dp))
+        }
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = tempText,
+            color = textColor,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 
