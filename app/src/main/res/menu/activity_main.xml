@@ -8,6 +8,12 @@
         android:icon="@drawable/ic_camera"
         app:showAsAction="always" />
 
+    <item android:id="@+id/action_radar"
+        android:title="@string/action_radar"
+        android:orderInCategory="50"
+        android:icon="@drawable/ic_precipitation"
+        app:showAsAction="always" />
+
     <!-- LiveWallpaperWeather: "Edit location" moved to the Locations list (pencil per row). -->
 
     <item android:id="@+id/action_open_in_other_app"

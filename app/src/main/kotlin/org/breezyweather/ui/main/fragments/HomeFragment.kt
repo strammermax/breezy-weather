@@ -199,6 +199,9 @@ class HomeFragment : MainModuleFragment() {
             when (menuItem.itemId) {
                 // LiveWallpaperWeather: "Edit location" moved to the Locations list (pencil per row).
                 R.id.action_open_in_other_app -> callback?.onOpenInOtherAppIconClicked()
+                R.id.action_radar -> startActivity(
+                    Intent(requireContext(), org.breezyweather.radar.RadarActivity::class.java)
+                )
                 R.id.action_camera -> startActivity(
                     Intent(requireContext(), org.breezyweather.ui.camera.CameraActivity::class.java)
                 )

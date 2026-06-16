@@ -57,7 +57,6 @@
 
     <TextView
         android:id="@+id/container_main_header_weather_condition_description"
-        android:visibility="gone"
         android:textStyle="bold"
         android:includeFontPadding="false"
         android:layout_width="wrap_content"
