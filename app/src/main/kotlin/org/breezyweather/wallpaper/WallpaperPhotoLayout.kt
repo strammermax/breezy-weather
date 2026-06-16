@@ -42,9 +42,12 @@ internal object WallpaperPhotoLayout {
      * Any excess photo width beyond [width] is cropped equally on both sides.
      */
     fun drawOnCanvas(canvas: Canvas, width: Int, height: Int, photo: Bitmap) {
-        val photoHeight = height * PHOTO_HEIGHT_FRACTION
-        val scale = photoHeight / photo.height
+        val scale = maxOf(
+            width.toFloat() / photo.width,
+            height * PHOTO_HEIGHT_FRACTION / photo.height,
+        )
         val photoWidth = photo.width * scale
+        val photoHeight = photo.height * scale
         val left = (width - photoWidth) / 2f
         canvas.drawBitmap(
             photo,
