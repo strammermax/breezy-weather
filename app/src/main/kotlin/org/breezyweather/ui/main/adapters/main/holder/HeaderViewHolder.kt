@@ -81,15 +81,7 @@ class HeaderViewHolder(parent: ViewGroup) : AbstractMainViewHolder(
         }
 
         val temperatureUnit = SettingsManager.getInstance(context).getTemperatureUnit(context)
-        location.weather?.current?.let { current ->
-            if (!current.weatherText.isNullOrEmpty()) {
-                mWeatherText.visibility = View.VISIBLE
-                mWeatherText.text = current.weatherText
-            } else {
-                mWeatherText.visibility = View.GONE
-            }
-        }
-
+        mWeatherText.visibility = View.GONE
         mTemperatureContainer.visibility = View.GONE
         mFeelsLike.visibility = View.GONE
         mTemperatureRange.visibility = View.GONE
