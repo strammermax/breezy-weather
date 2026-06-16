@@ -213,11 +213,15 @@ internal fun DailyWeatherScreen(
                         ?: CelestialTiming.approximateSunInterval(loc, now)
                     val moonInterval = CelestialTiming.closestAstroInterval(CelestialTiming.moonIntervals(loc, now), now)
 
-                    val daylight = if (loc.locationIsDaylight) 1f else 0f
-                    val halfDay = if (loc.locationIsDaylight) {
-                        selectedDaily?.day
-                    } else {
+                    // For today, mirror the actual current sky (day or night).
+                    // For future days, always show the daytime half so the background
+                    // reflects "what will this day look like" rather than the current
+                    // night sky regardless of which day the user is inspecting.
+                    val daylight = if (isToday) { if (loc.locationIsDaylight) 1f else 0f } else 1f
+                    val halfDay = if (isToday && !loc.locationIsDaylight) {
                         selectedDaily?.night ?: selectedDaily?.day
+                    } else {
+                        selectedDaily?.day ?: selectedDaily?.night
                     }
                     val weatherKind = if (isToday) {
                         WeatherViewController.getWeatherKind(loc)
