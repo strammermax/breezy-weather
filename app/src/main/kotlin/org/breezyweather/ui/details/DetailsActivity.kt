@@ -26,16 +26,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
-import org.breezyweather.common.extensions.isDarkMode
 import org.breezyweather.common.extensions.isBackgroundAnimationEnabled
-import org.breezyweather.domain.settings.SettingsManager
-import org.breezyweather.ui.theme.ThemeManager
-import org.breezyweather.ui.theme.weatherView.WeatherView
+import org.breezyweather.wallpaper.WallpaperEffectView
 
 @AndroidEntryPoint
 class DetailsActivity : BreezyActivity() {
 
-    private lateinit var weatherView: WeatherView
+    private lateinit var effectView: WallpaperEffectView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,17 +44,15 @@ class DetailsActivity : BreezyActivity() {
             DailyWeatherScreen(onBackPressed = { finish() })
         }
 
-        // Animated weather layer (clouds, rain, snow …) sits between the static
-        // background bitmap and the Compose content (transparent glass cards).
-        weatherView = ThemeManager.getInstance(this).weatherThemeDelegate.getWeatherView(this)
-        weatherView.setGravitySensorEnabled(
-            SettingsManager.getInstance(this).isGravitySensorEnabled
-        )
-        weatherView.setDoAnimate(isBackgroundAnimationEnabled)
+        // Animated weather effects (clouds, rain, snow, fog …) via the same
+        // WallpaperWeatherEffectRenderer used by the live wallpaper. Sits between
+        // the static WallpaperSceneSnapshot backdrop and the transparent Compose
+        // scaffold. Hardware acceleration is required for the AGSL shader to work.
+        effectView = WallpaperEffectView(this)
 
         val contentFrame = window.decorView.findViewById<FrameLayout>(android.R.id.content)
         contentFrame.addView(
-            weatherView as android.view.View,
+            effectView,
             0,
             FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         )
@@ -65,28 +60,20 @@ class DetailsActivity : BreezyActivity() {
         val viewModel = ViewModelProvider(this)[DetailsViewModel::class.java]
         lifecycleScope.launch {
             viewModel.backgroundState.collect { (weatherKind, isDaylight) ->
-                weatherView.setWeather(weatherKind, isDaylight, isDarkMode)
-                clearWeatherViewBackground()
-                weatherView.setDrawable(true)
+                effectView.setWeather(weatherKind, if (isDaylight) 1f else 0f)
+                effectView.setDrawable(isBackgroundAnimationEnabled)
             }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        if (::weatherView.isInitialized) weatherView.setDrawable(true)
+        if (::effectView.isInitialized) effectView.setDrawable(isBackgroundAnimationEnabled)
     }
 
     override fun onPause() {
         super.onPause()
-        if (::weatherView.isInitialized) weatherView.setDrawable(false)
-    }
-
-    // Strip the WeatherView's own opaque sky gradient so the static snapshot
-    // (window background) and the photo show through underneath the animations.
-    private fun clearWeatherViewBackground() {
-        val vg = weatherView as? ViewGroup ?: return
-        for (i in 0 until vg.childCount) vg.getChildAt(i).background = null
+        if (::effectView.isInitialized) effectView.setDrawable(false)
     }
 
     companion object {
