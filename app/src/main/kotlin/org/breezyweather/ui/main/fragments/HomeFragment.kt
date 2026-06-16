@@ -20,7 +20,11 @@ import android.animation.Animator
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.RenderEffect
+import android.graphics.Shader
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -37,7 +41,10 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import breezyweather.domain.location.model.Location
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.breezyweather.wallpaper.photo.WallpaperImageStore
 import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.common.activities.livedata.EqualtableLiveData
@@ -57,6 +64,7 @@ import org.breezyweather.ui.common.widgets.SwipeSwitchLayout
 import org.breezyweather.ui.main.MainActivity
 import org.breezyweather.ui.main.MainActivityViewModel
 import org.breezyweather.ui.main.adapters.main.MainAdapter
+import org.breezyweather.ui.main.adapters.main.holder.AbstractMainCardViewHolder
 import org.breezyweather.ui.main.adapters.main.ViewType
 import org.breezyweather.ui.main.layouts.MainLayoutManager
 import org.breezyweather.ui.main.utils.MainModuleUtils
@@ -113,7 +121,25 @@ class HomeFragment : MainModuleFragment() {
         initView()
         setCallback(requireActivity() as Callback)
 
+        loadBlurredWallpaper()
+
         return binding.root
+    }
+
+    private fun loadBlurredWallpaper() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+        val store = WallpaperImageStore(requireContext())
+        if (!store.photoBackgroundEnabled) return
+        val path = store.cachedPhotoPath ?: return
+        lifecycleScope.launch {
+            val bitmap = withContext(Dispatchers.IO) {
+                runCatching { BitmapFactory.decodeFile(path) }.getOrNull()
+            } ?: return@launch
+            // Share the original bitmap so each card can render a blurred copy inside itself.
+            wallpaperBitmap = bitmap
+            // Refresh cards so they pick up the bitmap.
+            adapter?.notifyDataSetChanged()
+        }
     }
 
     private fun isBackgroundAnimationEnabled() =
@@ -536,11 +562,23 @@ class HomeFragment : MainModuleFragment() {
             mScrollY = recyclerView.computeVerticalScrollOffset()
             weatherView.onScroll(mScrollY)
             adapter?.onScroll()
+            // Update frost-blur crop offsets for every visible card.
+            val bmp = wallpaperBitmap ?: return
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+            for (i in 0 until recyclerView.childCount) {
+                val bg = recyclerView.getChildAt(i)
+                    ?.findViewWithTag<android.widget.ImageView>("frost_bg") ?: continue
+                AbstractMainCardViewHolder.updateFrostMatrix(bg, bmp)
+            }
         }
     }
 
     companion object {
         // 60 is 5 * 4 * 3, which allows us to divide from 1, 2, 3, 4 or 5 and have a whole number
         const val GRID_SPAN_COUNT = 60
+
+        /** Wallpaper photo shared with card view holders for per-card frost blur. */
+        @Volatile
+        var wallpaperBitmap: android.graphics.Bitmap? = null
     }
 }
