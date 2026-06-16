@@ -27,8 +27,7 @@ import kotlinx.coroutines.launch
 import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.common.extensions.isDarkMode
-import org.breezyweather.common.extensions.isMotionReduced
-import org.breezyweather.common.options.appearance.BackgroundAnimationMode
+import org.breezyweather.common.extensions.isBackgroundAnimationEnabled
 import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.ui.theme.ThemeManager
 import org.breezyweather.ui.theme.weatherView.WeatherView
@@ -54,7 +53,7 @@ class DetailsActivity : BreezyActivity() {
         weatherView.setGravitySensorEnabled(
             SettingsManager.getInstance(this).isGravitySensorEnabled
         )
-        weatherView.setDoAnimate(isBackgroundAnimationEnabled())
+        weatherView.setDoAnimate(isBackgroundAnimationEnabled)
 
         val contentFrame = window.decorView.findViewById<FrameLayout>(android.R.id.content)
         contentFrame.addView(
@@ -89,13 +88,6 @@ class DetailsActivity : BreezyActivity() {
         val vg = weatherView as? ViewGroup ?: return
         for (i in 0 until vg.childCount) vg.getChildAt(i).background = null
     }
-
-    private fun isBackgroundAnimationEnabled() =
-        when (SettingsManager.getInstance(this).backgroundAnimationMode) {
-            BackgroundAnimationMode.SYSTEM -> !isMotionReduced
-            BackgroundAnimationMode.ENABLED -> true
-            BackgroundAnimationMode.DISABLED -> false
-        }
 
     companion object {
         const val KEY_FORMATTED_LOCATION_ID = "FORMATTED_LOCATION_ID"

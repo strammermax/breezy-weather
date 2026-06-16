@@ -193,6 +193,27 @@ internal fun DailyWeatherScreen(
                 // photo), behind the glass scaffold/cards. Re-rendered whenever the selected
                 // day in the pager changes, so the background reflects that day's forecast
                 // rather than always today's current weather.
+                // --- Step 1: resolve weather for this page (fast, synchronous) ---------------
+                // Drives WeatherView animation immediately when the user swipes to a new day.
+                val selectedDaily = loc.weather!!.dailyForecast.getOrNull(pagerPage)
+                val isToday = pagerPage == loc.weather!!.todayIndex
+                val daylight = if (isToday) { if (loc.locationIsDaylight) 1f else 0f } else 1f
+                val halfDay = if (isToday && !loc.locationIsDaylight) {
+                    selectedDaily?.night ?: selectedDaily?.day
+                } else {
+                    selectedDaily?.day ?: selectedDaily?.night
+                }
+                val weatherKind = if (isToday) {
+                    WeatherViewController.getWeatherKind(loc)
+                } else {
+                    WeatherViewController.getWeatherKind(halfDay?.weatherCode)
+                }
+                LaunchedEffect(loc.weather, pagerPage) {
+                    detailsViewModel.updateBackground(weatherKind, daylight > 0.5f)
+                }
+
+                // --- Step 2: render static sky+photo snapshot (IO + CPU, runs in background) --
+                // Keyed on the same inputs so it re-runs whenever the day or weather changes.
                 LaunchedEffect(loc.weather, pagerPage) {
                     val weather = loc.weather
                     val width = context.resources.displayMetrics.widthPixels
@@ -201,37 +222,13 @@ internal fun DailyWeatherScreen(
                         return@LaunchedEffect
                     }
 
-                    val selectedDaily = weather.dailyForecast.getOrNull(pagerPage)
-                    val isToday = pagerPage == weather.todayIndex
+                    val wind = if (isToday) weather.current?.wind else halfDay?.wind
 
-                    // Resolve sun/moon intervals the same way the live wallpaper does, so the
-                    // snapshot background renders the same sky gradient (rather than naively
-                    // trusting the first daily forecast entry, whose astro times may already
-                    // lie outside "now").
+                    // Resolve sun/moon intervals the same way the live wallpaper does.
                     val now = System.currentTimeMillis()
                     val sunInterval = CelestialTiming.closestAstroInterval(CelestialTiming.sunIntervals(loc, now), now)
                         ?: CelestialTiming.approximateSunInterval(loc, now)
                     val moonInterval = CelestialTiming.closestAstroInterval(CelestialTiming.moonIntervals(loc, now), now)
-
-                    // For today, mirror the actual current sky (day or night).
-                    // For future days, always show the daytime half so the background
-                    // reflects "what will this day look like" rather than the current
-                    // night sky regardless of which day the user is inspecting.
-                    val daylight = if (isToday) { if (loc.locationIsDaylight) 1f else 0f } else 1f
-                    val halfDay = if (isToday && !loc.locationIsDaylight) {
-                        selectedDaily?.night ?: selectedDaily?.day
-                    } else {
-                        selectedDaily?.day ?: selectedDaily?.night
-                    }
-                    val weatherKind = if (isToday) {
-                        WeatherViewController.getWeatherKind(loc)
-                    } else {
-                        WeatherViewController.getWeatherKind(halfDay?.weatherCode)
-                    }
-                    val wind = if (isToday) weather.current?.wind else halfDay?.wind
-
-                    // Drive the animated WeatherView in DetailsActivity with this day's weather.
-                    detailsViewModel.updateBackground(weatherKind, daylight > 0.5f)
 
                     val sceneState = WallpaperSceneStateFactory.create(
                         weatherKind = weatherKind,

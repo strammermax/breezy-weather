@@ -122,6 +122,16 @@ val Context.density: Int
         return resources.displayMetrics.densityDpi
     }
 
+val Context.isBackgroundAnimationEnabled: Boolean
+    get() {
+        val mode = org.breezyweather.domain.settings.SettingsManager.getInstance(this).backgroundAnimationMode
+        return when (mode) {
+            org.breezyweather.common.options.appearance.BackgroundAnimationMode.SYSTEM -> !isMotionReduced
+            org.breezyweather.common.options.appearance.BackgroundAnimationMode.ENABLED -> true
+            org.breezyweather.common.options.appearance.BackgroundAnimationMode.DISABLED -> false
+        }
+    }
+
 val Context.fontScale: Float
     get() {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

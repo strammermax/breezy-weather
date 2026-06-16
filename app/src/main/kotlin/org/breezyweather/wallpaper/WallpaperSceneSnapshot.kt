@@ -12,11 +12,9 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.LinearGradient
 import android.graphics.Paint
-import android.graphics.RectF
 import android.graphics.Shader
 import org.breezyweather.ui.common.images.MoonDrawable
 import kotlin.math.min
-import kotlin.math.sin
 
 /**
  * ACT-014: renders a single static frame of the live wallpaper scene (sky gradient,
@@ -30,8 +28,6 @@ import kotlin.math.sin
  */
 internal object WallpaperSceneSnapshot {
 
-    private const val PHOTO_HEIGHT_FRACTION = 0.52f
-    private const val CELESTIAL_SIZE_FRACTION = 0.14f
 
     fun render(
         canvas: Canvas,
@@ -101,24 +97,22 @@ internal object WallpaperSceneSnapshot {
 
     private fun drawCelestialBody(canvas: Canvas, width: Int, height: Int, sceneState: WallpaperSceneState) {
         val now = System.currentTimeMillis()
-        val horizonY = height * 0.48f
-        val peakY = height * 0.12f
         val shortestSide = min(width, height).toFloat()
-        val sunAlpha = sunVisibility(now, sceneState)
+        val sunAlpha = CelestialTiming.sunVisibility(now, sceneState.sunriseMillis, sceneState.sunsetMillis, sceneState.daytime)
         val moonAlpha = 1f - sunAlpha
         val positionTime = now / 60_000L * 60_000L
 
         if (sunAlpha > 0.01f) {
-            val sunProgress = celestialProgress(positionTime, sceneState.sunriseMillis, sceneState.sunsetMillis)
-            val sunX = width * (0.12f + 0.76f * sunProgress)
-            val sunY = horizonY - sin(Math.PI * sunProgress).toFloat() * (horizonY - peakY)
+            val sunProgress = CelestialTiming.celestialProgress(positionTime, sceneState.sunriseMillis, sceneState.sunsetMillis)
+            val sunX = CelestialTiming.celestialX(width, sunProgress)
+            val sunY = CelestialTiming.celestialY(height, sunProgress)
             drawSun(canvas, sunX, sunY, shortestSide, sunAlpha)
         }
         if (moonAlpha > 0.01f) {
-            val moonProgress = celestialProgress(positionTime, sceneState.moonriseMillis, sceneState.moonsetMillis)
-            val moonX = width * (0.12f + 0.76f * moonProgress)
-            val moonY = horizonY - sin(Math.PI * moonProgress).toFloat() * (horizonY - peakY)
-            val size = (shortestSide * CELESTIAL_SIZE_FRACTION).toInt()
+            val moonProgress = CelestialTiming.celestialProgress(positionTime, sceneState.moonriseMillis, sceneState.moonsetMillis)
+            val moonX = CelestialTiming.celestialX(width, moonProgress)
+            val moonY = CelestialTiming.celestialY(height, moonProgress)
+            val size = (shortestSide * CelestialTiming.CELESTIAL_SIZE_FRACTION).toInt()
             val halfSize = size / 2
             val moonDrawable = MoonDrawable()
             moonDrawable.setPhaseAngle(sceneState.moonPhaseAngle)
@@ -147,36 +141,7 @@ internal object WallpaperSceneSnapshot {
         CelestialGlow.draw(canvas, centerX, centerY, glowRadius, coreRadius, alpha, glowPaint, corePaint)
     }
 
-    private fun sunVisibility(now: Long, sceneState: WallpaperSceneState): Float {
-        val sunrise = sceneState.sunriseMillis ?: return if (sceneState.daytime) 1f else 0f
-        val sunset = sceneState.sunsetMillis ?: return if (sceneState.daytime) 1f else 0f
-        val crossFade = 25L * 60L * 1000L
-        return when {
-            now < sunrise - crossFade -> 0f
-            now < sunrise + crossFade -> SkyColors.fraction(now, sunrise - crossFade, sunrise + crossFade)
-            now < sunset - crossFade -> 1f
-            now < sunset + crossFade -> 1f - SkyColors.fraction(now, sunset - crossFade, sunset + crossFade)
-            else -> 0f
-        }
-    }
-
-    private fun celestialProgress(now: Long, preferredStart: Long?, preferredEnd: Long?): Float {
-        val start = preferredStart ?: return 0.5f
-        val end = preferredEnd ?: return 0.5f
-        if (end <= start) return 0.5f
-        return ((now - start).toFloat() / (end - start)).coerceIn(0f, 1f)
-    }
-
     private fun drawPhotoForeground(canvas: Canvas, width: Int, height: Int, photo: Bitmap) {
-        val photoHeight = height * PHOTO_HEIGHT_FRACTION
-        val scale = photoHeight / photo.height
-        val photoWidth = photo.width * scale
-        val left = (width - photoWidth) / 2f
-        canvas.drawBitmap(
-            photo,
-            null,
-            RectF(left, height - photoHeight, left + photoWidth, height.toFloat()),
-            Paint(Paint.FILTER_BITMAP_FLAG),
-        )
+        WallpaperPhotoLayout.drawOnCanvas(canvas, width, height, photo)
     }
 }

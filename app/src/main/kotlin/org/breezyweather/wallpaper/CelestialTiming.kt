@@ -17,6 +17,7 @@ import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.tan
+import kotlin.math.PI
 
 /**
  * Sun/moon interval resolution shared between [MaterialLiveWallpaperService] and the
@@ -26,6 +27,76 @@ import kotlin.math.tan
 internal object CelestialTiming {
 
     private val dayMillis = 24L * 60L * 60L * 1000L
+
+    // ---- Shared arc-rendering constants & helpers ----------------------------------------
+
+    /** Fraction of screen height at which the celestial arc crosses the horizon. */
+    const val HORIZON_Y_FRACTION = 0.48f
+    /** Fraction of screen height at the apex of the arc (topmost point). */
+    const val PEAK_Y_FRACTION = 0.12f
+    /** Fraction of shortest screen dimension for the moon disc diameter. */
+    const val CELESTIAL_SIZE_FRACTION = 0.14f
+    /** Cross-fade duration around sunrise/sunset (25 minutes each side). */
+    const val CROSSFADE_MILLIS = 25L * 60L * 1000L
+
+    /**
+     * Normalised progress of a celestial body along its arc (0 = rise, 1 = set).
+     * Returns 0.5 if either bound is null (body placed at zenith).
+     */
+    fun celestialProgress(now: Long, riseMillis: Long?, setMillis: Long?): Float {
+        val start = riseMillis ?: return 0.5f
+        val end = setMillis ?: return 0.5f
+        if (end <= start) return 0.5f
+        return ((now - start).toFloat() / (end - start)).coerceIn(0f, 1f)
+    }
+
+    /** Horizontal screen coordinate for a celestial body at the given arc [progress]. */
+    fun celestialX(width: Int, progress: Float): Float = width * (0.12f + 0.76f * progress)
+
+    /** Vertical screen coordinate for a celestial body at the given arc [progress]. */
+    fun celestialY(height: Int, progress: Float): Float {
+        val horizonY = height * HORIZON_Y_FRACTION
+        val peakY = height * PEAK_Y_FRACTION
+        return horizonY - sin(PI * progress).toFloat() * (horizonY - peakY)
+    }
+
+    /**
+     * Alpha [0..1] for the sun, cross-fading over [CROSSFADE_MILLIS] around sunrise/sunset.
+     * Falls back to [daytime] if exact times are unavailable.
+     */
+    fun sunVisibility(
+        now: Long,
+        sunriseMillis: Long?,
+        sunsetMillis: Long?,
+        daytime: Boolean,
+    ): Float {
+        val sunrise = sunriseMillis ?: return if (daytime) 1f else 0f
+        val sunset = sunsetMillis ?: return if (daytime) 1f else 0f
+        return when {
+            now < sunrise - CROSSFADE_MILLIS -> 0f
+            now < sunrise + CROSSFADE_MILLIS -> SkyColors.fraction(now, sunrise - CROSSFADE_MILLIS, sunrise + CROSSFADE_MILLIS)
+            now < sunset - CROSSFADE_MILLIS -> 1f
+            now < sunset + CROSSFADE_MILLIS -> 1f - SkyColors.fraction(now, sunset - CROSSFADE_MILLIS, sunset + CROSSFADE_MILLIS)
+            else -> 0f
+        }
+    }
+
+    /**
+     * Alpha [0..1] for the moon, cross-fading over [CROSSFADE_MILLIS] around moonrise/moonset.
+     * Returns 0 if either time is unavailable.
+     */
+    fun moonVisibility(now: Long, moonriseMillis: Long?, moonsetMillis: Long?): Float {
+        val moonrise = moonriseMillis ?: return 0f
+        val moonset = moonsetMillis ?: return 0f
+        if (moonset <= moonrise) return 0f
+        return when {
+            now < moonrise - CROSSFADE_MILLIS -> 0f
+            now < moonrise + CROSSFADE_MILLIS -> SkyColors.fraction(now, moonrise - CROSSFADE_MILLIS, moonrise + CROSSFADE_MILLIS)
+            now < moonset - CROSSFADE_MILLIS -> 1f
+            now < moonset + CROSSFADE_MILLIS -> 1f - SkyColors.fraction(now, moonset - CROSSFADE_MILLIS, moonset + CROSSFADE_MILLIS)
+            else -> 0f
+        }
+    }
 
     fun sunIntervals(location: Location?, now: Long): List<Pair<Long, Long>> =
         location?.weather?.dailyForecast.orEmpty().mapNotNull { day ->

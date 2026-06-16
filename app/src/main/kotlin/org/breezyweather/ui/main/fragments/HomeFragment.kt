@@ -46,10 +46,9 @@ import org.breezyweather.common.extensions.doOnApplyWindowInsets
 import org.breezyweather.common.extensions.getBlocksPerRow
 import org.breezyweather.common.extensions.getThemeColor
 import org.breezyweather.common.extensions.isDarkMode
-import org.breezyweather.common.extensions.isMotionReduced
+import org.breezyweather.common.extensions.isBackgroundAnimationEnabled
 import org.breezyweather.common.extensions.isTabletDevice
 import org.breezyweather.common.extensions.setSystemBarStyle
-import org.breezyweather.common.options.appearance.BackgroundAnimationMode
 import org.breezyweather.databinding.FragmentHomeBinding
 import org.breezyweather.domain.location.model.getPlace
 import org.breezyweather.domain.settings.SettingsManager
@@ -116,13 +115,6 @@ class HomeFragment : MainModuleFragment() {
         return binding.root
     }
 
-    private fun isBackgroundAnimationEnabled() =
-        when (SettingsManager.getInstance(requireContext()).backgroundAnimationMode) {
-            BackgroundAnimationMode.SYSTEM -> !requireContext().isMotionReduced
-            BackgroundAnimationMode.ENABLED -> true
-            BackgroundAnimationMode.DISABLED -> false
-        }
-
     override fun onResume() {
         super.onResume()
         // The live wallpaper provides all weather animations (clouds, rain, snow, photo).
@@ -185,7 +177,7 @@ class HomeFragment : MainModuleFragment() {
         )
 
         weatherView.setDoAnimate(
-            isBackgroundAnimationEnabled()
+            requireContext().isBackgroundAnimationEnabled
         )
 
         binding.appBar.doOnApplyWindowInsets { view, insets ->

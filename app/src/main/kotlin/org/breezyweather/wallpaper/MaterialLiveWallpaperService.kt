@@ -77,7 +77,6 @@ import kotlin.math.acos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
-import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.time.Duration.Companion.hours
 
@@ -224,8 +223,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mSunPaintCenterX = Float.NaN
         private var mSunPaintCenterY = Float.NaN
         private var mSunPaintAlpha = -1
-        private val photoHeightFraction = 0.52f
-        private val celestialSizeFraction = 0.14f
+        private val photoHeightFraction get() = WallpaperPhotoLayout.PHOTO_HEIGHT_FRACTION
         private val fallbackCelestialDuration = 12L * 60L * 60L * 1000L
 
         @Size(2)
@@ -533,7 +531,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mSceneState = WallpaperSceneStateFactory.create(
                 weatherKind = mWeatherKind,
                 daylight = if (mAutomaticDayNight) {
-                    sunVisibility(now)
+                    CelestialTiming.sunVisibility(now, mSunriseMillis, mSunsetMillis, mDaytime)
                 } else if (mDaytime) {
                     1f
                 } else {
@@ -934,27 +932,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mForegroundNightTint = dimming
         }
 
-        private fun positionPhotoAtBottom(source: Bitmap, targetWidth: Int, targetHeight: Int): Bitmap {
-            val result = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(result)
-            // Cover the full width even if that makes the photo taller than
-            // photoHeightFraction; excess height is cropped off the top since
-            // the photo stays anchored to the bottom edge.
-            val scale = maxOf(
-                targetWidth.toFloat() / source.width,
-                (targetHeight * photoHeightFraction) / source.height,
-            )
-            val photoWidth = source.width * scale
-            val photoHeight = source.height * scale
-            val left = (targetWidth - photoWidth) / 2f
-            canvas.drawBitmap(
-                source,
-                null,
-                RectF(left, targetHeight - photoHeight, left + photoWidth, targetHeight.toFloat()),
-                Paint(Paint.FILTER_BITMAP_FLAG)
-            )
-            return result
-        }
+        private fun positionPhotoAtBottom(source: Bitmap, targetWidth: Int, targetHeight: Int): Bitmap =
+            WallpaperPhotoLayout.positionAtBottom(source, targetWidth, targetHeight)
 
         private fun buildSkyBackground(): Drawable = object : Drawable() {
             private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -1032,28 +1011,40 @@ class MaterialLiveWallpaperService : WallpaperService() {
             if (width <= 0 || height <= 0) return
 
             val now = System.currentTimeMillis()
-            val horizonY = height * 0.48f
-            val peakY = height * 0.12f
             val shortestSide = min(width, height).toFloat()
             // Heavy cloud cover should mostly hide the sun/moon disc rather than show it
             // shining through a near-opaque overcast/storm ceiling.
             val celestialOcclusion = (mSceneState.cloudDensity * mSceneState.cloudDarkness).coerceIn(0f, 1f)
             val celestialVisibility = 1f - celestialOcclusion
-            val sunAlpha = sunVisibility(now) * celestialVisibility
-            val moonAlpha = moonVisibility(now) * (1f - sunAlpha) * celestialVisibility
+            val sunAlpha = CelestialTiming.sunVisibility(
+                now,
+                sunriseMillis = if (mAutomaticDayNight) mSunriseMillis else null,
+                sunsetMillis = if (mAutomaticDayNight) mSunsetMillis else null,
+                daytime = mDaytime,
+            ) * celestialVisibility
+            val moonAlpha = CelestialTiming.moonVisibility(now, mMoonriseMillis, mMoonsetMillis) *
+                (1f - sunAlpha) * celestialVisibility
             val positionTime = now / 60_000L * 60_000L
 
             if (sunAlpha > 0.01f) {
-                val sunProgress = celestialProgress(positionTime, mSunriseMillis, mSunsetMillis)
-                val sunX = width * (0.12f + 0.76f * sunProgress)
-                val sunY = horizonY - sin(Math.PI * sunProgress).toFloat() * (horizonY - peakY)
+                val sunProgress = CelestialTiming.celestialProgress(
+                    positionTime,
+                    mSunriseMillis ?: mCelestialStartMillis,
+                    mSunsetMillis ?: mCelestialEndMillis,
+                )
+                val sunX = CelestialTiming.celestialX(width, sunProgress)
+                val sunY = CelestialTiming.celestialY(height, sunProgress)
                 drawSun(canvas, sunX, sunY, shortestSide, sunAlpha)
             }
             if (moonAlpha > 0.01f) {
-                val moonProgress = celestialProgress(positionTime, mMoonriseMillis, mMoonsetMillis)
-                val moonX = width * (0.12f + 0.76f * moonProgress)
-                val moonY = horizonY - sin(Math.PI * moonProgress).toFloat() * (horizonY - peakY)
-                val size = (shortestSide * celestialSizeFraction).toInt()
+                val moonProgress = CelestialTiming.celestialProgress(
+                    positionTime,
+                    mMoonriseMillis ?: mCelestialStartMillis,
+                    mMoonsetMillis ?: mCelestialEndMillis,
+                )
+                val moonX = CelestialTiming.celestialX(width, moonProgress)
+                val moonY = CelestialTiming.celestialY(height, moonProgress)
+                val size = (shortestSide * CelestialTiming.CELESTIAL_SIZE_FRACTION).toInt()
                 val halfSize = size / 2
                 mMoonDrawable.setPhaseAngle(mSceneState.moonPhaseAngle)
                 mMoonDrawable.alpha = (moonAlpha * 255).toInt()
@@ -1088,41 +1079,6 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 mSunPaintAlpha = alpha
             }
             CelestialGlow.draw(canvas, centerX, centerY, glowRadius, coreRadius, alpha, mSunGlowPaint, mSunCorePaint)
-        }
-
-        private fun sunVisibility(now: Long): Float {
-            if (!mAutomaticDayNight) return if (mDaytime) 1f else 0f
-            val sunrise = mSunriseMillis ?: return if (mDaytime) 1f else 0f
-            val sunset = mSunsetMillis ?: return if (mDaytime) 1f else 0f
-            val crossFade = 25L * 60L * 1000L
-            return when {
-                now < sunrise - crossFade -> 0f
-                now < sunrise + crossFade -> fraction(now, sunrise - crossFade, sunrise + crossFade)
-                now < sunset - crossFade -> 1f
-                now < sunset + crossFade -> 1f - fraction(now, sunset - crossFade, sunset + crossFade)
-                else -> 0f
-            }
-        }
-
-        private fun moonVisibility(now: Long): Float {
-            val moonrise = mMoonriseMillis ?: return 0f
-            val moonset = mMoonsetMillis ?: return 0f
-            if (moonset <= moonrise) return 0f
-            val crossFade = 25L * 60L * 1000L
-            return when {
-                now < moonrise - crossFade -> 0f
-                now < moonrise + crossFade -> fraction(now, moonrise - crossFade, moonrise + crossFade)
-                now < moonset - crossFade -> 1f
-                now < moonset + crossFade -> 1f - fraction(now, moonset - crossFade, moonset + crossFade)
-                else -> 0f
-            }
-        }
-
-        private fun celestialProgress(now: Long, preferredStart: Long?, preferredEnd: Long?): Float {
-            val start = preferredStart ?: mCelestialStartMillis ?: return 0.5f
-            val end = preferredEnd ?: mCelestialEndMillis ?: return 0.5f
-            if (end <= start) return 0.5f
-            return ((now - start).toFloat() / (end - start)).coerceIn(0f, 1f)
         }
 
         private fun visualDaytime(now: Long): Boolean {
