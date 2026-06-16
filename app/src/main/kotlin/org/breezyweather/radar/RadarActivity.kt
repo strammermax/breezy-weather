@@ -259,22 +259,36 @@ class RadarActivity : BreezyActivity() {
         )
     }
 
-    @SuppressLint("SetJavaScriptEnabled", "DEPRECATION")
+    @SuppressLint("SetJavaScriptEnabled")
     @Composable
     private fun BuienradarGadgetMap() {
-        // Gadget designed for 256px wide × 406px tall. Scale up to fill screen width.
+        // Gadget designed for 256px wide × 406px tall.
+        // After the page loads we inject a CSS transform that scales the body to fill the viewport width.
         val screenWidthDp = LocalConfiguration.current.screenWidthDp
-        val scalePercent = (screenWidthDp / 256f * 100).toInt().coerceAtLeast(100)
-        val gadgetHeightDp = (406f * scalePercent / 100f).dp
+        val gadgetHeightDp = (406f * (screenWidthDp / 256f)).coerceAtLeast(406f).dp
         AndroidView(
             modifier = Modifier.fillMaxWidth().height(gadgetHeightDp),
             factory = { ctx ->
                 WebView(ctx).apply {
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
-                    @Suppress("DEPRECATION")
-                    setInitialScale(scalePercent)
-                    webViewClient = WebViewClient()
+                    webViewClient = object : WebViewClient() {
+                        override fun onPageFinished(view: WebView, url: String) {
+                            view.evaluateJavascript("""
+                                (function(){
+                                    var bw = document.body.scrollWidth || 256;
+                                    var vw = window.innerWidth;
+                                    if (vw > bw) {
+                                        var s = vw / bw;
+                                        document.body.style.transform = 'scale('+s+')';
+                                        document.body.style.transformOrigin = '0 0';
+                                        document.body.style.width = Math.round(100/s)+'%';
+                                        document.documentElement.style.overflow = 'hidden';
+                                    }
+                                })()
+                            """.trimIndent(), null)
+                        }
+                    }
                     loadUrl("https://gadgets.buienradar.nl/gadget/radarfivedays")
                 }
             }

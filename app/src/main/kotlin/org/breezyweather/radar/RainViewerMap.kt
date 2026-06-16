@@ -52,7 +52,12 @@ internal object RainViewerMap {
         } else {
             ""
         }
-        val mapHeight = if (compact) "100vh" else "calc(100vh - 54px)"
+        // Compact: 100vh fills the card WebView. Full: 400px CSS fallback, JS overrides to actual height - ctrl.
+        val mapHeight = if (compact) "100vh" else "400px"
+        val setHeightJs = if (compact) "" else """
+ function setMapH(){var h=window.innerHeight-54;if(h>100){document.getElementById('map').style.height=h+'px';fixSize();}}
+ [0,150,400,900].forEach(function(t){setTimeout(setMapH,t)});
+ window.addEventListener('resize',setMapH);"""
         // Full-mode only: control bar HTML + player functions.
         val ctrlHtml = if (compact) "" else """
 <div class="ctrl">
@@ -115,6 +120,7 @@ $ctrlHtml
  map.whenReady(function(){setTimeout(fixSize,150);});
  window.addEventListener('load',fixSize);
  [150,400,800,1500].forEach(function(t){setTimeout(fixSize,t);});
+$setHeightJs
  var frames=[],layers={},idx=0,host='',pastCount=0;
  var tsEl=document.getElementById('ts');
  function layerFor(f){
