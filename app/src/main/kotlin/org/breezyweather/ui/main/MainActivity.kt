@@ -27,6 +27,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -250,6 +251,18 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
         binding = ActivityMainBinding.inflate(layoutInflater)
         supportFragmentManager.registerFragmentLifecycleCallbacks(fragmentsLifecycleCallback, false)
         setContentView(binding.root)
+
+        // Frost/blur effect: blur the live wallpaper behind the app window (API 31+).
+        // blurBehindRadius blurs what is BEHIND the window (the wallpaper), visible through
+        // the transparent parts of the window and semi-transparent card backgrounds.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+            @Suppress("DEPRECATION")
+            window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+            val attrs = window.attributes
+            attrs.blurBehindRadius = 30
+            window.attributes = attrs
+        }
 
         initModel(savedInstanceState == null)
         initView()

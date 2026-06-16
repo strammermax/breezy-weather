@@ -85,8 +85,9 @@
     <color name="colorMainCardBackground">#FDFCFF</color>
 
     <!-- ACT-013: glassmorphic card styling for the home weather cards. -->
+    <!-- Frosted glass: paired with window.setBackgroundBlurRadius(30) in MainActivity. -->
     <color name="colorGlassCardBackground">#40FFFFFF</color>
-    <color name="colorGlassCardStroke">#59FFFFFF</color>
+    <color name="colorGlassCardStroke">#80FFFFFF</color>
 
     <!-- Lighter glass overlay behind the detail screen content, for text readability
          over the sky-gradient/photo background without obscuring it as much as
