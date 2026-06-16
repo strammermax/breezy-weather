@@ -865,6 +865,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mForegroundNightTint = Float.NaN
             updateForegroundNightTint()
             updateLayerBounds()
+            // Photo changed: force snapshot on very next frame so the UI picks it up immediately.
+            mSnapshotCounter = 29
             lwwLog { "foreground rebuilt success=${mForeground != null} key=$key" }
         }
 
@@ -1408,6 +1410,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 sensorManager?.unregisterListener(mGravityListener, mGravitySensor)
             }
 
+            // Capture a fresh snapshot on the very first frame after becoming visible so that
+            // any photo/weather changes that happened while invisible are reflected immediately.
+            mSnapshotCounter = 29
             mHandler?.post { setWeatherBackgroundDrawable() }
             if (mRotatingWeather) {
                 mHandler?.postDelayed(mRotatingWeatherRunnable, ROTATING_WEATHER_INTERVAL_MILLIS)

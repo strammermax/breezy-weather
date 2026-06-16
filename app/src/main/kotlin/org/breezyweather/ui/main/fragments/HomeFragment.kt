@@ -90,11 +90,17 @@ class HomeFragment : MainModuleFragment() {
     private var callback: Callback? = null
     private var lastCurrentLocation: Location? = null
     private var lastKnownSnapshot: android.graphics.Bitmap? = null
+    private var lastKnownPhotoModified: Long = 0L
 
     // Polls WallpaperSnapshot every second and refreshes visible card frost backgrounds when
     // the snapshot changes (wallpaper service updates it every ~30 frames ≈ 1 s at 30 fps).
+    //
+    // Samsung One UI pauses the wallpaper engine while the app is in the foreground, so the
+    // snapshot may never update after a photo refresh. As a fallback we also watch the
+    // photo file's last-modified timestamp — if it changed we reload the raw photo immediately.
     private val snapshotPoller = object : Runnable {
         override fun run() {
+            // Primary path: wallpaper engine produced a new composite snapshot.
             val snap = WallpaperSnapshot.bitmap
             if (snap != null && snap !== lastKnownSnapshot) {
                 lastKnownSnapshot = snap
@@ -104,6 +110,21 @@ class HomeFragment : MainModuleFragment() {
                 updateAllFrostBackgrounds(snap)
                 // Full rebind so RecyclerView's recycled cards also get the new snapshot.
                 adapter?.notifyDataSetChanged()
+            } else {
+                // Fallback: check whether the source photo file changed while the engine was
+                // paused. If so, clear the stale snapshot and reload the raw photo.
+                val store = WallpaperImageStore(requireContext())
+                val path = store.cachedPhotoPath
+                if (path != null) {
+                    val modified = java.io.File(path).lastModified()
+                    if (modified != 0L && modified != lastKnownPhotoModified) {
+                        lastKnownPhotoModified = modified
+                        // Drop the old snapshot so cards fall back to the freshly loaded photo.
+                        WallpaperSnapshot.bitmap = null
+                        lastKnownSnapshot = null
+                        loadBlurredWallpaper()
+                    }
+                }
             }
             view?.postDelayed(this, 1000L)
         }
@@ -190,6 +211,11 @@ class HomeFragment : MainModuleFragment() {
                 lastKnownSnapshot = snap
                 wallpaperBitmap = snap
             }
+        }
+        // Seed the photo-modified timestamp so the first poller tick doesn't misfire.
+        if (lastKnownPhotoModified == 0L) {
+            val path = WallpaperImageStore(requireContext()).cachedPhotoPath
+            if (path != null) lastKnownPhotoModified = java.io.File(path).lastModified()
         }
         adapter?.notifyDataSetChanged()
         // (Re)start the poller; remove first to avoid double-scheduling on repeated resumes.
