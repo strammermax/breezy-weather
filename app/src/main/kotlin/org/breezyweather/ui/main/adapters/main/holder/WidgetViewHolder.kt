@@ -9,52 +9,36 @@
 package org.breezyweather.ui.main.adapters.main.holder
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.TextClock
+import android.widget.TextView
 import breezyweather.domain.location.model.Location
-import breezyweather.domain.weather.model.Daily
-import breezyweather.domain.weather.model.Hourly
 import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.common.extensions.formatMeasure
-import org.breezyweather.common.extensions.getWeek
+import org.breezyweather.common.extensions.getFormattedTime
+import org.breezyweather.common.extensions.is12Hour
 import org.breezyweather.common.options.appearance.WidgetTileType
+import org.breezyweather.domain.location.model.getPlace
 import org.breezyweather.domain.location.model.isDaylight
 import org.breezyweather.domain.settings.SettingsManager
+import org.breezyweather.common.extensions.getWeek
+import org.breezyweather.domain.weather.model.getTrendTemperature
 import org.breezyweather.domain.weather.model.getWeek
 import org.breezyweather.domain.weather.model.isToday
-import org.breezyweather.ui.theme.compose.BreezyWeatherTheme
 import org.breezyweather.ui.theme.resource.ResourceHelper
 import org.breezyweather.ui.theme.resource.ResourcesProviderFactory
 import org.breezyweather.ui.theme.resource.providers.ResourceProvider
 import org.breezyweather.unit.formatting.UnitWidth
-import kotlin.math.roundToInt
+import java.util.Date
 
 class WidgetViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
     LayoutInflater.from(parent.context).inflate(R.layout.container_main_widget, parent, false)
 ) {
-    private val composeView: ComposeView = itemView.findViewById(R.id.widget_tile_compose)
+    private val container: FrameLayout = itemView.findViewById(R.id.widget_tile_container)
 
     override fun onBindView(
         activity: BreezyActivity,
@@ -64,301 +48,285 @@ class WidgetViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
         itemAnimationEnabled: Boolean,
     ) {
         super.onBindView(activity, location, provider, listAnimationEnabled, itemAnimationEnabled)
+        container.removeAllViews()
+
         val widgetType = SettingsManager.getInstance(activity).widgetTileType
-        composeView.setContent {
-            BreezyWeatherTheme {
-                WidgetTileContent(location, widgetType, provider)
-            }
-        }
+        val layoutRes = widgetType.toLayoutRes()
+        val widgetView = LayoutInflater.from(activity).inflate(layoutRes, container, false)
+        widgetView.layoutParams = FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+        )
+        populateWidgetView(widgetView, widgetType, location, provider, activity)
+        container.addView(widgetView)
     }
 }
 
-@Composable
-private fun WidgetTileContent(
-    location: Location,
+private fun WidgetTileType.toLayoutRes(): Int = when (this) {
+    WidgetTileType.CLOCK_DAY_VERTICAL,
+    WidgetTileType.CLOCK_DAY_HORIZONTAL,
+    -> R.layout.widget_clock_day_symmetry_card
+
+    WidgetTileType.DAY_WEEK,
+    WidgetTileType.CLOCK_DAY_WEEK,
+    -> R.layout.widget_clock_day_week_card
+
+    WidgetTileType.WEEK,
+    WidgetTileType.TREND_DAILY,
+    WidgetTileType.MATERIAL_YOU_FORECAST,
+    -> R.layout.widget_week_card
+
+    else -> R.layout.widget_day_symmetry_card
+}
+
+private fun populateWidgetView(
+    view: View,
     widgetType: WidgetTileType,
+    location: Location,
     provider: ResourceProvider,
+    activity: BreezyActivity,
 ) {
-    val weather = location.weather ?: return
-    val textColor = MaterialTheme.colorScheme.onSurface
     when (widgetType) {
-        WidgetTileType.TREND_HOURLY -> HourlyTrendTile(location, provider, textColor)
+        WidgetTileType.CLOCK_DAY_VERTICAL,
+        WidgetTileType.CLOCK_DAY_HORIZONTAL,
+        -> populateClockDay(view, location, provider, activity)
+
+        WidgetTileType.DAY_WEEK,
+        WidgetTileType.CLOCK_DAY_WEEK,
+        -> populateClockDayWeek(view, location, provider, activity)
 
         WidgetTileType.WEEK,
         WidgetTileType.TREND_DAILY,
         WidgetTileType.MATERIAL_YOU_FORECAST,
-        -> WeekForecastTile(location, provider, textColor)
+        -> populateWeek(view, location, provider, activity)
 
-        WidgetTileType.DAY_WEEK,
-        WidgetTileType.CLOCK_DAY_WEEK,
-        -> DayWeekTile(location, provider, textColor)
-
-        else -> CurrentWeatherTile(location, provider, textColor)
+        else -> populateDay(view, location, provider, activity)
     }
 }
 
-@Composable
-private fun CurrentWeatherTile(
+// ─── Day (symmetry card) ──────────────────────────────────────────────────────
+
+private fun populateDay(
+    view: View,
     location: Location,
     provider: ResourceProvider,
-    textColor: Color,
+    activity: BreezyActivity,
 ) {
-    val ctx = androidx.compose.ui.platform.LocalContext.current
     val weather = location.weather ?: return
+    val ctx = activity
     val temperatureUnit = SettingsManager.getInstance(ctx).getTemperatureUnit(ctx)
 
-    val tempText = weather.current?.temperature?.temperature?.let {
-        it.toDouble(temperatureUnit).roundToInt().toString() +
-            temperatureUnit.getNominativeUnit(ctx)
-    } ?: ""
-    val weatherText = weather.current?.weatherText ?: ""
+    view.findViewById<ImageView>(R.id.widget_day_card)?.visibility = View.GONE
 
-    val feelsLikeText = weather.current?.temperature?.feelsLikeTemperature?.let {
-        it.formatMeasure(ctx, temperatureUnit, valueWidth = UnitWidth.NARROW, unitWidth = UnitWidth.NARROW)
+    val iconView = view.findViewById<ImageView>(R.id.widget_day_icon)
+    weather.current?.weatherCode?.let { code ->
+        iconView?.setImageDrawable(ResourceHelper.getWeatherIcon(provider, code, location.isDaylight))
+        iconView?.visibility = View.VISIBLE
+    } ?: run { iconView?.visibility = View.INVISIBLE }
+
+    val titleBuilder = StringBuilder(location.getPlace(ctx))
+    weather.current?.temperature?.temperature?.let { temp ->
+        titleBuilder.append("\n").append(
+            temp.formatMeasure(ctx, temperatureUnit, valueWidth = UnitWidth.NARROW, unitWidth = UnitWidth.NARROW)
+        )
     }
-    val precipText = weather.today?.day?.precipitationProbability?.total
-        ?.inPercent?.roundToInt()?.let { "$it%" }
-    val windText = weather.current?.wind?.speed?.formatMeasure(ctx, valueWidth = UnitWidth.NARROW)
-    val humidityText = weather.current?.relativeHumidity?.inPercent?.roundToInt()?.let { "$it%" }
+    view.findViewById<TextView>(R.id.widget_day_title)?.text = titleBuilder.toString()
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        // Left: large temperature + description
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = tempText,
-                color = textColor,
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Bold,
-                lineHeight = 52.sp,
-            )
-            if (weatherText.isNotEmpty()) {
-                Text(
-                    text = weatherText,
-                    color = textColor.copy(alpha = 0.75f),
-                    fontSize = 13.sp,
-                )
-            }
-        }
-
-        // Right: detail rows
-        Column(horizontalAlignment = Alignment.End) {
-            if (feelsLikeText != null) {
-                Text(
-                    text = "Voelt als $feelsLikeText",
-                    color = textColor.copy(alpha = 0.85f),
-                    fontSize = 12.sp,
-                )
-            }
-            if (precipText != null || windText != null) {
-                val combined = listOfNotNull(
-                    precipText?.let { "☔ $it" },
-                    windText?.let { "💨 $it" },
-                ).joinToString("  ")
-                if (combined.isNotEmpty()) {
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        text = combined,
-                        color = textColor.copy(alpha = 0.75f),
-                        fontSize = 12.sp,
-                    )
-                }
-            }
-            if (humidityText != null) {
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = "💧 $humidityText",
-                    color = textColor.copy(alpha = 0.75f),
-                    fontSize = 12.sp,
-                )
-            }
-        }
+    val subtitleBuilder = StringBuilder()
+    weather.current?.weatherText?.let { subtitleBuilder.append(it) }
+    weather.today?.getTrendTemperature(ctx, temperatureUnit)?.let { range ->
+        if (subtitleBuilder.isNotEmpty()) subtitleBuilder.append(" ")
+        subtitleBuilder.append(range)
     }
+    view.findViewById<TextView>(R.id.widget_day_subtitle)?.text = subtitleBuilder.toString()
+
+    val timeBuilder = StringBuilder(Date().getWeek(location, ctx))
+    weather.base.refreshTime?.getFormattedTime(location, ctx, ctx.is12Hour)?.let {
+        timeBuilder.append(" ").append(it)
+    }
+    view.findViewById<TextView>(R.id.widget_day_time)?.text = timeBuilder.toString()
 }
 
-@Composable
-private fun WeekForecastTile(
+// ─── Clock + Day (symmetry card) ─────────────────────────────────────────────
+
+private fun populateClockDay(
+    view: View,
     location: Location,
     provider: ResourceProvider,
-    textColor: Color,
+    activity: BreezyActivity,
 ) {
-    val ctx = androidx.compose.ui.platform.LocalContext.current
     val weather = location.weather ?: return
+    val ctx = activity
     val temperatureUnit = SettingsManager.getInstance(ctx).getTemperatureUnit(ctx)
+
+    view.findViewById<ImageView>(R.id.widget_clock_day_card)?.visibility = View.GONE
+
+    // Clock time zone
+    val tz = location.timeZone.id
+    view.findViewById<TextClock>(R.id.widget_clock_day_clock_light)?.timeZone = tz
+    view.findViewById<TextClock>(R.id.widget_clock_day_clock_aa_light)?.timeZone = tz
+
+    val iconView = view.findViewById<ImageView>(R.id.widget_clock_day_icon)
+    weather.current?.weatherCode?.let { code ->
+        iconView?.setImageDrawable(ResourceHelper.getWeatherIcon(provider, code, location.isDaylight))
+        iconView?.visibility = View.VISIBLE
+    } ?: run { iconView?.visibility = View.INVISIBLE }
+
+    val titleBuilder = StringBuilder(location.getPlace(ctx))
+    weather.current?.temperature?.temperature?.let { temp ->
+        titleBuilder.append("\n").append(
+            temp.formatMeasure(ctx, temperatureUnit, valueWidth = UnitWidth.NARROW, unitWidth = UnitWidth.NARROW)
+        )
+    }
+    view.findViewById<TextView>(R.id.widget_clock_day_title)?.text = titleBuilder.toString()
+
+    val subtitleBuilder = StringBuilder()
+    weather.current?.weatherText?.let { subtitleBuilder.append(it) }
+    weather.today?.getTrendTemperature(ctx, temperatureUnit)?.let { range ->
+        if (subtitleBuilder.isNotEmpty()) subtitleBuilder.append(" ")
+        subtitleBuilder.append(range)
+    }
+    view.findViewById<TextView>(R.id.widget_clock_day_subtitle)?.text = subtitleBuilder.toString()
+
+    val timeBuilder = StringBuilder()
+    weather.base.refreshTime?.getFormattedTime(location, ctx, ctx.is12Hour)?.let {
+        timeBuilder.append(location.getPlace(ctx)).append(" ").append(it)
+    }
+    view.findViewById<TextView>(R.id.widget_clock_day_time)?.text = timeBuilder.toString()
+}
+
+// ─── Clock + Day + Week ────────────────────────────────────────────────────────
+
+private fun populateClockDayWeek(
+    view: View,
+    location: Location,
+    provider: ResourceProvider,
+    activity: BreezyActivity,
+) {
+    val weather = location.weather ?: return
+    val ctx = activity
+    val temperatureUnit = SettingsManager.getInstance(ctx).getTemperatureUnit(ctx)
+
+    view.findViewById<ImageView>(R.id.widget_clock_day_week_card)?.visibility = View.GONE
+
+    val tz = location.timeZone.id
+    view.findViewById<TextClock>(R.id.widget_clock_day_week_clock_light)?.timeZone = tz
+    view.findViewById<TextClock>(R.id.widget_clock_day_week_clock_aa_light)?.timeZone = tz
+    view.findViewById<TextClock>(R.id.widget_clock_day_week_title)?.timeZone = tz
+
+    val iconView = view.findViewById<ImageView>(R.id.widget_clock_day_week_icon)
+    weather.current?.weatherCode?.let { code ->
+        iconView?.setImageDrawable(ResourceHelper.getWeatherIcon(provider, code, location.isDaylight))
+        iconView?.visibility = View.VISIBLE
+    } ?: run { iconView?.visibility = View.INVISIBLE }
+
+    val subtitle = StringBuilder(location.getPlace(ctx))
+    weather.current?.temperature?.temperature?.let { temp ->
+        subtitle.append(" ").append(
+            temp.formatMeasure(ctx, temperatureUnit, valueWidth = UnitWidth.NARROW, unitWidth = UnitWidth.NARROW)
+        )
+    }
+    view.findViewById<TextView>(R.id.widget_clock_day_week_subtitle)?.text = subtitle.toString()
+    view.findViewById<TextView>(R.id.widget_clock_day_week_alternate_calendar)?.text = ""
+
     val days = weather.dailyForecastStartingToday.take(5)
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-    ) {
-        days.forEach { daily ->
-            DayColumn(daily, location, provider, temperatureUnit, textColor, ctx)
+    val daylight = location.isDaylight
+    val weekIds = listOf(
+        R.id.widget_clock_day_week_week_1,
+        R.id.widget_clock_day_week_week_2,
+        R.id.widget_clock_day_week_week_3,
+        R.id.widget_clock_day_week_week_4,
+        R.id.widget_clock_day_week_week_5,
+    )
+    val iconIds = listOf(
+        R.id.widget_clock_day_week_icon_1,
+        R.id.widget_clock_day_week_icon_2,
+        R.id.widget_clock_day_week_icon_3,
+        R.id.widget_clock_day_week_icon_4,
+        R.id.widget_clock_day_week_icon_5,
+    )
+    val tempIds = listOf(
+        R.id.widget_clock_day_week_temp_1,
+        R.id.widget_clock_day_week_temp_2,
+        R.id.widget_clock_day_week_temp_3,
+        R.id.widget_clock_day_week_temp_4,
+        R.id.widget_clock_day_week_temp_5,
+    )
+    for (i in 0 until 5) {
+        val daily = days.getOrNull(i)
+        val dayLabel = if (daily?.isToday(location) == true) {
+            ctx.getString(R.string.daily_today_short)
+        } else {
+            daily?.getWeek(location, ctx) ?: ""
         }
+        view.findViewById<TextView>(weekIds[i])?.text = dayLabel
+        val dayIconView = view.findViewById<ImageView>(iconIds[i])
+        val code = daily?.day?.weatherCode
+        if (code != null) {
+            dayIconView?.setImageDrawable(ResourceHelper.getWeatherIcon(provider, code, daylight))
+            dayIconView?.visibility = View.VISIBLE
+        } else {
+            dayIconView?.visibility = View.INVISIBLE
+        }
+        view.findViewById<TextView>(tempIds[i])?.text =
+            daily?.getTrendTemperature(ctx, temperatureUnit) ?: ""
     }
 }
 
-@Composable
-private fun DayWeekTile(
-    location: Location,
-    provider: ResourceProvider,
-    textColor: Color,
-) {
-    Column {
-        CurrentWeatherTile(location, provider, textColor)
-        HorizontalDivider(
-            color = textColor.copy(alpha = 0.15f),
-            thickness = 0.5.dp,
-            modifier = Modifier.padding(horizontal = 16.dp),
-        )
-        WeekForecastTile(location, provider, textColor)
-    }
-}
+// ─── Week (5-column card) ─────────────────────────────────────────────────────
 
-@Composable
-private fun HourlyTrendTile(
+private fun populateWeek(
+    view: View,
     location: Location,
     provider: ResourceProvider,
-    textColor: Color,
+    activity: BreezyActivity,
 ) {
-    val ctx = androidx.compose.ui.platform.LocalContext.current
     val weather = location.weather ?: return
+    val ctx = activity
     val temperatureUnit = SettingsManager.getInstance(ctx).getTemperatureUnit(ctx)
-    val now = java.util.Date()
-    val hours = weather.hourlyForecast.filter { it.date.after(now) }.take(6)
-    if (hours.isEmpty()) {
-        CurrentWeatherTile(location, provider, textColor)
-        return
-    }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-    ) {
-        hours.forEach { hourly ->
-            HourColumn(hourly, location, provider, temperatureUnit, textColor, ctx)
-        }
-    }
-}
 
-@Composable
-private fun HourColumn(
-    hourly: Hourly,
-    location: Location,
-    provider: ResourceProvider,
-    temperatureUnit: org.breezyweather.unit.temperature.TemperatureUnit,
-    textColor: Color,
-    ctx: android.content.Context,
-) {
-    val hour = java.util.Calendar.getInstance(location.timeZone).also {
-        it.time = hourly.date
-    }[java.util.Calendar.HOUR_OF_DAY]
-    val label = String.format("%02d:00", hour)
-    val weatherCode = hourly.weatherCode
+    view.findViewById<ImageView>(R.id.widget_week_card)?.visibility = View.GONE
+
+    val days = weather.dailyForecastStartingToday.take(5)
     val daylight = location.isDaylight
-    val tempText = hourly.temperature?.temperature?.let {
-        it.toDouble(temperatureUnit).roundToInt().toString() + "°"
-    } ?: "-"
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(48.dp),
-    ) {
-        Text(
-            text = label,
-            color = textColor.copy(alpha = 0.8f),
-            fontSize = 10.sp,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-        )
-        Spacer(Modifier.height(4.dp))
-        if (weatherCode != null) {
-            AndroidView(
-                factory = { context -> android.widget.ImageView(context) },
-                update = { iv ->
-                    iv.setImageDrawable(ResourceHelper.getWeatherIcon(provider, weatherCode, daylight))
-                },
-                modifier = Modifier.size(28.dp),
-            )
+    val weekIds = listOf(
+        R.id.widget_week_week_1,
+        R.id.widget_week_week_2,
+        R.id.widget_week_week_3,
+        R.id.widget_week_week_4,
+        R.id.widget_week_week_5,
+    )
+    val iconIds = listOf(
+        R.id.widget_week_icon_1,
+        R.id.widget_week_icon_2,
+        R.id.widget_week_icon_3,
+        R.id.widget_week_icon_4,
+        R.id.widget_week_icon_5,
+    )
+    val tempIds = listOf(
+        R.id.widget_week_temp_1,
+        R.id.widget_week_temp_2,
+        R.id.widget_week_temp_3,
+        R.id.widget_week_temp_4,
+        R.id.widget_week_temp_5,
+    )
+    for (i in 0 until 5) {
+        val daily = days.getOrNull(i)
+        val dayLabel = if (daily?.isToday(location) == true) {
+            ctx.getString(R.string.daily_today_short)
         } else {
-            Spacer(Modifier.size(28.dp))
+            daily?.getWeek(location, ctx) ?: ""
         }
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = tempText,
-            color = textColor,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-        )
-    }
-}
-
-@Composable
-private fun DayColumn(
-    daily: Daily,
-    location: Location,
-    provider: ResourceProvider,
-    temperatureUnit: org.breezyweather.unit.temperature.TemperatureUnit,
-    textColor: Color,
-    ctx: android.content.Context,
-) {
-    val dayLabel = if (daily.isToday(location)) {
-        ctx.getString(R.string.daily_today_short)
-    } else {
-        daily.getWeek(location, ctx)
-    }
-    val daylight = location.isDaylight
-    val weatherCode = daily.day?.weatherCode
-    val highText = daily.day?.temperature?.temperature?.let {
-        it.toDouble(temperatureUnit).roundToInt().toString() + "°"
-    } ?: "-"
-    val lowText = daily.night?.temperature?.temperature?.let {
-        it.toDouble(temperatureUnit).roundToInt().toString() + "°"
-    } ?: "-"
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(56.dp),
-    ) {
-        Text(
-            text = dayLabel,
-            color = textColor.copy(alpha = 0.8f),
-            fontSize = 11.sp,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-        )
-        Spacer(Modifier.height(4.dp))
-        if (weatherCode != null) {
-            AndroidView(
-                factory = { context -> android.widget.ImageView(context) },
-                update = { iv ->
-                    iv.setImageDrawable(ResourceHelper.getWeatherIcon(provider, weatherCode, daylight))
-                },
-                modifier = Modifier.size(32.dp),
-            )
+        view.findViewById<TextView>(weekIds[i])?.text = dayLabel
+        val dayIconView = view.findViewById<ImageView>(iconIds[i])
+        val code = daily?.day?.weatherCode
+        if (code != null) {
+            dayIconView?.setImageDrawable(ResourceHelper.getWeatherIcon(provider, code, daylight))
+            dayIconView?.visibility = View.VISIBLE
         } else {
-            Spacer(Modifier.size(32.dp))
+            dayIconView?.visibility = View.INVISIBLE
         }
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = highText,
-            color = textColor,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-        )
-        Text(
-            text = lowText,
-            color = textColor.copy(alpha = 0.6f),
-            fontSize = 11.sp,
-            textAlign = TextAlign.Center,
-        )
+        view.findViewById<TextView>(tempIds[i])?.text =
+            daily?.getTrendTemperature(ctx, temperatureUnit) ?: ""
     }
 }
