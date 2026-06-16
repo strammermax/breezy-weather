@@ -121,6 +121,7 @@ internal object WallpaperSceneSnapshot {
             val size = (shortestSide * CELESTIAL_SIZE_FRACTION).toInt()
             val halfSize = size / 2
             val moonDrawable = MoonDrawable()
+            moonDrawable.setPhaseAngle(sceneState.moonPhaseAngle)
             moonDrawable.alpha = (moonAlpha * 255).toInt()
             moonDrawable.setBounds(
                 (moonX - halfSize).toInt(),

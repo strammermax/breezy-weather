@@ -10,10 +10,13 @@ package org.breezyweather.wallpaper
 
 import breezyweather.domain.weather.model.Precipitation
 import org.breezyweather.ui.theme.weatherView.WeatherView
+import org.shredzone.commons.suncalc.MoonIllumination
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.pow
+import kotlin.math.roundToInt
 import kotlin.math.tan
+import java.util.Date
 
 enum class WallpaperWeatherFamily {
     CLEAR,
@@ -73,6 +76,11 @@ data class WallpaperSceneState(
      * hemisphere for the seasonal grading experiment; never logged exactly).
      */
     val latitude: Double? = null,
+    /**
+     * Moon phase angle for the current date: 0 = new moon, 90 = first quarter,
+     * 180 = full moon, 270 = last quarter. Matches [breezyweather.domain.weather.model.MoonPhase.angle].
+     */
+    val moonPhaseAngle: Float = 180f,
 ) {
     val daytime: Boolean
         get() = daylight >= 0.5f
@@ -131,6 +139,9 @@ object WallpaperSceneStateFactory {
         val cloudDimming = (adjustedCloudDensity * adjustedCloudDarkness * 1.3f).coerceIn(0f, 1f)
         val photoDimming = (1f - (1f - nightDimming) * (1f - cloudDimming)).coerceIn(0f, 1f)
 
+        val moonPhaseAngle = (MoonIllumination.compute().on(Date()).execute().phase + 180.0)
+            .roundToInt().toFloat().let { ((it % 360f) + 360f) % 360f }
+
         return WallpaperSceneState(
             weatherKind = normalizedKind,
             weatherFamily = family,
@@ -154,6 +165,7 @@ object WallpaperSceneStateFactory {
             moonsetMillis = moonsetMillis,
             weatherRefreshedAtMillis = weatherRefreshedAtMillis,
             latitude = latitude,
+            moonPhaseAngle = moonPhaseAngle,
         )
     }
 

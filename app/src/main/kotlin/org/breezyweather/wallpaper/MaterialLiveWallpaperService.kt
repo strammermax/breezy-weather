@@ -1055,6 +1055,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 val moonY = horizonY - sin(Math.PI * moonProgress).toFloat() * (horizonY - peakY)
                 val size = (shortestSide * celestialSizeFraction).toInt()
                 val halfSize = size / 2
+                mMoonDrawable.setPhaseAngle(mSceneState.moonPhaseAngle)
                 mMoonDrawable.alpha = (moonAlpha * 255).toInt()
                 mMoonDrawable.setBounds(
                     (moonX - halfSize).toInt(),
