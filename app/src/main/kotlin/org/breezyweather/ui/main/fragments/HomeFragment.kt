@@ -126,6 +126,7 @@ class HomeFragment : MainModuleFragment() {
     override fun onResume() {
         super.onResume()
         weatherView.setDrawable(!isHidden)
+        adapter?.notifyDataSetChanged()
     }
 
     override fun onPause() {
