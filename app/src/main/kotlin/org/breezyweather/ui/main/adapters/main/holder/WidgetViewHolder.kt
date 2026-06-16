@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -97,62 +96,73 @@ private fun CurrentWeatherTile(
     val ctx = androidx.compose.ui.platform.LocalContext.current
     val weather = location.weather ?: return
     val temperatureUnit = SettingsManager.getInstance(ctx).getTemperatureUnit(ctx)
-    val daylight = location.isDaylight
-    val weatherCode = weather.current?.weatherCode
-    val tempValue = weather.current?.temperature?.temperature
-    val tempText = tempValue?.let {
+
+    val tempText = weather.current?.temperature?.temperature?.let {
         it.toDouble(temperatureUnit).roundToInt().toString() +
             temperatureUnit.getNominativeUnit(ctx)
     } ?: ""
     val weatherText = weather.current?.weatherText ?: ""
-    val todayHighText = weather.today?.day?.temperature?.temperature?.let {
+
+    val feelsLikeText = weather.current?.temperature?.feelsLikeTemperature?.let {
         it.formatMeasure(ctx, temperatureUnit, valueWidth = UnitWidth.NARROW, unitWidth = UnitWidth.NARROW)
-    } ?: ""
-    val todayLowText = weather.today?.night?.temperature?.temperature?.let {
-        it.formatMeasure(ctx, temperatureUnit, valueWidth = UnitWidth.NARROW, unitWidth = UnitWidth.NARROW)
-    } ?: ""
+    }
+    val precipText = weather.today?.day?.precipitationProbability?.total
+        ?.inPercent?.roundToInt()?.let { "$it%" }
+    val windText = weather.current?.wind?.speed?.formatMeasure(ctx, valueWidth = UnitWidth.NARROW)
+    val humidityText = weather.current?.relativeHumidity?.inPercent?.roundToInt()?.let { "$it%" }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (weatherCode != null) {
-            AndroidView(
-                factory = { context ->
-                    android.widget.ImageView(context).apply {
-                        scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
-                    }
-                },
-                update = { imageView ->
-                    imageView.setImageDrawable(
-                        ResourceHelper.getWeatherIcon(provider, weatherCode, daylight)
-                    )
-                },
-                modifier = Modifier.size(64.dp),
-            )
-            Spacer(Modifier.width(16.dp))
-        }
-        Column {
+        // Left: large temperature + description
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = tempText,
                 color = textColor,
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Light,
-                lineHeight = 40.sp,
+                fontSize = 48.sp,
+                fontWeight = FontWeight.Bold,
+                lineHeight = 52.sp,
             )
             if (weatherText.isNotEmpty()) {
                 Text(
                     text = weatherText,
-                    color = textColor.copy(alpha = 0.85f),
-                    fontSize = 14.sp,
+                    color = textColor.copy(alpha = 0.75f),
+                    fontSize = 13.sp,
                 )
             }
-            if (todayHighText.isNotEmpty() || todayLowText.isNotEmpty()) {
+        }
+
+        // Right: detail rows
+        Column(horizontalAlignment = Alignment.End) {
+            if (feelsLikeText != null) {
                 Text(
-                    text = "$todayHighText · $todayLowText",
-                    color = textColor.copy(alpha = 0.7f),
+                    text = "Voelt als $feelsLikeText",
+                    color = textColor.copy(alpha = 0.85f),
+                    fontSize = 12.sp,
+                )
+            }
+            if (precipText != null || windText != null) {
+                val combined = listOfNotNull(
+                    precipText?.let { "☔ $it" },
+                    windText?.let { "💨 $it" },
+                ).joinToString("  ")
+                if (combined.isNotEmpty()) {
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = combined,
+                        color = textColor.copy(alpha = 0.75f),
+                        fontSize = 12.sp,
+                    )
+                }
+            }
+            if (humidityText != null) {
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = "💧 $humidityText",
+                    color = textColor.copy(alpha = 0.75f),
                     fontSize = 12.sp,
                 )
             }
