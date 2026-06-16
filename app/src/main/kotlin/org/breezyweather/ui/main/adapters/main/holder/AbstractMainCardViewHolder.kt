@@ -35,6 +35,7 @@ import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.common.extensions.dpToPx
 import org.breezyweather.ui.main.fragments.HomeFragment
 import org.breezyweather.ui.theme.resource.providers.ResourceProvider
+import org.breezyweather.wallpaper.WallpaperSnapshot
 
 @SuppressLint("ObjectAnimatorBinding")
 abstract class AbstractMainCardViewHolder(
@@ -99,7 +100,8 @@ abstract class AbstractMainCardViewHolder(
     /** Adds (or updates) a blurred wallpaper ImageView as the bottom layer of the card. */
     private fun applyFrostBackground(card: MaterialCardView) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
-        val bitmap = HomeFragment.wallpaperBitmap ?: return
+        // Prefer the live-wallpaper snapshot (sky + photo composite); fall back to the raw photo.
+        val bitmap = WallpaperSnapshot.bitmap ?: HomeFragment.wallpaperBitmap ?: return
         val tag = "frost_bg"
         var bg = card.findViewWithTag<ImageView>(tag)
         if (bg == null) {
@@ -126,23 +128,26 @@ abstract class AbstractMainCardViewHolder(
         private const val GLASS_STROKE_WIDTH_DP = 1f
         private const val GLASS_CARD_SPACING_DP = 6f
 
-        /** Recomputes the wallpaper crop matrix for [bg] based on its current screen position. */
+        /**
+         * Recomputes the wallpaper crop matrix for [bg] based on its current screen position.
+         *
+         * [bitmap] is a snapshot captured by [WallpaperSnapshot] at 1/4 screen resolution, where
+         * bitmap pixel (bx, by) maps to screen pixel (bx * captureScale⁻¹, by * captureScale⁻¹).
+         * We scale back up and translate so that the card's top-left shows the wallpaper content
+         * that is visually at that exact screen position — the same as CSS `backdrop-filter`.
+         */
         fun updateFrostMatrix(bg: ImageView, bitmap: android.graphics.Bitmap) {
             val dm = bg.context.resources.displayMetrics
             val screenW = dm.widthPixels.toFloat()
-            val screenH = dm.heightPixels.toFloat()
-            // Scale the bitmap to cover the full screen (CENTER_CROP logic).
-            val scale = maxOf(screenW / bitmap.width, screenH / bitmap.height)
-            val scaledW = bitmap.width * scale
-            val scaledH = bitmap.height * scale
-            val cropX = (scaledW - screenW) / 2f
-            val cropY = (scaledH - screenH) / 2f
-            // Card's top-left on the physical screen.
+            // displayScale = how many screen pixels each bitmap pixel represents
+            val displayScale = screenW / bitmap.width
             val pos = IntArray(2)
             bg.getLocationOnScreen(pos)
             val matrix = android.graphics.Matrix()
-            matrix.setScale(scale, scale)
-            matrix.postTranslate(-pos[0] - cropX, -pos[1] - cropY)
+            // Scale up from snapshot resolution to screen resolution, then shift so the
+            // card's screen position (pos) aligns with the correct part of the snapshot.
+            matrix.setScale(displayScale, displayScale)
+            matrix.postTranslate(-pos[0].toFloat(), -pos[1].toFloat())
             bg.imageMatrix = matrix
         }
     }

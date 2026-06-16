@@ -44,6 +44,7 @@ import breezyweather.domain.location.model.Location
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.breezyweather.wallpaper.WallpaperSnapshot
 import org.breezyweather.wallpaper.photo.WallpaperImageStore
 import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
@@ -88,6 +89,21 @@ class HomeFragment : MainModuleFragment() {
     private val previewOffset = EqualtableLiveData(0)
     private var callback: Callback? = null
     private var lastCurrentLocation: Location? = null
+    private var lastKnownSnapshot: android.graphics.Bitmap? = null
+
+    // Polls WallpaperSnapshot every second and refreshes visible card frost backgrounds when
+    // the snapshot changes (wallpaper service updates it every ~30 frames ≈ 1 s at 30 fps).
+    private val snapshotPoller = object : Runnable {
+        override fun run() {
+            val snap = WallpaperSnapshot.bitmap
+            if (snap != null && snap !== lastKnownSnapshot) {
+                lastKnownSnapshot = snap
+                wallpaperBitmap = snap
+                updateAllFrostBackgrounds(snap)
+            }
+            view?.postDelayed(this, 1000L)
+        }
+    }
 
     interface Callback {
         fun onEditIconClicked()
@@ -126,6 +142,17 @@ class HomeFragment : MainModuleFragment() {
         return binding.root
     }
 
+    private fun updateAllFrostBackgrounds(bmp: android.graphics.Bitmap) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+        val rv = binding.recyclerView
+        for (i in 0 until rv.childCount) {
+            val child = rv.getChildAt(i) ?: continue
+            val bg = child.findViewWithTag<android.widget.ImageView>("frost_bg") ?: continue
+            bg.setImageBitmap(bmp)
+            AbstractMainCardViewHolder.updateFrostMatrix(bg, bmp)
+        }
+    }
+
     private fun loadBlurredWallpaper() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
         val store = WallpaperImageStore(requireContext())
@@ -153,11 +180,13 @@ class HomeFragment : MainModuleFragment() {
         super.onResume()
         weatherView.setDrawable(!isHidden)
         adapter?.notifyDataSetChanged()
+        view?.post(snapshotPoller)
     }
 
     override fun onPause() {
         super.onPause()
         weatherView.setDrawable(false)
+        view?.removeCallbacks(snapshotPoller)
     }
 
     override fun onDestroyView() {
@@ -563,7 +592,7 @@ class HomeFragment : MainModuleFragment() {
             weatherView.onScroll(mScrollY)
             adapter?.onScroll()
             // Update frost-blur crop offsets for every visible card.
-            val bmp = wallpaperBitmap ?: return
+            val bmp = WallpaperSnapshot.bitmap ?: wallpaperBitmap ?: return
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
             for (i in 0 until recyclerView.childCount) {
                 val bg = recyclerView.getChildAt(i)

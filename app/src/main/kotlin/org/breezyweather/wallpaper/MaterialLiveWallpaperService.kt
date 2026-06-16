@@ -246,6 +246,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mVisible = false
         private var mAnimate = false
         private var mRotatingWeather = false
+        private var mSnapshotCounter = 0
         private var mRotatingWeatherIndex = 0
         private var hasDrawn = false
         private var mDeviceOrientation: DeviceOrientation = DeviceOrientation.TOP
@@ -390,6 +391,24 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         }
                     }
                     drawRotatingWeatherLabel(it)
+
+                    // Every 30 frames (~1 s at 30 fps), save a 1/4-res snapshot of the sky +
+                    // photo layers for the frosted-glass card backgrounds in the UI.
+                    if (++mSnapshotCounter >= 30) {
+                        mSnapshotCounter = 0
+                        val snapW = width / 4
+                        val snapH = height / 4
+                        if (snapW > 0 && snapH > 0) {
+                            val snap = Bitmap.createBitmap(snapW, snapH, Bitmap.Config.ARGB_8888)
+                            val sc = Canvas(snap)
+                            val sx = snapW.toFloat() / width
+                            val sy = snapH.toFloat() / height
+                            sc.scale(sx, sy)
+                            sc.withTranslation(-bgOffset, 0f) { mBackground?.draw(sc) }
+                            sc.withTranslation(-fgOffset, 0f) { mForeground?.draw(sc) }
+                            WallpaperSnapshot.bitmap = snap
+                        }
+                    }
                 }
             } catch (e: Throwable) {
                 if (BreezyWeather.instance.debugMode) {
