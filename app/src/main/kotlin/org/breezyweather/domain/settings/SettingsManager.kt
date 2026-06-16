@@ -30,6 +30,7 @@ import org.breezyweather.common.options.appearance.BackgroundAnimationMode
 import org.breezyweather.common.options.appearance.CardDisplay
 import org.breezyweather.common.options.appearance.DailyTrendDisplay
 import org.breezyweather.common.options.appearance.HourlyTrendDisplay
+import org.breezyweather.common.options.appearance.WidgetTileType
 import org.breezyweather.unit.distance.DistanceUnit
 import org.breezyweather.unit.precipitation.PrecipitationUnit
 import org.breezyweather.unit.pressure.PressureUnit
@@ -287,6 +288,14 @@ class SettingsManager private constructor(
                 config.getString("card_display", DEFAULT_CARD_DISPLAY)
             )
             .toMutableList()
+
+    var widgetTileType: WidgetTileType
+        set(value) {
+            config.edit().putString("widget_tile_type", value.id).apply()
+        }
+        get() = WidgetTileType.fromId(
+            config.getString("widget_tile_type", WidgetTileType.CLOCK_DAY_VERTICAL.id) ?: WidgetTileType.CLOCK_DAY_VERTICAL.id
+        )
 
     var dailyTrendDisplayList: List<DailyTrendDisplay>
         set(value) {

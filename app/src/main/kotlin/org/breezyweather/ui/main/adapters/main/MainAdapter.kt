@@ -48,6 +48,7 @@ import org.breezyweather.ui.main.adapters.main.holder.RadarViewHolder
 import org.breezyweather.ui.main.adapters.main.holder.SunViewHolder
 import org.breezyweather.ui.main.adapters.main.holder.UvViewHolder
 import org.breezyweather.ui.main.adapters.main.holder.VisibilityViewHolder
+import org.breezyweather.ui.main.adapters.main.holder.WidgetViewHolder
 import org.breezyweather.ui.main.adapters.main.holder.WindViewHolder
 import org.breezyweather.ui.theme.resource.providers.ResourceProvider
 import org.breezyweather.ui.theme.weatherView.WeatherView
@@ -203,6 +204,7 @@ class MainAdapter(
         ViewType.MOON -> MoonViewHolder(parent)
         ViewType.CLOCK -> ClockViewHolder(parent)
         ViewType.RADAR -> RadarViewHolder(parent)
+        ViewType.WIDGET -> WidgetViewHolder(parent)
         ViewType.FOOTER -> FooterViewHolder(ComposeView(parent.context))
         else -> FooterViewHolder(ComposeView(parent.context))
     }
@@ -361,6 +363,7 @@ class MainAdapter(
             CardDisplay.CARD_MOON -> ViewType.MOON
             CardDisplay.CARD_CLOCK -> ViewType.CLOCK
             CardDisplay.CARD_RADAR -> ViewType.RADAR
+            CardDisplay.CARD_WIDGET -> ViewType.WIDGET
         }
 
         private fun getCardDisplay(viewType: Int): CardDisplay? = when (viewType) {
@@ -379,6 +382,7 @@ class MainAdapter(
             ViewType.MOON -> CardDisplay.CARD_MOON
             ViewType.CLOCK -> CardDisplay.CARD_CLOCK
             ViewType.RADAR -> CardDisplay.CARD_RADAR
+            ViewType.WIDGET -> CardDisplay.CARD_WIDGET
             else -> null
         }
     }

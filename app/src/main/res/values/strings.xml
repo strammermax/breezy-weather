@@ -25,6 +25,12 @@
     <string name="ephemeris_polar_day">Polar day</string>
     <string name="ephemeris_polar_night">Polar night</string>
     <string name="clock">Clock</string>
+    <string name="widget_tile">Widget</string>
+    <string name="widget_tile_select">Choose widget</string>
+    <string name="widget_tile_day">Day</string>
+    <string name="widget_tile_clock_day_vertical">Clock + Day (Vertical)</string>
+    <string name="widget_tile_clock_day_horizontal">Clock + Day (Horizontal)</string>
+    <string name="widget_tile_week">Weekly</string>
     <!-- Alerts -->
     <string name="alert">Alert</string>
     <string name="alerts">Alerts</string>
