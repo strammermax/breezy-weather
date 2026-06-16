@@ -262,34 +262,38 @@ class RadarActivity : BreezyActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     @Composable
     private fun BuienradarGadgetMap() {
-        // Gadget designed for 256px wide × 406px tall.
-        // After the page loads we inject a CSS transform that scales the body to fill the viewport width.
+        // Gadget designed for 256×406px. We wrap it in an iframe inside our own HTML page
+        // and use CSS transform to scale the 256px frame to fill the screen width.
         val screenWidthDp = LocalConfiguration.current.screenWidthDp
-        val gadgetHeightDp = (406f * (screenWidthDp / 256f)).coerceAtLeast(406f).dp
+        val scale = screenWidthDp / 256f
+        val gadgetHeightDp = (406f * scale).coerceAtLeast(406f).dp
+        val scaleStr = String.format(Locale.US, "%.4f", scale)
+        val wrapperHtml = """<!DOCTYPE html><html><head>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>
+html,body{margin:0;padding:0;overflow:hidden;background:#fff}
+.wrap{width:256px;height:406px;transform:scale($scaleStr);transform-origin:0 0}
+iframe{width:256px;height:406px;border:none;display:block}
+</style></head><body>
+<div class="wrap">
+  <iframe src="https://gadgets.buienradar.nl/gadget/radarfivedays"
+          frameborder="0" scrolling="no" noresize></iframe>
+</div>
+</body></html>"""
         AndroidView(
             modifier = Modifier.fillMaxWidth().height(gadgetHeightDp),
             factory = { ctx ->
                 WebView(ctx).apply {
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
-                    webViewClient = object : WebViewClient() {
-                        override fun onPageFinished(view: WebView, url: String) {
-                            view.evaluateJavascript("""
-                                (function(){
-                                    var bw = document.body.scrollWidth || 256;
-                                    var vw = window.innerWidth;
-                                    if (vw > bw) {
-                                        var s = vw / bw;
-                                        document.body.style.transform = 'scale('+s+')';
-                                        document.body.style.transformOrigin = '0 0';
-                                        document.body.style.width = Math.round(100/s)+'%';
-                                        document.documentElement.style.overflow = 'hidden';
-                                    }
-                                })()
-                            """.trimIndent(), null)
-                        }
-                    }
-                    loadUrl("https://gadgets.buienradar.nl/gadget/radarfivedays")
+                    webViewClient = WebViewClient()
+                    loadDataWithBaseURL(
+                        "https://gadgets.buienradar.nl",
+                        wrapperHtml,
+                        "text/html",
+                        "UTF-8",
+                        null
+                    )
                 }
             }
         )
