@@ -792,87 +792,135 @@ internal class WallpaperWeatherEffectRenderer(
                 return streak * smoothstep(0.28, 0.96, random);
             }
 
-            // ACT-006 Phase 1: realistic water-drop-on-glass appearance.
-            // Returns (highlight, shadow, refraction):
-            //   highlight = rim ring + two specular spots + faint interior glow
-            //   shadow    = thin bottom crescent + trail darkening
-            //   refraction = interior lens body that drives the background brightening
-            float3 glassDropLayer(float2 uv, float scale, float speed, float seed, float trailLength, float refractionStrength) {
-                float2 p = uv * float2(scale, scale * 1.30);
-                float2 cell = floor(p);
+            // Sawtooth wave: 0→1 over [0, edge], then instant reset.
+            // edge=0.85 → drop falls in 85% of cycle, snaps back in 15%.
+            // Technique from rocksdanister/rain (rain.frag Saw function).
+            float sawWave(float edge, float t) {
+                return smoothstep(0.0, edge, t) * smoothstep(1.0, edge, t);
+            }
 
-                // Four independent seeds per cell for varied appearance
-                float rnd  = hash21(cell + seed);
-                float rnd2 = hash21(cell + seed + 11.3);
-                float rnd3 = hash21(cell + seed + 23.7);
-                float rnd4 = hash21(cell + seed + 37.1);
-
+            // Dense static micro-drop field with Saw-based random appear/disappear.
+            // Adapted from rocksdanister/rain StaticDrops: 40× grid, phase-based fade.
+            float staticRainDrops(float2 uv, float seed) {
+                float2 p = uv * 40.0;
+                float2 id = floor(p);
                 float2 local = fract(p) - 0.5;
+                float rA = hash21(id + seed);
+                float rB = hash21(id + seed + float2(5.7,  11.3));
+                float rC = hash21(id + seed + float2(13.1,  7.9));
+                float2 center = (float2(rA, rB) - 0.5) * 0.70;
+                float d = length(local - center);
+                float fade = sawWave(0.025, fract(time * 0.10 + rC));
+                return smoothstep(0.30, 0.0, d) * rC * fade;
+            }
 
-                // Drop slides downward over time (trail is the residue left above)
-                local.y = fract(local.y - time * speed * mix(0.15, 1.0, rnd)) - 0.5;
+            // Animated rain-drop-on-glass layer.
+            // Based on rocksdanister/rain DropLayer2 algorithm, adapted to AGSL.
+            //
+            // Key techniques vs. old glassDropLayer:
+            //   1. 6:1 elongated cell grid → drops stay in narrow vertical lanes
+            //   2. Sawtooth timing → drops fall top-to-bottom, instant reset at top
+            //   3. Lateral wiggle (sin(y+sin(y))) → naturalistic drift while falling
+            //   4. Cascade droplets → periodic sin()-dots in the trail wake (DropLayer2 trick)
+            //   5. Blinn-Phong specular via dome surface normal → physically correct highlight
+            //
+            // colScale  = number of drop columns across the aspectUv.x range [0, aspect].
+            //             radius_px ≈ 0.42 × screenWidth / (colScale / aspect).
+            // speed     = sawtooth cycles per second (0.18 ≈ one fall every 5–6 s).
+            // trailLen  = 0 = no trail/wiggle, 1 = full trail + cascade droplets.
+            // refStr    = interior lens-brightening strength.
+            // Returns float3(highlight, shadow, refraction).
+            float3 rainDropLayer(float2 uv, float colScale, float speed, float seed,
+                                 float trailLen, float refStr) {
+                float2 UV = uv;
 
-                // Irregular scatter within the cell — breaks the grid regularity
-                float2 dropCenter = float2((rnd2 - 0.5) * 0.68, (rnd3 - 0.5) * 0.62);
-                float2 centered = local - dropCenter;
+                // Elongated 6:1 grid: colScale columns, colScale/6 rows.
+                float rowScale = colScale / 6.0;
+                float2 p = float2(UV.x * colScale, UV.y * rowScale);
 
-                // Size distribution skewed towards small (squared hash gives more tiny drops)
-                float sizeHash = hash21(cell + seed + 17.0);
-                float size = mix(0.030, 0.145, sizeHash * sizeHash);
+                float2 cellId = floor(p);
+                // x: [-0.5, 0.5] centred; y: [0, 1] from bottom of cell to top
+                float2 st = float2(fract(p.x) - 0.5, fract(p.y));
 
-                // Oblate shape: water on glass spreads wider than it is tall
-                float2 dropUV = centered * float2(1.0 / 1.05, 1.0 / 0.90);
-                float dist = length(dropUV);
+                float rA = hash21(cellId + seed);
+                float rB = hash21(cellId + seed + float2(11.3, 7.1));
+                float rC = hash21(cellId + seed + float2(23.7, 17.4));
 
-                // Clear lens body — the water-filled area
-                float body = smoothstep(size, size * 0.78, dist);
+                // Drop X with lateral wiggle: sin(y+sin(y)) gives a naturalistic S-path
+                float x = (rA - 0.5) * 0.70;
+                float wFreq = UV.y * rowScale * 18.0;
+                float wiggle = sin(wFreq + sin(wFreq));
+                x += wiggle * (0.5 - abs(x)) * (rC - 0.5) * 0.35 * trailLen;
 
-                // Rim: thin bright ring at the water/glass boundary (surface tension effect)
-                // This is the MAIN visual indicator that something is a water drop
-                float rim = smoothstep(size * 1.10, size * 0.97, dist)
-                          - smoothstep(size * 0.97, size * 0.82, dist);
+                // True sawtooth fall: drop falls from top (0) to bottom (1) over 85%
+                // of the cycle via smoothstep, then HOLDS at 1.0 for the remaining 15%,
+                // then fract() snaps it back to 0 instantly.
+                // sawWave() was wrong here: it smoothly descends back to 0 in the last
+                // 15%, causing the visible "going back up" bug.
+                float dropSpd = speed * mix(0.75, 1.25, rB);
+                float ti = fract(time * dropSpd + rC);
+                float dropY = smoothstep(0.0, 0.85, ti);
 
-                // Interior lens glow: water acts as converging lens, focuses ambient sky light
-                // making the inside appear slightly brighter than the surrounding surface
-                float interior = smoothstep(size * 0.88, size * 0.25, dist) * body;
+                // Distance compensated for 6:1 cell aspect → circular shape on screen
+                float2 delta = st - float2(x, dropY);
+                float dist = length(delta * float2(1.0, 6.0));
 
-                // Primary specular: sharp bright dot top-left (sky/ambient reflection)
-                float specular1 = smoothstep(size * 0.24, 0.0,
-                    length(centered - float2(-size * 0.30, -size * 0.38)));
+                float dropSize = 0.42;
+                float body = smoothstep(dropSize, dropSize * 0.72, dist);
 
-                // Secondary specular: dimmer dot slightly above center (window frame reflection)
-                float specular2 = smoothstep(size * 0.11, 0.0,
-                    length(centered - float2(size * 0.12, -size * 0.50))) * 0.45;
+                // Dome surface normal from drop silhouette (analytically derived)
+                float2 nXY = (delta * float2(1.0, 6.0)) / max(dist, 0.001);
+                float nZ   = sqrt(max(0.0, 1.0 - dist * dist / (dropSize * dropSize)));
+                float3 N = normalize(float3(-nXY * body, nZ));
 
-                // Bottom shadow crescent: thin dark arc at the very bottom of the drop
-                float bottomShadow = smoothstep(size * 0.38, 0.0,
-                    length(centered - float2(size * 0.06, size * 0.46))) * body;
+                // Blinn-Phong: light from upper-left. In AGSL y increases downward,
+                // so "upper" = negative y direction.
+                float3 L = normalize(float3(-0.35, -0.55, 0.80));
+                float3 H = normalize(L + float3(0.0, 0.0, 1.0));
+                float spec = pow(max(dot(N, H), 0.0), 52.0) * body;
 
-                // Trail: thin water streak left above the drop as it slides down
-                float trailW = mix(0.008, 0.024, rnd);
-                float trailReach = mix(size * 0.5, 0.45, trailLength);
-                float trail = smoothstep(trailW, 0.0, abs(centered.x))
-                    * smoothstep(trailReach, size * 0.36, centered.y)
-                    * smoothstep(-0.50, -0.14, centered.y)
-                    * trailLength;
+                // Thin rim: bright ring at the water/glass boundary (surface tension)
+                float rim = smoothstep(dropSize + 0.04, dropSize, dist)
+                          - smoothstep(dropSize, dropSize * 0.88, dist);
 
-                // Visibility gate — not every cell has a drop (natural spacing)
-                float visible = smoothstep(0.64, 0.95, rnd4);
+                // Bottom crescent shadow: gravity pulls water to lower (higher y) edge.
+                // In AGSL y increases downward, so shadow is at dropY + offset.
+                float2 shadowPos = float2(x, dropY + dropSize * 0.52);
+                float bottomShadow = smoothstep(dropSize * 0.36, 0.0,
+                    length((st - shadowPos) * float2(1.0, 6.0))) * body;
+
+                // Trail: thin residual water streak ABOVE the drop (lower y = higher on screen).
+                // r fades toward 0 as the drop approaches bottom (dropY→1), preventing
+                // a trail when the drop snaps back to the top.
+                float r = sqrt(max(0.0, smoothstep(1.0, 0.2, dropY)));
+                float cd = abs(st.x - x);
+                float trail = smoothstep(0.23 * r, 0.15 * r * r, cd)
+                            * smoothstep(-0.02, 0.02, dropY - st.y)   // above = st.y < dropY
+                            * r * r * trailLen;
+
+                // Cascade droplets in the trail wake (rocksdanister/rain DropLayer2 trick).
+                float y2 = UV.y * rowScale * 3.0;
+                float trail2 = smoothstep(0.20 * r, 0.0, cd);
+                float droplets = max(0.0,
+                    sin(y2 * (1.0 - fract(y2)) * 120.0) - (dropY - st.y)
+                ) * trail2 * smoothstep(-0.02, 0.02, dropY - st.y) * rC * trailLen;
+
+                // ~25% of cells have an active drop
+                float visible = step(0.75, rB);
 
                 float highlight = (
-                    rim       * 0.72 +
-                    specular1 * 1.05 +
-                    specular2 * 0.50 +
-                    interior  * 0.10 +
-                    trail     * 0.07
+                    spec     * 1.60 +
+                    rim      * 0.78 +
+                    trail    * 0.10 +
+                    droplets * 0.22
                 ) * visible;
 
-                float shadow = (bottomShadow * 0.42 + trail * 0.16) * visible;
+                float shadow = (
+                    bottomShadow * 0.38 +
+                    trail        * 0.14
+                ) * visible;
 
-                // Refraction drives the background brightening inside the drop body
-                float refraction = interior * body * visible * refractionStrength;
-
-                return float3(highlight, shadow, refraction);
+                return float3(highlight, shadow, body * visible * refStr);
             }
 
             // Hail sits visually between snow (slow, round, drifting flakes) and rain (fast,
@@ -1026,12 +1074,24 @@ internal class WallpaperWeatherEffectRenderer(
                 float h2 = hash21(float2(seed, 23.0));
                 cloud = max(cloud, cloudCircle(p, float2(mix(-0.92, -0.46, h1), 0.18), 0.30, 0.11));
                 cloud = max(cloud, cloudCircle(p, float2(mix(0.46, 0.98, h2), 0.20), 0.32, 0.11));
-                // Flatten the base of the cloud, but only where the circular lobes already
-                // provide coverage (dilated slightly) - otherwise this axis-aligned term
-                // shows through as a standalone soft-edged square/rectangle in the sky.
+                // Fill the bottom of the cloud between the circular lobes.
+                // ONLY where the lobes already provide solid coverage (cloud >= 0.30),
+                // so the rectangular flatBase region never bleeds into open sky.
                 float flatBase = smoothstep(0.40, 0.16, abs(p.y - 0.20))
                     * smoothstep(1.18, 0.78, abs(p.x));
-                cloud = max(cloud, flatBase * smoothstep(0.0, 0.35, cloud + 0.15));
+                float cloudCoverage = smoothstep(0.20, 0.55, cloud);
+                cloud = max(cloud, flatBase * cloudCoverage * cloudCoverage);
+                // FBM turbulence: 3-octave animated noise pushes the cloud boundary
+                // inward and outward, breaking the smooth circular silhouette into
+                // irregular storm-cloud billows. Applied only at the edge transition
+                // zone (cloud*(1-cloud) peaks where cloud≈0.5) so interior and exterior
+                // stay cleanly solid/empty.
+                float2 np = p * 2.2 + float2(seed * 0.37, time * 0.006);
+                float fbm = noise21(np)                              * 0.500
+                          + noise21(np * 2.1 + float2(3.7,  1.2))  * 0.250
+                          + noise21(np * 4.3 + float2(-2.1, 4.8))  * 0.125;
+                cloud += (fbm - 0.54) * cloud * (1.0 - cloud) * 1.6;
+                cloud = clamp(cloud, 0.0, 1.0);
                 float shade = smoothstep(-0.40, 0.85, p.y);
                 return float2(cloud, shade);
             }
@@ -1062,30 +1122,39 @@ internal class WallpaperWeatherEffectRenderer(
                 }
 
                 if (weatherPass == 2.0 && (mode == 1.0 || mode == 4.0 || mode == 5.0) && glassRainIntensity > 0.0) {
-                    // Six size tiers: 2 large + 2 medium + 1 small + 1 tiny.
-                    // Different seeds per tier so they don't align on the same grid.
-                    float3 large1  = glassDropLayer(aspectUv,  4.5, 0.018, 31.0, glassTrailLength,        glassRefractionStrength);
-                    float3 large2  = glassDropLayer(aspectUv,  6.0, 0.022, 53.0, glassTrailLength * 0.85, glassRefractionStrength * 0.90);
-                    float3 medium1 = glassDropLayer(aspectUv,  9.5, 0.013, 73.0, glassTrailLength * 0.60, glassRefractionStrength * 0.70);
-                    float3 medium2 = glassDropLayer(aspectUv, 12.0, 0.009, 97.0, glassTrailLength * 0.40, glassRefractionStrength * 0.50);
-                    float3 small1  = glassDropLayer(aspectUv, 18.0, 0.005, 117.0, 0.0, 0.0);
-                    float3 tiny    = glassDropLayer(aspectUv, 27.0, 0.002, 143.0, 0.0, 0.0);
+                    // Three-layer approach from rocksdanister/rain:
+                    //   staticDrops — 40× grid micro-drops, Saw-fade appear/disappear
+                    //   drop1       — main animated layer: sawtooth fall + wiggle + cascade
+                    //   drop2       — secondary layer at 1.85× UV (smaller/denser drops)
+                    //
+                    // colScale=50 with aspectUv.x≈0.46 → ~23 columns → ~20px radius drops.
+                    // colScale=50 on UV×1.85 → ~42 columns → ~11px radius drops.
+                    float staticInt = clamp(glassRainIntensity * 2.0, 0.0, 1.0);
+                    float layer1Int = smoothstep(0.25, 0.75, glassRainIntensity);
+                    float layer2Int = smoothstep(0.0,  0.5,  glassRainIntensity);
+
+                    float sd1 = staticRainDrops(aspectUv,        31.0);
+                    float sd2 = staticRainDrops(aspectUv * 1.55, 67.0);
+
+                    float3 drop1 = rainDropLayer(aspectUv,        50.0, 0.18, 31.0,
+                                                 glassTrailLength,       glassRefractionStrength);
+                    float3 drop2 = rainDropLayer(aspectUv * 1.85, 50.0, 0.22, 73.0,
+                                                 glassTrailLength * 0.75, glassRefractionStrength * 0.80);
 
                     glassHighlight = clamp((
-                        large1.x  * 1.00 + large2.x  * 0.92 +
-                        medium1.x * 0.76 + medium2.x * 0.64 +
-                        small1.x  * 0.44 + tiny.x    * 0.28
+                        (sd1 + sd2) * staticInt  * 0.50 +
+                        drop1.x     * layer1Int  * 1.00 +
+                        drop2.x     * layer2Int  * 0.88
                     ) * glassHighlightStrength, 0.0, 1.0);
 
                     glassShadow = clamp(
-                        large1.y  * 1.00 + large2.y  * 0.88 +
-                        medium1.y * 0.72 + medium2.y * 0.58 +
-                        small1.y  * 0.38 + tiny.y    * 0.22,
+                        drop1.y * layer1Int * 1.00 +
+                        drop2.y * layer2Int * 0.85,
                         0.0, 0.60);
 
                     glassRefraction = clamp(
-                        large1.z  * 1.00 + large2.z  * 0.88 +
-                        medium1.z * 0.68 + medium2.z * 0.50,
+                        drop1.z * layer1Int * 1.00 +
+                        drop2.z * layer2Int * 0.75,
                         0.0, 0.60);
 
                     glassHighlight  *= glassRainIntensity;
@@ -1222,14 +1291,15 @@ internal class WallpaperWeatherEffectRenderer(
                         }
 
                         float3 fairColor = daylight > 0.5 ? float3(0.94, 0.97, 1.0) : float3(0.48, 0.54, 0.64);
-                        // Heavier, greyer storm color for rain/very cloudy/thunder, with a curve
-                        // that pushes mid-to-high darkness values towards a flatter grey rather
-                        // than the brighter blue-grey used for light cloud cover.
-                        float3 stormColor = daylight > 0.5 ? float3(0.38, 0.40, 0.45) : float3(0.16, 0.18, 0.24);
+                        // Storm color is near-black at full darkness, matching the dramatic
+                        // deep blue-grey of real cumulonimbus / rain cloud undersides.
+                        float3 stormColor = daylight > 0.5 ? float3(0.20, 0.22, 0.28) : float3(0.09, 0.11, 0.15);
                         float greyness = pow(weightedDarkness, 0.8);
                         cloudColor = mix(fairColor, stormColor, greyness);
-                        // Darken the lower part of the cloud mass for a volumetric, top-lit look.
-                        cloudColor *= mix(1.0, 0.74, weightedShade);
+                        // Shade: darker clouds get a stronger top→base gradient so storm
+                        // cloud bases look almost black while tops stay lighter (top-lit).
+                        float shadeStrength = mix(0.80, 0.46, smoothstep(0.30, 0.85, weightedDarkness));
+                        cloudColor *= mix(1.0, shadeStrength, weightedShade);
                     }
 
                     // ACT-014: stars fade in at night and are occluded by clouds.
