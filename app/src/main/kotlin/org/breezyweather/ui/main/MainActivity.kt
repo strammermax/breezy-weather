@@ -104,11 +104,13 @@ import org.breezyweather.ui.theme.ThemeManager
 import org.breezyweather.ui.theme.compose.BreezyWeatherTheme
 import org.breezyweather.ui.theme.weatherView.WeatherViewController
 import org.breezyweather.wallpaper.CelestialTiming
+import org.breezyweather.wallpaper.WallpaperEffectView
 import org.breezyweather.wallpaper.WallpaperSceneSnapshot
 import org.breezyweather.wallpaper.WallpaperSceneStateFactory
 import org.breezyweather.wallpaper.photo.WallpaperImageStore
 import org.breezyweather.wallpaper.photo.WallpaperRepository
 import org.breezyweather.wallpaper.photo.toWallpaperPlaceQuery
+import org.breezyweather.common.extensions.isBackgroundAnimationEnabled
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -129,6 +131,7 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainActivityViewModel
     private var liveWallpaperPhotoRefreshInProgress = false
+    private lateinit var effectView: WallpaperEffectView
 
     private val _dialogPerLocationSettingsOpen = MutableStateFlow(false)
     val dialogPerLocationSettingsOpen = _dialogPerLocationSettingsOpen.asStateFlow()
@@ -324,6 +327,16 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (::effectView.isInitialized) effectView.setDrawable(isBackgroundAnimationEnabled)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (::effectView.isInitialized) effectView.setDrawable(false)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         supportFragmentManager.unregisterFragmentLifecycleCallbacks(fragmentsLifecycleCallback)
@@ -364,6 +377,18 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
     }
 
     private fun initView() {
+        // Animated weather effect overlay (clouds, rain, fog …) on top of the static snapshot
+        // background. Insert at index 0 so it sits behind all fragment content.
+        effectView = WallpaperEffectView(this)
+        binding.root.addView(
+            effectView,
+            0,
+            android.widget.FrameLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
+
         binding.root.post {
             if (isActivityCreated) {
                 updateDayNightColors()
@@ -892,6 +917,9 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
             moonriseMillis = moonInterval?.first,
             moonsetMillis = moonInterval?.second,
         )
+
+        effectView.setWeather(sceneState.weatherKind, sceneState.daylight)
+        effectView.setDrawable(isBackgroundAnimationEnabled)
 
         lifecycleScope.launch {
             try {
