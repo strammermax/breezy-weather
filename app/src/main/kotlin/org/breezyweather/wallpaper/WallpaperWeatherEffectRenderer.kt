@@ -1081,6 +1081,17 @@ internal class WallpaperWeatherEffectRenderer(
                     * smoothstep(1.18, 0.78, abs(p.x));
                 float cloudCoverage = smoothstep(0.20, 0.55, cloud);
                 cloud = max(cloud, flatBase * cloudCoverage * cloudCoverage);
+                // FBM turbulence: 3-octave animated noise pushes the cloud boundary
+                // inward and outward, breaking the smooth circular silhouette into
+                // irregular storm-cloud billows. Applied only at the edge transition
+                // zone (cloud*(1-cloud) peaks where cloud≈0.5) so interior and exterior
+                // stay cleanly solid/empty.
+                float2 np = p * 2.2 + float2(seed * 0.37, time * 0.006);
+                float fbm = noise21(np)                              * 0.500
+                          + noise21(np * 2.1 + float2(3.7,  1.2))  * 0.250
+                          + noise21(np * 4.3 + float2(-2.1, 4.8))  * 0.125;
+                cloud += (fbm - 0.54) * cloud * (1.0 - cloud) * 1.6;
+                cloud = clamp(cloud, 0.0, 1.0);
                 float shade = smoothstep(-0.40, 0.85, p.y);
                 return float2(cloud, shade);
             }
@@ -1280,14 +1291,15 @@ internal class WallpaperWeatherEffectRenderer(
                         }
 
                         float3 fairColor = daylight > 0.5 ? float3(0.94, 0.97, 1.0) : float3(0.48, 0.54, 0.64);
-                        // Heavier, greyer storm color for rain/very cloudy/thunder, with a curve
-                        // that pushes mid-to-high darkness values towards a flatter grey rather
-                        // than the brighter blue-grey used for light cloud cover.
-                        float3 stormColor = daylight > 0.5 ? float3(0.38, 0.40, 0.45) : float3(0.16, 0.18, 0.24);
+                        // Storm color is near-black at full darkness, matching the dramatic
+                        // deep blue-grey of real cumulonimbus / rain cloud undersides.
+                        float3 stormColor = daylight > 0.5 ? float3(0.20, 0.22, 0.28) : float3(0.09, 0.11, 0.15);
                         float greyness = pow(weightedDarkness, 0.8);
                         cloudColor = mix(fairColor, stormColor, greyness);
-                        // Darken the lower part of the cloud mass for a volumetric, top-lit look.
-                        cloudColor *= mix(1.0, 0.74, weightedShade);
+                        // Shade: darker clouds get a stronger top→base gradient so storm
+                        // cloud bases look almost black while tops stay lighter (top-lit).
+                        float shadeStrength = mix(0.80, 0.46, smoothstep(0.30, 0.85, weightedDarkness));
+                        cloudColor *= mix(1.0, shadeStrength, weightedShade);
                     }
 
                     // ACT-014: stars fade in at night and are occluded by clouds.
