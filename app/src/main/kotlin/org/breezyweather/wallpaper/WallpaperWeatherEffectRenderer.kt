@@ -792,45 +792,86 @@ internal class WallpaperWeatherEffectRenderer(
                 return streak * smoothstep(0.28, 0.96, random);
             }
 
-            // ACT-006: returns (highlight, shadow, refraction). trailLength scales how far
-            // the drop's trail reaches (0 = static, no trail), refractionStrength scales a
-            // lensing ring that approximates background light bending through the drop.
+            // ACT-006 Phase 1: realistic water-drop-on-glass appearance.
+            // Returns (highlight, shadow, refraction):
+            //   highlight = rim ring + two specular spots + faint interior glow
+            //   shadow    = thin bottom crescent + trail darkening
+            //   refraction = interior lens body that drives the background brightening
             float3 glassDropLayer(float2 uv, float scale, float speed, float seed, float trailLength, float refractionStrength) {
-                float2 p = uv * float2(scale, scale * 1.18);
+                float2 p = uv * float2(scale, scale * 1.30);
                 float2 cell = floor(p);
-                float random = hash21(cell + seed);
+
+                // Four independent seeds per cell for varied appearance
+                float rnd  = hash21(cell + seed);
+                float rnd2 = hash21(cell + seed + 11.3);
+                float rnd3 = hash21(cell + seed + 23.7);
+                float rnd4 = hash21(cell + seed + 37.1);
+
                 float2 local = fract(p) - 0.5;
-                local.y = fract(local.y - time * speed * mix(0.18, 1.0, random)) - 0.5;
-                float windSkew = sin(radians(windDirection)) * 0.10 * windFactor;
-                local.x += (random - 0.5) * 0.46 + sin(local.y * 9.0 + seed) * 0.018 + windSkew * local.y;
 
-                float size = mix(0.045, 0.13, hash21(cell + seed + 17.0));
-                float2 dropPoint = local;
-                dropPoint.y *= mix(0.72, 0.46, random);
-                dropPoint.x *= 1.12;
-                float distanceFromDrop = length(dropPoint);
-                float body = smoothstep(size, size * 0.72, distanceFromDrop);
-                float rim = smoothstep(size * 1.07, size * 0.82, distanceFromDrop)
-                    - smoothstep(size * 0.76, size * 0.48, distanceFromDrop);
+                // Drop slides downward over time (trail is the residue left above)
+                local.y = fract(local.y - time * speed * mix(0.15, 1.0, rnd)) - 0.5;
 
-                float trailWidth = mix(0.012, 0.034, random);
-                float trailReach = mix(size * 0.42, 0.42, trailLength);
-                float trail = smoothstep(trailWidth, 0.0, abs(local.x))
-                    * smoothstep(trailReach, size * 0.38, local.y)
-                    * smoothstep(-0.50, -0.18, local.y)
+                // Irregular scatter within the cell — breaks the grid regularity
+                float2 dropCenter = float2((rnd2 - 0.5) * 0.68, (rnd3 - 0.5) * 0.62);
+                float2 centered = local - dropCenter;
+
+                // Size distribution skewed towards small (squared hash gives more tiny drops)
+                float sizeHash = hash21(cell + seed + 17.0);
+                float size = mix(0.030, 0.145, sizeHash * sizeHash);
+
+                // Oblate shape: water on glass spreads wider than it is tall
+                float2 dropUV = centered * float2(1.0 / 1.05, 1.0 / 0.90);
+                float dist = length(dropUV);
+
+                // Clear lens body — the water-filled area
+                float body = smoothstep(size, size * 0.78, dist);
+
+                // Rim: thin bright ring at the water/glass boundary (surface tension effect)
+                // This is the MAIN visual indicator that something is a water drop
+                float rim = smoothstep(size * 1.10, size * 0.97, dist)
+                          - smoothstep(size * 0.97, size * 0.82, dist);
+
+                // Interior lens glow: water acts as converging lens, focuses ambient sky light
+                // making the inside appear slightly brighter than the surrounding surface
+                float interior = smoothstep(size * 0.88, size * 0.25, dist) * body;
+
+                // Primary specular: sharp bright dot top-left (sky/ambient reflection)
+                float specular1 = smoothstep(size * 0.24, 0.0,
+                    length(centered - float2(-size * 0.30, -size * 0.38)));
+
+                // Secondary specular: dimmer dot slightly above center (window frame reflection)
+                float specular2 = smoothstep(size * 0.11, 0.0,
+                    length(centered - float2(size * 0.12, -size * 0.50))) * 0.45;
+
+                // Bottom shadow crescent: thin dark arc at the very bottom of the drop
+                float bottomShadow = smoothstep(size * 0.38, 0.0,
+                    length(centered - float2(size * 0.06, size * 0.46))) * body;
+
+                // Trail: thin water streak left above the drop as it slides down
+                float trailW = mix(0.008, 0.024, rnd);
+                float trailReach = mix(size * 0.5, 0.45, trailLength);
+                float trail = smoothstep(trailW, 0.0, abs(centered.x))
+                    * smoothstep(trailReach, size * 0.36, centered.y)
+                    * smoothstep(-0.50, -0.14, centered.y)
                     * trailLength;
-                float topLight = smoothstep(size * 0.42, 0.0,
-                    length(dropPoint - float2(-size * 0.30, -size * 0.32)));
-                float bottomShade = smoothstep(size * 0.34, 0.0,
-                    length(dropPoint - float2(size * 0.16, size * 0.42)));
-                float visible = smoothstep(0.70, 0.98, random);
-                float highlight = (rim * 0.30 + topLight * 0.42 + trail * 0.10) * visible;
-                float shadow = (body * 0.08 + bottomShade * 0.30 + trail * 0.12) * visible;
-                // Bright lensing ring inside the drop body, approximating refraction of the
-                // scene behind the glass.
-                float lensRing = smoothstep(size * 0.92, size * 0.60, distanceFromDrop)
-                    - smoothstep(size * 0.55, size * 0.30, distanceFromDrop);
-                float refraction = lensRing * body * visible * refractionStrength;
+
+                // Visibility gate — not every cell has a drop (natural spacing)
+                float visible = smoothstep(0.64, 0.95, rnd4);
+
+                float highlight = (
+                    rim       * 0.72 +
+                    specular1 * 1.05 +
+                    specular2 * 0.50 +
+                    interior  * 0.10 +
+                    trail     * 0.07
+                ) * visible;
+
+                float shadow = (bottomShadow * 0.42 + trail * 0.16) * visible;
+
+                // Refraction drives the background brightening inside the drop body
+                float refraction = interior * body * visible * refractionStrength;
+
                 return float3(highlight, shadow, refraction);
             }
 
@@ -1021,14 +1062,34 @@ internal class WallpaperWeatherEffectRenderer(
                 }
 
                 if (weatherPass == 2.0 && (mode == 1.0 || mode == 4.0 || mode == 5.0) && glassRainIntensity > 0.0) {
-                    float3 largeDrops = glassDropLayer(aspectUv, 5.5, 0.026, 31.0, glassTrailLength, glassRefractionStrength);
-                    float3 mediumDrops = glassDropLayer(aspectUv, 10.0, 0.016, 73.0, glassTrailLength, glassRefractionStrength);
-                    float3 smallDrops = glassDropLayer(aspectUv, 18.0, 0.007, 117.0, glassTrailLength, glassRefractionStrength);
-                    glassHighlight = clamp((largeDrops.x + mediumDrops.x * 0.78 + smallDrops.x * 0.46) * glassHighlightStrength, 0.0, 0.85);
-                    glassShadow = clamp(largeDrops.y + mediumDrops.y * 0.82 + smallDrops.y * 0.50, 0.0, 0.58);
-                    glassRefraction = clamp(largeDrops.z + mediumDrops.z * 0.78 + smallDrops.z * 0.46, 0.0, 0.5);
-                    glassHighlight *= glassRainIntensity;
-                    glassShadow *= glassRainIntensity;
+                    // Six size tiers: 2 large + 2 medium + 1 small + 1 tiny.
+                    // Different seeds per tier so they don't align on the same grid.
+                    float3 large1  = glassDropLayer(aspectUv,  4.5, 0.018, 31.0, glassTrailLength,        glassRefractionStrength);
+                    float3 large2  = glassDropLayer(aspectUv,  6.0, 0.022, 53.0, glassTrailLength * 0.85, glassRefractionStrength * 0.90);
+                    float3 medium1 = glassDropLayer(aspectUv,  9.5, 0.013, 73.0, glassTrailLength * 0.60, glassRefractionStrength * 0.70);
+                    float3 medium2 = glassDropLayer(aspectUv, 12.0, 0.009, 97.0, glassTrailLength * 0.40, glassRefractionStrength * 0.50);
+                    float3 small1  = glassDropLayer(aspectUv, 18.0, 0.005, 117.0, 0.0, 0.0);
+                    float3 tiny    = glassDropLayer(aspectUv, 27.0, 0.002, 143.0, 0.0, 0.0);
+
+                    glassHighlight = clamp((
+                        large1.x  * 1.00 + large2.x  * 0.92 +
+                        medium1.x * 0.76 + medium2.x * 0.64 +
+                        small1.x  * 0.44 + tiny.x    * 0.28
+                    ) * glassHighlightStrength, 0.0, 1.0);
+
+                    glassShadow = clamp(
+                        large1.y  * 1.00 + large2.y  * 0.88 +
+                        medium1.y * 0.72 + medium2.y * 0.58 +
+                        small1.y  * 0.38 + tiny.y    * 0.22,
+                        0.0, 0.60);
+
+                    glassRefraction = clamp(
+                        large1.z  * 1.00 + large2.z  * 0.88 +
+                        medium1.z * 0.68 + medium2.z * 0.50,
+                        0.0, 0.60);
+
+                    glassHighlight  *= glassRainIntensity;
+                    glassShadow     *= glassRainIntensity;
                     glassRefraction *= glassRainIntensity;
                 }
 
@@ -1214,10 +1275,15 @@ internal class WallpaperWeatherEffectRenderer(
                 premultiplied = premultiplied * (1.0 - glassHighlight)
                     + float3(0.86, 0.93, 1.0) * glassHighlight;
                 a = a + glassHighlight * (1.0 - a);
-                // ACT-006: lensing ring approximating refraction of the scene behind each drop.
-                float refractionMix = clamp(glassRefraction, 0.0, 1.0) * 0.9;
+                // ACT-006 Phase 1: lens brightening — inside a water drop the converging
+                // lens focuses ambient sky light, making the interior appear slightly
+                // brighter and sky-tinted rather than replacing with a fixed blue colour.
+                float refractionMix = clamp(glassRefraction, 0.0, 1.0) * 0.82;
+                // Brighten + very subtle sky tint (water is mostly transparent)
+                float3 brightened = min(premultiplied * 1.30 + float3(0.03, 0.05, 0.07), float3(1.0));
+                float3 skyHint = float3(0.68, 0.84, 0.94);
                 premultiplied = premultiplied * (1.0 - refractionMix)
-                    + float3(0.66, 0.85, 1.0) * refractionMix;
+                    + mix(brightened, skyHint, 0.28) * refractionMix;
                 a = a + refractionMix * (1.0 - a);
                 // Global crossfade contribution. Output is premultiplied, so scale both the
                 // premultiplied color and alpha to keep transparent pixels invisible.
