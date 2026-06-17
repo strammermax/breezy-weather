@@ -792,99 +792,129 @@ internal class WallpaperWeatherEffectRenderer(
                 return streak * smoothstep(0.28, 0.96, random);
             }
 
-            // Raindrop on glass — full drop with lens body, rim, specular and trail.
-            // sizeMin/sizeMax are fractions of the cell so that each call site controls
-            // the absolute pixel size: radius_px = size / scale * screenHeight.
-            // visThreshold: cells with rnd4 < visThreshold draw no drop (natural gaps).
-            float3 glassDropLayer(float2 uv, float scale, float speed, float seed,
-                                  float trailLength, float refractionStrength,
-                                  float sizeMin, float sizeMax, float visThreshold) {
-                float2 p = uv * float2(scale, scale * 1.30);
-                float2 cell = floor(p);
-
-                float rnd  = hash21(cell + seed);
-                float rnd2 = hash21(cell + seed + 11.3);
-                float rnd3 = hash21(cell + seed + 23.7);
-                float rnd4 = hash21(cell + seed + 37.1);
-
-                float2 local = fract(p) - 0.5;
-                local.y = fract(local.y - time * speed * mix(0.15, 1.0, rnd)) - 0.5;
-
-                // Scatter drop position within the cell (breaks the visible grid)
-                float2 centered = local - float2((rnd2 - 0.5) * 0.70, (rnd3 - 0.5) * 0.65);
-
-                // Size skewed towards small (sizeHash² biases the distribution)
-                float sizeHash = hash21(cell + seed + 17.0);
-                float size = mix(sizeMin, sizeMax, sizeHash * sizeHash);
-
-                // Slightly oblate: water beads wider than tall on vertical glass
-                float dist = length(centered * float2(0.92, 1.08));
-
-                // Filled lens body
-                float body = smoothstep(size, size * 0.80, dist);
-
-                // THIN rim — the key visual cue of a real water drop.
-                // Width ≈ 10 % of size (was 28 % before — too ring-like).
-                float rim = smoothstep(size * 1.05, size * 1.00, dist)
-                          - smoothstep(size * 1.00, size * 0.92, dist);
-
-                // Interior lens glow: the converging lens brightens what is behind the drop.
-                // This fills the body with light instead of leaving it dark/hollow.
-                float interior = smoothstep(size * 0.90, size * 0.20, dist) * body;
-
-                // Primary specular: sharp bright dot — the most visible feature of a drop
-                float spec1 = smoothstep(size * 0.22, 0.0,
-                    length(centered - float2(-size * 0.28, -size * 0.36)));
-
-                // Secondary specular: smaller, dimmer, slightly offset
-                float spec2 = smoothstep(size * 0.10, 0.0,
-                    length(centered - float2(size * 0.14, -size * 0.48))) * 0.40;
-
-                // Bottom crescent shadow (gravity darkens the lower edge only)
-                float bottomShadow = smoothstep(size * 0.32, 0.0,
-                    length(centered - float2(size * 0.05, size * 0.44))) * body;
-
-                // Thin trailing streak above the drop (water residue as drop slides down)
-                float trailW = mix(0.006, 0.020, rnd);
-                float trailReach = mix(size * 0.5, 0.44, trailLength);
-                float trail = smoothstep(trailW, 0.0, abs(centered.x))
-                    * smoothstep(trailReach, size * 0.34, centered.y)
-                    * smoothstep(-0.48, -0.12, centered.y)
-                    * trailLength;
-
-                // Visibility: rnd4 < visThreshold → no drop in this cell
-                float visible = step(visThreshold, rnd4);
-
-                float highlight = (
-                    rim      * 0.85 +  // thin rim is bright
-                    spec1    * 1.20 +  // primary specular dominant
-                    spec2    * 0.45 +
-                    interior * 0.08 +  // subtle interior glow
-                    trail    * 0.06
-                ) * visible;
-
-                float shadow = (bottomShadow * 0.35 + trail * 0.14) * visible;
-                float refraction = interior * body * visible * refractionStrength;
-
-                return float3(highlight, shadow, refraction);
+            // Sawtooth wave: 0→1 over [0, edge], then instant reset.
+            // edge=0.85 → drop falls in 85% of cycle, snaps back in 15%.
+            // Technique from rocksdanister/rain (rain.frag Saw function).
+            float sawWave(float edge, float t) {
+                return smoothstep(0.0, edge, t) * smoothstep(1.0, edge, t);
             }
 
-            // Micro-drops: only a specular highlight dot, no body or refraction.
-            // Used for the dense field of tiny droplets that dominate real rain-on-glass.
-            float microDropLayer(float2 uv, float scale, float seed, float visThreshold) {
-                float2 p = uv * float2(scale, scale * 1.30);
-                float2 cell = floor(p);
-                float rnd  = hash21(cell + seed);
-                float rnd2 = hash21(cell + seed + 5.7);
-                float rnd3 = hash21(cell + seed + 13.1);
-                float rnd4 = hash21(cell + seed + 29.3);
+            // Dense static micro-drop field with Saw-based random appear/disappear.
+            // Adapted from rocksdanister/rain StaticDrops: 40× grid, phase-based fade.
+            float staticRainDrops(float2 uv, float seed) {
+                float2 p = uv * 40.0;
+                float2 id = floor(p);
                 float2 local = fract(p) - 0.5;
-                float2 centered = local - float2((rnd2 - 0.5) * 0.72, (rnd3 - 0.5) * 0.68);
-                float size = mix(0.008, 0.020, rnd);
-                // Just a bright specular dot — the dominant look of tiny rain drops
-                float spec = smoothstep(size, 0.0, length(centered));
-                float visible = step(visThreshold, rnd4);
-                return spec * visible;
+                float rA = hash21(id + seed);
+                float rB = hash21(id + seed + float2(5.7,  11.3));
+                float rC = hash21(id + seed + float2(13.1,  7.9));
+                float2 center = (float2(rA, rB) - 0.5) * 0.70;
+                float d = length(local - center);
+                float fade = sawWave(0.025, fract(time * 0.10 + rC));
+                return smoothstep(0.30, 0.0, d) * rC * fade;
+            }
+
+            // Animated rain-drop-on-glass layer.
+            // Based on rocksdanister/rain DropLayer2 algorithm, adapted to AGSL.
+            //
+            // Key techniques vs. old glassDropLayer:
+            //   1. 6:1 elongated cell grid → drops stay in narrow vertical lanes
+            //   2. Sawtooth timing → drops fall top-to-bottom, instant reset at top
+            //   3. Lateral wiggle (sin(y+sin(y))) → naturalistic drift while falling
+            //   4. Cascade droplets → periodic sin()-dots in the trail wake (DropLayer2 trick)
+            //   5. Blinn-Phong specular via dome surface normal → physically correct highlight
+            //
+            // colScale  = number of drop columns across the aspectUv.x range [0, aspect].
+            //             radius_px ≈ 0.42 × screenWidth / (colScale / aspect).
+            // speed     = sawtooth cycles per second (0.18 ≈ one fall every 5–6 s).
+            // trailLen  = 0 = no trail/wiggle, 1 = full trail + cascade droplets.
+            // refStr    = interior lens-brightening strength.
+            // Returns float3(highlight, shadow, refraction).
+            float3 rainDropLayer(float2 uv, float colScale, float speed, float seed,
+                                 float trailLen, float refStr) {
+                float2 UV = uv;
+
+                // Elongated 6:1 grid: colScale columns, colScale/6 rows.
+                float rowScale = colScale / 6.0;
+                float2 p = float2(UV.x * colScale, UV.y * rowScale);
+
+                float2 cellId = floor(p);
+                // x: [-0.5, 0.5] centred; y: [0, 1] from bottom of cell to top
+                float2 st = float2(fract(p.x) - 0.5, fract(p.y));
+
+                float rA = hash21(cellId + seed);
+                float rB = hash21(cellId + seed + float2(11.3, 7.1));
+                float rC = hash21(cellId + seed + float2(23.7, 17.4));
+
+                // Drop X with lateral wiggle: sin(y+sin(y)) gives a naturalistic S-path
+                float x = (rA - 0.5) * 0.70;
+                float wFreq = UV.y * rowScale * 18.0;
+                float wiggle = sin(wFreq + sin(wFreq));
+                x += wiggle * (0.5 - abs(x)) * (rC - 0.5) * 0.35 * trailLen;
+
+                // Sawtooth fall: sawWave 0→1, inverted so drop falls top(1) → bottom(0)
+                float dropSpd = speed * mix(0.75, 1.25, rB);
+                float ti = fract(time * dropSpd + rC);
+                float dropY = 1.0 - sawWave(0.85, ti);
+
+                // Distance compensated for 6:1 cell aspect → circular shape on screen
+                float2 delta = st - float2(x, dropY);
+                float dist = length(delta * float2(1.0, 6.0));
+
+                float dropSize = 0.42;
+                float body = smoothstep(dropSize, dropSize * 0.72, dist);
+
+                // Dome surface normal from drop silhouette (analytically derived)
+                float2 nXY = (delta * float2(1.0, 6.0)) / max(dist, 0.001);
+                float nZ   = sqrt(max(0.0, 1.0 - dist * dist / (dropSize * dropSize)));
+                float3 N = normalize(float3(-nXY * body, nZ));
+
+                // Blinn-Phong with light from upper-left (sky / window light)
+                float3 L = normalize(float3(-0.35, 0.55, 0.80));
+                float3 H = normalize(L + float3(0.0, 0.0, 1.0));
+                float spec = pow(max(dot(N, H), 0.0), 52.0) * body;
+
+                // Thin rim: bright ring at the water/glass boundary (surface tension)
+                float rim = smoothstep(dropSize + 0.04, dropSize, dist)
+                          - smoothstep(dropSize, dropSize * 0.88, dist);
+
+                // Bottom crescent shadow (gravity holds water in a thicker bottom edge)
+                float2 shadowPos = float2(x, dropY - dropSize * 0.52);
+                float bottomShadow = smoothstep(dropSize * 0.36, 0.0,
+                    length((st - shadowPos) * float2(1.0, 6.0))) * body;
+
+                // Trail: thin residual water streak above the drop as it slides down.
+                // r fades toward 0 as the drop approaches bottom (no trail near reset).
+                float r = sqrt(max(0.0, smoothstep(0.0, 0.8, dropY)));
+                float cd = abs(st.x - x);
+                float trail = smoothstep(0.23 * r, 0.15 * r * r, cd)
+                            * smoothstep(-0.02, 0.02, st.y - dropY)
+                            * r * r * trailLen;
+
+                // Cascade droplets (rocksdanister/rain DropLayer2 key trick):
+                // sin(y*(1−y)*120) creates a sinusoidal dot pattern along the trail wake.
+                float y2 = UV.y * rowScale * 3.0;
+                float trail2 = smoothstep(0.20 * r, 0.0, cd);
+                float droplets = max(0.0,
+                    sin(y2 * (1.0 - fract(y2)) * 120.0) - (st.y - dropY)
+                ) * trail2 * smoothstep(-0.02, 0.02, st.y - dropY) * rC * trailLen;
+
+                // ~25% of cells have an active drop
+                float visible = step(0.75, rB);
+
+                float highlight = (
+                    spec     * 1.60 +
+                    rim      * 0.78 +
+                    trail    * 0.10 +
+                    droplets * 0.22
+                ) * visible;
+
+                float shadow = (
+                    bottomShadow * 0.38 +
+                    trail        * 0.14
+                ) * visible;
+
+                return float3(highlight, shadow, body * visible * refStr);
             }
 
             // Hail sits visually between snow (slow, round, drifting flakes) and rain (fast,
@@ -1074,49 +1104,39 @@ internal class WallpaperWeatherEffectRenderer(
                 }
 
                 if (weatherPass == 2.0 && (mode == 1.0 || mode == 4.0 || mode == 5.0) && glassRainIntensity > 0.0) {
-                    // 8 tiers: 2 large + 2 medium + 2 small (body+specular) + 2 micro (specular only).
-                    // radius_px = sizeMax / scale × screenH  (screen H ≈ 2340 px).
-                    // large1:  7,  sizeMax=0.075 → ~25 px  |  large2: 10, 0.055 → ~13 px
-                    // medium1: 17, 0.040 → ~5.5 px         |  medium2: 24, 0.030 → ~2.9 px
-                    // small1:  38, 0.022 → ~1.4 px         |  small2:  55, 0.016 → ~0.7 px
-                    // micro1/2: scale 75/100 — specular dot only, dense field
-                    float3 large1  = glassDropLayer(aspectUv,  7.0, 0.016,  31.0,
-                                                    glassTrailLength,        glassRefractionStrength,
-                                                    0.030, 0.075, 0.82);
-                    float3 large2  = glassDropLayer(aspectUv, 10.0, 0.020,  53.0,
-                                                    glassTrailLength * 0.85, glassRefractionStrength * 0.88,
-                                                    0.020, 0.055, 0.78);
-                    float3 medium1 = glassDropLayer(aspectUv, 17.0, 0.012,  71.0,
-                                                    glassTrailLength * 0.60, glassRefractionStrength * 0.70,
-                                                    0.012, 0.040, 0.68);
-                    float3 medium2 = glassDropLayer(aspectUv, 24.0, 0.008,  89.0,
-                                                    glassTrailLength * 0.40, glassRefractionStrength * 0.50,
-                                                    0.009, 0.030, 0.62);
-                    float3 small1  = glassDropLayer(aspectUv, 38.0, 0.004, 107.0,
-                                                    0.0, 0.0,
-                                                    0.006, 0.022, 0.55);
-                    float3 small2  = glassDropLayer(aspectUv, 55.0, 0.002, 127.0,
-                                                    0.0, 0.0,
-                                                    0.005, 0.016, 0.48);
-                    float micro1   = microDropLayer(aspectUv,  75.0, 149.0, 0.35);
-                    float micro2   = microDropLayer(aspectUv, 100.0, 173.0, 0.28);
+                    // Three-layer approach from rocksdanister/rain:
+                    //   staticDrops — 40× grid micro-drops, Saw-fade appear/disappear
+                    //   drop1       — main animated layer: sawtooth fall + wiggle + cascade
+                    //   drop2       — secondary layer at 1.85× UV (smaller/denser drops)
+                    //
+                    // colScale=50 with aspectUv.x≈0.46 → ~23 columns → ~20px radius drops.
+                    // colScale=50 on UV×1.85 → ~42 columns → ~11px radius drops.
+                    float staticInt = clamp(glassRainIntensity * 2.0, 0.0, 1.0);
+                    float layer1Int = smoothstep(0.25, 0.75, glassRainIntensity);
+                    float layer2Int = smoothstep(0.0,  0.5,  glassRainIntensity);
+
+                    float sd1 = staticRainDrops(aspectUv,        31.0);
+                    float sd2 = staticRainDrops(aspectUv * 1.55, 67.0);
+
+                    float3 drop1 = rainDropLayer(aspectUv,        50.0, 0.18, 31.0,
+                                                 glassTrailLength,       glassRefractionStrength);
+                    float3 drop2 = rainDropLayer(aspectUv * 1.85, 50.0, 0.22, 73.0,
+                                                 glassTrailLength * 0.75, glassRefractionStrength * 0.80);
 
                     glassHighlight = clamp((
-                        large1.x  * 1.00 + large2.x  * 0.92 +
-                        medium1.x * 0.78 + medium2.x * 0.66 +
-                        small1.x  * 0.46 + small2.x  * 0.32 +
-                        (micro1 * 0.60 + micro2 * 0.45) * 0.22
+                        (sd1 + sd2) * staticInt  * 0.50 +
+                        drop1.x     * layer1Int  * 1.00 +
+                        drop2.x     * layer2Int  * 0.88
                     ) * glassHighlightStrength, 0.0, 1.0);
 
                     glassShadow = clamp(
-                        large1.y  * 1.00 + large2.y  * 0.88 +
-                        medium1.y * 0.74 + medium2.y * 0.60 +
-                        small1.y  * 0.40 + small2.y  * 0.26,
+                        drop1.y * layer1Int * 1.00 +
+                        drop2.y * layer2Int * 0.85,
                         0.0, 0.60);
 
                     glassRefraction = clamp(
-                        large1.z  * 1.00 + large2.z  * 0.88 +
-                        medium1.z * 0.70 + medium2.z * 0.52,
+                        drop1.z * layer1Int * 1.00 +
+                        drop2.z * layer2Int * 0.75,
                         0.0, 0.60);
 
                     glassHighlight  *= glassRainIntensity;
