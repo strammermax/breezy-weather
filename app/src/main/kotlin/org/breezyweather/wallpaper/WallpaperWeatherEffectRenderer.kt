@@ -852,10 +852,11 @@ internal class WallpaperWeatherEffectRenderer(
                 float wiggle = sin(wFreq + sin(wFreq));
                 x += wiggle * (0.5 - abs(x)) * (rC - 0.5) * 0.35 * trailLen;
 
-                // Sawtooth fall: sawWave 0→1, inverted so drop falls top(1) → bottom(0)
+                // Sawtooth fall: in AGSL y=0=top, y=1=bottom.
+                // sawWave 0→1 means drop moves top→bottom = falling correctly.
                 float dropSpd = speed * mix(0.75, 1.25, rB);
                 float ti = fract(time * dropSpd + rC);
-                float dropY = 1.0 - sawWave(0.85, ti);
+                float dropY = sawWave(0.85, ti);
 
                 // Distance compensated for 6:1 cell aspect → circular shape on screen
                 float2 delta = st - float2(x, dropY);
@@ -869,8 +870,9 @@ internal class WallpaperWeatherEffectRenderer(
                 float nZ   = sqrt(max(0.0, 1.0 - dist * dist / (dropSize * dropSize)));
                 float3 N = normalize(float3(-nXY * body, nZ));
 
-                // Blinn-Phong with light from upper-left (sky / window light)
-                float3 L = normalize(float3(-0.35, 0.55, 0.80));
+                // Blinn-Phong: light from upper-left. In AGSL y increases downward,
+                // so "upper" = negative y direction.
+                float3 L = normalize(float3(-0.35, -0.55, 0.80));
                 float3 H = normalize(L + float3(0.0, 0.0, 1.0));
                 float spec = pow(max(dot(N, H), 0.0), 52.0) * body;
 
@@ -878,26 +880,27 @@ internal class WallpaperWeatherEffectRenderer(
                 float rim = smoothstep(dropSize + 0.04, dropSize, dist)
                           - smoothstep(dropSize, dropSize * 0.88, dist);
 
-                // Bottom crescent shadow (gravity holds water in a thicker bottom edge)
-                float2 shadowPos = float2(x, dropY - dropSize * 0.52);
+                // Bottom crescent shadow: gravity pulls water to lower (higher y) edge.
+                // In AGSL y increases downward, so shadow is at dropY + offset.
+                float2 shadowPos = float2(x, dropY + dropSize * 0.52);
                 float bottomShadow = smoothstep(dropSize * 0.36, 0.0,
                     length((st - shadowPos) * float2(1.0, 6.0))) * body;
 
-                // Trail: thin residual water streak above the drop as it slides down.
-                // r fades toward 0 as the drop approaches bottom (no trail near reset).
-                float r = sqrt(max(0.0, smoothstep(0.0, 0.8, dropY)));
+                // Trail: thin residual water streak ABOVE the drop (lower y = higher on screen).
+                // r fades toward 0 as the drop approaches bottom (dropY→1), preventing
+                // a trail when the drop snaps back to the top.
+                float r = sqrt(max(0.0, smoothstep(1.0, 0.2, dropY)));
                 float cd = abs(st.x - x);
                 float trail = smoothstep(0.23 * r, 0.15 * r * r, cd)
-                            * smoothstep(-0.02, 0.02, st.y - dropY)
+                            * smoothstep(-0.02, 0.02, dropY - st.y)   // above = st.y < dropY
                             * r * r * trailLen;
 
-                // Cascade droplets (rocksdanister/rain DropLayer2 key trick):
-                // sin(y*(1−y)*120) creates a sinusoidal dot pattern along the trail wake.
+                // Cascade droplets in the trail wake (rocksdanister/rain DropLayer2 trick).
                 float y2 = UV.y * rowScale * 3.0;
                 float trail2 = smoothstep(0.20 * r, 0.0, cd);
                 float droplets = max(0.0,
-                    sin(y2 * (1.0 - fract(y2)) * 120.0) - (st.y - dropY)
-                ) * trail2 * smoothstep(-0.02, 0.02, st.y - dropY) * rC * trailLen;
+                    sin(y2 * (1.0 - fract(y2)) * 120.0) - (dropY - st.y)
+                ) * trail2 * smoothstep(-0.02, 0.02, dropY - st.y) * rC * trailLen;
 
                 // ~25% of cells have an active drop
                 float visible = step(0.75, rB);
