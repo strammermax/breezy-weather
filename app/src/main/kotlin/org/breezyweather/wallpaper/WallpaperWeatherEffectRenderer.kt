@@ -852,11 +852,14 @@ internal class WallpaperWeatherEffectRenderer(
                 float wiggle = sin(wFreq + sin(wFreq));
                 x += wiggle * (0.5 - abs(x)) * (rC - 0.5) * 0.35 * trailLen;
 
-                // Sawtooth fall: in AGSL y=0=top, y=1=bottom.
-                // sawWave 0→1 means drop moves top→bottom = falling correctly.
+                // True sawtooth fall: drop falls from top (0) to bottom (1) over 85%
+                // of the cycle via smoothstep, then HOLDS at 1.0 for the remaining 15%,
+                // then fract() snaps it back to 0 instantly.
+                // sawWave() was wrong here: it smoothly descends back to 0 in the last
+                // 15%, causing the visible "going back up" bug.
                 float dropSpd = speed * mix(0.75, 1.25, rB);
                 float ti = fract(time * dropSpd + rC);
-                float dropY = sawWave(0.85, ti);
+                float dropY = smoothstep(0.0, 0.85, ti);
 
                 // Distance compensated for 6:1 cell aspect → circular shape on screen
                 float2 delta = st - float2(x, dropY);
