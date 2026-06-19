@@ -25,6 +25,7 @@ import org.breezyweather.ui.theme.weatherView.WeatherView
 import org.breezyweather.ui.theme.weatherView.WeatherView.WeatherKindRule
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.MaterialWeatherView.WeatherAnimationImplementor
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.implementor.CloudImplementor
+import org.breezyweather.ui.theme.weatherView.materialWeatherView.implementor.CompositeRainImplementor
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.implementor.HailImplementor
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.implementor.MeteorShowerImplementor
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.implementor.RainImplementor
@@ -93,7 +94,8 @@ object WeatherImplementorFactory {
                 )
 
             WeatherView.WEATHER_KIND_RAINY ->
-                RainImplementor(
+                CompositeRainImplementor(
+                    context,
                     sizes,
                     animate,
                     RainImplementor.TYPE_RAIN,
@@ -101,7 +103,8 @@ object WeatherImplementorFactory {
                 )
 
             WeatherView.WEATHER_KIND_SLEET ->
-                RainImplementor(
+                CompositeRainImplementor(
+                    context,
                     sizes,
                     animate,
                     RainImplementor.TYPE_SLEET,
@@ -123,7 +126,8 @@ object WeatherImplementorFactory {
                 )
 
             WeatherView.WEATHER_KIND_THUNDERSTORM ->
-                RainImplementor(
+                CompositeRainImplementor(
+                    context,
                     sizes,
                     animate,
                     RainImplementor.TYPE_THUNDERSTORM,

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrollbaar Frosted Glass Dashboard</title>
+    <style>
+        /* Basisinstellingen & Vaste Achtergrondafbeelding */
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            
+            /* Achtergrond blijft vaststaan tijdens het scrollen */
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+                        url('https://upload.wikimedia.org/wikipedia/commons/1/18/Fields_south_of_guided_busway_-_geograph.org.uk_-_3196569.jpg') no-repeat center center;
+            background-size: cover;
+            background-attachment: fixed;
+            
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* De grid-indeling voor de tegels */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* DE FROSTED LOOK */
+        .tile {
+            background: rgba(255, 255, 255, 0.05); 
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            padding: 24px;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+
+        .tile:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.09);
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+        }
+
+        /* Tekststijlen */
+        .tile-title {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tile-value {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .tile-status {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .status-good { color: #4ade80; }
+        .status-warning { color: #facc15; }
+
+        /* Gekleurde balken */
+        .indicator-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #4ade80, #facc15, #f87171, #c084fc);
+            margin-top: 15px;
+            position: relative;
+        }
+
+        .indicator-dot {
+            width: 10px;
+            height: 10px;
+            background: #ffffff;
+            border-radius: 50%;
+            position: absolute;
+            top: -2px;
+            box-shadow: 0 0 8px rgba(255,255,255,0.8);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Weer Dashboard</h1>
+
+    <div class="dashboard">
+
+        <!-- Rij 1 -->
+        <div class="tile">
+            <div class="tile-title">☀️ UV Index</div>
+            <div class="tile-value">2</div>
+            <div class="tile-status status-good">Goed</div>
+            <div class="indicator-bar"><div class="indicator-dot" style="left: 20%;"></div></div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-title">🍃 Luchtkwaliteit</div>
+            <div class="tile-value">34</div>
+            <div class="tile-status status-good">Goed</div>
+            <div class="indicator-bar"><div class="indicator-dot" style="left: 34%;"></div></div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-title">💧 Luchtvochtigheid</div>
+            <div class="tile-value">52%</div>
+            <div class="tile-status">Het dauwpunt is momenteel 12°C.</div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-title">🌧️ Neerslag</div>
+            <div class="tile-value">0.0 mm</div>
+            <div class="tile-status">Geen regen in de afgelopen 24u.</div>
+        </div>
+
+        <!-- Rij 2 -->
+        <div class="tile">
+            <div class="tile-title">💨 Wind</div>
+            <div class="tile-value">21.6 km/h</div>
+            <div class="tile-status">Zuidwest (217°)</div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-title">🧭 Luchtdruk</div>
+            <div class="tile-value">1013 hPa</div>
+            <div class="tile-status">Stabiel</div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-title">👁️ Zichtbaarheid</div>
+            <div class="tile-value">35.6 km</div>
+            <div class="tile-status status-good">Perfect helder zicht</div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-title">☁️ Bewolking</div>
+            <div class="tile-value">0%</div>
+            <div class="tile-status">Geen bewolking gedetecteerd.</div>
+        </div>
+
+        <!-- Rij 3 -->
+        <div class="tile">
+            <div class="tile-title">🌅 Zonsopkomst</div>
+            <div class="tile-value">05:24</div>
+            <div class="tile-status">Zonsondergang om 20:29</div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-title">🌡️ Gevoelstemperatuur</div>
+            <div class="tile-value">24°C</div>
+            <div class="tile-status">Gelijk aan de luchttemperatuur.</div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-title">🌙 Maanfase</div>
+            <div class="tile-value">Wasemend</div>
+            <div class="tile-status">Verlichting: 72%</div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-title">⚡ Pollenflug</div>
+            <div class="tile-value">Hoog</div>
+            <div class="tile-status status-warning">Grassen & Berken actief</div>
+        </div>
+
+        <!-- Rij 4 -->
+        <div class="tile">
+            <div class="tile-title">🚗 Rijomstandigheden</div>
+            <div class="tile-value">Optimaal</div>
+            <div class="tile-status status-good">Droge wegen</div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-title">🏃 Outdoor Sport</div>
+            <div class="tile-value">8.5/10</div>
+            <div class="tile-status status-good">Uitstekend hardloopweer</div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-title">🐾 Huisdier Comfort</div>
+            <div class="tile-value">Veilig</div>
+            <div class="tile-status">Comfortabele temperatuur voor honden</div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-title">👕 Kledingadvies</div>
+            <div class="tile-value">T-Shirt</div>
+            <div class="tile-status">Geen jas of paraplu nodig</div>
+        </div>
+
+        <!-- Rij 5 -->
+        <div class="tile">
+            <div class="tile-title">🌱 Bodemvochtigheid</div>
+            <div class="tile-value">42%</div>
+            <div class="tile-status">Licht droog</div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-title">☀️ Zonne-energie</div>
+            <div class="tile-value">640 W/m²</div>
+            <div class="tile-status status-good">Hoge opbrengst vandaag</div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-title">🌊 Getijde</div>
+            <div class="tile-value">Vloed</div>
+            <div class="tile-status">Hoogtepunt over 1u 12m</div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-title">⚡ Onweerskans</div>
+            <div class="tile-value">5%</div>
+            <div class="tile-status status-good">Zeer lage kans</div>
+        </div>
+
+    </div>
+
+</body>
+</html>

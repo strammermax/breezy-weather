@@ -1,0 +1,117 @@
+uniform float2 resolution;
+uniform float time;
+uniform float rainAmount;
+
+// Random functies
+float hash(float n) {
+    return fract(sin(n) * 43758.5453123);
+}
+
+float3 hash3(float p) {
+    float3 p3 = fract(float3(p) * float3(.1031, .11369, .13787));
+    p3 += dot(p3, p3.yzx + 19.19);
+    return fract(float3((p3.x + p3.y) * p3.z, (p3.x + p3.z) * p3.y, (p3.y + p3.z) * p3.x));
+}
+
+float smooth(float a, float b, float t) {
+    return smoothstep(a, b, t);
+}
+
+float saw(float b, float t) {
+    return smooth(0.0, b, t) * smooth(1.0, b, t);
+}
+
+// Druppel laag
+float2 dropLayer(float2 uv, float t) {
+    float2 UV = uv;
+    uv.y += t * 0.75;
+    float2 aspect = float2(6.0, 1.0);
+    float2 grid = aspect * 2.0;
+    float2 id = floor(uv * grid);
+    
+    float colShift = hash(id.x);
+    uv.y += colShift;
+    
+    id = floor(uv * grid);
+    float3 n = hash3(id.x * 35.2 + id.y * 2376.1);
+    float2 st = fract(uv * grid) - float2(0.5, 0.0);
+    
+    float x = n.x - 0.5;
+    float y = UV.y * 20.0;
+    float wiggle = sin(y + sin(y));
+    x += wiggle * (0.5 - abs(x)) * (n.z - 0.5);
+    x *= 0.7;
+    
+    float ti = fract(t + n.z);
+    y = (saw(0.85, ti) - 0.5) * 0.9 + 0.5;
+    float2 p = float2(x, y);
+    
+    float d = length((st - p) * aspect.yx);
+    float mainDrop = smooth(0.4, 0.0, d);
+    
+    float r = sqrt(smooth(1.0, y, st.y));
+    float cd = abs(st.x - x);
+    float trail = smooth(0.23 * r, 0.15 * r * r, cd);
+    float trailFront = smooth(-0.02, 0.02, st.y - y);
+    trail *= trailFront * r * r;
+    
+    y = UV.y;
+    float trail2 = smooth(0.2 * r, 0.0, cd);
+    float droplets = max(0.0, (sin(y * (1.0 - y) * 120.0) - st.y)) * trail2 * trailFront * n.z;
+    y = fract(y * 10.0) + (st.y - 0.5);
+    float dd = length(st - float2(x, y));
+    droplets = smooth(0.3, 0.0, dd);
+    float m = mainDrop + droplets * r * trailFront;
+    
+    return float2(m, trail);
+}
+
+float staticDrops(float2 uv, float t) {
+    uv *= 40.0;
+    float2 id = floor(uv);
+    uv = fract(uv) - 0.5;
+    float3 n = hash3(id.x * 107.45 + id.y * 3543.654);
+    float2 p = (n.xy - 0.5) * 0.7;
+    float d = length(uv - p);
+    
+    float fade = saw(0.025, fract(t + n.z));
+    float c = smooth(0.3, 0.0, d) * fract(n.z * 10.0) * fade;
+    return c;
+}
+
+float2 drops(float2 uv, float t, float l0, float l1, float l2) {
+    float s = staticDrops(uv, t) * l0;
+    float2 m1 = dropLayer(uv, t) * l1;
+    float2 m2 = dropLayer(uv * 1.85, t) * l2;
+    
+    float c = s + m1.x + m2.x;
+    c = smooth(0.3, 1.0, c);
+    
+    return float2(c, max(m1.y * l0, m2.y * l1));
+}
+
+half4 main(float2 fragCoord) {
+    float2 uv = (fragCoord - 0.5 * resolution) / resolution.y;
+    uv.y = -uv.y;
+    
+    float t = time * 0.1;
+    
+    float staticDropsAmount = smooth(-0.5, 1.0, rainAmount) * 2.0;
+    float layer1 = smooth(0.25, 0.75, rainAmount);
+    float layer2 = smooth(0.0, 0.5, rainAmount);
+    
+    float2 c = drops(uv, t, staticDropsAmount, layer1, layer2);
+    
+    // Normalen voor refractie (subtiel voor overlay)
+    float2 e = float2(0.001, 0.0);
+    float cx = drops(uv + e, t, staticDropsAmount, layer1, layer2).x;
+    float cy = drops(uv + e.yx, t, staticDropsAmount, layer1, layer2).x;
+    float2 n = float2(cx - c.x, cy - c.x);
+    
+    // A subtle cool lens tint keeps the weather background visible. Bright white
+    // circles look painted on top of the glass instead of like transparent water.
+    half3 dropColor = half3(0.42, 0.52, 0.68);
+    float alpha = c.x * 0.22;
+    
+    return half4(dropColor, alpha);
+}

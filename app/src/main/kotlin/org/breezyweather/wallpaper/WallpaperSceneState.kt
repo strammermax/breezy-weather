@@ -117,16 +117,23 @@ object WallpaperSceneStateFactory {
         // heavy the current hour's forecast actually is, so a drizzle and a downpour of
         // the same WeatherCode no longer render identically.
         val precipFactor = precipitationIntensityFactor(precipitationMillimetersPerHour)
-        val isPrecipitating = profile.precipitationIntensity > 0f
+        // Check both the profile AND actual precipitation data to determine if it's precipitating
+        val isPrecipitating = profile.precipitationIntensity > 0f ||
+            (precipitationMillimetersPerHour != null && precipitationMillimetersPerHour > 0f)
         val adjustedPrecipitationIntensity = if (isPrecipitating) {
             (profile.precipitationIntensity * precipFactor).coerceIn(0.1f, 1f)
         } else {
             profile.precipitationIntensity
         }
-        val adjustedGlassRainIntensity = if (isPrecipitating && profile.glassRainIntensity > 0f) {
-            (profile.glassRainIntensity * precipFactor).coerceIn(0.1f, 1f)
+        val supportsGlassRain = profile.glassRainIntensity > 0f ||
+            (precipitationMillimetersPerHour != null &&
+                precipitationMillimetersPerHour > 0f &&
+                family != WallpaperWeatherFamily.SNOW &&
+                family != WallpaperWeatherFamily.HAIL)
+        val adjustedGlassRainIntensity = if (isPrecipitating && supportsGlassRain) {
+            glassRainAmount(precipitationMillimetersPerHour, profile.glassRainIntensity)
         } else {
-            profile.glassRainIntensity
+            0f
         }
         val cloudFactor = if (isPrecipitating) lerp(1f, precipFactor, 0.5f) else 1f
         val adjustedCloudDensity = (profile.cloudDensity * cloudFactor).coerceIn(0f, 1f)
@@ -294,6 +301,17 @@ object WallpaperSceneStateFactory {
             mm < heavy -> lerp(1.0f, 1.15f, (mm - medium) / (heavy - medium))
             mm < rainstorm -> lerp(1.15f, 1.3f, (mm - heavy) / (rainstorm - heavy))
             else -> 1.3f
+        }
+    }
+
+    private fun glassRainAmount(precipitationMillimetersPerHour: Float?, fallback: Float): Float {
+        val mm = precipitationMillimetersPerHour
+        if (mm == null || !mm.isFinite() || mm <= 0f) return fallback.coerceIn(0f, 1f)
+
+        return when {
+            mm < Precipitation.PRECIPITATION_HOURLY_LIGHT.toFloat() -> 0.3f
+            mm < Precipitation.PRECIPITATION_HOURLY_HEAVY.toFloat() -> 0.7f
+            else -> 1f
         }
     }
 

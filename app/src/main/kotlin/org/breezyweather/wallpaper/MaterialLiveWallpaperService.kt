@@ -161,12 +161,17 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mCurrentEffectFamily: WallpaperWeatherFamily? = null
         private var mCurrentRendererWeatherKind: Int? = null
         private var mCurrentRendererWindFactor = Float.NaN
+        private var mCurrentRendererGlassRainIntensity = Float.NaN
         private var mHasSceneTarget = false
         private val mTransitionManager = TransitionManager()
         private var mBackground: Drawable? = null
         // The processed location photo is the middle layer: sky and celestial body behind it,
         // weather effects in front of it.
         private var mForeground: Drawable? = null
+        private var mGlassSceneBitmap: Bitmap? = null
+        private var mGlassSceneCanvas: Canvas? = null
+        private var mGlassSceneShader: Shader? = null
+        private var mGlassSceneKey: String? = null
         private var mCelestialStartMillis: Long? = null
         private var mCelestialEndMillis: Long? = null
         private var mSunriseMillis: Long? = null
@@ -378,11 +383,27 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         mOutgoingEffectRenderer?.update(frameInterval, mAnimate)
                         mOutgoingEffectRenderer?.drawForegroundWeatherPass(it, 1f - transitionProgress)
                         mCurrentEffectRenderer?.drawForegroundWeatherPass(it, transitionProgress)
-                        mOutgoingEffectRenderer?.drawGlassRainDrops(it, 1f - transitionProgress)
-                        mCurrentEffectRenderer?.drawGlassRainDrops(it, transitionProgress)
                     } else {
                         mCurrentEffectRenderer?.drawForegroundWeatherPass(it)
-                        mCurrentEffectRenderer?.drawGlassRainDrops(it)
+                    }
+
+                    // Glass rain drops are the top visual layer, after all weather effects.
+                    val glassSceneTexture = updateGlassSceneTexture(
+                        width,
+                        height,
+                        bgOffset,
+                        fgOffset,
+                        celestialOffset,
+                    )
+                    if (transitionProgress != null && mOutgoingEffectRenderer != null) {
+                        mOutgoingEffectRenderer?.drawGlassRainDrops(
+                            it,
+                            1f - transitionProgress,
+                            glassSceneTexture,
+                        )
+                        mCurrentEffectRenderer?.drawGlassRainDrops(it, transitionProgress, glassSceneTexture)
+                    } else {
+                        mCurrentEffectRenderer?.drawGlassRainDrops(it, sceneTexture = glassSceneTexture)
                     }
                     if (useSeasonGrading) {
                         it.restore()
@@ -709,7 +730,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val sceneState = mSceneState
             val rendererMatchesTarget = mCurrentEffectRenderer != null &&
                 mCurrentRendererWeatherKind == sceneState.weatherKind &&
-                abs(mCurrentRendererWindFactor - sceneState.windFactor) < 0.001f
+                abs(mCurrentRendererWindFactor - sceneState.windFactor) < 0.001f &&
+                abs(mCurrentRendererGlassRainIntensity - sceneState.glassRainIntensity) < 0.001f
             if (rendererMatchesTarget) {
                 updateRendererDaylight(sceneState.daylight)
                 return
@@ -774,6 +796,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mCurrentEffectFamily = newFamily
             mCurrentRendererWeatherKind = sceneState.weatherKind
             mCurrentRendererWindFactor = sceneState.windFactor
+            mCurrentRendererGlassRainIntensity = sceneState.glassRainIntensity
 
             // The scene layer draws its own time-positioned sun. Avoid the old fixed clear-day sun.
             mImplementor = if (mCurrentEffectRenderer != null ||
@@ -848,6 +871,43 @@ class MaterialLiveWallpaperService : WallpaperService() {
             updateForegroundNightTint()
             updateLayerBounds()
             lwwLog { "foreground rebuilt success=${mForeground != null} key=$key" }
+        }
+
+        private fun updateGlassSceneTexture(
+            width: Int,
+            height: Int,
+            bgOffset: Float,
+            fgOffset: Float,
+            celestialOffset: Float,
+        ): Shader? {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || width <= 0 || height <= 0) return null
+
+            val key = "$mForegroundKey|$mDaytime|$mForegroundNightTint|" +
+                "${bgOffset.toInt()}|${fgOffset.toInt()}|${celestialOffset.toInt()}|${width}x$height"
+            val current = mGlassSceneBitmap
+            if (current != null && current.width == width && current.height == height && key == mGlassSceneKey) {
+                return mGlassSceneShader
+            }
+
+            if (current == null || current.width != width || current.height != height) {
+                current?.recycle()
+                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                mGlassSceneBitmap = bitmap
+                mGlassSceneCanvas = Canvas(bitmap)
+                mGlassSceneShader = android.graphics.BitmapShader(
+                    bitmap,
+                    Shader.TileMode.CLAMP,
+                    Shader.TileMode.CLAMP,
+                )
+            }
+
+            val sceneCanvas = mGlassSceneCanvas ?: return null
+            sceneCanvas.drawColor(Color.TRANSPARENT, android.graphics.PorterDuff.Mode.CLEAR)
+            sceneCanvas.withTranslation(-bgOffset, 0f) { mBackground?.draw(this) }
+            sceneCanvas.withTranslation(-celestialOffset, 0f) { drawCelestialBody(this) }
+            sceneCanvas.withTranslation(-fgOffset, 0f) { mForeground?.draw(this) }
+            mGlassSceneKey = key
+            return mGlassSceneShader
         }
 
         /** Parallax shift for a layer, clamped so it can never exceed the layer's extra width. */
@@ -1404,6 +1464,10 @@ class MaterialLiveWallpaperService : WallpaperService() {
         override fun onDestroy() {
             onVisibilityChanged(false)
             mHandlerThread?.quit()
+            mGlassSceneBitmap?.recycle()
+            mGlassSceneBitmap = null
+            mGlassSceneCanvas = null
+            mGlassSceneShader = null
         }
     }
 }

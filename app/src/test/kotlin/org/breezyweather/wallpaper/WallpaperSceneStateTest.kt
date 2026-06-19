@@ -90,6 +90,19 @@ class WallpaperSceneStateTest {
     }
 
     @Test
+    fun `forecast rain amount selects light medium and heavy glass profiles`() {
+        fun intensity(mmPerHour: Float) = WallpaperSceneStateFactory.create(
+            WeatherView.WEATHER_KIND_RAINY,
+            daylight = 1f,
+            precipitationMillimetersPerHour = mmPerHour,
+        ).glassRainIntensity
+
+        intensity(1f) shouldBe 0.3f
+        intensity(7f) shouldBe 0.7f
+        intensity(18f) shouldBe 1f
+    }
+
+    @Test
     fun `thunderstorm combines precipitation thunder and dark clouds`() {
         val state = WallpaperSceneStateFactory.create(WeatherView.WEATHER_KIND_THUNDERSTORM, 1f)
 
