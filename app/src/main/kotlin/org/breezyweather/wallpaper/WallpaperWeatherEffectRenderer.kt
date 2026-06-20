@@ -432,29 +432,40 @@ internal class WallpaperWeatherEffectRenderer(
 
             drawStars(canvas, contribution)
 
-            // Fog/haze is drawn in the foreground pass (drawForegroundEffects) so it
-            // covers the photo foreground too, matching the AGSL renderer.
-            if (weatherKind == WeatherView.WEATHER_KIND_FOG || weatherKind == WeatherView.WEATHER_KIND_HAZE) {
-                return
-            }
-
-            // Heavy overcast/rain/thunder coverage: as the densest layer's alpha
-            // approaches full, paint a flat ceiling behind the cloud shapes so the
-            // sky reads as fully overcast with no blue gaps, mirroring the AGSL
-            // shader's coverageFloor.
+            // Dense scenes get a soft, spatially varied ceiling instead of one flat fill.
             val maxLayerAlpha = cloudField.layers.maxOf { it.alpha }
-            val coverageFloor = (smoothstep(0.65f, 0.95f, maxLayerAlpha) * maxLayerAlpha).coerceIn(0f, 1f)
-            if (coverageFloor > 0f) {
+            val ceilingStrength = (smoothstep(0.58f, 0.92f, maxLayerAlpha) * maxLayerAlpha).coerceIn(0f, 1f)
+            if (ceilingStrength > 0f) {
                 val floorDarkness = cloudField.layers.map { it.darkness }.average().toFloat()
                 val light = if (daytime) Triple(255, 255, 255) else Triple(196, 202, 214)
                 val dark = if (daytime) Triple(110, 128, 150) else Triple(58, 70, 92)
-                paint.color = Color.rgb(
+                val ceilingColor = Color.rgb(
                     lerpInt(light.first, dark.first, floorDarkness),
                     lerpInt(light.second, dark.second, floorDarkness),
                     lerpInt(light.third, dark.third, floorDarkness),
                 )
-                paint.alpha = (coverageFloor * 255 * contribution).toInt().coerceIn(0, 255)
+                paint.color = ceilingColor
+                paint.alpha = (ceilingStrength * 178 * contribution).toInt().coerceIn(0, 255)
                 canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), paint)
+                repeat(6) { index ->
+                    val tone = if (index % 2 == 0) 0.88f else 1.08f
+                    paint.color = Color.rgb(
+                        (Color.red(ceilingColor) * tone).toInt().coerceIn(0, 255),
+                        (Color.green(ceilingColor) * tone).toInt().coerceIn(0, 255),
+                        (Color.blue(ceilingColor) * tone).toInt().coerceIn(0, 255),
+                    )
+                    paint.alpha = (ceilingStrength * 38 * contribution).toInt().coerceIn(0, 255)
+                    val bandWidth = canvas.width * (0.58f + index % 3 * 0.11f)
+                    val centerX = canvas.width * ((index * 0.31f + 0.08f) % 1f)
+                    val centerY = canvas.height * (0.08f + index % 4 * 0.16f)
+                    canvas.drawOval(
+                        centerX - bandWidth,
+                        centerY - canvas.height * 0.14f,
+                        centerX + bandWidth,
+                        centerY + canvas.height * 0.14f,
+                        paint,
+                    )
+                }
             }
 
             // Layered cloud masses (ACT-003): each layer's own alpha/darkness drives a
@@ -482,19 +493,42 @@ internal class WallpaperWeatherEffectRenderer(
 
                 paint.color = topColor
                 paint.alpha = alpha
-                canvas.drawCircle(c.x - c.radius * 0.52f, c.y + c.radius * 0.08f, c.radius * 0.48f, paint)
-                canvas.drawCircle(c.x - c.radius * 0.12f, c.y - c.radius * 0.18f, c.radius * 0.62f, paint)
-                canvas.drawCircle(c.x + c.radius * 0.38f, c.y - c.radius * 0.06f, c.radius * 0.52f, paint)
+                when (weatherKind) {
+                    WeatherView.WEATHER_KIND_THUNDER,
+                    WeatherView.WEATHER_KIND_THUNDERSTORM,
+                    -> {
+                        canvas.drawCircle(c.x - c.radius * 0.15f, c.y - c.radius * 0.75f, c.radius * 0.43f, paint)
+                        canvas.drawCircle(c.x, c.y - c.radius * 0.30f, c.radius * 0.62f, paint)
+                        canvas.drawOval(
+                            c.x - c.radius * 1.15f,
+                            c.y - c.radius,
+                            c.x + c.radius * 1.20f,
+                            c.y - c.radius * 0.48f,
+                            paint,
+                        )
+                    }
+                    WeatherView.WEATHER_KIND_RAINY,
+                    WeatherView.WEATHER_KIND_SLEET,
+                    WeatherView.WEATHER_KIND_SNOW,
+                    WeatherView.WEATHER_KIND_HAIL,
+                    WeatherView.WEATHER_KIND_CLOUDY,
+                    -> canvas.drawOval(
+                        c.x - c.radius * 1.35f,
+                        c.y - c.radius * 0.42f,
+                        c.x + c.radius * 1.35f,
+                        c.y + c.radius * 0.42f,
+                        paint,
+                    )
+                    else -> {
+                        canvas.drawCircle(c.x - c.radius * 0.52f, c.y + c.radius * 0.08f, c.radius * 0.48f, paint)
+                        canvas.drawCircle(c.x - c.radius * 0.12f, c.y - c.radius * 0.18f, c.radius * 0.62f, paint)
+                        canvas.drawCircle(c.x + c.radius * 0.38f, c.y - c.radius * 0.06f, c.radius * 0.52f, paint)
+                    }
+                }
 
                 paint.color = baseColor
                 paint.alpha = alpha
-                canvas.drawOval(
-                    c.x - c.radius,
-                    c.y,
-                    c.x + c.radius,
-                    c.y + c.radius * 0.58f,
-                    paint,
-                )
+                canvas.drawOval(c.x - c.radius, c.y, c.x + c.radius, c.y + c.radius * 0.58f, paint)
             }
         }
 
@@ -1260,48 +1294,94 @@ internal class WallpaperWeatherEffectRenderer(
                 return smoothstep(radius + softness, radius - softness, length(point - center));
             }
 
-            // Returns (silhouette, shade): silhouette is the cloud mask (0..1), shade is a
-            // 0 (bright top) .. 1 (dark base) vertical gradient giving the puffy cumulus a
-            // volumetric top-lit look instead of a flat fill.
-            float2 cloudShape(float2 uv, float2 center, float size, float seed) {
-                float2 p = (uv - center) / size;
-                float cloud = cloudCircle(p, float2(-0.62, 0.10), 0.40, 0.12);
-                cloud = max(cloud, cloudCircle(p, float2(-0.30, -0.22), 0.50, 0.13));
-                cloud = max(cloud, cloudCircle(p, float2(0.02, -0.30), 0.52, 0.13));
-                cloud = max(cloud, cloudCircle(p, float2(0.34, -0.16), 0.56, 0.13));
-                cloud = max(cloud, cloudCircle(p, float2(0.66, 0.08), 0.42, 0.12));
-                // Two extra lobes whose positions vary per instance (via seed), so different
-                // drifting clouds get a slightly different fluffy silhouette.
+            float cloudEllipse(float2 point, float2 center, float2 radius, float softness) {
+                float distanceFromCenter = length((point - center) / radius);
+                return smoothstep(1.0 + softness, 1.0 - softness, distanceFromCenter);
+            }
+
+            float cloudFbm(float2 p) {
+                float value = 0.0;
+                value += noise21(p) * 0.571;
+                p = p * 2.03 + float2(3.1, -1.7);
+                value += noise21(p) * 0.286;
+                p = p * 2.11 + float2(-2.4, 4.3);
+                value += noise21(p) * 0.143;
+                return value;
+            }
+
+            float dualCloudDensity(float2 p, float seed) {
+                float2 driftA = float2(time * 0.004, time * 0.0015);
+                float2 driftB = float2(-time * 0.0023, time * 0.0011);
+                float fieldA = cloudFbm(p * 2.15 + float2(seed * 1.7, seed * 0.4) + driftA);
+                float fieldB = cloudFbm(p * 3.70 + float2(seed * 2.9, seed * 1.3) + driftB);
+                return clamp(fieldA * 0.68 + fieldB * 0.32, 0.0, 1.0);
+            }
+
+            float cumulusSilhouette(float2 p, float seed) {
                 float h1 = hash21(float2(seed, 11.0));
                 float h2 = hash21(float2(seed, 23.0));
-                cloud = max(cloud, cloudCircle(p, float2(mix(-0.92, -0.46, h1), 0.18), 0.30, 0.11));
-                cloud = max(cloud, cloudCircle(p, float2(mix(0.46, 0.98, h2), 0.20), 0.32, 0.11));
-                // Fill the bottom of the cloud between the circular lobes.
-                // ONLY where the lobes already provide solid coverage (cloud >= 0.30),
-                // so the rectangular flatBase region never bleeds into open sky.
-                float flatBase = smoothstep(0.40, 0.16, abs(p.y - 0.20))
-                    * smoothstep(1.18, 0.78, abs(p.x));
-                float cloudCoverage = smoothstep(0.20, 0.55, cloud);
-                cloud = max(cloud, flatBase * cloudCoverage * cloudCoverage);
-                // FBM turbulence: 3-octave animated noise pushes the cloud boundary
-                // inward and outward, breaking the smooth circular silhouette into
-                // irregular storm-cloud billows. Applied only at the edge transition
-                // zone (cloud*(1-cloud) peaks where cloud≈0.5) so interior and exterior
-                // stay cleanly solid/empty.
-                float2 np = p * 2.2 + float2(seed * 0.37, time * 0.006);
-                float fbm = noise21(np)                              * 0.500
-                          + noise21(np * 2.1 + float2(3.7,  1.2))  * 0.250
-                          + noise21(np * 4.3 + float2(-2.1, 4.8))  * 0.125;
-                cloud += (fbm - 0.54) * cloud * (1.0 - cloud) * 1.6;
-                cloud = clamp(cloud, 0.0, 1.0);
-                float shade = smoothstep(-0.40, 0.85, p.y);
-                return float2(cloud, shade);
+                float h3 = hash21(float2(seed, 37.0));
+                float cloud = cloudCircle(p, float2(-0.72, mix(0.02, 0.20, h1)), mix(0.34, 0.46, h2), 0.14);
+                cloud = max(cloud, cloudCircle(p, float2(-0.34, mix(-0.34, -0.12, h2)), mix(0.44, 0.59, h3), 0.14));
+                cloud = max(cloud, cloudCircle(p, float2(mix(-0.10, 0.10, h1), mix(-0.48, -0.24, h3)), mix(0.48, 0.64, h2), 0.15));
+                cloud = max(cloud, cloudCircle(p, float2(0.38, mix(-0.31, -0.08, h1)), mix(0.43, 0.59, h3), 0.14));
+                cloud = max(cloud, cloudCircle(p, float2(0.76, mix(0.01, 0.22, h2)), mix(0.32, 0.46, h1), 0.13));
+                float base = smoothstep(0.39, 0.12, abs(p.y - 0.20)) * smoothstep(1.18, 0.76, abs(p.x));
+                return max(cloud, base * smoothstep(0.12, 0.56, cloud));
+            }
+
+            float stratusSilhouette(float2 p, float seed) {
+                float waviness = (noise21(float2(p.x * 1.25 + seed, seed * 2.1)) - 0.5) * 0.42;
+                float band = smoothstep(0.52, 0.14, abs(p.y + waviness));
+                float ends = smoothstep(1.65, 1.12, abs(p.x));
+                float pockets = noise21(p * float2(1.25, 2.8) + float2(seed * 2.0, 4.7));
+                return band * ends * smoothstep(0.22, 0.58, pockets + band * 0.48);
+            }
+
+            float cumulonimbusSilhouette(float2 p, float seed) {
+                float tower = cloudEllipse(p, float2(-0.12, -0.30), float2(0.58, 1.04), 0.15);
+                tower = max(tower, cloudCircle(p, float2(-0.24, -0.98), 0.43, 0.14));
+                tower = max(tower, cloudCircle(p, float2(0.18, -0.76), 0.50, 0.14));
+                tower = max(tower, cloudCircle(p, float2(0.35, -0.28), 0.56, 0.15));
+                float anvil = cloudEllipse(p, float2(0.18, -1.04), float2(1.12, 0.28), 0.16);
+                float base = smoothstep(0.36, 0.11, abs(p.y - 0.36)) * smoothstep(1.14, 0.82, abs(p.x));
+                return max(max(tower, anvil), base);
+            }
+
+            // Returns (density, shade). Every morphology gets the same dual moving density
+            // treatment, so open pockets and soft edges evolve independently of its outline.
+            float2 cloudShape(float2 uv, float2 center, float size, float seed) {
+                float2 p = (uv - center) / size;
+                float silhouette = mode == 4.0
+                    ? cumulonimbusSilhouette(p, seed)
+                    : ((mode == 1.0 || mode == 2.0 || mode == 3.0 || mode == 5.0 ||
+                        mode == 7.0 || mode == 9.0 || mode == 10.0)
+                        ? stratusSilhouette(p, seed)
+                        : cumulusSilhouette(p, seed));
+                float densityField = dualCloudDensity(p, seed);
+                float density = smoothstep(0.14, 0.82, silhouette + (densityField - 0.50) * 0.72);
+                density *= smoothstep(0.02, 0.30, silhouette);
+                float verticalShade = smoothstep(-0.72, 0.88, p.y);
+                float internalShade = 1.0 - densityField;
+                float shade = clamp(verticalShade * 0.62 + internalShade * 0.38, 0.0, 1.0);
+                return float2(density, shade);
             }
 
             float2 driftingCloud(float2 uv, float y, float size, float speed, float seed) {
                 float travel = resolution.x / resolution.y + size * 2.7;
                 float x = fract(seed + time * speed) * travel - size * 1.35;
                 return cloudShape(uv, float2(x, y), size, seed);
+            }
+
+            // Screen-filling nimbostratus/altostratus field. Two independently drifting
+            // FBM domains replace the old flat coverage floor while preserving full cover.
+            float2 overcastField(float2 uv, float seed) {
+                float2 p = uv * float2(1.15, 2.35);
+                float fieldA = cloudFbm(p + float2(time * 0.0030, seed * 2.7));
+                float fieldB = cloudFbm(p * 1.83 + float2(-time * 0.0018, seed * 4.1));
+                float density = clamp(fieldA * 0.64 + fieldB * 0.36, 0.0, 1.0);
+                float shade = clamp((1.0 - density) * 0.60 + fieldB * 0.40, 0.0, 1.0);
+                return float2(density, shade);
             }
 
             half4 main(float2 fragCoord) {
@@ -1453,13 +1533,15 @@ internal class WallpaperWeatherEffectRenderer(
                             float shadeAcc = shape.x * shape.y;
                             float weightAcc = shape.x;
 
-                            if (layerAlpha[i] > 0.45) {
+                            bool stratiform = mode == 1.0 || mode == 2.0 || mode == 3.0 ||
+                                mode == 5.0 || mode == 7.0 || mode == 9.0 || mode == 10.0;
+                            if (!stratiform && layerAlpha[i] > 0.45) {
                                 float2 extra1 = driftingCloud(aspectUv, y + 0.05, size * 0.92, speed * 1.18, seed + 0.27) * layerAlpha[i];
                                 shapeMask = max(shapeMask, extra1.x);
                                 shadeAcc += extra1.x * extra1.y;
                                 weightAcc += extra1.x;
                             }
-                            if (layerAlpha[i] > 0.75) {
+                            if (!stratiform && layerAlpha[i] > 0.75) {
                                 float2 extra2 = driftingCloud(aspectUv, y - 0.06, size * 1.08, speed * 0.84, seed + 0.59) * layerAlpha[i];
                                 shapeMask = max(shapeMask, extra2.x);
                                 shadeAcc += extra2.x * extra2.y;
@@ -1474,23 +1556,31 @@ internal class WallpaperWeatherEffectRenderer(
                         float weightedDarkness = alphaSum > 0.0 ? darknessSum / alphaSum : 0.0;
                         float weightedShade = alphaSum > 0.0 ? shadeSum / alphaSum : 0.0;
 
-                        // Heavy overcast/rain/thunder coverage: as the densest layer's
-                        // alpha approaches full, raise a flat "ceiling" floor so the
-                        // cloud mask covers the whole sky with no blue gaps, using the
-                        // average layer darkness for any pixels not already covered by
-                        // a cloud shape.
+                        // Dense scenes use their own moving nimbostratus/altostratus field.
+                        // It fills open sky with textured density instead of a flat alpha floor.
                         float maxLayerAlpha = max(
                             max(max(layerAlpha[0], layerAlpha[1]), max(layerAlpha[2], layerAlpha[3])),
                             layerAlpha[4]
                         );
-                        float coverageFloor = smoothstep(0.65, 0.95, maxLayerAlpha) * maxLayerAlpha;
-                        if (coverageFloor > clouds) {
+                        // Precipitation must retain an overcast ceiling even when adaptive
+                        // quality keeps only the faintest, most distant parallax layer.
+                        float precipitationCeiling = (mode == 1.0 || mode == 2.0 || mode == 4.0 ||
+                            mode == 5.0 || mode == 9.0) ? 0.90 : 0.0;
+                        float ceilingStrength = max(
+                            smoothstep(0.58, 0.92, maxLayerAlpha) * maxLayerAlpha,
+                            precipitationCeiling
+                        );
+                        if (ceilingStrength > 0.0) {
+                            float2 ceiling = overcastField(aspectUv, effectSeed * 0.013 + 0.7);
+                            float ceilingMask = ceilingStrength * mix(0.86, 1.0, ceiling.x);
                             float floorDarkness = (
                                 layerDarkness[0] + layerDarkness[1] + layerDarkness[2] +
                                 layerDarkness[3] + layerDarkness[4]
                             ) / 5.0;
-                            weightedDarkness = mix(floorDarkness, weightedDarkness, clouds / max(coverageFloor, 0.0001));
-                            clouds = coverageFloor;
+                            float ceilingDominance = max(ceilingMask - clouds, 0.0);
+                            weightedDarkness = mix(weightedDarkness, floorDarkness, ceilingDominance);
+                            weightedShade = mix(weightedShade, ceiling.y, ceilingDominance);
+                            clouds = max(clouds, ceilingMask);
                         }
 
                         float3 fairColor = daylight > 0.5 ? float3(0.94, 0.97, 1.0) : float3(0.48, 0.54, 0.64);

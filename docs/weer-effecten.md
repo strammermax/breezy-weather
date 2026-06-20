@@ -68,6 +68,18 @@ dekkingsfactor van `1.15`, zodat het donkere wolkenplafond duidelijk zichtbaar i
 Bewegende wolkvormen via AGSL-shader (`cloudShape` + `driftingCloud`).
 `cloudDensity` bepaalt hoe vol de hemel is; `cloudDarkness` hoe grijs.
 Bij hogere dichtheid overlappen wolken elkaar en vormen ze een aaneengesloten dek.
+De renderer gebruikt geen PNG's of wolkenatlas. De zachte randen en interne
+structuur worden volledig procedureel opgebouwd uit twee onafhankelijk bewegende
+FBM-ruisvelden. Hiervoor worden drie vormfamilies gebruikt:
+
+- **Cumulus**: afzonderlijke gebolde wolken bij helder en gedeeltelijk bewolkt weer.
+- **Stratus/nimbostratus**: brede, lage wolkenbanden bij bewolking en neerslag.
+- **Cumulonimbus**: hoge torens met aambeeldvorm bij onweer.
+
+Volledig bewolkte en natte scenes krijgen daarnaast een schermvullend, bewegend
+ruisveld. Daardoor blijft de hemel gesloten zonder een vlakke effen laag. Bij
+regen, sneeuw, natte sneeuw en hagel geldt een minimale plafondsterkte van 90 procent,
+ook wanneer adaptieve kwaliteit alleen de verste parallaxlaag overlaat.
 
 Iedere scene bevat vijf vaste dieptelagen, van achter naar voren:
 
@@ -82,12 +94,14 @@ Iedere scene bevat vijf vaste dieptelagen, van achter naar voren:
 Verre wolken zijn kleiner, lichter en langzamer. Wolken dichtbij zijn groter,
 donkerder en bewegen sneller. Dit levert parallax op: de gebruiker ervaart de
 langzame lagen als verder weg. De vormen krijgen per instantie een andere seed,
-extra lobben en geanimeerde ruis, waardoor wolken niet exact op elkaar lijken.
+andere verhoudingen en geanimeerde ruis, waardoor wolken niet exact op elkaar lijken.
 
 Onbewolkt maakt alle vijf lagen transparant. Licht bewolkt, mist en nevel tonen
 laag 1, 3 en 5. De overige weertypen kunnen alle vijf lagen gebruiken. Bij hoge
-dichtheid worden extra wolkmassa's toegevoegd. Regen, onweer en onweersbui
-vullen bovendien de resterende openingen met een donker wolkenplafond.
+dichtheid worden extra wolkmassa's toegevoegd. Stratiforme scenes gebruiken het
+schermvullende ruisveld in plaats van extra identieke massa's; dat houdt de GPU-last
+laag. Regen, sneeuw, natte sneeuw, hagel en onweer vullen de resterende openingen
+met een donker, bewegend wolkenplafond.
 
 ### Hemelkleur
 De hemelgradient loopt van nacht (diepblauw) → dageraad (paars/oranje) →
