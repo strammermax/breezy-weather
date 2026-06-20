@@ -37,7 +37,7 @@ internal object RotatingWeatherScenarios {
         RotatingWeatherScenario(
             "Holl. wolken",
             WeatherView.WEATHER_KIND_CLOUD,
-            cloudCoverPercent = 55f,
+            cloudCoverPercent = 70f,
             richSky = true,
         ),
         RotatingWeatherScenario("Mostly cloudy", WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 75f),

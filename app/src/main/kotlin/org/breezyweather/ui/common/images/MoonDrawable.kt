@@ -78,7 +78,12 @@ class MoonDrawable : Drawable() {
     }
 
     override fun draw(canvas: Canvas) {
-        mPaint.alpha = (mAlpha * 255).toInt()
+        // The layer only exists so clear() can punch a transparent crescent out of an
+        // isolated buffer without affecting the real canvas underneath — it does not
+        // reliably carry setAlpha() through to the composited result on every canvas
+        // (e.g. the wallpaper's hardware canvas), which is why the moon used to draw
+        // fully opaque no matter what setAlpha() was called with. Bake alpha directly
+        // into fill()'s colour instead, which always survives.
         val layerId = canvas.saveLayer(
             mBounds.left.toFloat(), mBounds.top.toFloat(),
             mBounds.right.toFloat(), mBounds.bottom.toFloat(),
@@ -134,9 +139,10 @@ class MoonDrawable : Drawable() {
         canvas.restoreToCount(layerId)
     }
 
-    /** Fill entire disc or a 180° arc (half disc) with [mCoreColor]. */
+    /** Fill entire disc or a 180° arc (half disc) with [mCoreColor] at [mAlpha]. */
     private fun fill(canvas: Canvas, rect: RectF, startAngle: Float? = null) {
         mPaint.color = mCoreColor
+        mPaint.alpha = (mAlpha * 255).toInt()
         mPaint.xfermode = null
         if (startAngle == null) canvas.drawOval(rect, mPaint)
         else canvas.drawArc(rect, startAngle, 180f, true, mPaint)

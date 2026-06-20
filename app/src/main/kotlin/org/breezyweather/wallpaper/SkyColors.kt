@@ -29,7 +29,7 @@ object SkyColors {
 
     // "Holl. wolken": a richer, more saturated blue than the default DAY gradient,
     // modelled on a reference photo of a deep-blue Dutch sky with voluminous cumulus.
-    private val RICH_SKY_DAY = intArrayOf(Color.rgb(12, 88, 173), Color.rgb(83, 160, 217))
+    private val RICH_SKY_DAY = intArrayOf(Color.rgb(6, 70, 152), Color.rgb(70, 148, 209))
 
     fun blendSky(from: IntArray, to: IntArray, amount: Float): IntArray = intArrayOf(
         blendColor(from[0], to[0], amount),
@@ -61,6 +61,6 @@ object SkyColors {
     /** Deepens a daytime clear-sky gradient towards [RICH_SKY_DAY] for "Holl. wolken". */
     fun applyRichSkyTint(colors: IntArray, daytime: Boolean): IntArray {
         if (!daytime) return colors
-        return blendSky(colors, RICH_SKY_DAY, 0.82f)
+        return blendSky(colors, RICH_SKY_DAY, 0.96f)
     }
 }

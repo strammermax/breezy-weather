@@ -1174,7 +1174,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             // richSky: the reference photo has no sun glow washing out the sky at all, so
             // shrink it well below the normal glow rather than the usual prominent halo.
             val glowFraction = if (mSceneState.richSky) {
-                CelestialGlow.GLOW_RADIUS_FRACTION * 0.4f
+                CelestialGlow.GLOW_RADIUS_FRACTION * 0.18f
             } else {
                 CelestialGlow.GLOW_RADIUS_FRACTION
             }
@@ -1413,7 +1413,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 "HOLLANDSE_LUCHT" -> WeatherCode.PARTLY_CLOUDY
                 else -> WeatherCode.getInstance(configManager.weatherKind)
             }
-            mForcedCloudCoverPercent = if (configManager.weatherKind == "HOLLANDSE_LUCHT") 55f else null
+            mForcedCloudCoverPercent = if (configManager.weatherKind == "HOLLANDSE_LUCHT") 70f else null
             mForcedRichSky = configManager.weatherKind == "HOLLANDSE_LUCHT"
             val daytime = when (configManager.dayNightType) {
                 "day" -> true

@@ -1294,9 +1294,10 @@ internal class WallpaperWeatherEffectRenderer(
                 float2 atlasUv = float2(localUv.x, (row + localUv.y) * 0.2);
                 float luminance = cloudAtlas.eval(atlasUv * float2(512.0, 1024.0)).a;
                 // richSky: a narrower transition band gives crisper, more "photographic"
-                // cumulus edges instead of the soft/hazy default falloff.
-                float lo = mix(0.018, 0.30, richSky);
-                float hi = mix(0.82, 0.58, richSky);
+                // cumulus edges instead of the soft/hazy default falloff. Not as narrow as
+                // a first pass (0.30/0.58) — that banded visibly at this mask's resolution.
+                float lo = mix(0.018, 0.16, richSky);
+                float hi = mix(0.82, 0.64, richSky);
                 return smoothstep(lo, hi, luminance);
             }
 
@@ -1312,7 +1313,16 @@ internal class WallpaperWeatherEffectRenderer(
                 float density = clamp(maskA + maskB * 0.72, 0.0, 1.0);
                 float verticalShade = smoothstep(-0.72, 0.82, p.y);
                 float internalShade = 1.0 - clamp(maskA * 0.72 + maskB * 0.28, 0.0, 1.0);
-                return float2(density, clamp(verticalShade * 0.58 + internalShade * 0.42, 0.0, 1.0));
+                float shade = clamp(verticalShade * 0.58 + internalShade * 0.42, 0.0, 1.0);
+                if (richSky > 0.0) {
+                    // Fine fbm breakup so the mass reads as photographic, rafelig cumulus
+                    // rather than a smooth, evenly-shaded silhouette.
+                    float2 np = p * 9.0 + seed * 3.7;
+                    float fine = noise21(np) * 0.6 + noise21(np * 2.3 + 5.1) * 0.4;
+                    density = clamp(density + (fine - 0.5) * 0.22 * density, 0.0, 1.0);
+                    shade = clamp(shade + (fine - 0.5) * 0.16, 0.0, 1.0);
+                }
+                return float2(density, shade);
             }
 
             float2 driftingCloud(
@@ -1491,8 +1501,8 @@ internal class WallpaperWeatherEffectRenderer(
                             // richSky: shift masses higher (more open sky towards the
                             // horizon) and size them up, like the reference photo's bigger,
                             // more individually-readable cumulus.
-                            float y = 0.15 + float(i) * 0.085 + layerVerticalOffset[i] - richSky * 0.05;
-                            float size = (0.20 + layerScale[i] * 0.18) * mix(1.0, 1.35, richSky);
+                            float y = 0.15 + float(i) * 0.085 + layerVerticalOffset[i] - richSky * 0.11;
+                            float size = (0.20 + layerScale[i] * 0.18) * mix(1.0, 1.25, richSky);
                             float speed = 0.005 * layerSpeed[i] * dirSign;
                             float seed = 0.08 + float(i) * 0.41;
                             float rowA = mode == 4.0
@@ -1524,8 +1534,12 @@ internal class WallpaperWeatherEffectRenderer(
                             float shadeAcc = shape.x * shape.y;
                             float weightAcc = shape.x;
 
+                            // richSky: dampen the overlap-fade-in masses so coverage stays
+                            // as separated individual masses with open sky between them,
+                            // like the reference photo, instead of merging into one sheet.
+                            float richSkyOverlapDamp = mix(1.0, 0.72, richSky);
                             if (layerAlpha[i] > 0.10) {
-                                float extraOpacity = smoothstep(0.10, 0.32, layerAlpha[i]) * 0.82;
+                                float extraOpacity = smoothstep(0.10, 0.32, layerAlpha[i]) * 0.82 * richSkyOverlapDamp;
                                 float2 extra1 = driftingCloud(
                                     aspectUv,
                                     y + 0.065,
@@ -1540,7 +1554,7 @@ internal class WallpaperWeatherEffectRenderer(
                                 weightAcc += extra1.x;
                             }
                             if (layerAlpha[i] > 0.22) {
-                                float extraOpacity = smoothstep(0.22, 0.42, layerAlpha[i]) * 0.68;
+                                float extraOpacity = smoothstep(0.22, 0.42, layerAlpha[i]) * 0.68 * richSkyOverlapDamp;
                                 float2 extra2 = driftingCloud(
                                     aspectUv,
                                     y - 0.075,
@@ -1616,11 +1630,12 @@ internal class WallpaperWeatherEffectRenderer(
                         // top-lit cumulus, rather than a flat tinted silhouette. Storm clouds
                         // push the base shadow even further towards black.
                         float shadeStrength = mix(0.58, 0.22, smoothstep(0.30, 0.85, weightedDarkness));
-                        // richSky: deepen the base shadow further for a more sculpted,
-                        // top-lit volumetric look (reference photo: visible grey-blue
-                        // underside even on otherwise bright daytime cumulus).
-                        shadeStrength = mix(shadeStrength, shadeStrength * 0.55, richSky);
                         cloudColor *= mix(1.0, shadeStrength, weightedShade);
+                        // richSky: mix the underside towards a cool blue-grey shadow colour
+                        // (not just darker-but-same-hue) for the sculpted, top-lit volume the
+                        // reference photo shows even on an otherwise bright daytime cumulus.
+                        float3 richShadowColor = float3(0.46, 0.52, 0.62);
+                        cloudColor = mix(cloudColor, richShadowColor, richSky * pow(weightedShade, 1.4) * 0.85);
                     }
 
                     // ACT-014: stars fade in at night and are occluded by clouds.
