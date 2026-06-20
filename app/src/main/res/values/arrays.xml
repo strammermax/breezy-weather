@@ -198,6 +198,7 @@
         <item>@string/widget_live_wallpaper_weather_rotating</item>
         <item>@string/weather_kind_clear</item>
         <item>@string/weather_kind_partly_cloudy</item>
+        <item>@string/weather_kind_hollandse_lucht</item>
         <item>@string/weather_kind_cloudy</item>
         <item>@string/weather_kind_rain</item>
         <item>@string/weather_kind_snow</item>
@@ -214,6 +215,7 @@
         <item>rotating</item>
         <item>CLEAR</item>
         <item>PARTLY_CLOUDY</item>
+        <item>HOLLANDSE_LUCHT</item>
         <item>CLOUDY</item>
         <item>RAIN</item>
         <item>SNOW</item>

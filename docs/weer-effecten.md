@@ -9,20 +9,20 @@ gebruiken de Canvas-fallback met dezelfde sceneparameters.
 
 ## Effectentabel
 
-| Weertype | Hemelkleur | Wolken | Neerslag | Glas-druppels | Mist / Nevel | Bliksem | Sterren | Fotodimming |
-|---|---|---|---|---|---|---|---|---|
-| **Onbewolkt** | Helder blauw (dag) / diepblauw (nacht) | — | — | — | — | — | ✓ nacht | geen |
-| **Licht bewolkt** | Lichtblauw | Drie verspreide dieptelagen | — | — | — | — | ✓ nacht | weinig |
-| **Bewolkt** | Iets grijzer blauw | Vijf overlappende lagen | — | — | — | — | — | matig |
-| **Wind** | Lichtblauw-grijs | Matige wolken, snel bewegend | — | — | — | — | — | licht |
-| **Nevel** | Wazig blauw | Lichte wolken | — | — | ✓ Nevel | — | — | licht |
-| **Mist** | Grijs-wit | Matige wolken | — | — | ✓✓ Dikke mist | — | — | matig |
-| **Regen** | Donkergrijs | Vijf lagen en volledig dekkend regenplafond | ✓ Regenstrepen | ✓ Druppels | — | — | — | sterk |
-| **Natte sneeuw** | Donkergrijs | Vol wolkendek | ✓ Gemengd | ✓ Licht | — | — | — | sterk |
-| **Sneeuw** | Lichtgrijs-wit | Dik wolkendek | ✓ Sneeuwvlokken | — | — | — | — | matig |
-| **Hagel** | Donkergrijs | Volledig bedekt | ✓ Hagelstenen | — | — | — | — | zeer sterk |
-| **Onweer** | Zwaar donkergrijs | Vijf lagen en volledig dekkend donker plafond | — | — | — | ✓ Bliksem | — | zeer sterk |
-| **Onweersbui** | Zwart-grijs | Vijf lagen, volledig bedekt en zeer donker | ✓ Zware regen | ✓✓ Veel | — | ✓✓ Veel bliksem | — | maximaal |
+| Weertype          | Hemelkleur                             | Wolken | Neerslag | Glas-druppels | Mist / Nevel | Bliksem | Sterren | Fotodimming |
+|-------------------|----------------------------------------|--------|----------|---------------|--------------|---------|---------|-------------|
+| **Onbewolkt**     | Helder blauw (dag) / diepblauw (nacht) | —      | — | — | — | — | ✓ nacht | geen |
+| **Licht bewolkt** | Lichtblauw                             | Drie verspreide dieptelagen | — | — | — | — | ✓ nacht | weinig |
+| **Bewolkt**       | Iets grijzer blauw                     | Vijf overlappende lagen | — | — | — | — | — | matig |
+| **Wind**          | Lichtblauw-grijs                       | Matige wolken, snel bewegend | — | — | — | — | — | licht |
+| **Nevel**         | Wazig blauw                            | Lichte wolken | — | — | ✓ Nevel | — | — | licht |
+| **Mist**          | Grijs-wit                              | Matige wolken                                 | — | — | ✓✓ Dikke mist | — | — | matig |
+| **Regen**         | Donkergrijs                            | Vijf lagen en volledig dekkend regenplafond   | ✓ Regenstrepen | ✓ Druppels | — | — | — | sterk |
+| **Natte sneeuw**  | Donkergrijs                            | Vol wolkendek                                 | ✓ Gemengd | ✓ Licht | — | — | — | sterk |
+| **Sneeuw**        | Lichtgrijs-wit                         | Dik wolkendek                                 | ✓ Sneeuwvlokken               | — | — | — | — | matig |
+| **Hagel**         | Donkergrijs                            | Volledig bedekt                               | ✓ Hagelstenen               | — | — | — | — | zeer sterk |
+| **Onweer**        | Zwaar donkergrijs                      | Vijf lagen en volledig dekkend donker plafond | — | — | — | ✓ Bliksem | — | zeer sterk |
+| **Onweersbui**    | Zwart-grijs                            | Vijf lagen, volledig bedekt en zeer donker    | ✓ Zware regen | ✓✓ Veel | — | ✓✓ Veel bliksem | — | maximaal |
 
 ---
 

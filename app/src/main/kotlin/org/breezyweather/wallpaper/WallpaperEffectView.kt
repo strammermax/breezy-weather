@@ -88,6 +88,7 @@ internal class WallpaperEffectView @JvmOverloads constructor(
             glassRainIntensity = state.glassRainIntensity,
             precipitationIntensity = state.precipitationIntensity,
             precipitationTiltSlope = state.precipitationTiltSlope,
+            resources = resources,
         )
     }
 

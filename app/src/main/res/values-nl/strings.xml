@@ -2,6 +2,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="Nederlands">
     <!-- app. -->
     <string name="app_name">Weer</string>
+    <string name="weather_kind_hollandse_lucht">Holl. wolken</string>
     <!-- keyword. -->
     <string name="location_current">Huidige locatie</string>
     <string name="daily_today_short">Vand.</string>

@@ -1057,6 +1057,7 @@
     <!-- Weather kind -->
     <string name="weather_kind_clear" translatable="false">@string/common_weather_text_clear_sky</string>
     <string name="weather_kind_partly_cloudy" translatable="false">@string/common_weather_text_partly_cloudy</string>
+    <string name="weather_kind_hollandse_lucht" translatable="false">Dutch sky</string>
     <string name="weather_kind_cloudy" translatable="false">@string/common_weather_text_cloudy</string>
     <string name="weather_kind_rain" translatable="false">@string/common_weather_text_rain</string>
     <string name="weather_kind_snow" translatable="false">@string/common_weather_text_snow</string>
