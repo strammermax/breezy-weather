@@ -27,6 +27,10 @@ object SkyColors {
     private val OVERCAST_DAY = intArrayOf(Color.rgb(92, 96, 104), Color.rgb(128, 132, 140))
     private val OVERCAST_NIGHT = intArrayOf(Color.rgb(24, 26, 32), Color.rgb(40, 43, 50))
 
+    // "Holl. wolken": a richer, more saturated blue than the default DAY gradient,
+    // modelled on a reference photo of a deep-blue Dutch sky with voluminous cumulus.
+    private val RICH_SKY_DAY = intArrayOf(Color.rgb(12, 88, 173), Color.rgb(83, 160, 217))
+
     fun blendSky(from: IntArray, to: IntArray, amount: Float): IntArray = intArrayOf(
         blendColor(from[0], to[0], amount),
         blendColor(from[1], to[1], amount),
@@ -52,5 +56,11 @@ object SkyColors {
         val overcast = if (daytime) OVERCAST_DAY else OVERCAST_NIGHT
         val amount = (cloudDarkness * 0.85f).coerceIn(0f, 1f)
         return blendSky(colors, overcast, amount)
+    }
+
+    /** Deepens a daytime clear-sky gradient towards [RICH_SKY_DAY] for "Holl. wolken". */
+    fun applyRichSkyTint(colors: IntArray, daytime: Boolean): IntArray {
+        if (!daytime) return colors
+        return blendSky(colors, RICH_SKY_DAY, 0.82f)
     }
 }

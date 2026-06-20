@@ -123,6 +123,12 @@ data class WallpaperSceneState(
      * 180 = full moon, 270 = last quarter. Matches [breezyweather.domain.weather.model.MoonPhase.angle].
      */
     val moonPhaseAngle: Float = 180f,
+    /**
+     * "Holl. wolken" preset: a deeper-blue sky and richer/sharper-edged cumulus than the
+     * regular Partly cloudy/Mostly cloudy look, modelled on a reference photo (see
+     * RotatingWeatherScenario.richSky). Purely cosmetic — doesn't change density/coverage.
+     */
+    val richSky: Boolean = false,
 ) {
     val daytime: Boolean
         get() = daylight >= 0.5f
@@ -151,6 +157,7 @@ object WallpaperSceneStateFactory {
         moonsetMillis: Long? = null,
         weatherRefreshedAtMillis: Long? = null,
         latitude: Double? = null,
+        richSky: Boolean = false,
     ): WallpaperSceneState {
         val family = weatherFamily(weatherKind)
         val normalizedKind = weatherKindFor(family)
@@ -236,6 +243,7 @@ object WallpaperSceneStateFactory {
             weatherRefreshedAtMillis = weatherRefreshedAtMillis,
             latitude = latitude,
             moonPhaseAngle = moonPhaseAngle,
+            richSky = richSky,
         )
     }
 

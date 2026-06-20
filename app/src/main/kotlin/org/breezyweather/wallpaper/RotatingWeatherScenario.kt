@@ -16,6 +16,8 @@ internal data class RotatingWeatherScenario(
     val precipitationMillimetersPerHour: Float? = null,
     val cloudCoverPercent: Float? = null,
     val visibilityMeters: Float? = null,
+    /** "Holl. wolken": deeper-blue sky, richer/sharper cumulus, modelled on a reference photo. */
+    val richSky: Boolean = false,
 )
 
 internal object RotatingWeatherScenarios {
@@ -32,8 +34,12 @@ internal object RotatingWeatherScenarios {
         // Reference look (camiel, 2026-06-20): rich, deep-blue sky with voluminous,
         // clustered cumulus that have real depth/colour contrast — bigger and denser
         // than "Partly cloudy" so the masses read individually instead of scattered.
-        // First pass only — still lighter/more scattered than the reference photo.
-        RotatingWeatherScenario("Holl. wolken", WeatherView.WEATHER_KIND_CLOUD, cloudCoverPercent = 55f),
+        RotatingWeatherScenario(
+            "Holl. wolken",
+            WeatherView.WEATHER_KIND_CLOUD,
+            cloudCoverPercent = 55f,
+            richSky = true,
+        ),
         RotatingWeatherScenario("Mostly cloudy", WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 75f),
         RotatingWeatherScenario("Overcast", WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 100f),
         RotatingWeatherScenario("Motregen", WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 1f),

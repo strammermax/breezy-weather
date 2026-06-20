@@ -148,6 +148,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mCurrentEffectFamily: WallpaperWeatherFamily? = null
         private var mCurrentRendererWeatherKind: Int? = null
         private var mCurrentRendererCondition: WallpaperEffectCondition? = null
+        private var mCurrentRendererRichSky = false
         private var mCurrentRendererWindFactor = Float.NaN
         private var mCurrentRendererPrecipitationIntensity = Float.NaN
         private var mCurrentRendererGlassRainIntensity = Float.NaN
@@ -246,6 +247,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mRotatingWeatherIndex = 0
         /** Cloud cover override for fixed (non-rotating) presets like "Holl. wolken". */
         private var mForcedCloudCoverPercent: Float? = null
+        private var mForcedRichSky = false
         private var hasDrawn = false
         private var mDeviceOrientation: DeviceOrientation = DeviceOrientation.TOP
         private var mIntervalController: AsyncHelper.Controller? = null
@@ -581,6 +583,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 moonsetMillis = mMoonsetMillis,
                 weatherRefreshedAtMillis = mCurrentLocationData?.weather?.base?.refreshTime?.time,
                 latitude = mCurrentLocationData?.latitude,
+                richSky = rotatingScenario?.richSky ?: mForcedRichSky,
             )
         }
 
@@ -725,6 +728,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val rendererMatchesTarget = mCurrentEffectRenderer != null &&
                 mCurrentRendererWeatherKind == sceneState.weatherKind &&
                 mCurrentRendererCondition == sceneState.condition &&
+                mCurrentRendererRichSky == sceneState.richSky &&
                 abs(mCurrentRendererWindFactor - sceneState.windFactor) < 0.001f &&
                 abs(mCurrentRendererPrecipitationIntensity - sceneState.precipitationIntensity) < 0.001f &&
                 abs(mCurrentRendererGlassRainIntensity - sceneState.glassRainIntensity) < 0.001f
@@ -760,6 +764,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     precipitationTiltSlope = sceneState.precipitationTiltSlope,
                     qualityProfile = LiveWallpaperConfigManager(applicationContext).qualityProfile,
                     resources = resources,
+                    richSky = sceneState.richSky,
                 )
             } else {
                 null
@@ -794,6 +799,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mCurrentEffectFamily = newFamily
             mCurrentRendererWeatherKind = sceneState.weatherKind
             mCurrentRendererCondition = sceneState.condition
+            mCurrentRendererRichSky = sceneState.richSky
             mCurrentRendererWindFactor = sceneState.windFactor
             mCurrentRendererPrecipitationIntensity = sceneState.precipitationIntensity
             mCurrentRendererGlassRainIntensity = sceneState.glassRainIntensity
@@ -1094,7 +1100,12 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     }
                 }
             }
-            return SkyColors.applyOvercastTint(colors, mSceneState.cloudDarkness, mDaytime)
+            val richSkyColors = if (mSceneState.richSky) {
+                SkyColors.applyRichSkyTint(colors, mDaytime)
+            } else {
+                colors
+            }
+            return SkyColors.applyOvercastTint(richSkyColors, mSceneState.cloudDarkness, mDaytime)
         }
 
         private fun fraction(value: Long, start: Long, end: Long): Float =
@@ -1160,7 +1171,14 @@ class MaterialLiveWallpaperService : WallpaperService() {
             shortestSide: Float,
             visibility: Float,
         ) {
-            val glowRadius = shortestSide * CelestialGlow.GLOW_RADIUS_FRACTION
+            // richSky: the reference photo has no sun glow washing out the sky at all, so
+            // shrink it well below the normal glow rather than the usual prominent halo.
+            val glowFraction = if (mSceneState.richSky) {
+                CelestialGlow.GLOW_RADIUS_FRACTION * 0.4f
+            } else {
+                CelestialGlow.GLOW_RADIUS_FRACTION
+            }
+            val glowRadius = shortestSide * glowFraction
             val coreRadius = shortestSide * CelestialGlow.CORE_RADIUS_FRACTION
             val alpha = (visibility * 255).toInt()
             val minute = System.currentTimeMillis() / 60_000L
@@ -1396,6 +1414,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 else -> WeatherCode.getInstance(configManager.weatherKind)
             }
             mForcedCloudCoverPercent = if (configManager.weatherKind == "HOLLANDSE_LUCHT") 55f else null
+            mForcedRichSky = configManager.weatherKind == "HOLLANDSE_LUCHT"
             val daytime = when (configManager.dayNightType) {
                 "day" -> true
                 "night" -> false
