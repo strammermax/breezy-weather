@@ -129,21 +129,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
     }
 
     companion object {
-        private const val ROTATING_WEATHER_INTERVAL_MILLIS = 20_000L
-        private val ROTATING_WEATHER_KINDS = intArrayOf(
-            WeatherView.WEATHER_KIND_CLEAR,
-            WeatherView.WEATHER_KIND_CLOUD,
-            WeatherView.WEATHER_KIND_CLOUDY,
-            WeatherView.WEATHER_KIND_RAINY,
-            WeatherView.WEATHER_KIND_SNOW,
-            WeatherView.WEATHER_KIND_SLEET,
-            WeatherView.WEATHER_KIND_HAIL,
-            WeatherView.WEATHER_KIND_FOG,
-            WeatherView.WEATHER_KIND_HAZE,
-            WeatherView.WEATHER_KIND_THUNDER,
-            WeatherView.WEATHER_KIND_THUNDERSTORM,
-            WeatherView.WEATHER_KIND_WIND,
-        )
+        private const val ROTATING_WEATHER_INTERVAL_MILLIS = 10_000L
     }
 
     private inner class WeatherEngine(
@@ -160,7 +146,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mOutgoingEffectRenderer: WallpaperWeatherEffectRenderer? = null
         private var mCurrentEffectFamily: WallpaperWeatherFamily? = null
         private var mCurrentRendererWeatherKind: Int? = null
+        private var mCurrentRendererCondition: WallpaperEffectCondition? = null
         private var mCurrentRendererWindFactor = Float.NaN
+        private var mCurrentRendererPrecipitationIntensity = Float.NaN
         private var mCurrentRendererGlassRainIntensity = Float.NaN
         private var mHasSceneTarget = false
         private val mTransitionManager = TransitionManager()
@@ -179,6 +167,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mMoonriseMillis: Long? = null
         private var mMoonsetMillis: Long? = null
         private var mAutomaticDayNight = false
+        private var mAutomaticWeather = false
         private var mLastDayNightCheckMinute = Long.MIN_VALUE
         private var mOpenGravitySensor = false
         private var mGravitySensor: Sensor? = null
@@ -461,8 +450,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private val mRotatingWeatherRunnable = object : Runnable {
             override fun run() {
                 if (!mVisible || !mRotatingWeather) return
-                mRotatingWeatherIndex = (mRotatingWeatherIndex + 1) % ROTATING_WEATHER_KINDS.size
-                setWeather(ROTATING_WEATHER_KINDS[mRotatingWeatherIndex], mDaytime)
+                mRotatingWeatherIndex = (mRotatingWeatherIndex + 1) % RotatingWeatherScenarios.ALL.size
+                setWeather(RotatingWeatherScenarios.ALL[mRotatingWeatherIndex].weatherKind, mDaytime)
                 setWeatherImplementor(SceneTransitionReason.ROTATING_TEST)
                 mHandler?.post(mDrawableRunnable)
                 mHandler?.postDelayed(this, ROTATING_WEATHER_INTERVAL_MILLIS)
@@ -546,12 +535,24 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
         private fun rebuildSceneState(now: Long = System.currentTimeMillis()) {
             val wind = mCurrentLocationData?.weather?.current?.wind
+            val current = mCurrentLocationData?.weather?.current
+            val rotatingScenario = if (mRotatingWeather) {
+                RotatingWeatherScenarios.ALL[mRotatingWeatherIndex]
+            } else {
+                null
+            }
             // ACT-XXX: the current hour's forecasted precipitation amount (mm) drives how
             // light/heavy rain, snow, sleet, hail and thunderstorms render, on top of the
             // base profile for the weather family.
-            val currentHourPrecipitationMillimeters = mCurrentLocationData?.weather?.hourlyForecast
-                ?.firstOrNull { it.date.time >= now - 1.hours.inWholeMilliseconds }
-                ?.precipitation?.total?.inMillimeters?.toFloat()
+            val currentHourPrecipitationMillimeters = rotatingScenario?.precipitationMillimetersPerHour ?: if (
+                mAutomaticWeather
+            ) {
+                mCurrentLocationData?.weather?.hourlyForecast
+                    ?.firstOrNull { it.date.time >= now - 1.hours.inWholeMilliseconds }
+                    ?.precipitation?.total?.inMillimeters?.toFloat()
+            } else {
+                null
+            }
             mSceneState = WallpaperSceneStateFactory.create(
                 weatherKind = mWeatherKind,
                 daylight = if (mAutomaticDayNight) {
@@ -565,6 +566,10 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 windGustMetersPerSecond = wind?.gusts?.inMetersPerSecond?.toFloat() ?: 0f,
                 windDirectionDegrees = wind?.degree?.toFloat(),
                 precipitationMillimetersPerHour = currentHourPrecipitationMillimeters,
+                cloudCoverPercent = rotatingScenario?.cloudCoverPercent
+                    ?: if (mAutomaticWeather) current?.cloudCover?.inPercent?.toFloat() else null,
+                visibilityMeters = rotatingScenario?.visibilityMeters
+                    ?: if (mAutomaticWeather) current?.visibility?.inMeters?.toFloat() else null,
                 sunriseMillis = mSunriseMillis,
                 sunsetMillis = mSunsetMillis,
                 moonriseMillis = mMoonriseMillis,
@@ -681,7 +686,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private fun drawRotatingWeatherLabel(canvas: Canvas) {
             if (!mRotatingWeather) return
 
-            val label = "Rotating: ${rotatingWeatherName(mWeatherKind)}"
+            val label = "Rotating: ${RotatingWeatherScenarios.ALL[mRotatingWeatherIndex].label}"
             val textSize = (canvas.height * 0.022f).coerceIn(34f, 60f)
             mRotatingLabelPaint.textSize = textSize
             mRotatingLabelPaint.textAlign = Paint.Align.CENTER
@@ -706,22 +711,6 @@ class MaterialLiveWallpaperService : WallpaperService() {
             canvas.drawText(label, centerX, baseline, mRotatingLabelPaint)
         }
 
-        private fun rotatingWeatherName(@WeatherKindRule weatherKind: Int): String = when (weatherKind) {
-            WeatherView.WEATHER_KIND_CLEAR -> "Clear"
-            WeatherView.WEATHER_KIND_CLOUD -> "Cloud"
-            WeatherView.WEATHER_KIND_CLOUDY -> "Cloudy"
-            WeatherView.WEATHER_KIND_RAINY -> "Rain"
-            WeatherView.WEATHER_KIND_SNOW -> "Snow"
-            WeatherView.WEATHER_KIND_SLEET -> "Sleet"
-            WeatherView.WEATHER_KIND_HAIL -> "Hail"
-            WeatherView.WEATHER_KIND_FOG -> "Fog"
-            WeatherView.WEATHER_KIND_HAZE -> "Haze"
-            WeatherView.WEATHER_KIND_THUNDER -> "Thunder"
-            WeatherView.WEATHER_KIND_THUNDERSTORM -> "Thunderstorm"
-            WeatherView.WEATHER_KIND_WIND -> "Wind"
-            else -> "Unknown"
-        }
-
         private fun setWeatherImplementor(
             reason: SceneTransitionReason = SceneTransitionReason.WEATHER_DATA_CHANGED,
         ) {
@@ -730,7 +719,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val sceneState = mSceneState
             val rendererMatchesTarget = mCurrentEffectRenderer != null &&
                 mCurrentRendererWeatherKind == sceneState.weatherKind &&
+                mCurrentRendererCondition == sceneState.condition &&
                 abs(mCurrentRendererWindFactor - sceneState.windFactor) < 0.001f &&
+                abs(mCurrentRendererPrecipitationIntensity - sceneState.precipitationIntensity) < 0.001f &&
                 abs(mCurrentRendererGlassRainIntensity - sceneState.glassRainIntensity) < 0.001f
             if (rendererMatchesTarget) {
                 updateRendererDaylight(sceneState.daylight)
@@ -760,6 +751,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         } ?: 0L,
                     ),
                     glassRainIntensity = sceneState.glassRainIntensity,
+                    precipitationIntensity = sceneState.precipitationIntensity,
                     precipitationTiltSlope = sceneState.precipitationTiltSlope,
                     qualityProfile = LiveWallpaperConfigManager(applicationContext).qualityProfile,
                 )
@@ -795,7 +787,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
             }
             mCurrentEffectFamily = newFamily
             mCurrentRendererWeatherKind = sceneState.weatherKind
+            mCurrentRendererCondition = sceneState.condition
             mCurrentRendererWindFactor = sceneState.windFactor
+            mCurrentRendererPrecipitationIntensity = sceneState.precipitationIntensity
             mCurrentRendererGlassRainIntensity = sceneState.glassRainIntensity
 
             // The scene layer draws its own time-positioned sun. Avoid the old fixed clear-day sun.
@@ -1368,6 +1362,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 else -> location?.isDaylight ?: true
             }
             mAutomaticDayNight = configManager.dayNightType == "auto"
+            mAutomaticWeather = configManager.weatherKind == "auto"
             mLastDayNightCheckMinute = Long.MIN_VALUE
             mParallaxEnabled = configManager.parallaxEnabled
             mSeasonGradingEnabled = configManager.seasonGradingEnabled
@@ -1381,7 +1376,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             }
             setWeather(
                 if (mRotatingWeather) {
-                    ROTATING_WEATHER_KINDS[mRotatingWeatherIndex]
+                    RotatingWeatherScenarios.ALL[mRotatingWeatherIndex].weatherKind
                 } else {
                     WeatherViewController.getWeatherKind(weatherKind)
                 },

@@ -33,10 +33,52 @@ enum class WallpaperWeatherFamily {
     WIND,
 }
 
+enum class WallpaperSkyCondition {
+    CLEAR,
+    FAIR,
+    PARTLY_CLOUDY,
+    MOSTLY_CLOUDY,
+    OVERCAST,
+}
+
+enum class WallpaperPrecipitationCondition {
+    NONE,
+    DRIZZLE,
+    RAIN,
+    SLEET,
+    SNOW,
+    HAIL,
+}
+
+enum class WallpaperEffectIntensity {
+    NONE,
+    LIGHT,
+    MODERATE,
+    HEAVY,
+}
+
+enum class WallpaperVisibilityCondition {
+    CLEAR,
+    HAZE,
+    FOG,
+    DENSE_FOG,
+}
+
+/** Provider-independent weather axes which can be combined instead of requiring a renderer per phrase. */
+data class WallpaperEffectCondition(
+    val sky: WallpaperSkyCondition,
+    val precipitation: WallpaperPrecipitationCondition,
+    val precipitationIntensity: WallpaperEffectIntensity,
+    val visibility: WallpaperVisibilityCondition,
+    val thunderIntensity: Float,
+    val windy: Boolean,
+)
+
 /** Immutable, render-ready snapshot built exclusively from locally available data. */
 data class WallpaperSceneState(
     val weatherKind: Int,
     val weatherFamily: WallpaperWeatherFamily,
+    val condition: WallpaperEffectCondition,
     val daylight: Float,
     val windSpeedMetersPerSecond: Float,
     val windGustMetersPerSecond: Float,
@@ -99,6 +141,10 @@ object WallpaperSceneStateFactory {
          * profile. Null (no data) leaves the base profile untouched.
          */
         precipitationMillimetersPerHour: Float? = null,
+        /** Actual current cloud cover in percent. Null falls back to the weather-code profile. */
+        cloudCoverPercent: Float? = null,
+        /** Actual current visibility in metres. Null falls back to the weather-code profile. */
+        visibilityMeters: Float? = null,
         sunriseMillis: Long? = null,
         sunsetMillis: Long? = null,
         moonriseMillis: Long? = null,
@@ -111,7 +157,15 @@ object WallpaperSceneStateFactory {
         val safeDaylight = normalizedUnit(daylight, fallback = 1f)
         val safeWindSpeed = normalizedNonNegative(windSpeedMetersPerSecond)
         val safeWindGust = normalizedNonNegative(windGustMetersPerSecond)
-        val profile = effectProfile(family)
+        val condition = effectCondition(
+            family = family,
+            precipitationMillimetersPerHour = precipitationMillimetersPerHour,
+            cloudCoverPercent = cloudCoverPercent,
+            visibilityMeters = visibilityMeters,
+            windSpeedMetersPerSecond = safeWindSpeed,
+            windGustMetersPerSecond = safeWindGust,
+        )
+        val profile = effectProfile(condition)
 
         // ACT-XXX: scale the precipitation-driven parts of the profile by how light or
         // heavy the current hour's forecast actually is, so a drizzle and a downpour of
@@ -152,6 +206,7 @@ object WallpaperSceneStateFactory {
         return WallpaperSceneState(
             weatherKind = normalizedKind,
             weatherFamily = family,
+            condition = condition,
             daylight = safeDaylight,
             windSpeedMetersPerSecond = safeWindSpeed,
             windGustMetersPerSecond = safeWindGust,
@@ -227,55 +282,171 @@ object WallpaperSceneStateFactory {
         }
     }
 
-    private fun effectProfile(family: WallpaperWeatherFamily): EffectProfile = when (family) {
-        WallpaperWeatherFamily.CLEAR -> EffectProfile()
-        WallpaperWeatherFamily.PARTLY_CLOUDY -> EffectProfile(cloudDensity = 0.35f, cloudDarkness = 0.05f)
-        WallpaperWeatherFamily.CLOUDY -> EffectProfile(cloudDensity = 0.85f, cloudDarkness = 0.25f)
-        WallpaperWeatherFamily.RAIN -> EffectProfile(
-            cloudDensity = 0.95f,
-            cloudDarkness = 0.55f,
-            precipitationIntensity = 0.75f,
-            glassRainIntensity = 0.70f,
+    private fun effectCondition(
+        family: WallpaperWeatherFamily,
+        precipitationMillimetersPerHour: Float?,
+        cloudCoverPercent: Float?,
+        visibilityMeters: Float?,
+        windSpeedMetersPerSecond: Float,
+        windGustMetersPerSecond: Float,
+    ): WallpaperEffectCondition {
+        val familySky = when (family) {
+            WallpaperWeatherFamily.CLEAR -> WallpaperSkyCondition.CLEAR
+            WallpaperWeatherFamily.PARTLY_CLOUDY,
+            WallpaperWeatherFamily.HAZE,
+            WallpaperWeatherFamily.WIND,
+            -> WallpaperSkyCondition.PARTLY_CLOUDY
+            WallpaperWeatherFamily.CLOUDY,
+            WallpaperWeatherFamily.FOG,
+            -> WallpaperSkyCondition.MOSTLY_CLOUDY
+            else -> WallpaperSkyCondition.OVERCAST
+        }
+        val measuredSky = cloudCoverPercent
+            ?.takeIf { it.isFinite() }
+            ?.coerceIn(0f, 100f)
+            ?.let {
+                when {
+                    it <= 10f -> WallpaperSkyCondition.CLEAR
+                    it <= 30f -> WallpaperSkyCondition.FAIR
+                    it <= 60f -> WallpaperSkyCondition.PARTLY_CLOUDY
+                    it <= 85f -> WallpaperSkyCondition.MOSTLY_CLOUDY
+                    else -> WallpaperSkyCondition.OVERCAST
+                }
+            }
+        val sky = maxOf(familySky, measuredSky ?: familySky)
+
+        val precipitation = when (family) {
+            WallpaperWeatherFamily.RAIN,
+            WallpaperWeatherFamily.THUNDERSTORM,
+            -> if (isDrizzle(precipitationMillimetersPerHour)) {
+                WallpaperPrecipitationCondition.DRIZZLE
+            } else {
+                WallpaperPrecipitationCondition.RAIN
+            }
+            WallpaperWeatherFamily.SLEET -> WallpaperPrecipitationCondition.SLEET
+            WallpaperWeatherFamily.SNOW -> WallpaperPrecipitationCondition.SNOW
+            WallpaperWeatherFamily.HAIL -> WallpaperPrecipitationCondition.HAIL
+            else -> WallpaperPrecipitationCondition.NONE
+        }
+        val precipitationIntensity = precipitationIntensity(
+            precipitation,
+            precipitationMillimetersPerHour,
+            family == WallpaperWeatherFamily.THUNDERSTORM,
         )
-        WallpaperWeatherFamily.SNOW -> EffectProfile(
-            cloudDensity = 0.90f,
-            cloudDarkness = 0.45f,
-            precipitationIntensity = 0.75f,
+        val visibility = visibilityCondition(family, visibilityMeters)
+        val thunder = when (family) {
+            WallpaperWeatherFamily.THUNDER -> 0.55f
+            WallpaperWeatherFamily.THUNDERSTORM -> 1f
+            else -> 0f
+        }
+        return WallpaperEffectCondition(
+            sky = sky,
+            precipitation = precipitation,
+            precipitationIntensity = precipitationIntensity,
+            visibility = visibility,
+            thunderIntensity = thunder,
+            windy = family == WallpaperWeatherFamily.WIND ||
+                max(windSpeedMetersPerSecond, windGustMetersPerSecond) >= 8f,
         )
-        WallpaperWeatherFamily.SLEET -> EffectProfile(
-            cloudDensity = 0.95f,
-            cloudDarkness = 0.50f,
-            precipitationIntensity = 0.80f,
-            glassRainIntensity = 0.55f,
+    }
+
+    private fun effectProfile(condition: WallpaperEffectCondition): EffectProfile {
+        val skyCloudDensity = when (condition.sky) {
+            WallpaperSkyCondition.CLEAR -> 0f
+            WallpaperSkyCondition.FAIR -> 0.18f
+            WallpaperSkyCondition.PARTLY_CLOUDY -> 0.35f
+            WallpaperSkyCondition.MOSTLY_CLOUDY -> 0.70f
+            WallpaperSkyCondition.OVERCAST -> 0.95f
+        }
+        val cloudDensity = max(skyCloudDensity, when {
+            condition.thunderIntensity >= 1f -> 1f
+            condition.precipitation == WallpaperPrecipitationCondition.HAIL -> 1f
+            condition.precipitation != WallpaperPrecipitationCondition.NONE -> 0.95f
+            else -> 0f
+        })
+        var cloudDarkness = when (condition.sky) {
+            WallpaperSkyCondition.CLEAR -> 0f
+            WallpaperSkyCondition.FAIR -> 0.02f
+            WallpaperSkyCondition.PARTLY_CLOUDY -> 0.05f
+            WallpaperSkyCondition.MOSTLY_CLOUDY -> 0.18f
+            WallpaperSkyCondition.OVERCAST -> 0.25f
+        }
+        cloudDarkness = max(cloudDarkness, when (condition.precipitation) {
+            WallpaperPrecipitationCondition.DRIZZLE -> 0.38f
+            WallpaperPrecipitationCondition.RAIN -> 0.55f
+            WallpaperPrecipitationCondition.SLEET -> 0.50f
+            WallpaperPrecipitationCondition.SNOW -> 0.45f
+            WallpaperPrecipitationCondition.HAIL -> 0.70f
+            WallpaperPrecipitationCondition.NONE -> 0f
+        })
+        cloudDarkness = max(cloudDarkness, condition.thunderIntensity * 0.85f)
+
+        val precipitationStrength = when (condition.precipitationIntensity) {
+            WallpaperEffectIntensity.NONE -> 0f
+            WallpaperEffectIntensity.LIGHT -> 0.40f
+            WallpaperEffectIntensity.MODERATE -> 0.75f
+            WallpaperEffectIntensity.HEAVY -> 1f
+        }
+        val fogIntensity = when (condition.visibility) {
+            WallpaperVisibilityCondition.FOG -> 0.72f
+            WallpaperVisibilityCondition.DENSE_FOG -> 0.92f
+            else -> 0f
+        }
+        val hazeIntensity = if (condition.visibility == WallpaperVisibilityCondition.HAZE) 0.62f else 0f
+        val supportsWetGlass = condition.precipitation == WallpaperPrecipitationCondition.DRIZZLE ||
+            condition.precipitation == WallpaperPrecipitationCondition.RAIN ||
+            condition.precipitation == WallpaperPrecipitationCondition.SLEET
+
+        return EffectProfile(
+            cloudDensity = cloudDensity,
+            cloudDarkness = cloudDarkness.coerceIn(0f, 1f),
+            precipitationIntensity = precipitationStrength,
+            fogIntensity = fogIntensity,
+            hazeIntensity = hazeIntensity,
+            thunderIntensity = condition.thunderIntensity,
+            glassRainIntensity = if (supportsWetGlass) precipitationStrength else 0f,
         )
-        WallpaperWeatherFamily.HAIL -> EffectProfile(
-            cloudDensity = 1f,
-            cloudDarkness = 0.70f,
-            precipitationIntensity = 0.90f,
-        )
-        WallpaperWeatherFamily.FOG -> EffectProfile(
-            cloudDensity = 0.65f,
-            cloudDarkness = 0.35f,
-            fogIntensity = 0.85f,
-        )
-        WallpaperWeatherFamily.HAZE -> EffectProfile(
-            cloudDensity = 0.35f,
-            cloudDarkness = 0.10f,
-            hazeIntensity = 0.65f,
-        )
-        WallpaperWeatherFamily.THUNDER -> EffectProfile(
-            cloudDensity = 0.95f,
-            cloudDarkness = 0.70f,
-            thunderIntensity = 0.55f,
-        )
-        WallpaperWeatherFamily.THUNDERSTORM -> EffectProfile(
-            cloudDensity = 1f,
-            cloudDarkness = 0.85f,
-            precipitationIntensity = 1f,
-            thunderIntensity = 1f,
-            glassRainIntensity = 0.90f,
-        )
-        WallpaperWeatherFamily.WIND -> EffectProfile(cloudDensity = 0.55f, cloudDarkness = 0.15f)
+    }
+
+    private fun isDrizzle(precipitationMillimetersPerHour: Float?): Boolean {
+        val mm = precipitationMillimetersPerHour ?: return false
+        return mm.isFinite() && mm > 0f && mm < Precipitation.PRECIPITATION_HOURLY_LIGHT.toFloat()
+    }
+
+    private fun precipitationIntensity(
+        precipitation: WallpaperPrecipitationCondition,
+        precipitationMillimetersPerHour: Float?,
+        forceHeavy: Boolean,
+    ): WallpaperEffectIntensity {
+        if (precipitation == WallpaperPrecipitationCondition.NONE) return WallpaperEffectIntensity.NONE
+        if (forceHeavy) return WallpaperEffectIntensity.HEAVY
+        val mm = precipitationMillimetersPerHour
+        if (mm == null || !mm.isFinite() || mm <= 0f) return WallpaperEffectIntensity.MODERATE
+        return when {
+            mm < Precipitation.PRECIPITATION_HOURLY_LIGHT.toFloat() -> WallpaperEffectIntensity.LIGHT
+            mm < Precipitation.PRECIPITATION_HOURLY_HEAVY.toFloat() -> WallpaperEffectIntensity.MODERATE
+            else -> WallpaperEffectIntensity.HEAVY
+        }
+    }
+
+    private fun visibilityCondition(
+        family: WallpaperWeatherFamily,
+        visibilityMeters: Float?,
+    ): WallpaperVisibilityCondition {
+        val measured = visibilityMeters?.takeIf { it.isFinite() && it >= 0f }?.let {
+            when {
+                it < 1_000f -> WallpaperVisibilityCondition.DENSE_FOG
+                it < 5_000f -> WallpaperVisibilityCondition.FOG
+                it < 10_000f -> WallpaperVisibilityCondition.HAZE
+                else -> WallpaperVisibilityCondition.CLEAR
+            }
+        }
+        val familyVisibility = when (family) {
+            WallpaperWeatherFamily.FOG -> WallpaperVisibilityCondition.FOG
+            WallpaperWeatherFamily.HAZE -> WallpaperVisibilityCondition.HAZE
+            else -> WallpaperVisibilityCondition.CLEAR
+        }
+        return maxOf(familyVisibility, measured ?: familyVisibility)
     }
 
     /**

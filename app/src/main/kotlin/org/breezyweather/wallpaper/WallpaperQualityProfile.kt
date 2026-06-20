@@ -24,7 +24,7 @@ enum class WallpaperQualityProfile {
  *
  * @property maxSnowParticles upper bound for the snow particle pool (ACT-004).
  * @property maxHailParticles upper bound for the hail particle pool (ACT-004).
- * @property cloudLayers number of cloud layers rendered (ACT-003), out of the 3 defined.
+ * @property cloudLayers number of cloud layers rendered (ACT-003), out of the 5 defined.
  * @property fogBands number of fog/haze bands rendered (ACT-005), out of the 4 defined.
  * @property maxGlassDrops upper bound for the rain-on-glass drop count (ACT-006).
  * @property blurStrength relative softness impression for fog/haze bands (ACT-005).
@@ -61,7 +61,7 @@ object WallpaperQualityProfileFactory {
         WallpaperQualityProfile.BALANCED to QualityBudget(
             maxSnowParticles = 100,
             maxHailParticles = 55,
-            cloudLayers = 3,
+            cloudLayers = 4,
             fogBands = 3,
             maxGlassDrops = 24,
             blurStrength = 0.7f,
@@ -70,7 +70,7 @@ object WallpaperQualityProfileFactory {
         WallpaperQualityProfile.HIGH to QualityBudget(
             maxSnowParticles = 140,
             maxHailParticles = 75,
-            cloudLayers = 3,
+            cloudLayers = 5,
             fogBands = 4,
             maxGlassDrops = 36,
             blurStrength = 1.0f,

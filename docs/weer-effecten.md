@@ -1,7 +1,9 @@
 # Visuele effecten per weertype
 
-Overzicht van wat er visueel gebeurt in de live wallpaper en in-app schermen
-per weertype. Alle effecten worden procedureel gegenereerd (geen afbeeldingen).
+Overzicht van wat er visueel gebeurt in de live wallpaper per weertype. De
+weereffecten worden procedureel gegenereerd; er worden geen PNG-wolken gebruikt.
+Op Android 13 en hoger rendert een AGSL-shader de effecten. Oudere apparaten
+gebruiken de Canvas-fallback met dezelfde sceneparameters.
 
 ---
 
@@ -10,42 +12,53 @@ per weertype. Alle effecten worden procedureel gegenereerd (geen afbeeldingen).
 | Weertype | Hemelkleur | Wolken | Neerslag | Glas-druppels | Mist / Nevel | Bliksem | Sterren | Fotodimming |
 |---|---|---|---|---|---|---|---|---|
 | **Onbewolkt** | Helder blauw (dag) / diepblauw (nacht) | — | — | — | — | — | ✓ nacht | geen |
-| **Licht bewolkt** | Lichtblauw | Licht, 1–2 losse wolken | — | — | — | — | ✓ nacht | weinig |
-| **Bewolkt** | Iets grijzer blauw | Dikker wolkendek | — | — | — | — | — | matig |
+| **Licht bewolkt** | Lichtblauw | Drie verspreide dieptelagen | — | — | — | — | ✓ nacht | weinig |
+| **Bewolkt** | Iets grijzer blauw | Vijf overlappende lagen | — | — | — | — | — | matig |
 | **Wind** | Lichtblauw-grijs | Matige wolken, snel bewegend | — | — | — | — | — | licht |
 | **Nevel** | Wazig blauw | Lichte wolken | — | — | ✓ Nevel | — | — | licht |
 | **Mist** | Grijs-wit | Matige wolken | — | — | ✓✓ Dikke mist | — | — | matig |
-| **Regen** | Donkergrijs | Vol wolkendek, zwaar | ✓ Regenstrepen | ✓ Druppels | — | — | — | sterk |
+| **Regen** | Donkergrijs | Vijf lagen en volledig dekkend regenplafond | ✓ Regenstrepen | ✓ Druppels | — | — | — | sterk |
 | **Natte sneeuw** | Donkergrijs | Vol wolkendek | ✓ Gemengd | ✓ Licht | — | — | — | sterk |
 | **Sneeuw** | Lichtgrijs-wit | Dik wolkendek | ✓ Sneeuwvlokken | — | — | — | — | matig |
 | **Hagel** | Donkergrijs | Volledig bedekt | ✓ Hagelstenen | — | — | — | — | zeer sterk |
-| **Onweer** | Zwaar donkergrijs | Bijna volledig, erg donker | — | — | — | ✓ Bliksem | — | zeer sterk |
-| **Onweersbui** | Zwart-grijs | Volledig bedekt, pikzwart | ✓ Zware regen | ✓✓ Veel | — | ✓✓ Veel bliksem | — | maximaal |
+| **Onweer** | Zwaar donkergrijs | Vijf lagen en volledig dekkend donker plafond | — | — | — | ✓ Bliksem | — | zeer sterk |
+| **Onweersbui** | Zwart-grijs | Vijf lagen, volledig bedekt en zeer donker | ✓ Zware regen | ✓✓ Veel | — | ✓✓ Veel bliksem | — | maximaal |
 
 ---
 
-## Effect-parameters per weertype
+## Samengesteld weermodel
 
-Onderliggende waarden uit `WallpaperSceneStateFactory.effectProfile()`.
+`WallpaperSceneStateFactory` maakt niet langer één ondeelbaar effectprofiel per
+weeromschrijving. Een `WallpaperEffectCondition` bestaat uit onafhankelijke
+assen die gelijktijdig kunnen worden gerenderd:
 
-| Weertype | cloudDensity | cloudDarkness | precipitatie | fogIntensity | hazeIntensity | thunderIntensity | glassRain |
-|---|---|---|---|---|---|---|---|
-| Onbewolkt | 0.00 | 0.00 | — | — | — | — | — |
-| Licht bewolkt | 0.35 | 0.05 | — | — | — | — | — |
-| Bewolkt | 0.85 | 0.25 | — | — | — | — | — |
-| Wind | 0.55 | 0.15 | — | — | — | — | — |
-| Nevel | 0.35 | 0.10 | — | — | 0.65 | — | — |
-| Mist | 0.65 | 0.35 | — | 0.85 | — | — | — |
-| Regen | 0.95 | 0.55 | 0.75 | — | — | — | 0.70 |
-| Natte sneeuw | 0.95 | 0.50 | 0.80 | — | — | — | 0.55 |
-| Sneeuw | 0.90 | 0.45 | 0.75 | — | — | — | — |
-| Hagel | 1.00 | 0.70 | 0.90 | — | — | — | — |
-| Onweer | 0.95 | 0.70 | — | — | — | 0.55 | — |
-| Onweersbui | 1.00 | 0.85 | 1.00 | — | — | 1.00 | 0.90 |
+| As | Waarden |
+|---|---|
+| Hemel | `CLEAR`, `FAIR`, `PARTLY_CLOUDY`, `MOSTLY_CLOUDY`, `OVERCAST` |
+| Neerslag | `NONE`, `DRIZZLE`, `RAIN`, `SLEET`, `SNOW`, `HAIL` |
+| Intensiteit | `NONE`, `LIGHT`, `MODERATE`, `HEAVY` |
+| Zicht | `CLEAR`, `HAZE`, `FOG`, `DENSE_FOG` |
+| Onweer | continue waarde van 0.0 tot 1.0 |
+| Wind | rustig of winderig, plus de bestaande continue `windFactor` |
 
-Alle waarden zijn 0.0–1.0. Bij neerslaggerichte typen worden deze waarden
-geschaald door de werkelijke mm/u uit de weerdata (`precipFactor`), zodat
-een motregen er anders uitziet dan een stortbui.
+De grove `WeatherCode` levert de basis. In automatische modus verfijnen echte
+meetwaarden het resultaat:
+
+- `cloudCover` kiest de hemelklasse bij 10%, 30%, 60% en 85%;
+- mm/u onderscheidt motregen, normale en zware neerslag;
+- zicht onder 10 km voegt nevel toe, onder 5 km mist en onder 1 km dichte mist;
+- wind of windstoten vanaf 8 m/s markeren de scene als winderig;
+- een neerslagcode garandeert minimaal een volledig bewolkte hemel, ook als een
+  provider tegelijk een onwaarschijnlijk lage bewolkingsgraad meldt.
+
+Hierdoor zijn combinaties mogelijk zoals **zware regen + dichte mist** of
+**zware regen + onweer**, zonder daarvoor een nieuwe rendererklasse te maken.
+De neerslagintensiteit bepaalt nu ook rechtstreeks hoeveel shader-/deeltjeslagen
+worden gebruikt. In handmatige en roterende testmodus worden actuele bewolking
+en zicht bewust genegeerd, zodat het gekozen testtype herkenbaar blijft.
+
+Regen, onweer en onweersbui krijgen in `CloudFieldFactory` daarnaast een
+dekkingsfactor van `1.15`, zodat het donkere wolkenplafond duidelijk zichtbaar is.
 
 ---
 
@@ -55,6 +68,26 @@ een motregen er anders uitziet dan een stortbui.
 Bewegende wolkvormen via AGSL-shader (`cloudShape` + `driftingCloud`).
 `cloudDensity` bepaalt hoe vol de hemel is; `cloudDarkness` hoe grijs.
 Bij hogere dichtheid overlappen wolken elkaar en vormen ze een aaneengesloten dek.
+
+Iedere scene bevat vijf vaste dieptelagen, van achter naar voren:
+
+| Laag | Diepte | Schaal | Relatieve snelheid | Alpha-aandeel | Verticale offset |
+|---|---:|---:|---:|---:|---:|
+| Achtergrond | 0.00 | 0.55 | 0.35 | 0.38 | -0.06 |
+| Ver | 0.25 | 0.70 | 0.50 | 0.50 | -0.03 |
+| Midden | 0.50 | 0.88 | 0.65 | 0.64 | 0.00 |
+| Dichtbij | 0.75 | 1.08 | 0.82 | 0.78 | +0.03 |
+| Voorgrond | 1.00 | 1.30 | 1.00 | 0.92 | +0.06 |
+
+Verre wolken zijn kleiner, lichter en langzamer. Wolken dichtbij zijn groter,
+donkerder en bewegen sneller. Dit levert parallax op: de gebruiker ervaart de
+langzame lagen als verder weg. De vormen krijgen per instantie een andere seed,
+extra lobben en geanimeerde ruis, waardoor wolken niet exact op elkaar lijken.
+
+Onbewolkt maakt alle vijf lagen transparant. Licht bewolkt, mist en nevel tonen
+laag 1, 3 en 5. De overige weertypen kunnen alle vijf lagen gebruiken. Bij hoge
+dichtheid worden extra wolkmassa's toegevoegd. Regen, onweer en onweersbui
+vullen bovendien de resterende openingen met een donker wolkenplafond.
 
 ### Hemelkleur
 De hemelgradient loopt van nacht (diepblauw) → dageraad (paars/oranje) →
@@ -73,6 +106,8 @@ hellingshoek automatisch. Typen:
 ### Glas-druppels
 Druppels die over het schermoppervlak glijden (zoals regen op een ruit).
 Los van de neerslag in de lucht. Zichtbaar bij regen, natte sneeuw en onweersbui.
+Gewoon onweer heeft zelf geen glasdruppels. In de roterende test kan tijdens de
+crossfade wel kort een druppellaag van de vorige of volgende scene zichtbaar zijn.
 
 ### Mist vs. Nevel
 - **Mist** (`fogIntensity`) — dikke witte sluier die het zicht sterk beperkt
@@ -95,6 +130,44 @@ Formule: `photoDimming = 1 − (1 − nacht) × (1 − wolk)`
 
 Resultaat: een zonnige zomerfoto ziet er onder zware regenbuien of 's nachts
 donker en realistisch uit in plaats van vrolijk en zonnig.
+
+---
+
+## Renderkwaliteit
+
+De gekozen kwaliteit bepaalt hoeveel van de vijf wolkenlagen werkelijk worden
+gerenderd. Bij een lager budget blijven een verre en een nabije laag behouden,
+zodat het parallax-effect niet volledig verdwijnt.
+
+| Profiel | Wolkenlagen | Selectie |
+|---|---:|---|
+| Battery saver | 2 | verste en voorste laag |
+| Balanced | 4 | alle lagen behalve de middelste |
+| High | 5 | alle lagen |
+
+De renderer kan tijdelijk naar een lager profiel schakelen wanneer frames te
+lang duren. De maximale rendersnelheid blijft in alle profielen 30 FPS.
+
+---
+
+## Roterende test
+
+De optie **Rotating test (10 seconds)** kiest elke 10 seconden het volgende
+scenario. De volgorde is:
+
+`Onbewolkt → Helder → Licht bewolkt → Meest bewolkt → Zwaar bewolkt →`
+`Motregen → Regen → Zware regen → Lichte sneeuw → Sneeuw → Zware sneeuw →`
+`Natte sneeuw → Hagel → Nevel → Mist → Dichte mist → Onweer →`
+`Onweersbui → Wind → Regen + dichte mist`
+
+Daarmee komen alle genormaliseerde hemelklassen, neerslagsoorten,
+intensiteitsklassen en zichtklassen voor. De laatste scene controleert expliciet
+dat twee effecten tegelijk kunnen worden samengesteld.
+
+Tussen twee testscenes loopt een crossfade van 2 seconden. Tijdens die overgang
+worden de uitgaande en inkomende achtergrondeffecten, neerslag en glasdruppels
+samen getekend. Het label toont al de nieuwe scene; daardoor kan bijvoorbeeld
+aan het begin van Sneeuw nog kort de druppellaag van Regen zichtbaar zijn.
 
 ---
 

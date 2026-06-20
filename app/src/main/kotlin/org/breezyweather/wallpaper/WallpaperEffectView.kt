@@ -86,6 +86,7 @@ internal class WallpaperEffectView @JvmOverloads constructor(
             ),
             starField = StarFieldFactory.starFieldParams(locationSeed = 0L),
             glassRainIntensity = state.glassRainIntensity,
+            precipitationIntensity = state.precipitationIntensity,
             precipitationTiltSlope = state.precipitationTiltSlope,
         )
     }

@@ -203,7 +203,7 @@ Aanbevolen waarden:
 | Lokale data wordt na lange offlineperiode vervangen | 60 seconden | normale weather-overgang |
 | Auto dag/nacht | continu vanuit echte tijd | geen losse binaire transition nodig |
 | Geforceerde Day/Night-keuze in instellingen | 3 seconden | snelle visuele bevestiging |
-| Rotating testmodus | 2 seconden | grootste deel van 20 seconden blijft zichtbaar |
+| Rotating testmodus | 2 seconden | grootste deel van 10 seconden blijft zichtbaar |
 | Animaties uitgeschakeld | 0 seconden | direct stabiel frame |
 | Eerste frame na service-start | 0 seconden | geen fade vanuit zwart of ongedefinieerde state |
 
@@ -455,14 +455,14 @@ Als animaties uitgeschakeld zijn:
 
 ## 15. Rotating testmodus
 
-Rotating wisselt iedere 20 seconden door twaalf weather families en toont de familienaam.
+Rotating wisselt iedere 10 seconden door de genormaliseerde testscenario's en toont de scenarionaam.
 
 Voor deze modus:
 
 - gebruik een transition van ongeveer 2 seconden;
 - laat het label direct de incoming family tonen, eventueel als `Rotating: Rain`;
 - voorkom dat een 60 seconden overgang nooit voltooit;
-- behoud de huidige volgorde van families;
+- behoud de vaste volgorde van hemel-, neerslag-, zicht- en combinatiescenario's;
 - gebruik echte lokale wind- en astrodata voor snelheid en celestial positie;
 - laat rotating geen repositorydata of instellingen overschrijven.
 
@@ -668,7 +668,7 @@ Screenshots moeten weather family, testtijd en platform in de bestandsnaam krijg
 6. Sunrise en sunset blijven gebaseerd op lokale repositorydata of bestaande astronomische fallback.
 7. De locatiebitmap wordt niet iedere minuut of ieder frame opnieuw gedecodeerd.
 8. De nachttint van de foto schakelt niet meer abrupt.
-9. Rotating blijft iedere 20 seconden doorgaan en gebruikt een korte overgang.
+9. Rotating blijft iedere 10 seconden doorgaan en gebruikt een korte overgang.
 10. Geforceerde testmodi reageren binnen enkele seconden.
 11. Animations disabled tekent direct een stabiel frame zonder transitionloop.
 12. Een nieuw target tijdens een actieve overgang veroorzaakt geen helderheidspiek of rendererketen.

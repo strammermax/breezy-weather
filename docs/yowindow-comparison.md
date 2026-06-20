@@ -82,7 +82,7 @@ De werkboom bevatte tijdens dit onderzoek bestaande, niet aan deze opdracht gere
 | Screensaver | Daydream-service aanwezig | Niet aanwezig | Niet relevant voor huidige roadmap |
 | Widgets/notificaties | Veel widgets, alarmen en weerwaarschuwingen | Breezy Weather heeft uitgebreide widgets/notificaties | Geen YoWindow-werk nodig |
 | Offline gebruik | Lokale assets, databasecomponenten en caches aanwezig | Lokale SQLDelight-data en fotocache | LiveWeather is architectonisch al sterk op dit punt |
-| Testmodus | Niet betrouwbaar vast te stellen | Rotating weather, iedere 20 seconden met label | Behouden; uitbreiden met vaste tijdscenario's |
+| Testmodus | Niet betrouwbaar vast te stellen | Rotating weather, iedere 10 seconden met vaste effectscenario's en label | Behouden |
 
 ## 4. Renderingarchitectuur
 

@@ -54,7 +54,7 @@ class CloudFieldTest {
     }
 
     @Test
-    fun `Cloudy Rain and Thunderstorm have three visible layers`() {
+    fun `Cloudy Rain and Thunderstorm have five visible layers`() {
         val cloudy = CloudFieldFactory.cloudFieldParams(
             WallpaperWeatherFamily.CLOUDY, 0.85f, 0.25f, 1f, null,
         )
@@ -64,9 +64,23 @@ class CloudFieldTest {
         val thunderstorm = CloudFieldFactory.cloudFieldParams(
             WallpaperWeatherFamily.THUNDERSTORM, 1f, 0.85f, 3f, null,
         )
-        visibleLayers(cloudy) shouldBe 3
-        visibleLayers(rain) shouldBe 3
-        visibleLayers(thunderstorm) shouldBe 3
+        visibleLayers(cloudy) shouldBe 5
+        visibleLayers(rain) shouldBe 5
+        visibleLayers(thunderstorm) shouldBe 5
+    }
+
+    @Test
+    fun `Rain Thunder and Thunderstorm have an opaque ceiling layer`() {
+        listOf(
+            WallpaperWeatherFamily.RAIN to 0.95f,
+            WallpaperWeatherFamily.THUNDER to 0.95f,
+            WallpaperWeatherFamily.THUNDERSTORM to 1f,
+        ).forEach { (family, density) ->
+            val params = CloudFieldFactory.cloudFieldParams(
+                family, density, 0.7f, 1f, null,
+            )
+            params.layers.maxOf { it.alpha } shouldBe 1f
+        }
     }
 
     @Test
@@ -143,6 +157,21 @@ class CloudFieldTest {
         val back = params.layers.first()
         val front = params.layers.last()
         back.speedFactor shouldBeLessThan front.speedFactor
+    }
+
+    @Test
+    fun `five layers increase scale speed depth and vertical placement from back to front`() {
+        val layers = CloudFieldFactory.cloudFieldParams(
+            WallpaperWeatherFamily.CLOUDY, 0.85f, 0.25f, 1f, null,
+        ).layers
+
+        layers.size shouldBe 5
+        layers.map { it.depth } shouldBe listOf(0f, 0.25f, 0.5f, 0.75f, 1f)
+        layers.zipWithNext().forEach { (back, front) ->
+            back.scale shouldBeLessThan front.scale
+            back.speedFactor shouldBeLessThan front.speedFactor
+            back.verticalOffset shouldBeLessThan front.verticalOffset
+        }
     }
 
     @Test

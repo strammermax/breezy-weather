@@ -113,6 +113,59 @@ class WallpaperSceneStateTest {
     }
 
     @Test
+    fun `measured cloud cover refines the coarse weather family`() {
+        val state = WallpaperSceneStateFactory.create(
+            WeatherView.WEATHER_KIND_CLEAR,
+            daylight = 1f,
+            cloudCoverPercent = 75f,
+        )
+
+        state.condition.sky shouldBe WallpaperSkyCondition.MOSTLY_CLOUDY
+        state.cloudDensity shouldBe 0.70f
+    }
+
+    @Test
+    fun `rain amount selects drizzle moderate rain and heavy rain`() {
+        fun state(mm: Float) = WallpaperSceneStateFactory.create(
+            WeatherView.WEATHER_KIND_RAINY,
+            daylight = 1f,
+            precipitationMillimetersPerHour = mm,
+        )
+
+        state(0.1f).condition.precipitation shouldBe WallpaperPrecipitationCondition.DRIZZLE
+        state(0.1f).condition.precipitationIntensity shouldBe WallpaperEffectIntensity.LIGHT
+        state(7f).condition.precipitation shouldBe WallpaperPrecipitationCondition.RAIN
+        state(7f).condition.precipitationIntensity shouldBe WallpaperEffectIntensity.MODERATE
+        state(18f).condition.precipitationIntensity shouldBe WallpaperEffectIntensity.HEAVY
+    }
+
+    @Test
+    fun `low visibility composes dense fog with rain`() {
+        val state = WallpaperSceneStateFactory.create(
+            WeatherView.WEATHER_KIND_RAINY,
+            daylight = 1f,
+            visibilityMeters = 800f,
+        )
+
+        state.condition.precipitation shouldBe WallpaperPrecipitationCondition.RAIN
+        state.condition.visibility shouldBe WallpaperVisibilityCondition.DENSE_FOG
+        state.fogIntensity.shouldBeGreaterThan(0f)
+        state.precipitationIntensity.shouldBeGreaterThan(0f)
+    }
+
+    @Test
+    fun `precipitation keeps an overcast sky despite a low measured cloud value`() {
+        val state = WallpaperSceneStateFactory.create(
+            WeatherView.WEATHER_KIND_RAINY,
+            daylight = 1f,
+            cloudCoverPercent = 5f,
+        )
+
+        state.condition.sky shouldBe WallpaperSkyCondition.OVERCAST
+        state.cloudDensity.shouldBeGreaterThanOrEqual(0.95f)
+    }
+
+    @Test
     fun `wind factor follows thresholds and gusts`() {
         WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_CLOUD,

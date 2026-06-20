@@ -20,6 +20,18 @@ import android.util.Log
 import org.breezyweather.ui.theme.weatherView.WeatherView
 import java.util.Random
 import kotlin.math.min
+import kotlin.math.roundToInt
+
+private const val CLOUD_LAYER_COUNT = 5
+
+private fun isCloudLayerEnabled(index: Int, budget: Int): Boolean = when {
+    budget >= CLOUD_LAYER_COUNT -> true
+    budget == 4 -> index != 2
+    budget == 3 -> index == 0 || index == 2 || index == 4
+    budget == 2 -> index == 0 || index == 4
+    budget == 1 -> index == 4
+    else -> false
+}
 
 /**
  * Weather overlay for Live Wallpaper.
@@ -45,6 +57,7 @@ internal class WallpaperWeatherEffectRenderer(
     ),
     private val starField: StarFieldParams = StarFieldFactory.starFieldParams(locationSeed = 0L),
     private val glassRainIntensity: Float = 0f,
+    private val precipitationIntensity: Float = 0f,
     /**
      * Signed horizontal shear (dx/dy) applied to falling rain/snow/hail, from
      * [WallpaperSceneState.precipitationTiltSlope]. 0 = straight down.
@@ -86,7 +99,10 @@ internal class WallpaperWeatherEffectRenderer(
     }
 
     private var elapsedSeconds = 0f
-    private var precipitationLayerCount = DEFAULT_PRECIPITATION_LAYERS
+    private var precipitationLayerCount = (
+        MIN_PRECIPITATION_LAYERS +
+            (MAX_PRECIPITATION_LAYERS - MIN_PRECIPITATION_LAYERS) * precipitationIntensity.coerceIn(0f, 1f)
+        )
     private val degradationTracker = QualityDegradationTracker(qualityProfile)
     private var qualityBudget = WallpaperQualityProfileFactory.budgetFor(qualityProfile)
     private val precipitationLayerCap: Float
@@ -204,12 +220,23 @@ internal class WallpaperWeatherEffectRenderer(
             // ACT-007: layers/bands at or beyond the active quality budget contribute
             // zero alpha, so they fall out of the cloud/fog blends below without any
             // other shader changes.
-            s.setFloatUniform("layerCount", cloudField.layers.count { it.alpha > 0f }.toFloat().coerceAtMost(qualityBudget.cloudLayers.toFloat()))
-            s.setFloatUniform("layerScale", FloatArray(3) { cloudField.layers[it].scale })
-            s.setFloatUniform("layerSpeed", FloatArray(3) { cloudField.layers[it].speedFactor })
-            s.setFloatUniform("layerAlpha", FloatArray(3) { if (it < qualityBudget.cloudLayers) cloudField.layers[it].alpha else 0f })
-            s.setFloatUniform("layerDarkness", FloatArray(3) { cloudField.layers[it].darkness })
-            s.setFloatUniform("layerVerticalOffset", FloatArray(3) { cloudField.layers[it].verticalOffset })
+            var activeCloudLayerCount = 0
+            cloudField.layers.forEachIndexed { index, layer ->
+                if (layer.alpha > 0f && isCloudLayerEnabled(index, qualityBudget.cloudLayers)) {
+                    activeCloudLayerCount++
+                }
+            }
+            s.setFloatUniform(
+                "layerCount",
+                activeCloudLayerCount.toFloat(),
+            )
+            s.setFloatUniform("layerScale", FloatArray(5) { cloudField.layers[it].scale })
+            s.setFloatUniform("layerSpeed", FloatArray(5) { cloudField.layers[it].speedFactor })
+            s.setFloatUniform("layerAlpha", FloatArray(5) {
+                if (isCloudLayerEnabled(it, qualityBudget.cloudLayers)) cloudField.layers[it].alpha else 0f
+            })
+            s.setFloatUniform("layerDarkness", FloatArray(5) { cloudField.layers[it].darkness })
+            s.setFloatUniform("layerVerticalOffset", FloatArray(5) { cloudField.layers[it].verticalOffset })
             s.setFloatUniform("windDirection", cloudField.directionDegrees)
             s.setFloatUniform("fogBandCount", fogField.bands.count { it.baseAlpha > 0f }.toFloat().coerceAtMost(qualityBudget.fogBands.toFloat()))
             s.setFloatUniform("fogVerticalCenter", FloatArray(4) { fogField.bands[it].verticalCenter })
@@ -283,8 +310,9 @@ internal class WallpaperWeatherEffectRenderer(
             // positioned from that layer's CloudFieldParams. Capped to qualityBudget.cloudLayers
             // (ACT-007); the remaining layers are simply never added.
             if (clouds.isEmpty()) {
-                cloudField.layers.take(qualityBudget.cloudLayers).forEach { layer ->
-                    if (layer.alpha <= 0f) return@forEach
+                cloudField.layers.forEachIndexed { index, layer ->
+                    if (!isCloudLayerEnabled(index, qualityBudget.cloudLayers)) return@forEachIndexed
+                    if (layer.alpha <= 0f) return@forEachIndexed
                     val count = 2 + (layer.depth * 2f).toInt()
                     repeat(count) {
                         clouds.add(CloudParticle(random, lastWidth, lastHeight, layer))
@@ -433,6 +461,8 @@ internal class WallpaperWeatherEffectRenderer(
             // light-to-dark blend so Cloud/Cloudy/Rain/Thunderstorm/Wind read differently.
             for (c in clouds) {
                 val layer = c.layer
+                val layerIndex = (layer.depth * (CLOUD_LAYER_COUNT - 1)).roundToInt()
+                if (!isCloudLayerEnabled(layerIndex, qualityBudget.cloudLayers)) continue
                 val light = if (daytime) Triple(255, 255, 255) else Triple(196, 202, 214)
                 val dark = if (daytime) Triple(110, 128, 150) else Triple(58, 70, 92)
                 val darkness = layer.darkness
@@ -523,7 +553,7 @@ internal class WallpaperWeatherEffectRenderer(
             lastWidth = canvas.width
             lastHeight = canvas.height
 
-            if (weatherKind == WeatherView.WEATHER_KIND_FOG || weatherKind == WeatherView.WEATHER_KIND_HAZE) {
+            if (fogField.globalAlpha > 0f || fogField.bands.any { it.baseAlpha > 0f }) {
                 drawFog(canvas, contribution)
             }
 
@@ -902,11 +932,11 @@ internal class WallpaperWeatherEffectRenderer(
             uniform float precipitationLayers;
             uniform float transitionAlpha;
             uniform float layerCount;
-            uniform float layerScale[3];
-            uniform float layerSpeed[3];
-            uniform float layerAlpha[3];
-            uniform float layerDarkness[3];
-            uniform float layerVerticalOffset[3];
+            uniform float layerScale[5];
+            uniform float layerSpeed[5];
+            uniform float layerAlpha[5];
+            uniform float layerDarkness[5];
+            uniform float layerVerticalOffset[5];
             uniform float windDirection;
             uniform float fogBandCount;
             uniform float fogVerticalCenter[4];
@@ -1363,7 +1393,7 @@ internal class WallpaperWeatherEffectRenderer(
                 // ACT-005: fog and haze as horizontal depth bands, fading near the
                 // horizon. Each band's alpha already accounts for fog/haze intensity,
                 // so a fully clear scene (fogBandCount == 0) draws nothing here.
-                if (weatherPass == 1.0 && (mode == 3.0 || mode == 10.0) && (fogBandCount > 0.0 || fogGlobalAlpha > 0.0)) {
+                if (weatherPass == 1.0 && (fogBandCount > 0.0 || fogGlobalAlpha > 0.0)) {
                     float bands = fogHazeBands(uv, aspectUv);
                     alpha += bands;
                     color = float3(fogColor[0], fogColor[1], fogColor[2]);
@@ -1394,7 +1424,7 @@ internal class WallpaperWeatherEffectRenderer(
                     color = float3(0.88, 0.94, 1.0);
                 }
 
-                // Layered cloud mass: back/mid/front layers with their own scale, speed,
+                // Layered cloud mass: five back-to-front layers with their own scale, speed,
                 // alpha and darkness (ACT-003). A layer with alpha 0 contributes nothing,
                 // so transitions between weather families never pop a layer in or out.
                 if (weatherPass == 0.0) {
@@ -1405,9 +1435,9 @@ internal class WallpaperWeatherEffectRenderer(
                         float darknessSum = 0.0;
                         float shadeSum = 0.0;
                         float alphaSum = 0.0;
-                        for (int i = 0; i < 3; i++) {
+                        for (int i = 0; i < 5; i++) {
                             if (layerAlpha[i] <= 0.0) continue;
-                            float y = 0.16 + float(i) * 0.13 + layerVerticalOffset[i];
+                            float y = 0.15 + float(i) * 0.085 + layerVerticalOffset[i];
                             float size = 0.16 + layerScale[i] * 0.14;
                             float speed = 0.005 * layerSpeed[i] * dirSign;
                             float seed = 0.08 + float(i) * 0.41;
@@ -1449,10 +1479,16 @@ internal class WallpaperWeatherEffectRenderer(
                         // cloud mask covers the whole sky with no blue gaps, using the
                         // average layer darkness for any pixels not already covered by
                         // a cloud shape.
-                        float maxLayerAlpha = max(max(layerAlpha[0], layerAlpha[1]), layerAlpha[2]);
+                        float maxLayerAlpha = max(
+                            max(max(layerAlpha[0], layerAlpha[1]), max(layerAlpha[2], layerAlpha[3])),
+                            layerAlpha[4]
+                        );
                         float coverageFloor = smoothstep(0.65, 0.95, maxLayerAlpha) * maxLayerAlpha;
                         if (coverageFloor > clouds) {
-                            float floorDarkness = (layerDarkness[0] + layerDarkness[1] + layerDarkness[2]) / 3.0;
+                            float floorDarkness = (
+                                layerDarkness[0] + layerDarkness[1] + layerDarkness[2] +
+                                layerDarkness[3] + layerDarkness[4]
+                            ) / 5.0;
                             weightedDarkness = mix(floorDarkness, weightedDarkness, clouds / max(coverageFloor, 0.0001));
                             clouds = coverageFloor;
                         }

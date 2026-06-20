@@ -26,7 +26,7 @@ class WallpaperQualityProfileTest {
         val balanced = WallpaperQualityProfileFactory.budgetFor(WallpaperQualityProfile.BALANCED)
         balanced.maxSnowParticles shouldBe 100
         balanced.maxHailParticles shouldBe 55
-        balanced.cloudLayers shouldBe 3
+        balanced.cloudLayers shouldBe 4
         balanced.fogBands shouldBe 3
         balanced.maxGlassDrops shouldBe 24
         balanced.blurStrength shouldBe 0.7f
@@ -35,7 +35,7 @@ class WallpaperQualityProfileTest {
         val high = WallpaperQualityProfileFactory.budgetFor(WallpaperQualityProfile.HIGH)
         high.maxSnowParticles shouldBe 140
         high.maxHailParticles shouldBe 75
-        high.cloudLayers shouldBe 3
+        high.cloudLayers shouldBe 5
         high.fogBands shouldBe 4
         high.maxGlassDrops shouldBe 36
         high.blurStrength shouldBe 1.0f

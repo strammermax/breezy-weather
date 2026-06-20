@@ -36,20 +36,20 @@ data class CloudFieldParams(
 /**
  * Derives [CloudFieldParams] from the [WallpaperSceneState] cloud fields as a pure function.
  *
- * Always returns the same number of layers (back/mid/front) so transitions between families
+ * Always returns the same number of layers (back to front) so transitions between families
  * never appear as a hard layer-count pop: families with fewer "visible" layers simply set the
  * remaining layers' alpha to 0.
  */
 object CloudFieldFactory {
-    private const val LAYER_COUNT = 3
+    private const val LAYER_COUNT = 5
     private const val DEFAULT_DIRECTION_DEGREES = 70f
 
-    // Per-layer base shape: back (large, slow, light), mid, front (small, fast, slightly darker).
-    private val BASE_SCALE = floatArrayOf(1.6f, 1.0f, 0.65f)
-    private val BASE_SPEED = floatArrayOf(0.35f, 0.65f, 1.05f)
-    private val ALPHA_FRACTION = floatArrayOf(0.90f, 0.75f, 0.55f)
-    private val DARKNESS_OFFSET = floatArrayOf(-0.05f, 0f, 0.05f)
-    private val VERTICAL_OFFSET = floatArrayOf(-0.05f, 0f, 0.04f)
+    // Back-to-front parallax: distant layers are smaller, higher, lighter and slower.
+    private val BASE_SCALE = floatArrayOf(0.55f, 0.70f, 0.88f, 1.08f, 1.30f)
+    private val BASE_SPEED = floatArrayOf(0.35f, 0.50f, 0.65f, 0.82f, 1.00f)
+    private val ALPHA_FRACTION = floatArrayOf(0.38f, 0.50f, 0.64f, 0.78f, 0.92f)
+    private val DARKNESS_OFFSET = floatArrayOf(-0.08f, -0.04f, 0f, 0.04f, 0.08f)
+    private val VERTICAL_OFFSET = floatArrayOf(-0.06f, -0.03f, 0f, 0.03f, 0.06f)
 
     fun cloudFieldParams(
         family: WallpaperWeatherFamily,
@@ -61,11 +61,21 @@ object CloudFieldFactory {
         val density = sanitizeUnit(cloudDensity)
         val darkness = sanitizeUnit(cloudDarkness)
         val wind = sanitizeNonNegative(windFactor)
-        val visibleLayers = visibleLayerCount(family)
         val speedMultiplier = 0.3f + wind
+        val coverageBoost = when (family) {
+            WallpaperWeatherFamily.RAIN,
+            WallpaperWeatherFamily.THUNDER,
+            WallpaperWeatherFamily.THUNDERSTORM,
+            -> 1.15f
+            else -> 1f
+        }
 
         val layers = (0 until LAYER_COUNT).map { i ->
-            val alpha = if (i < visibleLayers) (density * ALPHA_FRACTION[i]).coerceIn(0f, 1f) else 0f
+            val alpha = if (isLayerVisible(density, i)) {
+                (density * ALPHA_FRACTION[i] * coverageBoost).coerceIn(0f, 1f)
+            } else {
+                0f
+            }
             CloudLayer(
                 depth = i.toFloat() / (LAYER_COUNT - 1),
                 scale = BASE_SCALE[i],
@@ -82,13 +92,10 @@ object CloudFieldFactory {
         )
     }
 
-    private fun visibleLayerCount(family: WallpaperWeatherFamily): Int = when (family) {
-        WallpaperWeatherFamily.CLEAR -> 0
-        WallpaperWeatherFamily.PARTLY_CLOUDY,
-        WallpaperWeatherFamily.FOG,
-        WallpaperWeatherFamily.HAZE,
-        -> 2
-        else -> 3
+    private fun isLayerVisible(density: Float, index: Int): Boolean = when {
+        density <= 0f -> false
+        density < 0.65f -> index == 0 || index == 2 || index == 4
+        else -> true
     }
 
     private fun sanitizeUnit(value: Float): Float =
