@@ -586,6 +586,8 @@
     <string name="widget_multi_city">Multi city</string>
     <string name="widget_material_you_forecast">Material You – Forecast</string>
     <string name="widget_material_you_current">Material You – Current</string>
+    <string name="widget_clock_day_stats" translatable="false">Weer &amp; tijd + systeem</string>
+    <string name="widget_clock_day_hourly" translatable="false">Uurlijks weer &amp; tijd</string>
     <string name="widget_refreshing">Refreshing</string>
     <string name="widget_ellipsis">…</string>
     <string name="widget_label_view_style">View style</string>
@@ -703,8 +705,10 @@
     <string name="radar_frames_unavailable">Radar frames unavailable</string>
     <string name="radar_attribution">Data: Buienradar.nl &amp; RainViewer.com</string>
     <string name="radar_attribution_buienradar">Data: Buienradar.nl</string>
+    <string name="radar_attribution_windy">Data: Windy.com</string>
     <string name="radar_source_world">Worldwide</string>
     <string name="radar_source_nl">Netherlands (5 days)</string>
+    <string name="radar_source_wind">Wind &amp; pressure</string>
     <!-- Settings (new design) -->
     <string name="settings_section_general">General</string>
     <string name="settings_background_updates">Background updates</string>

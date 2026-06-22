@@ -83,6 +83,8 @@ import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.domain.settings.SourceConfigStore
 import org.breezyweather.remoteviews.presenters.ClockDayDetailsWidgetIMP
 import org.breezyweather.remoteviews.presenters.ClockDayHorizontalWidgetIMP
+import org.breezyweather.remoteviews.presenters.ClockDayHourlyWidgetIMP
+import org.breezyweather.remoteviews.presenters.ClockDayStatsWidgetIMP
 import org.breezyweather.remoteviews.presenters.ClockDayVerticalWidgetIMP
 import org.breezyweather.remoteviews.presenters.ClockDayWeekWidgetIMP
 import org.breezyweather.remoteviews.presenters.DailyTrendWidgetIMP
@@ -1088,6 +1090,12 @@ class RefreshHelper @Inject constructor(
         }
         if (ClockDayDetailsWidgetIMP.isInUse(context)) {
             ClockDayDetailsWidgetIMP.updateWidgetView(context, locationList[0])
+        }
+        if (ClockDayStatsWidgetIMP.isInUse(context)) {
+            ClockDayStatsWidgetIMP.updateWidgetView(context, locationList[0])
+        }
+        if (ClockDayHourlyWidgetIMP.isInUse(context)) {
+            ClockDayHourlyWidgetIMP.updateWidgetView(context, locationList[0])
         }
         if (TextWidgetIMP.isInUse(context)) {
             TextWidgetIMP.updateWidgetView(

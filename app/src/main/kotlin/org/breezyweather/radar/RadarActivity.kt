@@ -36,13 +36,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -83,7 +84,7 @@ class RadarActivity : BreezyActivity() {
     private var rainTrend by mutableStateOf<List<RainTrendPoint>>(emptyList())
     private var hourlyTrend by mutableStateOf<List<RainTrendPoint>>(emptyList())
     private var trendRange by mutableStateOf(2)
-    private var radarSource by mutableStateOf("rainviewer") // "rainviewer" | "buienradar"
+    private var radarSource by mutableStateOf("rainviewer") // "rainviewer" | "buienradar" | "windy"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -167,38 +168,55 @@ class RadarActivity : BreezyActivity() {
                 }
 
                 // Source selector
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                val radarTabs = listOf(
+                    "rainviewer" to R.string.radar_source_world,
+                    "buienradar" to R.string.radar_source_nl,
+                    "windy" to R.string.radar_source_wind
+                )
+                TabRow(
+                    selectedTabIndex = radarTabs.indexOfFirst { it.first == radarSource }.coerceAtLeast(0),
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp)
                 ) {
-                    FilterChip(
-                        selected = radarSource == "rainviewer",
-                        onClick = { radarSource = "rainviewer" },
-                        label = { Text(stringResource(R.string.radar_source_world)) }
-                    )
-                    FilterChip(
-                        selected = radarSource == "buienradar",
-                        onClick = { radarSource = "buienradar" },
-                        label = { Text(stringResource(R.string.radar_source_nl)) }
-                    )
-                }
-
-                // Map — RainViewer (worldwide) or Buienradar gadget (NL, 5 days)
-                if (radarSource == "rainviewer") {
-                    val lat = latitude
-                    val lon = longitude
-                    if (lat != null && lon != null) {
-                        RadarMap(lat, lon, modifier = Modifier.fillMaxWidth().height(480.dp))
-                    } else {
-                        Text(
-                            text = stringResource(R.string.radar_frames_unavailable),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 8.dp)
+                    radarTabs.forEach { (source, labelRes) ->
+                        Tab(
+                            selected = radarSource == source,
+                            onClick = { radarSource = source },
+                            text = { Text(stringResource(labelRes)) }
                         )
                     }
-                } else {
-                    BuienradarGadgetMap()
+                }
+
+                // Map — RainViewer (worldwide), Buienradar gadget (NL, 5 days) or Windy (wind/pressure)
+                when (radarSource) {
+                    "rainviewer" -> {
+                        val lat = latitude
+                        val lon = longitude
+                        if (lat != null && lon != null) {
+                            RadarMap(lat, lon, modifier = Modifier.fillMaxWidth().height(480.dp))
+                        } else {
+                            Text(
+                                text = stringResource(R.string.radar_frames_unavailable),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+                    }
+                    "windy" -> {
+                        val lat = latitude
+                        val lon = longitude
+                        if (lat != null && lon != null) {
+                            WindyMap(lat, lon, modifier = Modifier.fillMaxWidth().height(480.dp))
+                        } else {
+                            Text(
+                                text = stringResource(R.string.radar_frames_unavailable),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+                    }
+                    else -> BuienradarGadgetMap()
                 }
 
                 // Rain trend chart — only shown for the RainViewer tab
@@ -224,8 +242,11 @@ class RadarActivity : BreezyActivity() {
 
                 Text(
                     text = stringResource(
-                        if (radarSource == "buienradar") R.string.radar_attribution_buienradar
-                        else R.string.radar_attribution
+                        when (radarSource) {
+                            "buienradar" -> R.string.radar_attribution_buienradar
+                            "windy" -> R.string.radar_attribution_windy
+                            else -> R.string.radar_attribution
+                        }
                     ),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -261,39 +282,49 @@ class RadarActivity : BreezyActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     @Composable
-    private fun BuienradarGadgetMap() {
-        // Gadget designed for 256×406px. We wrap it in an iframe inside our own HTML page
-        // and use CSS transform to scale the 256px frame to fill the screen width.
-        val screenWidthDp = LocalConfiguration.current.screenWidthDp
-        val scale = screenWidthDp / 256f
-        val gadgetHeightDp = (406f * scale).coerceAtLeast(406f).dp
-        val scaleStr = String.format(Locale.US, "%.4f", scale)
-        val wrapperHtml = """<!DOCTYPE html><html><head>
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<style>
-html,body{margin:0;padding:0;overflow:hidden;background:#fff}
-.wrap{width:256px;height:406px;transform:scale($scaleStr);transform-origin:0 0}
-iframe{width:256px;height:406px;border:none;display:block}
-</style></head><body>
-<div class="wrap">
-  <iframe src="https://gadgets.buienradar.nl/gadget/radarfivedays"
-          frameborder="0" scrolling="no" noresize></iframe>
-</div>
-</body></html>"""
+    private fun WindyMap(latitude: Double, longitude: Double, modifier: Modifier = Modifier) {
+        // Windy's official embeddable widget (no API key required for the basic embed).
+        // overlay=wind shows wind streamlines; pressure=true adds the isobar/pressure layer
+        // matching the look of generic "wind & pressure" radar sites.
+        val url = "https://embed.windy.com/embed2.html" +
+            "?lat=${"%.4f".format(Locale.US, latitude)}" +
+            "&lon=${"%.4f".format(Locale.US, longitude)}" +
+            "&detailLat=${"%.4f".format(Locale.US, latitude)}" +
+            "&detailLon=${"%.4f".format(Locale.US, longitude)}" +
+            "&zoom=6&level=surface&overlay=wind&product=ecmwf&menu=&message=true" +
+            "&marker=true&calendar=now&pressure=true&type=map&location=coordinates" +
+            "&detail=&metricWind=default&metricTemp=default&radarRange=-1"
         AndroidView(
-            modifier = Modifier.fillMaxWidth().height(gadgetHeightDp),
+            modifier = modifier,
             factory = { ctx ->
                 WebView(ctx).apply {
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
                     webViewClient = WebViewClient()
-                    loadDataWithBaseURL(
-                        "https://gadgets.buienradar.nl",
-                        wrapperHtml,
-                        "text/html",
-                        "UTF-8",
-                        null
-                    )
+                    loadUrl(url)
+                }
+            }
+        )
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    @Composable
+    private fun BuienradarGadgetMap() {
+        // The small "radarfivedays" gadget is just a looping GIF of the last ~2h, with no
+        // way to look forward (its `time=` param is ignored). Buienradar's own site has the
+        // -1u/+3u/+8u/+24u/+48u map the user actually wants, but that widget isn't exposed as
+        // a standalone embeddable gadget — only their full homepage carries it, and that page
+        // sends X-Frame-Options: SAMEORIGIN (so it refuses to load inside an <iframe>).
+        // Loading it as the WebView's own top-level page (not nested in an iframe) sidesteps
+        // that header entirely, the same way RadarMap/WindyMap load their provider directly.
+        AndroidView(
+            modifier = Modifier.fillMaxWidth().height(640.dp),
+            factory = { ctx ->
+                WebView(ctx).apply {
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                    webViewClient = WebViewClient()
+                    loadUrl("https://www.buienradar.nl/")
                 }
             }
         )
