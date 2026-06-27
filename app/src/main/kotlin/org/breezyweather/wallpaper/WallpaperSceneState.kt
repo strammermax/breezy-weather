@@ -136,7 +136,7 @@ data class WallpaperSceneState(
     /** Fog desaturates the source photo before the foreground fog veil is drawn. */
     val photoGreyscaleAmount: Float
         get() = when {
-            weatherFamily == WallpaperWeatherFamily.HAZE -> 0.22f
+            weatherFamily == WallpaperWeatherFamily.HAZE -> 0.32f
             weatherFamily != WallpaperWeatherFamily.FOG -> 0f
             fogIntensity >= 0.95f -> 1f
             fogIntensity >= 0.60f -> 0.85f
@@ -437,7 +437,7 @@ object WallpaperSceneStateFactory {
             WallpaperVisibilityCondition.DENSE_FOG -> 1f
             else -> 0f
         }
-        val hazeIntensity = if (condition.visibility == WallpaperVisibilityCondition.HAZE) 0.62f else 0f
+        val hazeIntensity = if (condition.visibility == WallpaperVisibilityCondition.HAZE) 0.82f else 0f
         val supportsWetGlass = condition.precipitation == WallpaperPrecipitationCondition.DRIZZLE ||
             condition.precipitation == WallpaperPrecipitationCondition.RAIN ||
             condition.precipitation == WallpaperPrecipitationCondition.SLEET

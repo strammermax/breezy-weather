@@ -231,7 +231,7 @@ class WallpaperSceneStateTest {
         state.condition.sky shouldBe WallpaperSkyCondition.FAIR
         state.cloudDensity shouldBe 0.18f
         state.hazeIntensity.shouldBeGreaterThan(0f)
-        state.photoGreyscaleAmount shouldBe 0.22f
+        state.photoGreyscaleAmount shouldBe 0.32f
     }
 
     @Test

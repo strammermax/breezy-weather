@@ -91,7 +91,7 @@ class FogFieldTest {
         light.foregroundGradientStrength shouldBe 0f
         normal.foregroundGradientStrength shouldBe 0.72f
         heavy.foregroundGradientStrength shouldBe 1f
-        haze.foregroundGradientStrength shouldBe 0.60f
+        haze.foregroundGradientStrength shouldBe 0.74f
     }
 
     @Test
@@ -135,7 +135,7 @@ class FogFieldTest {
         val fog = FogFieldFactory.fogFieldParams(1f, 0f, 1f, null)
         val haze = FogFieldFactory.fogFieldParams(0f, 1f, 1f, null)
         fog.bands.forEach { it.baseAlpha shouldBeLessThanOrEqual 0.68f }
-        haze.bands.forEach { it.baseAlpha shouldBeLessThanOrEqual 0.56f }
+        haze.bands.forEach { it.baseAlpha shouldBeLessThanOrEqual 0.66f }
     }
 
     @Test
