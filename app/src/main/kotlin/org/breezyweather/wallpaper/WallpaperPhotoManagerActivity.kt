@@ -10,6 +10,7 @@ package org.breezyweather.wallpaper
 
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -30,11 +31,11 @@ import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -75,8 +76,10 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
 
     private var photos by mutableStateOf<List<WallpaperPhotoRecord>>(emptyList())
     private var currentLocationKey by mutableStateOf<String?>(null)
+    private var currentLocationCoords by mutableStateOf<CurrentLocationCoords?>(null)
     private var showAll by mutableStateOf(false)
     private var busyPhotoId by mutableStateOf<String?>(null)
+    private var checkingNewPhotos by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,18 +95,64 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
         lifecycleScope.launch {
             val result = withContext(Dispatchers.IO) {
                 val location = locationRepository.getFirstLocation(withParameters = false)
-                val locationKey = location?.let {
+                val place = location?.let {
                     PlaceQuery(
                         city = it.city.ifBlank { null },
                         municipality = it.admin2,
                         state = it.admin1,
                         country = it.country.ifBlank { null },
-                    ).cacheFileName().substringBeforeLast('.')
+                    )
                 }
-                locationKey to wallpaperRepository.managedPhotos()
+                val locationKey = place?.cacheFileName()?.substringBeforeLast('.')
+                val coords = if (location != null && place != null) {
+                    CurrentLocationCoords(location.latitude, location.longitude, place)
+                } else {
+                    null
+                }
+                Triple(locationKey, coords, wallpaperRepository.managedPhotos())
             }
             currentLocationKey = result.first
-            photos = result.second
+            currentLocationCoords = result.second
+            photos = result.third
+        }
+    }
+
+    /**
+     * Forces [WallpaperRepository.refreshFor] to look for a candidate beyond the recently
+     * shown ones for the current location, without activating it as the live background.
+     * Whether the managed photo count for that location grows tells the user if a genuinely
+     * new image was found on the server, since an existing-but-unshown cached candidate
+     * would already be counted.
+     */
+    private fun checkForNewPhotos() {
+        val coords = currentLocationCoords ?: return
+        val locationKey = currentLocationKey
+        lifecycleScope.launch {
+            checkingNewPhotos = true
+            val countBefore = photos.count { it.locationKey == locationKey }
+            withContext(Dispatchers.IO) {
+                wallpaperRepository.refreshFor(
+                    coords.latitude,
+                    coords.longitude,
+                    coords.place,
+                    forceRefresh = true,
+                    activate = false,
+                )
+            }
+            photos = withContext(Dispatchers.IO) { wallpaperRepository.managedPhotos() }
+            val countAfter = photos.count { it.locationKey == locationKey }
+            checkingNewPhotos = false
+            Toast.makeText(
+                this@WallpaperPhotoManagerActivity,
+                getString(
+                    if (countAfter > countBefore) {
+                        R.string.wallpaper_photo_check_new_found
+                    } else {
+                        R.string.wallpaper_photo_check_new_none
+                    }
+                ),
+                Toast.LENGTH_SHORT,
+            ).show()
         }
     }
 
@@ -151,19 +200,40 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
             ) {
                 item {
                     Row(
-                        modifier = Modifier.padding(top = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        FilterChip(
-                            selected = !showAll,
-                            onClick = { showAll = false },
-                            label = { Text(stringResource(R.string.wallpaper_photo_filter_current)) },
+                        Text(
+                            text = if (showAll) {
+                                stringResource(R.string.wallpaper_photo_filter_all)
+                            } else {
+                                stringResource(R.string.wallpaper_photo_filter_current)
+                            },
                         )
-                        FilterChip(
-                            selected = showAll,
-                            onClick = { showAll = true },
-                            label = { Text(stringResource(R.string.wallpaper_photo_filter_all)) },
+                        Switch(
+                            checked = showAll,
+                            onCheckedChange = { showAll = it },
                         )
+                    }
+                }
+                if (!showAll && currentLocationCoords != null) {
+                    item {
+                        if (checkingNewPhotos) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                                Text(stringResource(R.string.wallpaper_photo_check_new))
+                            }
+                        } else {
+                            OutlinedButton(onClick = { checkForNewPhotos() }) {
+                                Text(stringResource(R.string.wallpaper_photo_check_new))
+                            }
+                        }
                     }
                 }
                 if (visiblePhotos.isEmpty()) {
@@ -311,4 +381,10 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
             return BitmapFactory.decodeFile(path, BitmapFactory.Options().apply { inSampleSize = sampleSize })
         }
     }
+
+    private data class CurrentLocationCoords(
+        val latitude: Double,
+        val longitude: Double,
+        val place: PlaceQuery,
+    )
 }

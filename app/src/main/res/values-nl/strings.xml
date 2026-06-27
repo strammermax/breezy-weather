@@ -841,6 +841,9 @@
     <string name="wallpaper_photo_enable">Inschakelen en opnieuw downloaden</string>
     <string name="wallpaper_photo_disabled">Uitgeschakeld</string>
     <string name="wallpaper_photo_file_missing">Afbeelding staat niet in de cache</string>
+    <string name="wallpaper_photo_check_new">Nieuwe afbeeldingen</string>
+    <string name="wallpaper_photo_check_new_found">Nieuwe afbeelding gevonden en toegevoegd</string>
+    <string name="wallpaper_photo_check_new_none">Geen nieuwe afbeeldingen gevonden</string>
     <string name="forecast_days_available">%1$d dagen beschikbaar · veeg voor meer</string>
     <string name="widget_live_wallpaper_bg_source">Achtergrond-bron</string>
     <string name="about_fork_title">Gebaseerd op</string>
