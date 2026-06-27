@@ -11,6 +11,7 @@ package org.breezyweather.wallpaper
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.floats.shouldBeGreaterThan
 import io.kotest.matchers.floats.shouldBeGreaterThanOrEqual
+import io.kotest.matchers.floats.shouldBeLessThan
 import io.kotest.matchers.floats.shouldBeLessThanOrEqual
 import io.kotest.matchers.shouldBe
 import org.breezyweather.ui.theme.weatherView.WeatherView
@@ -90,6 +91,20 @@ class WallpaperSceneStateTest {
     }
 
     @Test
+    fun `plain thunder and measured rain on dry families do not enable glass rain`() {
+        WallpaperSceneStateFactory.create(
+            WeatherView.WEATHER_KIND_THUNDER,
+            daylight = 1f,
+        ).glassRainIntensity shouldBe 0f
+
+        WallpaperSceneStateFactory.create(
+            WeatherView.WEATHER_KIND_CLEAR,
+            daylight = 1f,
+            precipitationMillimetersPerHour = 4f,
+        ).glassRainIntensity shouldBe 0f
+    }
+
+    @Test
     fun `forecast rain amount selects light medium and heavy glass profiles`() {
         fun intensity(mmPerHour: Float) = WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_RAINY,
@@ -122,6 +137,36 @@ class WallpaperSceneStateTest {
 
         state.condition.sky shouldBe WallpaperSkyCondition.MOSTLY_CLOUDY
         state.cloudDensity shouldBe 0.70f
+    }
+
+    @Test
+    fun `Fair keeps sparse cloud coverage`() {
+        val fair = WallpaperSceneStateFactory.create(
+            WeatherView.WEATHER_KIND_CLEAR,
+            daylight = 1f,
+            cloudCoverPercent = 20f,
+        )
+        val partlyCloudy = WallpaperSceneStateFactory.create(
+            WeatherView.WEATHER_KIND_CLOUD,
+            daylight = 1f,
+            cloudCoverPercent = 45f,
+        )
+
+        fair.condition.sky shouldBe WallpaperSkyCondition.FAIR
+        fair.cloudDensity shouldBe 0.18f
+        fair.cloudDensity shouldBeLessThan partlyCloudy.cloudDensity
+    }
+
+    @Test
+    fun `Light cloudy defaults to Fair when measured cloud cover is unavailable`() {
+        val state = WallpaperSceneStateFactory.create(
+            WeatherView.WEATHER_KIND_CLOUD,
+            daylight = 1f,
+        )
+
+        state.weatherFamily shouldBe WallpaperWeatherFamily.PARTLY_CLOUDY
+        state.condition.sky shouldBe WallpaperSkyCondition.FAIR
+        state.cloudDensity shouldBe 0.18f
     }
 
     @Test

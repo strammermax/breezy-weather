@@ -186,17 +186,18 @@ object WallpaperSceneStateFactory {
         } else {
             profile.precipitationIntensity
         }
-        val supportsGlassRain = profile.glassRainIntensity > 0f ||
-            (precipitationMillimetersPerHour != null &&
-                precipitationMillimetersPerHour > 0f &&
-                family != WallpaperWeatherFamily.SNOW &&
-                family != WallpaperWeatherFamily.HAIL)
+        // Rain-on-glass belongs only to explicitly wet-glass families. Measured
+        // precipitation must not leak the effect into Clear, Cloudy, Thunder, etc.
+        val supportsGlassRain = when (family) {
+            WallpaperWeatherFamily.RAIN,
+            WallpaperWeatherFamily.SLEET,
+            WallpaperWeatherFamily.THUNDERSTORM,
+            -> profile.glassRainIntensity > 0f ||
+                (precipitationMillimetersPerHour?.let { it.isFinite() && it > 0f } == true)
+            else -> false
+        }
         val adjustedGlassRainIntensity = if (isPrecipitating && supportsGlassRain) {
             glassRainAmount(precipitationMillimetersPerHour, profile.glassRainIntensity)
-        } else if (family == WallpaperWeatherFamily.THUNDER) {
-            // Sheet: plain thunder (no measured rain) still shows small drops on glass —
-            // the humid air ahead of/around the storm, not the storm's own rain.
-            0.18f
         } else {
             0f
         }
@@ -308,7 +309,10 @@ object WallpaperSceneStateFactory {
     ): WallpaperEffectCondition {
         val familySky = when (family) {
             WallpaperWeatherFamily.CLEAR -> WallpaperSkyCondition.CLEAR
-            WallpaperWeatherFamily.PARTLY_CLOUDY,
+            // The app label is "Licht bewolkt": without a measured cloud percentage,
+            // render it as Fair (mostly blue with a few loose cumulus clouds). Providers
+            // that do supply a higher percentage can still promote it below.
+            WallpaperWeatherFamily.PARTLY_CLOUDY -> WallpaperSkyCondition.FAIR
             WallpaperWeatherFamily.HAZE,
             WallpaperWeatherFamily.WIND,
             -> WallpaperSkyCondition.PARTLY_CLOUDY
@@ -369,8 +373,10 @@ object WallpaperSceneStateFactory {
     private fun effectProfile(condition: WallpaperEffectCondition): EffectProfile {
         val skyCloudDensity = when (condition.sky) {
             WallpaperSkyCondition.CLEAR -> 0f
+            // Fair remains an almost-clear sky. Prominence comes from the renderer's
+            // brighter, more opaque cumulus treatment, not from adding more coverage.
             WallpaperSkyCondition.FAIR -> 0.18f
-            WallpaperSkyCondition.PARTLY_CLOUDY -> 0.35f
+            WallpaperSkyCondition.PARTLY_CLOUDY -> 0.42f
             WallpaperSkyCondition.MOSTLY_CLOUDY -> 0.70f
             WallpaperSkyCondition.OVERCAST -> 0.95f
         }
@@ -382,8 +388,10 @@ object WallpaperSceneStateFactory {
         })
         var cloudDarkness = when (condition.sky) {
             WallpaperSkyCondition.CLEAR -> 0f
-            WallpaperSkyCondition.FAIR -> 0.02f
-            WallpaperSkyCondition.PARTLY_CLOUDY -> 0.05f
+            // Even sparse Fair clouds need enough tonal range for a light-grey base;
+            // lower values flattened the rear layers to white and removed their depth.
+            WallpaperSkyCondition.FAIR -> 0.10f
+            WallpaperSkyCondition.PARTLY_CLOUDY -> 0.14f
             WallpaperSkyCondition.MOSTLY_CLOUDY -> 0.24f
             WallpaperSkyCondition.OVERCAST -> 0.34f
         }

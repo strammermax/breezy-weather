@@ -112,6 +112,7 @@ internal object WallpaperSceneRenderer {
             precipitationTiltSlope = state.precipitationTiltSlope,
             qualityProfile = qualityProfile,
             randomSeed = seed,
+            fairSky = state.condition.sky == WallpaperSkyCondition.FAIR,
         )
         repeat(SETTLE_FRAME_COUNT) {
             renderer.update(FIXED_FRAME_INTERVAL_MILLIS, animate = true)
@@ -136,7 +137,12 @@ internal object WallpaperSceneRenderer {
 
     private fun drawSky(canvas: Canvas, state: WallpaperSceneState, width: Int, height: Int) {
         val (top, bottom) = if (state.daytime) {
-            Color.rgb(90, 150, 225) to Color.rgb(195, 222, 255)
+            val colors = if (state.condition.sky == WallpaperSkyCondition.FAIR) {
+                SkyColors.applyFairSkyTint(SkyColors.DAY, true)
+            } else {
+                intArrayOf(Color.rgb(90, 150, 225), Color.rgb(195, 222, 255))
+            }
+            colors[0] to colors[1]
         } else {
             Color.rgb(8, 14, 38) to Color.rgb(28, 34, 68)
         }

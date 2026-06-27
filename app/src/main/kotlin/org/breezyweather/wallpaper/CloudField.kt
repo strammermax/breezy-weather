@@ -43,6 +43,7 @@ data class CloudFieldParams(
 object CloudFieldFactory {
     private const val LAYER_COUNT = 5
     private const val DEFAULT_DIRECTION_DEGREES = 70f
+    private const val MIN_LAYER_DARKNESS = 0.05f
 
     // Back-to-front parallax: distant layers are smaller, higher, lighter and slower.
     private val BASE_SCALE = floatArrayOf(0.55f, 0.70f, 0.88f, 1.08f, 1.30f)
@@ -81,7 +82,10 @@ object CloudFieldFactory {
                 scale = BASE_SCALE[i],
                 speedFactor = BASE_SPEED[i] * speedMultiplier,
                 alpha = alpha,
-                darkness = (darkness + DARKNESS_OFFSET[i]).coerceIn(0f, 1f),
+                // A floor above 0 (rather than clamping to it) keeps the back-to-front
+                // depth/colour shading visible even for light cloud cover, where the
+                // offset would otherwise push the lightest layer flat to zero.
+                darkness = (darkness + DARKNESS_OFFSET[i]).coerceIn(MIN_LAYER_DARKNESS, 1f),
                 verticalOffset = VERTICAL_OFFSET[i],
             )
         }

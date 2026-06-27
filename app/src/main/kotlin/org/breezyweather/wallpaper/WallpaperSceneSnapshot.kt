@@ -92,7 +92,13 @@ internal object WallpaperSceneSnapshot {
                 else -> night
             }
         }
-        return SkyColors.applyOvercastTint(colors, sceneState.cloudDarkness, sceneState.daytime)
+        val profiledColors = when {
+            sceneState.richSky -> SkyColors.applyRichSkyTint(colors, sceneState.daytime)
+            sceneState.condition.sky == WallpaperSkyCondition.FAIR ->
+                SkyColors.applyFairSkyTint(colors, sceneState.daytime)
+            else -> colors
+        }
+        return SkyColors.applyOvercastTint(profiledColors, sceneState.cloudDarkness, sceneState.daytime)
     }
 
     private fun drawCelestialBody(canvas: Canvas, width: Int, height: Int, sceneState: WallpaperSceneState) {

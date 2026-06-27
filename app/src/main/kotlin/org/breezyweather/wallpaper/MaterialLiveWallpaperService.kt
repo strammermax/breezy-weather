@@ -765,6 +765,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     qualityProfile = LiveWallpaperConfigManager(applicationContext).qualityProfile,
                     resources = resources,
                     richSky = sceneState.richSky,
+                    fairSky = sceneState.condition.sky == WallpaperSkyCondition.FAIR,
                 )
             } else {
                 null
@@ -1100,12 +1101,13 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     }
                 }
             }
-            val richSkyColors = if (mSceneState.richSky) {
-                SkyColors.applyRichSkyTint(colors, mDaytime)
-            } else {
-                colors
+            val profiledSkyColors = when {
+                mSceneState.richSky -> SkyColors.applyRichSkyTint(colors, mDaytime)
+                mSceneState.condition.sky == WallpaperSkyCondition.FAIR ->
+                    SkyColors.applyFairSkyTint(colors, mDaytime)
+                else -> colors
             }
-            return SkyColors.applyOvercastTint(richSkyColors, mSceneState.cloudDarkness, mDaytime)
+            return SkyColors.applyOvercastTint(profiledSkyColors, mSceneState.cloudDarkness, mDaytime)
         }
 
         private fun fraction(value: Long, start: Long, end: Long): Float =

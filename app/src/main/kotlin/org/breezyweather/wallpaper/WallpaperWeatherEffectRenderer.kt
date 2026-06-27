@@ -80,6 +80,8 @@ internal class WallpaperWeatherEffectRenderer(
     private val resources: Resources? = null,
     /** "Holl. wolken": deeper-blue sky, sharper/richer cumulus (see WallpaperSceneState.richSky). */
     private val richSky: Boolean = false,
+    /** Fair: sparse, small but optically solid cumulus against a clear blue sky. */
+    private val fairSky: Boolean = false,
 ) {
     private var daylight = daylight.coerceIn(0f, 1f)
     private val daytime: Boolean
@@ -111,10 +113,18 @@ internal class WallpaperWeatherEffectRenderer(
                 }
             } catch (error: Throwable) {
                 Log.w(LOG_TAG, "Weather RuntimeShader unavailable; using Canvas fallback", error)
-                canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField, glassRainIntensity, precipitationTiltSlope, randomSeed, cloudAtlasBitmap, overcastMaskBitmap)
+                canvasRenderer = CanvasRenderer(
+                    weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField,
+                    glassRainIntensity, precipitationTiltSlope, randomSeed, cloudAtlasBitmap,
+                    overcastMaskBitmap, fairSky,
+                )
             }
         } else {
-            canvasRenderer = CanvasRenderer(weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField, glassRainIntensity, precipitationTiltSlope, randomSeed, cloudAtlasBitmap, overcastMaskBitmap)
+            canvasRenderer = CanvasRenderer(
+                weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField,
+                glassRainIntensity, precipitationTiltSlope, randomSeed, cloudAtlasBitmap,
+                overcastMaskBitmap, fairSky,
+            )
         }
     }
 
@@ -233,6 +243,7 @@ internal class WallpaperWeatherEffectRenderer(
             s.setFloatUniform("time", elapsedSeconds)
             s.setFloatUniform("mode", shaderMode(weatherKind))
             s.setFloatUniform("richSky", if (richSky) 1f else 0f)
+            s.setFloatUniform("fairSky", if (fairSky) 1f else 0f)
             s.setFloatUniform("daylight", daylight)
             s.setFloatUniform("windFactor", cloudSpeedFactor)
             s.setFloatUniform("weatherPass", pass)
@@ -298,6 +309,7 @@ internal class WallpaperWeatherEffectRenderer(
         val randomSeed: Long? = null,
         val cloudAtlasBitmap: Bitmap,
         val overcastMaskBitmap: Bitmap,
+        val fairSky: Boolean,
     ) {
         val daytime: Boolean
             get() = daylight >= 0.5f
@@ -336,7 +348,7 @@ internal class WallpaperWeatherEffectRenderer(
                 cloudField.layers.forEachIndexed { index, layer ->
                     if (!isCloudLayerEnabled(index, qualityBudget.cloudLayers)) return@forEachIndexed
                     if (layer.alpha <= 0f) return@forEachIndexed
-                    val count = 2 + (layer.depth * 2f).toInt()
+                    val count = if (fairSky) 1 else 2 + (layer.depth * 2f).toInt()
                     repeat(count) {
                         clouds.add(CloudParticle(random, lastWidth, lastHeight, layer))
                     }
@@ -470,7 +482,8 @@ internal class WallpaperWeatherEffectRenderer(
             if (coverageFloor > 0f) {
                 val floorDarkness = cloudField.layers.map { it.darkness }.average().toFloat()
                 val light = if (daytime) Triple(255, 255, 255) else Triple(196, 202, 214)
-                val dark = if (daytime) Triple(110, 128, 150) else Triple(58, 70, 92)
+                val dark = if (fairSky && daytime) Triple(210, 218, 228)
+                else if (daytime) Triple(110, 128, 150) else Triple(58, 70, 92)
                 paint.color = Color.rgb(
                     lerpInt(light.first, dark.first, floorDarkness),
                     lerpInt(light.second, dark.second, floorDarkness),
@@ -496,12 +509,14 @@ internal class WallpaperWeatherEffectRenderer(
                 )
                 // Volumetric look: shade the lower body/base of the cloud darker than the
                 // puffy top, mirroring the AGSL shader's vertical shade gradient.
+                val baseShade = if (fairSky) 0.88f else 0.78f
                 val baseColor = Color.rgb(
-                    (Color.red(topColor) * 0.78f).toInt().coerceIn(0, 255),
-                    (Color.green(topColor) * 0.78f).toInt().coerceIn(0, 255),
-                    (Color.blue(topColor) * 0.78f).toInt().coerceIn(0, 255),
+                    (Color.red(topColor) * baseShade).toInt().coerceIn(0, 255),
+                    (Color.green(topColor) * baseShade).toInt().coerceIn(0, 255),
+                    (Color.blue(topColor) * baseShade).toInt().coerceIn(0, 255),
                 )
-                val alpha = (layer.alpha * 255 * contribution).toInt().coerceIn(0, 255)
+                val opticalAlpha = if (fairSky) (layer.alpha * 4.5f).coerceAtMost(0.92f) else layer.alpha
+                val alpha = (opticalAlpha * 255 * contribution).toInt().coerceIn(0, 255)
 
                 paint.color = topColor
                 paint.alpha = alpha
@@ -950,6 +965,7 @@ internal class WallpaperWeatherEffectRenderer(
             uniform float time;
             uniform float mode;
             uniform float richSky;
+            uniform float fairSky;
             uniform float daylight;
             uniform float windFactor;
             uniform float weatherPass;
@@ -1299,9 +1315,18 @@ internal class WallpaperWeatherEffectRenderer(
                 // Combined with the higher richSky alpha cap below, this band was sharp
                 // enough to make a cloud's underside boundary look like a hard cut/seam
                 // rather than a soft (if still crisper-than-default) cumulus edge.
-                float lo = mix(0.018, 0.10, richSky);
-                float hi = mix(0.82, 0.72, richSky);
-                return smoothstep(lo, hi, luminance);
+                float lo = mix(0.018, 0.065, fairSky);
+                float hi = mix(0.82, 0.76, fairSky);
+                lo = mix(lo, 0.10, richSky);
+                hi = mix(hi, 0.72, richSky);
+                // Some source masks still contain opaque cloud pixels right up to a tile
+                // boundary. Without this padding fade, the UV bounds cut those pixels off
+                // as a perfectly horizontal/vertical line (most visible below Fair clouds).
+                float edgeFade = smoothstep(0.0, 0.08, localUv.x)
+                    * smoothstep(0.0, 0.08, 1.0 - localUv.x)
+                    * smoothstep(0.0, 0.10, localUv.y)
+                    * smoothstep(0.0, 0.12, 1.0 - localUv.y);
+                return smoothstep(lo, hi, luminance) * edgeFade;
             }
 
             // Like YoWindow's double sheet shader, two independently offset photographic
@@ -1334,6 +1359,12 @@ internal class WallpaperWeatherEffectRenderer(
                     // keeping them grey-blue instead of solid cotton-wool white.
                     density = clamp(pow(density, 0.6) + (fine - 0.5) * 0.22 * density, 0.0, 1.0);
                     shade = clamp(shade - max(fine - 0.5, 0.0) * 0.22 + max(0.5 - fine, 0.0) * 0.06, 0.0, 1.0);
+                }
+                if (fairSky > 0.0) {
+                    // Fair clouds stay few and small, but their cores are solid white and
+                    // their lower lobes retain enough cool-grey shading to show volume.
+                    density = clamp(pow(density, 0.52) + (fine - 0.5) * 0.10 * density, 0.0, 1.0);
+                    shade = clamp(shade * 1.08, 0.0, 1.0);
                 }
                 return float2(density, shade);
             }
@@ -1527,7 +1558,8 @@ internal class WallpaperWeatherEffectRenderer(
                             float depthFraction = float(i) / 4.0;
                             float y = 0.15 + float(i) * 0.085 + layerVerticalOffset[i] - richSky * 0.11;
                             float richSizeFactor = mix(1.55, 0.65, depthFraction);
-                            float size = (0.20 + layerScale[i] * 0.18) * mix(1.0, richSizeFactor, richSky);
+                            float size = (0.20 + layerScale[i] * 0.18) * mix(1.0, 0.55, fairSky)
+                                * mix(1.0, richSizeFactor, richSky);
                             float speed = 0.005 * layerSpeed[i] * dirSign;
                             float seed = 0.08 + float(i) * 0.41;
                             float rowA = mode == 4.0
@@ -1546,6 +1578,7 @@ internal class WallpaperWeatherEffectRenderer(
                             // ceiling (vol bewolkt) — all from the existing layerAlpha,
                             // with no new uniforms.
                             float layerOpacity = smoothstep(0.0, 0.48, layerAlpha[i]);
+                            layerOpacity = max(layerOpacity, fairSky * smoothstep(0.0, 0.16, layerAlpha[i]) * 0.98);
                             float2 shape = driftingCloud(
                                 aspectUv,
                                 y,
@@ -1564,7 +1597,7 @@ internal class WallpaperWeatherEffectRenderer(
                             // in — reading as several smaller individual clouds clustered
                             // near the horizon, matching the reference photo's layering.
                             float richSkyOverlapDamp = mix(1.0, mix(0.22, 0.85, depthFraction), richSky);
-                            if (layerAlpha[i] > 0.10) {
+                            if (layerAlpha[i] > 0.10 && fairSky < 0.5) {
                                 float extraOpacity = smoothstep(0.10, 0.32, layerAlpha[i]) * 0.82 * richSkyOverlapDamp;
                                 float2 extra1 = driftingCloud(
                                     aspectUv,
@@ -1579,7 +1612,7 @@ internal class WallpaperWeatherEffectRenderer(
                                 shadeAcc += extra1.x * extra1.y;
                                 weightAcc += extra1.x;
                             }
-                            if (layerAlpha[i] > 0.22) {
+                            if (layerAlpha[i] > 0.22 && fairSky < 0.5) {
                                 float extraOpacity = smoothstep(0.22, 0.42, layerAlpha[i]) * 0.68 * richSkyOverlapDamp;
                                 float2 extra2 = driftingCloud(
                                     aspectUv,
@@ -1648,11 +1681,12 @@ internal class WallpaperWeatherEffectRenderer(
                         // standard neutral grey tuned for blending over a pale sky.
                         float3 fairColorBase = daylight > 0.5 ? float3(0.90, 0.90, 0.89) : float3(0.44, 0.44, 0.46);
                         float3 fairColorRich = float3(1.0, 0.995, 0.98);
-                        float3 fairColor = mix(fairColorBase, fairColorRich, richSky);
+                        float3 fairColor = mix(fairColorBase, float3(1.0, 0.995, 0.985), fairSky);
+                        fairColor = mix(fairColor, fairColorRich, richSky);
                         // Storm color is near-black at full darkness, matching the dramatic
                         // deep blue-grey of real cumulonimbus / rain cloud undersides.
                         float3 stormColor = daylight > 0.5 ? float3(0.20, 0.22, 0.28) : float3(0.09, 0.11, 0.15);
-                        float greyness = pow(weightedDarkness, 0.8);
+                        float greyness = pow(weightedDarkness, 0.8) * mix(1.0, 0.35, fairSky);
                         cloudColor = mix(fairColor, stormColor, greyness);
                         // Slight per-mass tint (warm <-> cool) so neighbouring cloud masses
                         // don't all read as one flat colour, like real cumulus fields do.
@@ -1662,7 +1696,10 @@ internal class WallpaperWeatherEffectRenderer(
                         // top-lit cumulus, rather than a flat tinted silhouette. Storm clouds
                         // push the base shadow even further towards black.
                         float shadeStrength = mix(0.58, 0.22, smoothstep(0.30, 0.85, weightedDarkness));
+                        shadeStrength = mix(shadeStrength, 0.72, fairSky);
                         cloudColor *= mix(1.0, mix(shadeStrength, 1.0, richSky), weightedShade);
+                        float3 fairShadowColor = float3(0.76, 0.80, 0.86);
+                        cloudColor = mix(cloudColor, fairShadowColor, fairSky * pow(weightedShade, 2.0) * 0.52);
                         // richSky: mix only the true underside towards a cool blue-grey
                         // shadow colour (not just darker-but-same-hue), so most of the mass
                         // stays vivid cotton-wool white like the reference photo and only the
@@ -1710,7 +1747,7 @@ internal class WallpaperWeatherEffectRenderer(
                 // richSky cloud cores were capped at the same 0.86 ceiling as every other
                 // weather effect, so even fully-dense cumulus blended ~14% with the sky
                 // behind them — never reading as truly solid, opaque cotton-wool white.
-                float alphaCap = mix(0.86, 0.995, richSky);
+                float alphaCap = mix(0.86, 0.98, max(richSky, fairSky));
                 float a = clamp(alpha, 0.0, alphaCap);
                 float3 premultiplied = color * a;
                 premultiplied = premultiplied * (1.0 - glassShadow)
