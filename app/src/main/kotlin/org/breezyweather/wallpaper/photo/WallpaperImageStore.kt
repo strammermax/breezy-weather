@@ -110,6 +110,14 @@ class WallpaperImageStore(context: Context) {
             .apply()
     }
 
+    fun deactivatePhoto() {
+        config.edit()
+            .remove(KEY_CACHED_PATH)
+            .remove(KEY_CACHED_URL)
+            .remove(KEY_CACHED_ATTRIBUTION)
+            .apply()
+    }
+
     /** Most recently shown URLs for [placeKey], newest first. */
     fun recentUrlsFor(placeKey: String): List<String> = try {
         val values = recentUrlMap().optJSONArray(placeKey) ?: return emptyList()
@@ -139,6 +147,17 @@ class WallpaperImageStore(context: Context) {
             map.put(placeKey, JSONArray(urls.take(RECENT_URL_COUNT)))
         }
         config.edit().putString(KEY_RECENT_URLS, map.toString()).apply()
+    }
+
+    fun allRecentUrls(): Map<String, List<String>> {
+        val map = recentUrlMap()
+        return buildMap {
+            val keys = map.keys()
+            while (keys.hasNext()) {
+                val key = keys.next()
+                put(key, recentUrlsFor(key))
+            }
+        }
     }
 
     private fun recentUrlMap(): JSONObject = try {

@@ -34,6 +34,7 @@ import breezyweather.domain.weather.model.Base
 import breezyweather.domain.weather.model.Weather
 import breezyweather.domain.weather.reference.Month
 import breezyweather.domain.weather.reference.WeatherCode
+import breezyweather.domain.weather.wrappers.DailyWrapper
 import breezyweather.domain.weather.wrappers.WeatherWrapper
 import com.google.maps.android.SphericalUtil
 import com.google.maps.android.model.LatLng
@@ -569,6 +570,9 @@ class RefreshHelper @Inject constructor(
             val yesterdayMidnight = Date(Date().time - 1.days.inWholeMilliseconds)
                 .getIsoFormattedDate(location)
                 .toDateNoHour(location.timeZone)!!
+            val todayMidnight = Date()
+                .getIsoFormattedDate(location)
+                .toDateNoHour(location.timeZone)!!
             var forecastUpdateTime = base.forecastUpdateTime
             var currentUpdateTime = base.currentUpdateTime
             var airQualityUpdateTime = base.airQualityUpdateTime
@@ -758,33 +762,56 @@ class RefreshHelper @Inject constructor(
                     }
                 }
 
+                val selectedForecast = sourceCalls[location.forecastSource]?.dailyForecast
+                val selectedForecastFailed = errors.any {
+                    it.feature == SourceFeature.FORECAST && it.source == location.forecastSource
+                }
+                val selectedForecastIncomplete = selectedForecast != null &&
+                    !selectedForecast.hasMinimumForecastDays(todayMidnight) { it.date }
+                val fallbackForecast = if (
+                    location.forecastSource != FORECAST_FALLBACK_SOURCE &&
+                    (selectedForecastFailed || selectedForecastIncomplete)
+                ) {
+                    requestFallbackForecast(context, location, todayMidnight)
+                } else {
+                    null
+                }
+                selectedForecast?.let { forecast ->
+                    LogHelper.log(
+                        msg = "[Forecast] source=${location.forecastSource}, " +
+                            "days=${forecast.forecastDaysFrom(todayMidnight) { it.date }}"
+                    )
+                }
+
                 /*
                  * Make sure we return data from the correct source
                  */
                 WeatherWrapper(
                     dailyForecast = if (location.forecastSource.isNotEmpty()) {
-                        if (errors.any {
-                                it.feature == SourceFeature.FORECAST &&
-                                    it.source == location.forecastSource
+                        when {
+                            selectedForecast.hasMinimumForecastDays(todayMidnight) { it.date } -> {
+                                forecastUpdateTime = Date()
+                                selectedForecast
                             }
-                        ) {
-                            null
-                        } else {
-                            sourceCalls.getOrElse(location.forecastSource) { null }?.dailyForecast?.let {
-                                if (it.isEmpty()) {
-                                    errors.add(
-                                        RefreshError(
-                                            RefreshErrorType.INVALID_INCOMPLETE_DATA,
-                                            location.forecastSource,
-                                            SourceFeature.FORECAST
-                                        )
-                                    )
-                                    null
-                                } else {
-                                    forecastUpdateTime = Date()
-                                    it
+                            fallbackForecast.hasMinimumForecastDays(todayMidnight) { it.date } -> {
+                                errors.removeIf { error ->
+                                    error.feature == SourceFeature.FORECAST &&
+                                        error.source == location.forecastSource
                                 }
+                                forecastUpdateTime = Date()
+                                fallbackForecast
                             }
+                            selectedForecast != null && !selectedForecastFailed -> {
+                                errors.add(
+                                    RefreshError(
+                                        RefreshErrorType.INVALID_INCOMPLETE_DATA,
+                                        location.forecastSource,
+                                        SourceFeature.FORECAST
+                                    )
+                                )
+                                null
+                            }
+                            else -> null
                         }
                     } else {
                         null
@@ -1022,6 +1049,34 @@ class RefreshHelper @Inject constructor(
                 location.weather,
                 listOf(RefreshError(RefreshErrorType.DATA_REFRESH_FAILED))
             )
+        }
+    }
+
+    private suspend fun requestFallbackForecast(
+        context: Context,
+        location: Location,
+        todayMidnight: Date,
+    ): List<DailyWrapper>? {
+        val fallbackSource = sourceManager.getWeatherSource(FORECAST_FALLBACK_SOURCE) ?: return null
+        if (!fallbackSource.isFeatureSupportedForLocation(location, SourceFeature.FORECAST)) return null
+
+        return try {
+            val forecast = fallbackSource.requestWeather(
+                context,
+                location,
+                listOf(SourceFeature.FORECAST),
+            ).awaitFirstOrElse { WeatherWrapper() }.dailyForecast
+            LogHelper.log(
+                msg = "[Forecast] fallback=$FORECAST_FALLBACK_SOURCE, " +
+                    "days=${forecast.forecastDaysFrom(todayMidnight) { it.date }}"
+            )
+            forecast
+        } catch (error: Throwable) {
+            LogHelper.log(
+                msg = "[Forecast] fallback=$FORECAST_FALLBACK_SOURCE failed: " +
+                    error.javaClass.simpleName
+            )
+            null
         }
     }
 
@@ -1460,6 +1515,7 @@ class RefreshHelper @Inject constructor(
     }
 
     companion object {
+        private const val FORECAST_FALLBACK_SOURCE = "openmeteo"
         private const val WAIT_MINIMUM = 1
         private const val WAIT_REGULAR = 5
         private const val WAIT_RESTRICTED = 15

@@ -17,10 +17,12 @@
 package org.breezyweather.wallpaper
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +45,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -84,6 +87,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -117,6 +124,8 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
     private lateinit var currentLocationValue: MutableState<String>
     private lateinit var photoCacheLimitMbValue: MutableState<Float>
     private lateinit var maxPhotosPerLocationValue: MutableState<Float>
+    private lateinit var cachedPhotoCountValue: MutableState<Int>
+    private lateinit var cachedPhotoBytesValue: MutableState<Long>
 
     private lateinit var weatherKindValueNow: MutableState<String>
     private lateinit var weatherKinds: Array<String>
@@ -169,15 +178,22 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         photoCacheLimitMbValue = mutableFloatStateOf(wallpaperImageStore.photoCacheLimitMb.toFloat())
         maxPhotosPerLocationValue =
             mutableFloatStateOf(wallpaperImageStore.maxCachedPhotosPerLocation.toFloat())
+        cachedPhotoCountValue = mutableIntStateOf(0)
+        cachedPhotoBytesValue = mutableStateOf(0L)
         weatherRefreshedAtValue = mutableStateOf(null)
         photoRefreshedAtValue = mutableStateOf(null)
         // Preload the currently cached photo (decode off the main thread).
         lifecycleScope.launch {
-            val (bitmap, location) = withContext(Dispatchers.IO) {
-                wallpaperRepository.loadCachedBitmap() to
-                    locationRepository.getFirstLocation(withParameters = false)
+            val (bitmap, location, cacheStats) = withContext(Dispatchers.IO) {
+                Triple(
+                    wallpaperRepository.loadCachedBitmap(),
+                    locationRepository.getFirstLocation(withParameters = false),
+                    wallpaperRepository.cacheStats(),
+                )
             }
             previewBitmapValue.value = bitmap
+            cachedPhotoCountValue.value = cacheStats.photoCount
+            cachedPhotoBytesValue.value = cacheStats.totalBytes
             currentLocationValue.value = location?.city?.takeIf { it.isNotBlank() }
                 ?: location?.country.orEmpty()
 
@@ -258,7 +274,29 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
             } else {
                 refreshStatusValue.value = getString(R.string.widget_live_wallpaper_refresh_none)
             }
+            refreshCacheStats()
             refreshBusyValue.value = false
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::previewBitmapValue.isInitialized) {
+            lifecycleScope.launch {
+                previewBitmapValue.value = withContext(Dispatchers.IO) {
+                    wallpaperRepository.loadCachedBitmap()
+                }
+                attributionValue.value = wallpaperImageStore.cachedPhotoAttribution.orEmpty()
+                refreshCacheStats()
+            }
+        }
+    }
+
+    private fun refreshCacheStats() {
+        lifecycleScope.launch {
+            val stats = withContext(Dispatchers.IO) { wallpaperRepository.cacheStats() }
+            cachedPhotoCountValue.value = stats.photoCount
+            cachedPhotoBytesValue.value = stats.totalBytes
         }
     }
 
@@ -429,6 +467,49 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             text = "Photo cache: $cacheLimitMb MB",
                             fontWeight = FontWeight.Bold,
                         )
+                        val cacheUsedMb = cachedPhotoBytesValue.value / BYTES_PER_MB.toDouble()
+                        val cacheUsage = (cacheUsedMb / cacheLimitMb.coerceAtLeast(1))
+                            .toFloat()
+                            .coerceIn(0f, 1f)
+                        Text(
+                            text = stringResource(
+                                R.string.widget_live_wallpaper_cache_usage,
+                                cachedPhotoCountValue.value,
+                                cacheUsedMb,
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        LinearProgressIndicator(
+                            progress = { cacheUsage },
+                            modifier = Modifier
+                                .padding(top = 6.dp, bottom = 4.dp)
+                                .fillMaxWidth()
+                                .height(8.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant,
+                                    RoundedCornerShape(4.dp),
+                                ),
+                            color = Color(0xFFE4003B),
+                            trackColor = Color.Transparent,
+                            strokeCap = StrokeCap.Round,
+                            drawStopIndicator = {},
+                        )
+                        OutlinedButton(
+                            onClick = {
+                                startActivity(
+                                    Intent(
+                                        this@LiveWallpaperConfigActivity,
+                                        WallpaperPhotoManagerActivity::class.java,
+                                    )
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp),
+                        ) {
+                            Text(stringResource(R.string.wallpaper_photo_manager_title))
+                        }
                         Text(
                             text = "The last ${WallpaperImageStore.RECENT_URL_COUNT} photos per location " +
                                 "are skipped when choosing a new background.",
@@ -449,6 +530,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                     photoCacheLimitMbValue.value.roundToInt()
                                 lifecycleScope.launch(Dispatchers.IO) {
                                     wallpaperRepository.enforceCacheLimit()
+                                    refreshCacheStats()
                                 }
                             },
                         )
@@ -469,6 +551,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                     maxPhotosPerLocationValue.value.roundToInt()
                                 lifecycleScope.launch(Dispatchers.IO) {
                                     wallpaperRepository.enforceCacheLimit()
+                                    refreshCacheStats()
                                 }
                             },
                         )
@@ -726,6 +809,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
     }
 
     private companion object {
+        const val BYTES_PER_MB = 1024L * 1024L
         const val CACHE_LIMIT_STEP_MB = 25f
         const val CACHE_LIMIT_STEPS = 18
     }

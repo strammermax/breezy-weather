@@ -44,6 +44,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -88,6 +90,9 @@ class RadarActivity : BreezyActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Same sky-gradient backdrop as the main screen / details screen (ACT-013/ACT-014),
+        // instead of an opaque Material surface, so this screen doesn't look like a different app.
+        window.setBackgroundDrawableResource(R.drawable.bg_glass_sky)
         setContent {
             BreezyWeatherTheme {
                 ContentView()
@@ -139,14 +144,29 @@ class RadarActivity : BreezyActivity() {
 
     @Composable
     private fun ContentView() {
-        Material3Scaffold(
-            topBar = {
-                FitStatusBarTopAppBar(
-                    title = stringResource(R.string.radar_title),
-                    onBackPressed = { finish() }
-                )
-            }
-        ) { paddings ->
+        // ACT-013: same glass-card color scheme as the details screen, so cards/tabs/text
+        // read as translucent glass over the sky-gradient background instead of assuming an
+        // opaque white surface behind them.
+        val glassContentColor = colorResource(R.color.colorGlassTopBarText)
+        val glassColorScheme = MaterialTheme.colorScheme.copy(
+            surface = colorResource(R.color.colorGlassCardBackground),
+            surfaceVariant = colorResource(R.color.colorGlassCardBackground),
+            onSurface = glassContentColor,
+            onSurfaceVariant = glassContentColor.copy(alpha = 0.75f),
+            outline = colorResource(R.color.colorGlassCardStroke),
+            outlineVariant = colorResource(R.color.colorGlassCardStroke)
+        )
+        MaterialTheme(colorScheme = glassColorScheme) {
+            Material3Scaffold(
+                topBar = {
+                    FitStatusBarTopAppBar(
+                        title = stringResource(R.string.radar_title),
+                        onBackPressed = { finish() }
+                    )
+                },
+                containerColor = Color.Transparent,
+                contentColor = glassContentColor
+            ) { paddings ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -252,6 +272,7 @@ class RadarActivity : BreezyActivity() {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 16.dp)
                 )
+            }
             }
         }
     }

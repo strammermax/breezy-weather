@@ -827,6 +827,19 @@
     <string name="radar_frames_unavailable">Radar niet beschikbaar</string>
     <string name="widget_live_wallpaper_photo_background">Foto-achtergrond van locatie</string>
     <string name="widget_live_wallpaper_photo_background_summary">Gebruik een foto van waar je bent als achtergrond, met de weer-animatie eroverheen</string>
+    <string name="widget_live_wallpaper_cache_usage">%1$d achtergrondfoto’s gecachet · %2$.1f MB gebruikt</string>
+    <string name="wallpaper_photo_manager_title">Achtergrondafbeeldingen beheren</string>
+    <string name="wallpaper_photo_filter_current">Huidige locatie</string>
+    <string name="wallpaper_photo_filter_all">Alle afbeeldingen</string>
+    <string name="wallpaper_photo_manager_empty">Geen gedownloade achtergrondafbeeldingen gevonden.</string>
+    <string name="wallpaper_photo_views">%1$d keer getoond</string>
+    <string name="wallpaper_photo_rate_up">Duimpje omhoog</string>
+    <string name="wallpaper_photo_rate_down">Duimpje omlaag</string>
+    <string name="wallpaper_photo_disable">Uitschakelen en afbeelding verwijderen</string>
+    <string name="wallpaper_photo_enable">Inschakelen en opnieuw downloaden</string>
+    <string name="wallpaper_photo_disabled">Uitgeschakeld</string>
+    <string name="wallpaper_photo_file_missing">Afbeelding staat niet in de cache</string>
+    <string name="forecast_days_available">%1$d dagen beschikbaar · veeg voor meer</string>
     <string name="widget_live_wallpaper_bg_source">Achtergrond-bron</string>
     <string name="about_fork_title">Gebaseerd op</string>
 </resources>

@@ -235,6 +235,12 @@
             android:exported="true" />
 
         <activity
+            android:name=".wallpaper.WallpaperPhotoManagerActivity"
+            android:label="@string/wallpaper_photo_manager_title"
+            android:theme="@style/BreezyWeatherTheme"
+            android:exported="false" />
+
+        <activity
             android:name=".radar.RadarActivity"
             android:label="@string/radar_title"
             android:theme="@style/BreezyWeatherTheme"

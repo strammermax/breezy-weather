@@ -1296,8 +1296,11 @@ internal class WallpaperWeatherEffectRenderer(
                 // richSky: a narrower transition band gives crisper, more "photographic"
                 // cumulus edges instead of the soft/hazy default falloff. Not as narrow as
                 // a first pass (0.30/0.58) — that banded visibly at this mask's resolution.
-                float lo = mix(0.018, 0.16, richSky);
-                float hi = mix(0.82, 0.64, richSky);
+                // Combined with the higher richSky alpha cap below, this band was sharp
+                // enough to make a cloud's underside boundary look like a hard cut/seam
+                // rather than a soft (if still crisper-than-default) cumulus edge.
+                float lo = mix(0.018, 0.10, richSky);
+                float hi = mix(0.82, 0.72, richSky);
                 return smoothstep(lo, hi, luminance);
             }
 
@@ -1314,13 +1317,23 @@ internal class WallpaperWeatherEffectRenderer(
                 float verticalShade = smoothstep(-0.72, 0.82, p.y);
                 float internalShade = 1.0 - clamp(maskA * 0.72 + maskB * 0.28, 0.0, 1.0);
                 float shade = clamp(verticalShade * 0.58 + internalShade * 0.42, 0.0, 1.0);
+                float2 np = p * 9.0 + seed * 3.7;
+                float fine = noise21(np) * 0.6 + noise21(np * 2.3 + 5.1) * 0.4;
                 if (richSky > 0.0) {
-                    // Fine fbm breakup so the mass reads as photographic, rafelig cumulus
-                    // rather than a smooth, evenly-shaded silhouette.
-                    float2 np = p * 9.0 + seed * 3.7;
-                    float fine = noise21(np) * 0.6 + noise21(np * 2.3 + 5.1) * 0.4;
-                    density = clamp(density + (fine - 0.5) * 0.22 * density, 0.0, 1.0);
-                    shade = clamp(shade + (fine - 0.5) * 0.16, 0.0, 1.0);
+                    // richSky: keep most of the mass bright white — only the lower edge
+                    // (where real top-lit cumulus actually darkens) ramps towards shadow,
+                    // instead of a near-50/50 grey wash across the whole silhouette.
+                    float richVerticalShade = smoothstep(0.05, 0.95, p.y);
+                    float richShade = clamp(richVerticalShade * 0.80 + internalShade * 0.16, 0.0, 1.0);
+                    shade = mix(shade, richShade, richSky);
+                    // Fine fbm breakup so the mass reads as photographic, rafelig cumulus —
+                    // bias it towards brightening (puffy highlight bumps) more than
+                    // darkening, so the cotton-wool texture doesn't grey out the whole top.
+                    // Push the core of the mask towards fully opaque — partial alpha was
+                    // letting the deep richSky blue bleed through even mid-density areas,
+                    // keeping them grey-blue instead of solid cotton-wool white.
+                    density = clamp(pow(density, 0.6) + (fine - 0.5) * 0.22 * density, 0.0, 1.0);
+                    shade = clamp(shade - max(fine - 0.5, 0.0) * 0.22 + max(0.5 - fine, 0.0) * 0.06, 0.0, 1.0);
                 }
                 return float2(density, shade);
             }
@@ -1499,10 +1512,14 @@ internal class WallpaperWeatherEffectRenderer(
                         for (int i = 0; i < 5; i++) {
                             if (layerAlpha[i] <= 0.0) continue;
                             // richSky: shift masses higher (more open sky towards the
-                            // horizon) and size them up, like the reference photo's bigger,
-                            // more individually-readable cumulus.
+                            // horizon) and give each depth band its own clear size — large,
+                            // singular masses up high, smaller/more numerous ones low down —
+                            // for the layered, depth-banded look of the reference photo,
+                            // rather than every layer drifting at roughly the same size.
+                            float depthFraction = float(i) / 4.0;
                             float y = 0.15 + float(i) * 0.085 + layerVerticalOffset[i] - richSky * 0.11;
-                            float size = (0.20 + layerScale[i] * 0.18) * mix(1.0, 1.25, richSky);
+                            float richSizeFactor = mix(1.55, 0.65, depthFraction);
+                            float size = (0.20 + layerScale[i] * 0.18) * mix(1.0, richSizeFactor, richSky);
                             float speed = 0.005 * layerSpeed[i] * dirSign;
                             float seed = 0.08 + float(i) * 0.41;
                             float rowA = mode == 4.0
@@ -1534,10 +1551,11 @@ internal class WallpaperWeatherEffectRenderer(
                             float shadeAcc = shape.x * shape.y;
                             float weightAcc = shape.x;
 
-                            // richSky: dampen the overlap-fade-in masses so coverage stays
-                            // as separated individual masses with open sky between them,
-                            // like the reference photo, instead of merging into one sheet.
-                            float richSkyOverlapDamp = mix(1.0, 0.72, richSky);
+                            // richSky: the top band stays one single large mass (low
+                            // overlap), while lower bands allow more overlap masses to fade
+                            // in — reading as several smaller individual clouds clustered
+                            // near the horizon, matching the reference photo's layering.
+                            float richSkyOverlapDamp = mix(1.0, mix(0.22, 0.85, depthFraction), richSky);
                             if (layerAlpha[i] > 0.10) {
                                 float extraOpacity = smoothstep(0.10, 0.32, layerAlpha[i]) * 0.82 * richSkyOverlapDamp;
                                 float2 extra1 = driftingCloud(
@@ -1595,6 +1613,12 @@ internal class WallpaperWeatherEffectRenderer(
                             smoothstep(0.58, 0.92, maxLayerAlpha) * maxLayerAlpha,
                             precipitationCeiling
                         );
+                        // richSky wants genuinely open blue gaps between masses — the small
+                        // residual ceilingStrength a partly-cloudy density still produces
+                        // was washing a faint haze into those gaps (visible as a hard seam
+                        // at the overcast mask's tile edge once the richSky alpha cap made
+                        // it opaque enough to notice).
+                        ceilingStrength *= mix(1.0, smoothstep(0.55, 0.85, maxLayerAlpha), richSky);
                         if (ceilingStrength > 0.0) {
                             float2 ceiling = overcastField(aspectUv, effectSeed * 0.00013 + 0.17);
                             float ceilingMask = ceilingStrength * mix(0.68, 1.0, ceiling.x);
@@ -1615,7 +1639,7 @@ internal class WallpaperWeatherEffectRenderer(
                         // punch against the deeper-blue richSky sky background than the
                         // standard neutral grey tuned for blending over a pale sky.
                         float3 fairColorBase = daylight > 0.5 ? float3(0.90, 0.90, 0.89) : float3(0.44, 0.44, 0.46);
-                        float3 fairColorRich = float3(0.99, 0.98, 0.95);
+                        float3 fairColorRich = float3(1.0, 0.995, 0.98);
                         float3 fairColor = mix(fairColorBase, fairColorRich, richSky);
                         // Storm color is near-black at full darkness, matching the dramatic
                         // deep blue-grey of real cumulonimbus / rain cloud undersides.
@@ -1630,12 +1654,14 @@ internal class WallpaperWeatherEffectRenderer(
                         // top-lit cumulus, rather than a flat tinted silhouette. Storm clouds
                         // push the base shadow even further towards black.
                         float shadeStrength = mix(0.58, 0.22, smoothstep(0.30, 0.85, weightedDarkness));
-                        cloudColor *= mix(1.0, shadeStrength, weightedShade);
-                        // richSky: mix the underside towards a cool blue-grey shadow colour
-                        // (not just darker-but-same-hue) for the sculpted, top-lit volume the
-                        // reference photo shows even on an otherwise bright daytime cumulus.
-                        float3 richShadowColor = float3(0.46, 0.52, 0.62);
-                        cloudColor = mix(cloudColor, richShadowColor, richSky * pow(weightedShade, 1.4) * 0.85);
+                        cloudColor *= mix(1.0, mix(shadeStrength, 1.0, richSky), weightedShade);
+                        // richSky: mix only the true underside towards a cool blue-grey
+                        // shadow colour (not just darker-but-same-hue), so most of the mass
+                        // stays vivid cotton-wool white like the reference photo and only the
+                        // bottom edge reads as sculpted/3D — a steep power keeps the shadow
+                        // localized instead of a 50/50 grey wash across the whole silhouette.
+                        float3 richShadowColor = float3(0.50, 0.56, 0.66);
+                        cloudColor = mix(cloudColor, richShadowColor, richSky * pow(weightedShade, 2.6) * 0.92);
                     }
 
                     // ACT-014: stars fade in at night and are occluded by clouds.
@@ -1673,7 +1699,11 @@ internal class WallpaperWeatherEffectRenderer(
                 // Skia composites shader output as PREMULTIPLIED alpha. Returning straight
                 // alpha adds `color` to every pixel even where alpha is 0, washing the whole
                 // wallpaper out (white haze). Premultiply so transparent pixels stay invisible.
-                float a = clamp(alpha, 0.0, 0.86);
+                // richSky cloud cores were capped at the same 0.86 ceiling as every other
+                // weather effect, so even fully-dense cumulus blended ~14% with the sky
+                // behind them — never reading as truly solid, opaque cotton-wool white.
+                float alphaCap = mix(0.86, 0.995, richSky);
+                float a = clamp(alpha, 0.0, alphaCap);
                 float3 premultiplied = color * a;
                 premultiplied = premultiplied * (1.0 - glassShadow)
                     + float3(0.05, 0.08, 0.13) * glassShadow;

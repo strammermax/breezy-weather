@@ -21,6 +21,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
 import dagger.hilt.android.qualifiers.ApplicationContext
+import breezyweather.data.wallpaper.WallpaperPhotoRecord
+import breezyweather.data.wallpaper.WallpaperPhotoRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -31,6 +33,11 @@ import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
+
+data class WallpaperCacheStats(
+    val photoCount: Int,
+    val totalBytes: Long,
+)
 
 /**
  * The brains of the location-to-image matching for the live wallpaper background.
@@ -54,6 +61,7 @@ import javax.inject.Singleton
 @Singleton
 class WallpaperRepository @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val photoCatalog: WallpaperPhotoRepository,
 ) {
     private val store: WallpaperImageStore = WallpaperImageStore(context)
     private val client: OkHttpClient = defaultClient(store)
@@ -135,8 +143,27 @@ class WallpaperRepository @Inject constructor(
         activate: Boolean = true,
     ): File? {
         val placeKey = place.cacheFileName()
+        val locationKey = placeKey.substringBeforeLast('.')
+        synchronizePhotoCatalog()
         val tried = HashSet<String>()
+        tried.addAll(photoCatalog.getDisabledSourceUrls())
         if (forceRefresh) tried.addAll(store.recentUrlsFor(placeKey))
+
+        val cachedCandidate = selectWallpaperPhoto(
+            photoCatalog.getForLocation(locationKey).filter { photo ->
+                photo.sourceUrl != null && photo.filePath?.let { File(it).isFile } == true
+            },
+            tried,
+        )
+        if (cachedCandidate != null) {
+            val cachedFile = File(cachedCandidate.filePath!!)
+            cachedFile.setLastModified(System.currentTimeMillis())
+            if (activate) {
+                activateCatalogPhoto(cachedCandidate, cachedFile)
+            }
+            return cachedFile
+        }
+
         // Try several candidate photos and keep the first that has enough sky to show the weather
         // (>= MIN_SKY_FRACTION). Photos without sky are skipped and never shown as a background.
         repeat(MAX_SKY_ATTEMPTS) {
@@ -159,9 +186,19 @@ class WallpaperRepository @Inject constructor(
                 bitmap.recycle()
             }
             cacheFile.setLastModified(System.currentTimeMillis())
+            photoCatalog.upsertDownloaded(
+                id = photoId(url),
+                sourceUrl = url,
+                locationKey = locationKey,
+                locationName = place.displayName,
+                filePath = cacheFile.absolutePath,
+                attribution = result.attribution,
+                processed = result.alreadyProcessed,
+            )
             store.recordRecentUrl(placeKey, url)
             if (activate) {
                 store.activatePhoto(cacheFile.absolutePath, url, result.attribution)
+                photoCatalog.markShown(photoId(url))
             }
             pruneLocationCache(cacheFile.parentFile, cacheFile)
             prunePhotoCache(cacheFile)
@@ -193,8 +230,18 @@ class WallpaperRepository @Inject constructor(
             bitmap.recycle()
         }
         cacheFile.setLastModified(System.currentTimeMillis())
+        photoCatalog.upsertDownloaded(
+            id = photoId(upload.processedUrl),
+            sourceUrl = upload.processedUrl,
+            locationKey = place.cacheFileName().substringBeforeLast('.'),
+            locationName = place.displayName,
+            filePath = cacheFile.absolutePath,
+            attribution = "Camera / RemoveSky",
+            processed = true,
+        )
         store.recordRecentUrl(place.cacheFileName(), upload.processedUrl)
         store.activatePhoto(cacheFile.absolutePath, upload.processedUrl, "Camera / RemoveSky")
+        photoCatalog.markShown(photoId(upload.processedUrl))
         pruneLocationCache(cacheFile.parentFile, cacheFile)
         prunePhotoCache(cacheFile)
         return cacheFile
@@ -279,6 +326,119 @@ class WallpaperRepository @Inject constructor(
         return File(path).exists()
     }
 
+    fun cacheStats(): WallpaperCacheStats {
+        val files = photoCacheDir().walkTopDown().filter(File::isFile).toList()
+        return WallpaperCacheStats(
+            photoCount = files.size,
+            totalBytes = files.sumOf(File::length),
+        )
+    }
+
+    suspend fun managedPhotos(locationKey: String? = null): List<WallpaperPhotoRecord> {
+        synchronizePhotoCatalog()
+        return if (locationKey == null) photoCatalog.getAll() else photoCatalog.getForLocation(locationKey)
+    }
+
+    suspend fun setPhotoRating(id: String, rating: Int) {
+        photoCatalog.setRating(id, rating)
+    }
+
+    suspend fun setPhotoDisabled(id: String, disabled: Boolean): Boolean {
+        val photo = photoCatalog.getById(id) ?: return false
+        if (disabled) {
+            photo.filePath?.let { File(it).delete() }
+            if (store.cachedPhotoPath == photo.filePath || store.cachedPhotoUrl == photo.sourceUrl) {
+                store.deactivatePhoto()
+            }
+            photoCatalog.setDisabled(id, true)
+            return true
+        }
+
+        photoCatalog.setDisabled(id, false)
+        if (photo.filePath?.let { File(it).isFile } == true) return true
+        val url = photo.sourceUrl ?: run {
+            photoCatalog.setDisabled(id, true)
+            return false
+        }
+        val bitmap = downloadSkyBitmap(url, photo.processed) ?: run {
+            photoCatalog.setDisabled(id, true)
+            return false
+        }
+        val locationDirectory = File(photoCacheDir(), photo.locationKey).apply { mkdirs() }
+        val cacheFile = File(locationDirectory, "${url.sha256Prefix()}.webp")
+        try {
+            val written = cacheFile.outputStream().use {
+                bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it)
+            }
+            if (!written) {
+                cacheFile.delete()
+                photoCatalog.setDisabled(id, true)
+                return false
+            }
+        } finally {
+            bitmap.recycle()
+        }
+        cacheFile.setLastModified(System.currentTimeMillis())
+        photoCatalog.upsertDownloaded(
+            id = photo.id,
+            sourceUrl = url,
+            locationKey = photo.locationKey,
+            locationName = photo.locationName,
+            filePath = cacheFile.absolutePath,
+            attribution = photo.attribution,
+            processed = photo.processed,
+        )
+        return true
+    }
+
+    suspend fun synchronizePhotoCatalog() {
+        val existing = photoCatalog.getAll()
+        existing.filter { photo ->
+            photo.filePath?.let { path -> !File(path).isFile } == true
+        }.forEach {
+            photoCatalog.clearFilePath(it.id)
+        }
+        val knownPaths = existing.mapNotNull { it.filePath }.toSet()
+        val urlsByPath = buildMap {
+            store.allRecentUrls().forEach { (placeKey, urls) ->
+                val directory = File(photoCacheDir(), placeKey.substringBeforeLast('.'))
+                urls.forEach { url ->
+                    put(File(directory, "${url.sha256Prefix()}.webp").absolutePath, url)
+                }
+            }
+            val activePath = store.cachedPhotoPath
+            val activeUrl = store.cachedPhotoUrl
+            if (activePath != null && activeUrl != null) put(activePath, activeUrl)
+        }
+        photoCacheDir().walkTopDown().filter(File::isFile).forEach { file ->
+            if (file.absolutePath in knownPaths) return@forEach
+            val locationKey = file.parentFile?.name ?: "wallpaper_location"
+            val locationName = locationKey.removePrefix("wallpaper_").replace('_', ' ')
+            val sourceUrl = urlsByPath[file.absolutePath]
+            photoCatalog.upsertDownloaded(
+                id = sourceUrl?.let(::photoId) ?: "legacy:${file.absolutePath}",
+                sourceUrl = sourceUrl,
+                locationKey = locationKey,
+                locationName = locationName,
+                filePath = file.absolutePath,
+                attribution = if (file.absolutePath == store.cachedPhotoPath) {
+                    store.cachedPhotoAttribution
+                } else {
+                    null
+                },
+                processed = true,
+                now = file.lastModified().takeIf { it > 0 } ?: System.currentTimeMillis(),
+            )
+        }
+    }
+
+    private suspend fun activateCatalogPhoto(photo: WallpaperPhotoRecord, file: File) {
+        val url = photo.sourceUrl ?: return
+        store.activatePhoto(file.absolutePath, url, photo.attribution)
+        store.recordRecentUrl("${photo.locationKey}.jpg", url)
+        photoCatalog.markShown(photo.id)
+    }
+
     /** Clears the active photo and all downloaded wallpaper-photo cache files. */
     fun clearCache() {
         photoCacheDir().deleteRecursively()
@@ -337,6 +497,10 @@ class WallpaperRepository @Inject constructor(
     private fun String.sha256Prefix(): String = MessageDigest.getInstance("SHA-256")
         .digest(toByteArray(Charsets.UTF_8))
         .take(8)
+        .joinToString("") { "%02x".format(it) }
+
+    private fun photoId(url: String): String = "url:" + MessageDigest.getInstance("SHA-256")
+        .digest(url.toByteArray(Charsets.UTF_8))
         .joinToString("") { "%02x".format(it) }
 
     private suspend fun downloadBytes(url: String): ByteArray? = withContext(Dispatchers.IO) {

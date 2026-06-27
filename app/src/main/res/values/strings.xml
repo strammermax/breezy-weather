@@ -692,6 +692,19 @@
     <string name="widget_live_wallpaper_refresh_ok">Photo updated</string>
     <string name="widget_live_wallpaper_refresh_none">No photo found for this location</string>
     <string name="widget_live_wallpaper_refresh_no_location">No location available yet</string>
+    <string name="widget_live_wallpaper_cache_usage">%1$d background photos cached · %2$.1f MB used</string>
+    <string name="wallpaper_photo_manager_title">Manage background images</string>
+    <string name="wallpaper_photo_filter_current">Current location</string>
+    <string name="wallpaper_photo_filter_all">All images</string>
+    <string name="wallpaper_photo_manager_empty">No downloaded background images found.</string>
+    <string name="wallpaper_photo_views">Shown %1$d times</string>
+    <string name="wallpaper_photo_rate_up">Thumbs up</string>
+    <string name="wallpaper_photo_rate_down">Thumbs down</string>
+    <string name="wallpaper_photo_disable">Disable and remove image</string>
+    <string name="wallpaper_photo_enable">Enable and download again</string>
+    <string name="wallpaper_photo_disabled">Disabled</string>
+    <string name="wallpaper_photo_file_missing">Image is not cached</string>
+    <string name="forecast_days_available">%1$d days available · swipe for more</string>
     <string name="live_wallpaper_data_age_unknown">unknown</string>
     <string name="live_wallpaper_data_stale">stale</string>
     <!-- Precipitation radar -->

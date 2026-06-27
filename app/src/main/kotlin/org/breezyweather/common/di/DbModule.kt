@@ -46,6 +46,7 @@ import breezyweather.data.WeatherCodeColumnAdapter
 import breezyweather.data.Weathers
 import breezyweather.data.location.LocationRepository
 import breezyweather.data.weather.WeatherRepository
+import breezyweather.data.wallpaper.WallpaperPhotoRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -271,5 +272,11 @@ class DbModule {
     @Singleton
     fun provideWeatherRepository(databaseHandler: DatabaseHandler): WeatherRepository {
         return WeatherRepository(databaseHandler)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWallpaperPhotoRepository(databaseHandler: DatabaseHandler): WallpaperPhotoRepository {
+        return WallpaperPhotoRepository(databaseHandler)
     }
 }
