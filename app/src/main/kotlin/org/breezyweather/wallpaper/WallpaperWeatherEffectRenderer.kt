@@ -1376,6 +1376,11 @@ internal class WallpaperWeatherEffectRenderer(
                 float glassRefraction = 0.0;
 
                 if (weatherPass == 1.0 && (mode == 1.0 || mode == 4.0 || mode == 5.0)) {
+                    // Natte sneeuw (sleet) stacks full-strength rain on top of full-strength
+                    // snow, so the sharp rain streaks visually swamp the soft flakes and the
+                    // mix just reads as plain rain. Scale rain down for mode 5 so the snow
+                    // layer below stays legible as a mix instead of disappearing into it.
+                    float rainScale = mode == 5.0 ? 0.62 : 1.0;
                     float rain = rainLayer(aspectUv, 18.0, 1.65, 1.0) * 0.24;
                     rain += rainLayer(aspectUv, 27.0, 2.15, 8.0) * 0.38;
                     rain += rainLayer(aspectUv, 38.0, 2.75, 19.0) * 0.52;
@@ -1393,7 +1398,7 @@ internal class WallpaperWeatherEffectRenderer(
                     if (precipitationLayers > 17.0) rain += rainLayer(aspectUv, 15.0, 2.90, 127.0) * 0.44;
                     if (precipitationLayers > 18.0) rain += rainLayer(aspectUv, 12.0, 3.15, 139.0) * 0.49;
                     if (precipitationLayers > 19.0) rain += rainLayer(aspectUv, 9.5, 3.45, 151.0) * 0.55;
-                    alpha += rain;
+                    alpha += rain * rainScale;
                 }
 
                 if (weatherPass == 2.0 && glassRainIntensity > 0.0) {
@@ -1433,6 +1438,9 @@ internal class WallpaperWeatherEffectRenderer(
                 }
 
                 if (weatherPass == 1.0 && (mode == 2.0 || mode == 5.0)) {
+                    // Boost snow for sleet to compensate for rainScale above, so the flakes
+                    // read clearly instead of being lost under the (still dominant) rain.
+                    float snowScale = mode == 5.0 ? 1.3 : 1.0;
                     float snow = snowLayer(aspectUv, 48.0, 0.11, 0.045, 2.0) * 0.18;
                     snow += snowLayer(aspectUv, 42.0, 0.13, 0.055, 7.0) * 0.20;
                     snow += snowLayer(aspectUv, 36.0, 0.15, 0.070, 13.0) * 0.23;
@@ -1453,7 +1461,7 @@ internal class WallpaperWeatherEffectRenderer(
                     if (precipitationLayers > 17.0) snow += snowLayer(aspectUv, 10.5, 0.39, 0.265, 211.0) * 0.54;
                     if (precipitationLayers > 18.0) snow += snowLayer(aspectUv, 7.5, 0.46, 0.330, 227.0) * 0.63;
                     if (precipitationLayers > 19.0) snow += snowLayer(aspectUv, 5.3, 0.56, 0.420, 241.0) * 0.73;
-                    alpha += snow;
+                    alpha += snow * snowScale;
                     color = float3(0.96, 0.98, 1.0);
                 }
 
