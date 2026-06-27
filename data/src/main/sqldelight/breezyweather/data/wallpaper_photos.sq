@@ -1,0 +1,83 @@
+import kotlin.Boolean;
+
+CREATE TABLE wallpaper_photos(
+    id TEXT NOT NULL PRIMARY KEY,
+    source_url TEXT UNIQUE,
+    location_key TEXT NOT NULL,
+    location_name TEXT NOT NULL,
+    file_path TEXT,
+    attribution TEXT,
+    processed INTEGER AS Boolean NOT NULL DEFAULT 1,
+    rating INTEGER NOT NULL DEFAULT 0,
+    disabled INTEGER AS Boolean NOT NULL DEFAULT 0,
+    view_count INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    last_shown_at INTEGER
+);
+
+CREATE INDEX wallpaper_photos_location_idx ON wallpaper_photos(location_key);
+CREATE INDEX wallpaper_photos_disabled_idx ON wallpaper_photos(disabled);
+
+getAll:
+SELECT * FROM wallpaper_photos
+ORDER BY disabled ASC, location_name COLLATE NOCASE ASC, rating DESC, view_count ASC, updated_at DESC;
+
+getForLocation:
+SELECT * FROM wallpaper_photos
+WHERE location_key = :locationKey
+ORDER BY disabled ASC, rating DESC, view_count ASC, updated_at DESC;
+
+getById:
+SELECT * FROM wallpaper_photos WHERE id = :id;
+
+getDisabledSourceUrls:
+SELECT source_url FROM wallpaper_photos
+WHERE disabled = 1 AND source_url IS NOT NULL;
+
+upsertDownloaded:
+INSERT INTO wallpaper_photos(
+    id, source_url, location_key, location_name, file_path, attribution, processed,
+    rating, disabled, view_count, created_at, updated_at, last_shown_at
+)
+VALUES (
+    :id, :sourceUrl, :locationKey, :locationName, :filePath, :attribution, :processed,
+    0, 0, 0, :now, :now, NULL
+)
+ON CONFLICT(id) DO UPDATE SET
+    source_url = coalesce(excluded.source_url, source_url),
+    location_key = excluded.location_key,
+    location_name = excluded.location_name,
+    file_path = excluded.file_path,
+    attribution = coalesce(excluded.attribution, attribution),
+    processed = excluded.processed,
+    updated_at = excluded.updated_at;
+
+setRating:
+UPDATE wallpaper_photos
+SET rating = :rating, updated_at = :now
+WHERE id = :id;
+
+setDisabled:
+UPDATE wallpaper_photos
+SET disabled = :disabled,
+    file_path = CASE WHEN :disabled THEN NULL ELSE file_path END,
+    updated_at = :now
+WHERE id = :id;
+
+markShown:
+UPDATE wallpaper_photos
+SET view_count = view_count + 1,
+    last_shown_at = :now,
+    updated_at = :now
+WHERE id = :id;
+
+clearFilePath:
+UPDATE wallpaper_photos
+SET file_path = NULL, updated_at = :now
+WHERE id = :id;
+
+clearAllFilePaths:
+UPDATE wallpaper_photos
+SET file_path = NULL, updated_at = :now
+WHERE file_path IS NOT NULL;

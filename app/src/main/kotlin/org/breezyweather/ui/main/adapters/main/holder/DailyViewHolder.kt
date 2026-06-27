@@ -124,7 +124,14 @@ class DailyViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
         title.text = context.getString(if (hourlyMode) R.string.hourly_forecast else R.string.daily_forecast)
 
         val sub = if (hourlyMode) weather.current?.hourlyForecast else weather.current?.dailyForecast
-        if (sub.isNullOrEmpty()) {
+        if (!hourlyMode) {
+            val availableDays = weather.dailyForecastStartingToday.size
+            subtitle.visibility = View.VISIBLE
+            subtitle.text = buildList {
+                add(context.getString(R.string.forecast_days_available, availableDays))
+                sub?.takeIf { it.isNotBlank() }?.let(::add)
+            }.joinToString("\n")
+        } else if (sub.isNullOrEmpty()) {
             subtitle.visibility = View.GONE
         } else {
             subtitle.visibility = View.VISIBLE

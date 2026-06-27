@@ -12,6 +12,8 @@
     <string name="sp_widget_daily_trend_setting" translatable="false">widget_daily_trend_setting</string>
     <string name="sp_widget_hourly_trend_setting" translatable="false">widget_hourly_trend_setting</string>
     <string name="sp_widget_multi_city" translatable="false">widget_multi_city</string>
+    <string name="sp_widget_clock_day_stats_setting" translatable="false">widget_clock_day_stats_setting</string>
+    <string name="sp_widget_clock_day_hourly_setting" translatable="false">widget_clock_day_hourly_setting</string>
     <string name="key_view_type" translatable="false">view_type</string>
     <string name="key_card_style" translatable="false">card_style</string>
     <string name="key_card_alpha" translatable="false">card_alpha_1</string>

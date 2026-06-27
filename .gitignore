@@ -51,3 +51,5 @@ bin/
 /build_check.log
 /*.png
 docs/testfotos/
+/outputs/
+docs/~$*.xlsx

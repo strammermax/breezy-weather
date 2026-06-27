@@ -49,6 +49,9 @@ class HumidityViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
         super.onBindView(activity, location, provider, listAnimationEnabled, itemAnimationEnabled)
 
         val talkBackBuilder = StringBuilder(context.getString(R.string.humidity))
+        humidityValueView.text = "-"
+        dewPointValueView.text = "-"
+        wavesBackgroundView.setImageDrawable(null)
         location.weather!!.current?.let { current ->
             current.relativeHumidity?.let { relativeHumidity ->
                 humidityValueView.text = relativeHumidity.formatPercent(context, UnitWidth.NARROW)

@@ -123,6 +123,12 @@ data class WallpaperSceneState(
      * 180 = full moon, 270 = last quarter. Matches [breezyweather.domain.weather.model.MoonPhase.angle].
      */
     val moonPhaseAngle: Float = 180f,
+    /**
+     * "Holl. wolken" preset: a deeper-blue sky and richer/sharper-edged cumulus than the
+     * regular Partly cloudy/Mostly cloudy look, modelled on a reference photo (see
+     * RotatingWeatherScenario.richSky). Purely cosmetic — doesn't change density/coverage.
+     */
+    val richSky: Boolean = false,
 ) {
     val daytime: Boolean
         get() = daylight >= 0.5f
@@ -151,6 +157,7 @@ object WallpaperSceneStateFactory {
         moonsetMillis: Long? = null,
         weatherRefreshedAtMillis: Long? = null,
         latitude: Double? = null,
+        richSky: Boolean = false,
     ): WallpaperSceneState {
         val family = weatherFamily(weatherKind)
         val normalizedKind = weatherKindFor(family)
@@ -186,10 +193,18 @@ object WallpaperSceneStateFactory {
                 family != WallpaperWeatherFamily.HAIL)
         val adjustedGlassRainIntensity = if (isPrecipitating && supportsGlassRain) {
             glassRainAmount(precipitationMillimetersPerHour, profile.glassRainIntensity)
+        } else if (family == WallpaperWeatherFamily.THUNDER) {
+            // Sheet: plain thunder (no measured rain) still shows small drops on glass —
+            // the humid air ahead of/around the storm, not the storm's own rain.
+            0.18f
         } else {
             0f
         }
-        val cloudFactor = if (isPrecipitating) lerp(1f, precipFactor, 0.5f) else 1f
+        // Real drizzle still falls from a fully overcast nimbostratus deck — only the
+        // streak count/intensity should scale with mm/h (see adjustedPrecipitationIntensity
+        // above), not how dark/dense the sky itself looks. A light lerp here previously
+        // washed out the sky for Motregen specifically (sheet: "Donkergrijs", same as Regen).
+        val cloudFactor = if (isPrecipitating) lerp(1f, precipFactor, 0.15f) else 1f
         val adjustedCloudDensity = (profile.cloudDensity * cloudFactor).coerceIn(0f, 1f)
         val adjustedCloudDarkness = (profile.cloudDarkness * cloudFactor).coerceIn(0f, 1f)
 
@@ -228,6 +243,7 @@ object WallpaperSceneStateFactory {
             weatherRefreshedAtMillis = weatherRefreshedAtMillis,
             latitude = latitude,
             moonPhaseAngle = moonPhaseAngle,
+            richSky = richSky,
         )
     }
 
@@ -368,8 +384,8 @@ object WallpaperSceneStateFactory {
             WallpaperSkyCondition.CLEAR -> 0f
             WallpaperSkyCondition.FAIR -> 0.02f
             WallpaperSkyCondition.PARTLY_CLOUDY -> 0.05f
-            WallpaperSkyCondition.MOSTLY_CLOUDY -> 0.18f
-            WallpaperSkyCondition.OVERCAST -> 0.25f
+            WallpaperSkyCondition.MOSTLY_CLOUDY -> 0.24f
+            WallpaperSkyCondition.OVERCAST -> 0.34f
         }
         cloudDarkness = max(cloudDarkness, when (condition.precipitation) {
             WallpaperPrecipitationCondition.DRIZZLE -> 0.38f
@@ -388,8 +404,8 @@ object WallpaperSceneStateFactory {
             WallpaperEffectIntensity.HEAVY -> 1f
         }
         val fogIntensity = when (condition.visibility) {
-            WallpaperVisibilityCondition.FOG -> 0.72f
-            WallpaperVisibilityCondition.DENSE_FOG -> 0.92f
+            WallpaperVisibilityCondition.FOG -> 0.80f
+            WallpaperVisibilityCondition.DENSE_FOG -> 1f
             else -> 0f
         }
         val hazeIntensity = if (condition.visibility == WallpaperVisibilityCondition.HAZE) 0.62f else 0f

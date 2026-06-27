@@ -150,9 +150,6 @@ class MainAdapter(
                 ) {
                     continue
                 }
-                if (c === CardDisplay.CARD_HUMIDITY && weather.current?.relativeHumidity == null) {
-                    continue
-                }
                 if (c === CardDisplay.CARD_UV && weather.current?.uV?.index == null) {
                     continue
                 }

@@ -76,6 +76,7 @@ import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.time.Duration.Companion.hours
@@ -147,6 +148,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mCurrentEffectFamily: WallpaperWeatherFamily? = null
         private var mCurrentRendererWeatherKind: Int? = null
         private var mCurrentRendererCondition: WallpaperEffectCondition? = null
+        private var mCurrentRendererRichSky = false
         private var mCurrentRendererWindFactor = Float.NaN
         private var mCurrentRendererPrecipitationIntensity = Float.NaN
         private var mCurrentRendererGlassRainIntensity = Float.NaN
@@ -160,6 +162,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mGlassSceneCanvas: Canvas? = null
         private var mGlassSceneShader: Shader? = null
         private var mGlassSceneKey: String? = null
+        private val mSkyTintPaint = Paint()
         private var mCelestialStartMillis: Long? = null
         private var mCelestialEndMillis: Long? = null
         private var mSunriseMillis: Long? = null
@@ -242,6 +245,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mAnimate = false
         private var mRotatingWeather = false
         private var mRotatingWeatherIndex = 0
+        /** Cloud cover override for fixed (non-rotating) presets like "Holl. wolken". */
+        private var mForcedCloudCoverPercent: Float? = null
+        private var mForcedRichSky = false
         private var hasDrawn = false
         private var mDeviceOrientation: DeviceOrientation = DeviceOrientation.TOP
         private var mIntervalController: AsyncHelper.Controller? = null
@@ -567,6 +573,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 windDirectionDegrees = wind?.degree?.toFloat(),
                 precipitationMillimetersPerHour = currentHourPrecipitationMillimeters,
                 cloudCoverPercent = rotatingScenario?.cloudCoverPercent
+                    ?: mForcedCloudCoverPercent
                     ?: if (mAutomaticWeather) current?.cloudCover?.inPercent?.toFloat() else null,
                 visibilityMeters = rotatingScenario?.visibilityMeters
                     ?: if (mAutomaticWeather) current?.visibility?.inMeters?.toFloat() else null,
@@ -576,6 +583,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 moonsetMillis = mMoonsetMillis,
                 weatherRefreshedAtMillis = mCurrentLocationData?.weather?.base?.refreshTime?.time,
                 latitude = mCurrentLocationData?.latitude,
+                richSky = rotatingScenario?.richSky ?: mForcedRichSky,
             )
         }
 
@@ -720,6 +728,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val rendererMatchesTarget = mCurrentEffectRenderer != null &&
                 mCurrentRendererWeatherKind == sceneState.weatherKind &&
                 mCurrentRendererCondition == sceneState.condition &&
+                mCurrentRendererRichSky == sceneState.richSky &&
                 abs(mCurrentRendererWindFactor - sceneState.windFactor) < 0.001f &&
                 abs(mCurrentRendererPrecipitationIntensity - sceneState.precipitationIntensity) < 0.001f &&
                 abs(mCurrentRendererGlassRainIntensity - sceneState.glassRainIntensity) < 0.001f
@@ -754,6 +763,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     precipitationIntensity = sceneState.precipitationIntensity,
                     precipitationTiltSlope = sceneState.precipitationTiltSlope,
                     qualityProfile = LiveWallpaperConfigManager(applicationContext).qualityProfile,
+                    resources = resources,
+                    richSky = sceneState.richSky,
                 )
             } else {
                 null
@@ -788,6 +799,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mCurrentEffectFamily = newFamily
             mCurrentRendererWeatherKind = sceneState.weatherKind
             mCurrentRendererCondition = sceneState.condition
+            mCurrentRendererRichSky = sceneState.richSky
             mCurrentRendererWindFactor = sceneState.windFactor
             mCurrentRendererPrecipitationIntensity = sceneState.precipitationIntensity
             mCurrentRendererGlassRainIntensity = sceneState.glassRainIntensity
@@ -899,9 +911,41 @@ class MaterialLiveWallpaperService : WallpaperService() {
             sceneCanvas.drawColor(Color.TRANSPARENT, android.graphics.PorterDuff.Mode.CLEAR)
             sceneCanvas.withTranslation(-bgOffset, 0f) { mBackground?.draw(this) }
             sceneCanvas.withTranslation(-celestialOffset, 0f) { drawCelestialBody(this) }
+            // The full AGSL cloud shader can't run here (this bitmap is software-rendered;
+            // RuntimeShader requires a hardware canvas), so approximate its average sky
+            // tint as a flat overlay instead. Without this, the glass refraction always
+            // sampled a clear-blue scene, so rain on the window looked the same regardless
+            // of how dark/overcast the actual sky was.
+            drawApproximateSkyTint(sceneCanvas)
             sceneCanvas.withTranslation(-fgOffset, 0f) { mForeground?.draw(this) }
             mGlassSceneKey = key
             return mGlassSceneShader
+        }
+
+        /**
+         * Flat approximation of [WallpaperWeatherEffectRenderer]'s cloud colour mix, for the
+         * glass-rain scene texture only (a software-rendered bitmap, where the real AGSL
+         * shader can't run). Coverage and darkness come straight from [mSceneState], so this
+         * tracks whatever the actual sky is doing without needing the shader itself.
+         */
+        private fun drawApproximateSkyTint(canvas: Canvas) {
+            val coverage = mSceneState.cloudDensity.coerceIn(0f, 1f)
+            if (coverage <= 0.001f) return
+            val darkness = mSceneState.cloudDarkness.coerceIn(0f, 1f)
+            val daytime = mSceneState.daytime
+            val fair = if (daytime) Triple(0.90f, 0.90f, 0.89f) else Triple(0.44f, 0.44f, 0.46f)
+            val storm = if (daytime) Triple(0.20f, 0.22f, 0.28f) else Triple(0.09f, 0.11f, 0.15f)
+            val greyness = darkness.toDouble().pow(0.8).toFloat()
+            val r = lerp(fair.first, storm.first, greyness)
+            val g = lerp(fair.second, storm.second, greyness)
+            val b = lerp(fair.third, storm.third, greyness)
+            mSkyTintPaint.color = Color.argb(
+                (coverage * 0.86f * 255f).roundToInt().coerceIn(0, 255),
+                (r * 255f).roundToInt().coerceIn(0, 255),
+                (g * 255f).roundToInt().coerceIn(0, 255),
+                (b * 255f).roundToInt().coerceIn(0, 255),
+            )
+            canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), mSkyTintPaint)
         }
 
         /** Parallax shift for a layer, clamped so it can never exceed the layer's extra width. */
@@ -1056,7 +1100,12 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     }
                 }
             }
-            return SkyColors.applyOvercastTint(colors, mSceneState.cloudDarkness, mDaytime)
+            val richSkyColors = if (mSceneState.richSky) {
+                SkyColors.applyRichSkyTint(colors, mDaytime)
+            } else {
+                colors
+            }
+            return SkyColors.applyOvercastTint(richSkyColors, mSceneState.cloudDarkness, mDaytime)
         }
 
         private fun fraction(value: Long, start: Long, end: Long): Float =
@@ -1122,7 +1171,14 @@ class MaterialLiveWallpaperService : WallpaperService() {
             shortestSide: Float,
             visibility: Float,
         ) {
-            val glowRadius = shortestSide * CelestialGlow.GLOW_RADIUS_FRACTION
+            // richSky: the reference photo has no sun glow washing out the sky at all, so
+            // shrink it well below the normal glow rather than the usual prominent halo.
+            val glowFraction = if (mSceneState.richSky) {
+                CelestialGlow.GLOW_RADIUS_FRACTION * 0.18f
+            } else {
+                CelestialGlow.GLOW_RADIUS_FRACTION
+            }
+            val glowRadius = shortestSide * glowFraction
             val coreRadius = shortestSide * CelestialGlow.CORE_RADIUS_FRACTION
             val alpha = (visibility * 255).toInt()
             val minute = System.currentTimeMillis() / 60_000L
@@ -1354,8 +1410,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val weatherKind = when (configManager.weatherKind) {
                 "auto" -> location?.weather?.current?.weatherCode
                 "rotating" -> null
+                "HOLLANDSE_LUCHT" -> WeatherCode.PARTLY_CLOUDY
                 else -> WeatherCode.getInstance(configManager.weatherKind)
             }
+            mForcedCloudCoverPercent = if (configManager.weatherKind == "HOLLANDSE_LUCHT") 70f else null
+            mForcedRichSky = configManager.weatherKind == "HOLLANDSE_LUCHT"
             val daytime = when (configManager.dayNightType) {
                 "day" -> true
                 "night" -> false

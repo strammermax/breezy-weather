@@ -46,13 +46,13 @@ data class FogFieldParams(
 object FogFieldFactory {
     private const val BAND_COUNT = 4
     private const val DEFAULT_DIRECTION_DEGREES = 70f
-    private const val FOG_MAX_ALPHA = 0.50f
+    private const val FOG_MAX_ALPHA = 0.68f
     private const val HAZE_MAX_ALPHA = 0.30f
 
     // Flat tint covering the whole scene (sky and photo foreground), separate from
     // the denser near-horizon bands below, so fog/haze reads as a uniform atmosphere
     // rather than only a low-lying band.
-    private const val FOG_GLOBAL_FRACTION = 0.45f
+    private const val FOG_GLOBAL_FRACTION = 0.58f
     private const val HAZE_GLOBAL_FRACTION = 0.35f
 
     // Lower bands (near the horizon) are taller, denser and slower; higher bands are

@@ -103,6 +103,20 @@ object Widgets {
     const val MATERIAL_YOU_FORECAST_PENDING_INTENT_CODE_WEATHER = 131
     const val MATERIAL_YOU_CURRENT_PENDING_INTENT_CODE_WEATHER = 132
 
+    // clock + day + device stats.
+    const val CLOCK_DAY_STATS_PENDING_INTENT_CODE_WEATHER = 141
+    const val CLOCK_DAY_STATS_PENDING_INTENT_CODE_CALENDAR = 143
+    const val CLOCK_DAY_STATS_PENDING_INTENT_CODE_CLOCK_LIGHT = 144
+    const val CLOCK_DAY_STATS_PENDING_INTENT_CODE_CLOCK_NORMAL = 145
+    const val CLOCK_DAY_STATS_PENDING_INTENT_CODE_CLOCK_BLACK = 146
+
+    // clock + day + hourly.
+    const val CLOCK_DAY_HOURLY_PENDING_INTENT_CODE_WEATHER = 151
+    const val CLOCK_DAY_HOURLY_PENDING_INTENT_CODE_CALENDAR = 153
+    const val CLOCK_DAY_HOURLY_PENDING_INTENT_CODE_CLOCK_LIGHT = 154
+    const val CLOCK_DAY_HOURLY_PENDING_INTENT_CODE_CLOCK_NORMAL = 155
+    const val CLOCK_DAY_HOURLY_PENDING_INTENT_CODE_CLOCK_BLACK = 156
+
     fun buildWidgetDayStyleText(context: Context, weather: Weather, temperatureUnit: TemperatureUnit): Array<String> {
         val texts = arrayOf(
             weather.current?.weatherText ?: "",

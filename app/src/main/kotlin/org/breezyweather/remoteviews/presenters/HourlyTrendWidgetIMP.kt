@@ -89,9 +89,11 @@ object HourlyTrendWidgetIMP : AbstractRemoteViewsPresenter() {
         )
     }
 
+    // internal: reused by ClockDayHourlyWidgetIMP to bake the same hourly strip into a clock
+    // header widget, instead of duplicating the TrendLinearLayout/WidgetItemView wiring.
     @WorkerThread
     @SuppressLint("InflateParams", "WrongThread")
-    private fun getDrawableView(
+    internal fun getDrawableView(
         context: Context,
         location: Location?,
         color: WidgetColor,

@@ -235,6 +235,12 @@
             android:exported="true" />
 
         <activity
+            android:name=".wallpaper.WallpaperPhotoManagerActivity"
+            android:label="@string/wallpaper_photo_manager_title"
+            android:theme="@style/BreezyWeatherTheme"
+            android:exported="false" />
+
+        <activity
             android:name=".radar.RadarActivity"
             android:label="@string/radar_title"
             android:theme="@style/BreezyWeatherTheme"
@@ -280,6 +286,24 @@
 
         <activity
             android:name=".remoteviews.config.ClockDayDetailsWidgetConfigActivity"
+            android:theme="@style/BreezyWeatherTheme"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".remoteviews.config.ClockDayStatsWidgetConfigActivity"
+            android:theme="@style/BreezyWeatherTheme"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".remoteviews.config.ClockDayHourlyWidgetConfigActivity"
             android:theme="@style/BreezyWeatherTheme"
             android:exported="true">
             <intent-filter>
@@ -473,6 +497,32 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_clock_day_details" />
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.ACTION_APPWIDGET_DISABLED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".background.receiver.widget.WidgetClockDayStatsProvider"
+            android:label="@string/widget_clock_day_stats"
+            android:exported="true">
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_clock_day_stats" />
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.ACTION_APPWIDGET_DISABLED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".background.receiver.widget.WidgetClockDayHourlyProvider"
+            android:label="@string/widget_clock_day_hourly"
+            android:exported="true">
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_clock_day_hourly" />
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="android.appwidget.action.ACTION_APPWIDGET_DISABLED" />
