@@ -63,6 +63,7 @@ import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.ui.common.widgets.Material3Scaffold
 import org.breezyweather.ui.common.widgets.insets.FitStatusBarTopAppBar
 import org.breezyweather.ui.theme.compose.BreezyWeatherTheme
+import org.breezyweather.wallpaper.photo.CheckForNewPhotosResult
 import org.breezyweather.wallpaper.photo.PlaceQuery
 import org.breezyweather.wallpaper.photo.WallpaperRepository
 import java.io.File
@@ -117,38 +118,24 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
         }
     }
 
-    /**
-     * Forces [WallpaperRepository.refreshFor] to look for a candidate beyond the recently
-     * shown ones for the current location, without activating it as the live background.
-     * Whether the managed photo count for that location grows tells the user if a genuinely
-     * new image was found on the server, since an existing-but-unshown cached candidate
-     * would already be counted.
-     */
     private fun checkForNewPhotos() {
         val coords = currentLocationCoords ?: return
-        val locationKey = currentLocationKey
         lifecycleScope.launch {
             checkingNewPhotos = true
-            val countBefore = photos.count { it.locationKey == locationKey }
-            withContext(Dispatchers.IO) {
-                wallpaperRepository.refreshFor(
-                    coords.latitude,
-                    coords.longitude,
-                    coords.place,
-                    forceRefresh = true,
-                    activate = false,
-                )
+            val result = withContext(Dispatchers.IO) {
+                wallpaperRepository.checkForNewPhotos(coords.latitude, coords.longitude, coords.place)
             }
-            photos = withContext(Dispatchers.IO) { wallpaperRepository.managedPhotos() }
-            val countAfter = photos.count { it.locationKey == locationKey }
+            if (result == CheckForNewPhotosResult.FOUND) {
+                photos = withContext(Dispatchers.IO) { wallpaperRepository.managedPhotos() }
+            }
             checkingNewPhotos = false
             Toast.makeText(
                 this@WallpaperPhotoManagerActivity,
                 getString(
-                    if (countAfter > countBefore) {
-                        R.string.wallpaper_photo_check_new_found
-                    } else {
-                        R.string.wallpaper_photo_check_new_none
+                    when (result) {
+                        CheckForNewPhotosResult.FOUND -> R.string.wallpaper_photo_check_new_found
+                        CheckForNewPhotosResult.NONE_FOUND -> R.string.wallpaper_photo_check_new_none
+                        CheckForNewPhotosResult.REQUEST_FAILED -> R.string.wallpaper_photo_check_new_failed
                     }
                 ),
                 Toast.LENGTH_SHORT,

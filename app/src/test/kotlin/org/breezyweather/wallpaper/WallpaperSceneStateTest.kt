@@ -196,6 +196,9 @@ class WallpaperSceneStateTest {
         state.condition.visibility shouldBe WallpaperVisibilityCondition.DENSE_FOG
         state.fogIntensity.shouldBeGreaterThan(0f)
         state.precipitationIntensity.shouldBeGreaterThan(0f)
+        // "Regen + dichte mist" must look as washed-out as plain dense fog, not like rain
+        // over an undimmed photo.
+        state.photoGreyscaleAmount shouldBe 1f
     }
 
     @Test

@@ -267,8 +267,13 @@ class RemoveSkyProvider(
         private const val LIMIT = 12
         private const val MAX_PROCESS_ATTEMPTS = 6
 
-        /** Upper bound when fetching all enabled URLs for a location to prune the local cache. */
-        private const val MAX_ENABLED_URLS = 50
+        /**
+         * Upper bound when fetching all enabled URLs for a location to prune the local cache
+         * or check for new ones. The `/search` endpoint rejects `limit` above 25 with a 400
+         * (confirmed against the RemoveSky v0.3.1 API), so anything higher silently breaks
+         * every caller of [fetchEnabledUrls] by making the whole request fail.
+         */
+        private const val MAX_ENABLED_URLS = 25
         private const val USER_AGENT =
             "LiveWallpaperWeather/1.0 (https://github.com/strammermax/breezy-weather; " +
                 "based on Breezy Weather)"

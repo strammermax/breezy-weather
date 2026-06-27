@@ -133,11 +133,16 @@ data class WallpaperSceneState(
     val daytime: Boolean
         get() = daylight >= 0.5f
 
-    /** Fog desaturates the source photo before the foreground fog veil is drawn. */
+    /**
+     * Fog desaturates the source photo before the foreground fog veil is drawn. Keyed off
+     * [fogIntensity] (which already reflects measured visibility, see
+     * [WallpaperSceneStateFactory.fogIntensityForVisibility]) rather than [weatherFamily], so
+     * combinations like "Regen + dichte mist" get the same washed-out look as plain dense fog
+     * instead of only the rain effect on top of an undimmed photo.
+     */
     val photoGreyscaleAmount: Float
         get() = when {
             weatherFamily == WallpaperWeatherFamily.HAZE -> 0.32f
-            weatherFamily != WallpaperWeatherFamily.FOG -> 0f
             fogIntensity >= 0.95f -> 1f
             fogIntensity >= 0.60f -> 0.85f
             else -> 0f

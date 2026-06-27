@@ -39,6 +39,12 @@ data class WallpaperCacheStats(
     val totalBytes: Long,
 )
 
+enum class CheckForNewPhotosResult {
+    FOUND,
+    NONE_FOUND,
+    REQUEST_FAILED,
+}
+
 /**
  * The brains of the location-to-image matching for the live wallpaper background.
  *
@@ -300,6 +306,55 @@ class WallpaperRepository @Inject constructor(
             return true
         }
         return false
+    }
+
+    /**
+     * Checks RemoveSky's *full* enabled-URL list for [place] (see [RemoveSkyProvider
+     * .fetchEnabledUrls]) against every URL already known locally for that location — whether
+     * currently downloaded, disabled, or merely "recently shown" — and downloads the first one
+     * we don't have yet, without activating it as the live background.
+     *
+     * This deliberately does not reuse [refreshFor]: that function's `cachedCandidate` shortcut
+     * returns an already-downloaded-but-not-recently-shown photo before ever asking the server,
+     * so it can't tell "nothing new" apart from "we already have it but haven't shown it lately."
+     */
+    suspend fun checkForNewPhotos(latitude: Double, longitude: Double, place: PlaceQuery): CheckForNewPhotosResult {
+        val placeKey = place.cacheFileName()
+        val locationKey = placeKey.substringBeforeLast('.')
+        synchronizePhotoCatalog()
+
+        val enabled = removeSkyProvider().fetchEnabledUrls(latitude, longitude)
+            ?: return CheckForNewPhotosResult.REQUEST_FAILED
+        val known = photoCatalog.getForLocation(locationKey).mapNotNullTo(HashSet()) { it.sourceUrl }
+        val newUrl = enabled.firstOrNull { it !in known } ?: return CheckForNewPhotosResult.NONE_FOUND
+
+        val bitmap = downloadSkyBitmap(newUrl, alreadyProcessed = true)
+            ?: return CheckForNewPhotosResult.REQUEST_FAILED
+        val cacheFile = cacheFile(place, newUrl)
+        try {
+            val written = cacheFile.outputStream().use {
+                bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it)
+            }
+            if (!written) {
+                cacheFile.delete()
+                return CheckForNewPhotosResult.REQUEST_FAILED
+            }
+        } finally {
+            bitmap.recycle()
+        }
+        cacheFile.setLastModified(System.currentTimeMillis())
+        photoCatalog.upsertDownloaded(
+            id = photoId(newUrl),
+            sourceUrl = newUrl,
+            locationKey = locationKey,
+            locationName = place.displayName,
+            filePath = cacheFile.absolutePath,
+            attribution = null,
+            processed = true,
+        )
+        pruneLocationCache(cacheFile.parentFile, cacheFile)
+        prunePhotoCache(cacheFile)
+        return CheckForNewPhotosResult.FOUND
     }
 
     /** Back-compatible overload taking a single place name. */

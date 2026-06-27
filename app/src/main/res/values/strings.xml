@@ -707,6 +707,7 @@
     <string name="wallpaper_photo_check_new">Check for new images</string>
     <string name="wallpaper_photo_check_new_found">New image found and added</string>
     <string name="wallpaper_photo_check_new_none">No new images found</string>
+    <string name="wallpaper_photo_check_new_failed">Could not reach the photo server</string>
     <string name="forecast_days_available">%1$d days available · swipe for more</string>
     <string name="live_wallpaper_data_age_unknown">unknown</string>
     <string name="live_wallpaper_data_stale">stale</string>

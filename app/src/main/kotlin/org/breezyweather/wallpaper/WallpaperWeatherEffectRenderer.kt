@@ -264,6 +264,11 @@ internal class WallpaperWeatherEffectRenderer(
             s.setFloatUniform("windFactor", cloudSpeedFactor)
             s.setFloatUniform("weatherPass", pass)
             s.setFloatUniform("precipitationLayers", precipitationLayerCount)
+            // Onweer (THUNDER) shares shaderMode 4 with Onweersbui (THUNDERSTORM) for the dark
+            // storm cloud/fog look, but unlike Onweersbui it has no rain at all — gate the
+            // mode-4 rain layer on actual precipitation instead of letting the shared mode
+            // always draw it.
+            s.setFloatUniform("rainActive", if (precipitationIntensity > 0f) 1f else 0f)
             s.setFloatUniform("transitionAlpha", alpha.coerceIn(0f, 1f))
             // ACT-007: layers/bands at or beyond the active quality budget contribute
             // zero alpha, so they fall out of the cloud/fog blends below without any
@@ -1042,6 +1047,7 @@ internal class WallpaperWeatherEffectRenderer(
             uniform float windFactor;
             uniform float weatherPass;
             uniform float precipitationLayers;
+            uniform float rainActive;
             uniform float transitionAlpha;
             uniform float layerCount;
             uniform float layerScale[5];
@@ -1493,7 +1499,7 @@ internal class WallpaperWeatherEffectRenderer(
                 float glassShadow = 0.0;
                 float glassRefraction = 0.0;
 
-                if (weatherPass == 1.0 && (mode == 1.0 || mode == 4.0 || mode == 5.0)) {
+                if (weatherPass == 1.0 && (mode == 1.0 || mode == 5.0 || (mode == 4.0 && rainActive == 1.0))) {
                     // Natte sneeuw (sleet) stacks full-strength rain on top of full-strength
                     // snow, so the sharp rain streaks visually swamp the soft flakes and the
                     // mix just reads as plain rain. Scale rain down for mode 5 so the snow
