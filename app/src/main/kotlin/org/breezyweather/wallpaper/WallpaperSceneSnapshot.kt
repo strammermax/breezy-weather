@@ -10,6 +10,8 @@ package org.breezyweather.wallpaper
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Shader
@@ -48,7 +50,18 @@ internal object WallpaperSceneSnapshot {
         // background drawable, that pass is intentionally skipped here.
 
         if (photo != null) {
-            drawPhotoForeground(canvas, width, height, photo)
+            if (sceneState.usesGreyscalePhoto) {
+                val greyscalePaint = Paint().apply {
+                    colorFilter = ColorMatrixColorFilter(
+                        ColorMatrix().apply { setSaturation(1f - sceneState.photoGreyscaleAmount) },
+                    )
+                }
+                canvas.saveLayer(null, greyscalePaint)
+                drawPhotoForeground(canvas, width, height, photo)
+                canvas.restore()
+            } else {
+                drawPhotoForeground(canvas, width, height, photo)
+            }
         }
     }
 
@@ -98,13 +111,24 @@ internal object WallpaperSceneSnapshot {
                 SkyColors.applyFairSkyTint(colors, sceneState.daytime)
             else -> colors
         }
-        return SkyColors.applyOvercastTint(profiledColors, sceneState.cloudDarkness, sceneState.daytime)
+        val overcastColors = SkyColors.applyOvercastTint(
+            profiledColors,
+            sceneState.cloudDarkness,
+            sceneState.daytime,
+        )
+        return SkyColors.applyFogSkyTint(overcastColors, sceneState.fogIntensity, sceneState.daytime)
     }
 
     private fun drawCelestialBody(canvas: Canvas, width: Int, height: Int, sceneState: WallpaperSceneState) {
         val now = System.currentTimeMillis()
         val shortestSide = min(width, height).toFloat()
-        val sunAlpha = CelestialTiming.sunVisibility(now, sceneState.sunriseMillis, sceneState.sunsetMillis, sceneState.daytime)
+        val fogVisibility = 1f - (sceneState.fogIntensity * 0.72f).coerceIn(0f, 1f)
+        val sunAlpha = CelestialTiming.sunVisibility(
+            now,
+            sceneState.sunriseMillis,
+            sceneState.sunsetMillis,
+            sceneState.daytime,
+        ) * fogVisibility
         val moonAlpha = 1f - sunAlpha
         val positionTime = now / 60_000L * 60_000L
 

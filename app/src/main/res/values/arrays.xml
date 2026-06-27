@@ -200,12 +200,15 @@
         <item>@string/weather_kind_partly_cloudy</item>
         <item>@string/weather_kind_hollandse_lucht</item>
         <item>@string/weather_kind_cloudy</item>
+        <item>@string/weather_kind_rain_light</item>
         <item>@string/weather_kind_rain</item>
+        <item>@string/weather_kind_rain_heavy</item>
         <item>@string/weather_kind_snow</item>
         <item>@string/weather_kind_sleet</item>
         <item>@string/weather_kind_hail</item>
+        <item>@string/weather_kind_fog_light</item>
         <item>@string/weather_kind_fog</item>
-        <item>@string/weather_kind_haze</item>
+        <item>@string/weather_kind_fog_heavy</item>
         <item>@string/weather_kind_thunder</item>
         <item>@string/weather_kind_thunderstorm</item>
         <item>@string/weather_kind_wind</item>
@@ -217,12 +220,15 @@
         <item>PARTLY_CLOUDY</item>
         <item>HOLLANDSE_LUCHT</item>
         <item>CLOUDY</item>
+        <item>LIGHT_RAIN</item>
         <item>RAIN</item>
+        <item>HEAVY_RAIN</item>
         <item>SNOW</item>
         <item>SLEET</item>
         <item>HAIL</item>
+        <item>LIGHT_FOG</item>
         <item>FOG</item>
-        <item>HAZE</item>
+        <item>HEAVY_FOG</item>
         <item>THUNDER</item>
         <item>THUNDERSTORM</item>
         <item>WIND</item>

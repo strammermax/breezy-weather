@@ -42,14 +42,15 @@ internal object RotatingWeatherScenarios {
         ),
         RotatingWeatherScenario("Mostly cloudy", WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 75f),
         RotatingWeatherScenario("Overcast", WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 100f),
-        RotatingWeatherScenario("Motregen", WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 1f),
+        RotatingWeatherScenario("Lichte regen", WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 1f),
         RotatingWeatherScenario("Regen", WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 8f),
         RotatingWeatherScenario("Zware regen", WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 18f),
         RotatingWeatherScenario("Sneeuw", WeatherView.WEATHER_KIND_SNOW, precipitationMillimetersPerHour = 8f),
         RotatingWeatherScenario("Natte sneeuw", WeatherView.WEATHER_KIND_SLEET, precipitationMillimetersPerHour = 3f),
         RotatingWeatherScenario("Hagel", WeatherView.WEATHER_KIND_HAIL, precipitationMillimetersPerHour = 18f),
-        RotatingWeatherScenario("Nevel", WeatherView.WEATHER_KIND_HAZE, visibilityMeters = 8_000f),
-        RotatingWeatherScenario("Mist", WeatherView.WEATHER_KIND_FOG, visibilityMeters = 800f),
+        RotatingWeatherScenario("Lichte mist", WeatherView.WEATHER_KIND_HAZE, visibilityMeters = 8_000f),
+        RotatingWeatherScenario("Mist", WeatherView.WEATHER_KIND_FOG, visibilityMeters = 3_000f),
+        RotatingWeatherScenario("Zware mist", WeatherView.WEATHER_KIND_FOG, visibilityMeters = 800f),
         RotatingWeatherScenario("Onweer", WeatherView.WEATHER_KIND_THUNDER),
         RotatingWeatherScenario(
             "Onweersbui",
@@ -66,6 +67,5 @@ internal object RotatingWeatherScenarios {
         // Extra intensity variants, not separate rows in the sheet but kept for coverage.
         RotatingWeatherScenario("Lichte sneeuw", WeatherView.WEATHER_KIND_SNOW, precipitationMillimetersPerHour = 1f),
         RotatingWeatherScenario("Zware sneeuw", WeatherView.WEATHER_KIND_SNOW, precipitationMillimetersPerHour = 18f),
-        RotatingWeatherScenario("Lichte mist (nevelbank)", WeatherView.WEATHER_KIND_FOG, visibilityMeters = 3_000f),
     )
 }

@@ -136,16 +136,18 @@ internal object WallpaperSceneRenderer {
     }
 
     private fun drawSky(canvas: Canvas, state: WallpaperSceneState, width: Int, height: Int) {
-        val (top, bottom) = if (state.daytime) {
+        val baseColors = if (state.daytime) {
             val colors = if (state.condition.sky == WallpaperSkyCondition.FAIR) {
                 SkyColors.applyFairSkyTint(SkyColors.DAY, true)
             } else {
                 intArrayOf(Color.rgb(90, 150, 225), Color.rgb(195, 222, 255))
             }
-            colors[0] to colors[1]
+            colors
         } else {
-            Color.rgb(8, 14, 38) to Color.rgb(28, 34, 68)
+            intArrayOf(Color.rgb(8, 14, 38), Color.rgb(28, 34, 68))
         }
+        val colors = SkyColors.applyFogSkyTint(baseColors, state.fogIntensity, state.daytime)
+        val (top, bottom) = colors[0] to colors[1]
         val paint = Paint().apply {
             shader = LinearGradient(0f, 0f, 0f, height.toFloat(), top, bottom, Shader.TileMode.CLAMP)
         }

@@ -29,12 +29,16 @@ import androidx.core.location.LocationRequestCompat
 import io.reactivex.rxjava3.core.Observable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.rx3.rxObservable
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 import org.breezyweather.common.exceptions.LocationAccessOffException
 import org.breezyweather.common.exceptions.LocationException
+import org.breezyweather.common.extensions.hasPermission
 import org.breezyweather.common.source.LocationPositionWrapper
 import org.breezyweather.common.source.LocationSource
 import org.breezyweather.common.utils.helpers.LogHelper
 import javax.inject.Inject
+import kotlin.coroutines.resume
 import kotlin.time.Duration.Companion.seconds
 
 @SuppressLint("MissingPermission")
@@ -109,6 +113,63 @@ class AndroidLocationService @Inject constructor() : LocationSource {
         locationManager.removeUpdates(listener)
     }
 
+    /**
+     * One-shot, network/WiFi-based location fix — never the GPS chip or [LocationManager.FUSED_PROVIDER]
+     * (which may use GPS internally). Used by features that need city-level accuracy frequently
+     * (e.g. the live wallpaper photo rotation) where draining the GPS chip would be wasteful.
+     *
+     * Requires [Manifest.permission.ACCESS_BACKGROUND_LOCATION] (Android 10+) when called from a
+     * background context such as a [androidx.work.Worker]; returns null rather than throwing when
+     * permissions are missing, disabled, or no fix could be obtained in time, so callers can fall
+     * back to their last-known location.
+     */
+    suspend fun requestNetworkLocation(context: Context): LocationPositionWrapper? {
+        if (!hasBackgroundCapableLocationPermission(context)) return null
+
+        if (!this::locationManager.isInitialized) {
+            locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        }
+        if (!LocationManagerCompat.isLocationEnabled(locationManager)) return null
+        if (!locationManager.allProviders.contains(LocationManager.NETWORK_PROVIDER)) {
+            return getLastKnownNetworkLocation(locationManager)
+        }
+
+        val fresh = withTimeoutOrNull(NETWORK_FIX_TIMEOUT_MILLIS) {
+            suspendCancellableCoroutine { continuation ->
+                lateinit var listener: LocationListenerCompat
+                listener = LocationListenerCompat { location ->
+                    locationManager.removeUpdates(listener)
+                    if (continuation.isActive) {
+                        continuation.resume(LocationPositionWrapper(location.latitude, location.longitude))
+                    }
+                }
+                continuation.invokeOnCancellation { locationManager.removeUpdates(listener) }
+                LocationManagerCompat.requestLocationUpdates(
+                    locationManager,
+                    LocationManager.NETWORK_PROVIDER,
+                    LocationRequestCompat.Builder(NETWORK_FIX_TIMEOUT_MILLIS)
+                        .setQuality(LocationRequestCompat.QUALITY_LOW_POWER)
+                        .build(),
+                    listener,
+                    Looper.getMainLooper()
+                )
+            }
+        }
+        return fresh ?: getLastKnownNetworkLocation(locationManager)
+    }
+
+    /** True when location is grantable from a background worker, i.e. coarse/fine *and* (on Q+) background. */
+    private fun hasBackgroundCapableLocationPermission(context: Context): Boolean {
+        val foreground = context.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION) ||
+            context.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+        if (!foreground) return false
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            context.hasPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        } else {
+            true
+        }
+    }
+
     override val permissions: Array<String>
         get() = arrayOf(
             Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -117,6 +178,7 @@ class AndroidLocationService @Inject constructor() : LocationSource {
 
     companion object {
         private val TIMEOUT_MILLIS = 15.seconds.inWholeMilliseconds
+        private val NETWORK_FIX_TIMEOUT_MILLIS = 10.seconds.inWholeMilliseconds
 
         private fun getLastKnownLocation(
             locationManager: LocationManager,
@@ -130,6 +192,13 @@ class AndroidLocationService @Inject constructor() : LocationSource {
                 ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
                 ?: locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                 ?: locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+        }
+
+        /** Last-known fix from network/passive providers only — deliberately skips GPS/FUSED. */
+        private fun getLastKnownNetworkLocation(locationManager: LocationManager): LocationPositionWrapper? {
+            val location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                ?: locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+            return location?.let { LocationPositionWrapper(it.latitude, it.longitude) }
         }
     }
 }

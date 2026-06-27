@@ -61,6 +61,20 @@ class WallpaperImageStore(context: Context) {
         }
 
     /**
+     * How often [WallpaperPhotoRefreshWorker] rotates the active wallpaper photo per location
+     * (picking another cached photo, or downloading a fresh batch when the cache is empty).
+     */
+    var photoRefreshIntervalMinutes: Int
+        get() = config.getInt(KEY_REFRESH_INTERVAL_MINUTES, DEFAULT_REFRESH_INTERVAL_MINUTES)
+            .coerceIn(MIN_REFRESH_INTERVAL_MINUTES, MAX_REFRESH_INTERVAL_MINUTES)
+        set(value) {
+            config.edit().putInt(
+                KEY_REFRESH_INTERVAL_MINUTES,
+                value.coerceIn(MIN_REFRESH_INTERVAL_MINUTES, MAX_REFRESH_INTERVAL_MINUTES)
+            ).apply()
+        }
+
+    /**
      * Base URL from `local.properties`, with the public service as fallback.
      */
     val removeSkyBaseUrl: String
@@ -207,6 +221,7 @@ class WallpaperImageStore(context: Context) {
         private const val KEY_RECENT_URLS = "recent_urls"
         private const val KEY_LOCATION_DATA = "location_data"
         private const val KEY_PHOTO_REFRESHED_AT = "photo_refreshed_at"
+        private const val KEY_REFRESH_INTERVAL_MINUTES = "photo_refresh_interval_minutes"
 
         /** File name used for the cached background bitmap inside the app files dir. */
         const val CACHE_FILE_NAME = "wallpaper_location_photo.jpg"
@@ -217,5 +232,12 @@ class WallpaperImageStore(context: Context) {
         const val DEFAULT_MAX_PHOTOS_PER_LOCATION = 12
         const val MIN_PHOTOS_PER_LOCATION = 4
         const val MAX_PHOTOS_PER_LOCATION = 50
+        const val DEFAULT_REFRESH_INTERVAL_MINUTES = 30
+        const val MIN_REFRESH_INTERVAL_MINUTES = 15
+        const val MAX_REFRESH_INTERVAL_MINUTES = 180
+        const val REFRESH_INTERVAL_STEP_MINUTES = 15
+
+        /** Fixed retry delay used when a rotation finds nothing in cache or on the server. */
+        const val RETRY_DELAY_MINUTES_ON_EMPTY = 10L
     }
 }

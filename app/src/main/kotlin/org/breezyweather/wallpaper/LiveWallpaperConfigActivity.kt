@@ -16,16 +16,16 @@
 
 package org.breezyweather.wallpaper
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -39,7 +39,6 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -58,7 +57,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -68,10 +66,15 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.toSize
+import androidx.core.app.ActivityCompat
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionStatus
+import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.delay
 import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.common.extensions.currentLocale
+import org.breezyweather.common.extensions.openApplicationDetailsSettings
 import org.breezyweather.ui.common.widgets.Material3Scaffold
 import org.breezyweather.ui.common.widgets.insets.FitStatusBarTopAppBar
 import org.breezyweather.ui.settings.preference.composables.SwitchPreferenceView
@@ -84,7 +87,6 @@ import org.breezyweather.wallpaper.photo.WallpaperPhotoRefreshWorker
 import org.breezyweather.wallpaper.photo.WallpaperRepository
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
@@ -140,6 +142,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
 
     private lateinit var wallpaperImageStore: WallpaperImageStore
     private lateinit var photoBackgroundEnabledValue: MutableState<Boolean>
+    private lateinit var photoRefreshIntervalMinutesValue: MutableState<Float>
 
     /** ACT-011: when the current location's weather/photo were last refreshed, or null if unknown. */
     private lateinit var weatherRefreshedAtValue: MutableState<Long?>
@@ -169,6 +172,8 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
 
         wallpaperImageStore = WallpaperImageStore(this)
         photoBackgroundEnabledValue = mutableStateOf(wallpaperImageStore.photoBackgroundEnabled)
+        photoRefreshIntervalMinutesValue =
+            mutableFloatStateOf(wallpaperImageStore.photoRefreshIntervalMinutes.toFloat())
 
         previewBitmapValue = mutableStateOf(null)
         refreshBusyValue = mutableStateOf(false)
@@ -313,7 +318,8 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         return if (isStale) "$age (${getString(R.string.live_wallpaper_data_stale)})" else age
     }
 
-    private fun saveAndFinish() {
+    /** Persists weather kind/day-night/animations/parallax/season-grading immediately on change. */
+    private fun persistCoreSettings() {
         LiveWallpaperConfigManager.update(
             this,
             weatherKindValueNow.value,
@@ -323,20 +329,33 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
             seasonGradingEnabled = seasonGradingEnabledValue.value,
             seasonGradingStrength = seasonGradingStrengthValue.value,
         )
-        wallpaperImageStore.photoBackgroundEnabled = photoBackgroundEnabledValue.value
-        wallpaperImageStore.photoCacheLimitMb = photoCacheLimitMbValue.value.roundToInt()
-        wallpaperImageStore.maxCachedPhotosPerLocation = maxPhotosPerLocationValue.value.roundToInt()
-        if (photoBackgroundEnabledValue.value) {
+    }
+
+    private fun persistPhotoBackgroundEnabled(enabled: Boolean) {
+        wallpaperImageStore.photoBackgroundEnabled = enabled
+        if (enabled) {
             WallpaperPhotoRefreshWorker.setupTask(this)
         } else {
             WallpaperPhotoRefreshWorker.cancel(this)
         }
-        finish()
     }
 
+    private fun persistPhotoRefreshIntervalMinutes(minutes: Int) {
+        wallpaperImageStore.photoRefreshIntervalMinutes = minutes
+        if (photoBackgroundEnabledValue.value) {
+            WallpaperPhotoRefreshWorker.setupTask(this)
+        }
+    }
+
+    @OptIn(ExperimentalPermissionsApi::class)
     @Composable
     private fun ContentView() {
         val dialogOpenState = remember { mutableStateOf(false) }
+        val backgroundLocationPermissionState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            rememberPermissionState(permission = Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        } else {
+            null
+        }
         Material3Scaffold(
             topBar = {
                 FitStatusBarTopAppBar(
@@ -354,7 +373,8 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         currentVal = weatherKindValueNow,
                         names = weatherKinds,
                         values = weatherKindValues,
-                        titleId = R.string.widget_live_wallpaper_weather_kind
+                        titleId = R.string.widget_live_wallpaper_weather_kind,
+                        onSelected = { persistCoreSettings() },
                     )
                 }
                 item {
@@ -362,7 +382,8 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         currentVal = dayNightTypeValueNow,
                         names = dayNightTypeKinds,
                         values = dayNightTypeValues,
-                        titleId = R.string.widget_live_wallpaper_day_night_type
+                        titleId = R.string.widget_live_wallpaper_day_night_type,
+                        onSelected = { persistCoreSettings() },
                     )
                 }
                 item {
@@ -383,6 +404,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             dialogOpenState.value = true
                         } else {
                             animationsEnabledValue.value = false
+                            persistCoreSettings()
                         }
                     }
                 }
@@ -397,6 +419,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         card = false
                     ) { newValue ->
                         parallaxEnabledValue.value = newValue
+                        persistCoreSettings()
                     }
                 }
                 item {
@@ -411,6 +434,75 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         card = false
                     ) { newValue ->
                         photoBackgroundEnabledValue.value = newValue
+                        persistPhotoBackgroundEnabled(newValue)
+                    }
+                }
+                if (photoBackgroundEnabledValue.value) {
+                    item {
+                        Column(
+                            modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
+                        ) {
+                            Text(
+                                text = "Achtergrond wisselt elke " +
+                                    "${photoRefreshIntervalMinutesValue.value.roundToInt()} min",
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Text(
+                                text = "Kiest een andere (gecachte) foto van de huidige locatie, of haalt " +
+                                    "nieuwe op als de cache leeg is.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            Slider(
+                                value = photoRefreshIntervalMinutesValue.value,
+                                onValueChange = { value ->
+                                    photoRefreshIntervalMinutesValue.value =
+                                        ((value / WallpaperImageStore.REFRESH_INTERVAL_STEP_MINUTES).roundToInt() *
+                                            WallpaperImageStore.REFRESH_INTERVAL_STEP_MINUTES).toFloat()
+                                },
+                                valueRange = WallpaperImageStore.MIN_REFRESH_INTERVAL_MINUTES.toFloat()..
+                                    WallpaperImageStore.MAX_REFRESH_INTERVAL_MINUTES.toFloat(),
+                                steps = (WallpaperImageStore.MAX_REFRESH_INTERVAL_MINUTES -
+                                    WallpaperImageStore.MIN_REFRESH_INTERVAL_MINUTES) /
+                                    WallpaperImageStore.REFRESH_INTERVAL_STEP_MINUTES - 1,
+                                onValueChangeFinished = {
+                                    persistPhotoRefreshIntervalMinutes(
+                                        photoRefreshIntervalMinutesValue.value.roundToInt()
+                                    )
+                                },
+                            )
+                            if (backgroundLocationPermissionState != null &&
+                                backgroundLocationPermissionState.status != PermissionStatus.Granted
+                            ) {
+                                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.small_margin)))
+                                Text(
+                                    text = "Zet \"Locatie altijd toestaan\" aan zodat de achtergrond ook " +
+                                        "verandert als je verhuist terwijl de app niet open staat. Zonder " +
+                                        "deze toestemming gebruikt de wisseling de laatst bekende locatie.",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                                OutlinedButton(
+                                    onClick = {
+                                        if (
+                                            ActivityCompat.shouldShowRequestPermissionRationale(
+                                                this@LiveWallpaperConfigActivity,
+                                                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                                            )
+                                        ) {
+                                            backgroundLocationPermissionState.launchPermissionRequest()
+                                        } else {
+                                            openApplicationDetailsSettings()
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 6.dp),
+                                ) {
+                                    Text("Locatietoegang instellen")
+                                }
+                            }
+                        }
                     }
                 }
                 item {
@@ -438,6 +530,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         card = false
                     ) { newValue ->
                         seasonGradingEnabledValue.value = newValue
+                        persistCoreSettings()
                     }
                 }
                 if (seasonGradingEnabledValue.value) {
@@ -454,6 +547,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                 value = seasonGradingStrengthValue.value,
                                 onValueChange = { seasonGradingStrengthValue.value = it },
                                 valueRange = 0f..1f,
+                                onValueChangeFinished = { persistCoreSettings() },
                             )
                         }
                     }
@@ -610,39 +704,19 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             }
                         }
                         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
+                        Button(
+                            onClick = { runRefresh() },
+                            enabled = !refreshBusyValue.value
                         ) {
-                            Button(
-                                onClick = { runRefresh() },
-                                enabled = !refreshBusyValue.value
-                            ) {
-                                if (refreshBusyValue.value) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(18.dp),
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                        strokeWidth = 2.dp
-                                    )
-                                    Spacer(modifier = Modifier.width(dimensionResource(R.dimen.small_margin)))
-                                }
-                                Text(stringResource(R.string.widget_live_wallpaper_refresh_now))
-                            }
-                            Button(
-                                onClick = { saveAndFinish() },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary
-                                )
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.action_save),
+                            if (refreshBusyValue.value) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
                                     color = MaterialTheme.colorScheme.onPrimary,
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.titleMedium
+                                    strokeWidth = 2.dp
                                 )
+                                Spacer(modifier = Modifier.width(dimensionResource(R.dimen.small_margin)))
                             }
+                            Text(stringResource(R.string.widget_live_wallpaper_refresh_now))
                         }
                         if (refreshStatusValue.value.isNotBlank()) {
                             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.small_margin)))
@@ -680,6 +754,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         TextButton(
                             onClick = {
                                 animationsEnabledValue.value = true
+                                persistCoreSettings()
                                 dialogOpenState.value = false
                             },
                             enabled = timeLeft == 0
@@ -733,6 +808,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         names: Array<String>,
         values: Array<String>,
         @StringRes titleId: Int,
+        onSelected: () -> Unit = {},
     ) {
         val expanded = remember { mutableStateOf(false) }
         val textFieldSize = remember { mutableStateOf(Size.Zero) }
@@ -801,6 +877,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         onClick = {
                             currentVal.value = values[index]
                             expanded.value = false
+                            onSelected()
                         }
                     )
                 }

@@ -19,9 +19,16 @@ package org.breezyweather.radar
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
+import android.view.ViewGroup
+import android.webkit.GeolocationPermissions
+import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,6 +47,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -55,12 +63,22 @@ import breezyweather.data.location.LocationRepository
 import breezyweather.data.weather.WeatherRepository
 import breezyweather.domain.location.model.Location
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
+import org.breezyweather.common.extensions.isBackgroundAnimationEnabled
+import org.breezyweather.domain.location.model.isDaylight
 import org.breezyweather.ui.common.widgets.Material3Scaffold
 import org.breezyweather.ui.common.widgets.insets.FitStatusBarTopAppBar
 import org.breezyweather.ui.theme.compose.BreezyWeatherTheme
+import org.breezyweather.ui.theme.weatherView.WeatherViewController
+import org.breezyweather.wallpaper.CelestialTiming
+import org.breezyweather.wallpaper.WallpaperEffectView
+import org.breezyweather.wallpaper.WallpaperSceneSnapshot
+import org.breezyweather.wallpaper.WallpaperSceneStateFactory
+import org.breezyweather.wallpaper.photo.WallpaperRepository
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
@@ -78,6 +96,11 @@ class RadarActivity : BreezyActivity() {
 
     @Inject
     lateinit var weatherRepository: WeatherRepository
+
+    @Inject
+    lateinit var wallpaperRepository: WallpaperRepository
+
+    private lateinit var effectView: WallpaperEffectView
 
     private var loading by mutableStateOf(true)
     private var placeName by mutableStateOf<String?>(null)
@@ -98,7 +121,29 @@ class RadarActivity : BreezyActivity() {
                 ContentView()
             }
         }
+
+        // Animated weather effects (clouds, rain, snow, fog …) via the same
+        // WallpaperWeatherEffectRenderer used by the live wallpaper and the details
+        // screen, so this screen doesn't look static compared to the rest of the app.
+        effectView = WallpaperEffectView(this)
+        val contentFrame = window.decorView.findViewById<FrameLayout>(android.R.id.content)
+        contentFrame.addView(
+            effectView,
+            0,
+            FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        )
+
         loadData()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::effectView.isInitialized) effectView.setDrawable(isBackgroundAnimationEnabled)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (::effectView.isInitialized) effectView.setDrawable(false)
     }
 
     private fun loadData() {
@@ -121,12 +166,18 @@ class RadarActivity : BreezyActivity() {
             hourlyTrend = try {
                 val weather = weatherRepository.getWeatherByLocationId(
                     location.formattedId,
-                    withDaily = false,
+                    withDaily = true,
                     withHourly = true,
                     withMinutely = false,
                     withAlerts = false,
                     withNormals = false
                 )
+                val locationWithWeather = location.copy(weather = weather)
+                val weatherKind = WeatherViewController.getWeatherKind(locationWithWeather)
+                val daylight = if (locationWithWeather.isDaylight) 1f else 0f
+                effectView.setWeather(weatherKind, daylight)
+                effectView.setDrawable(isBackgroundAnimationEnabled)
+                renderPhotoBackground(locationWithWeather, weatherKind, daylight)
                 val fmt = SimpleDateFormat("HH:mm", Locale.getDefault())
                     .apply { timeZone = location.timeZone }
                 weather?.nextHourlyForecast?.take(24)?.map { h ->
@@ -140,6 +191,43 @@ class RadarActivity : BreezyActivity() {
             }
             loading = false
         }
+    }
+
+    /**
+     * Renders the same static sky+photo snapshot as the home screen / details screen
+     * (ACT-013/ACT-014) as this screen's window background, behind the animated
+     * [effectView] layer. Without this, the screen only shows a flat sky gradient
+     * instead of the cached location photo.
+     */
+    private suspend fun renderPhotoBackground(location: Location, weatherKind: Int, daylight: Float) {
+        val width = resources.displayMetrics.widthPixels
+        val height = resources.displayMetrics.heightPixels
+        if (width <= 0 || height <= 0) return
+
+        val wind = location.weather?.current?.wind
+        val now = System.currentTimeMillis()
+        val sunInterval = CelestialTiming.closestAstroInterval(CelestialTiming.sunIntervals(location, now), now)
+            ?: CelestialTiming.approximateSunInterval(location, now)
+        val moonInterval = CelestialTiming.closestAstroInterval(CelestialTiming.moonIntervals(location, now), now)
+
+        val sceneState = WallpaperSceneStateFactory.create(
+            weatherKind = weatherKind,
+            daylight = daylight,
+            windSpeedMetersPerSecond = wind?.speed?.value?.toFloat() ?: 0f,
+            windGustMetersPerSecond = wind?.gusts?.value?.toFloat() ?: 0f,
+            windDirectionDegrees = wind?.degree?.toFloat(),
+            sunriseMillis = sunInterval?.first,
+            sunsetMillis = sunInterval?.second,
+            moonriseMillis = moonInterval?.first,
+            moonsetMillis = moonInterval?.second,
+        )
+        val photo = withContext(Dispatchers.IO) { wallpaperRepository.loadCachedBitmap() }
+        val bitmap = withContext(Dispatchers.Default) {
+            Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
+                WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState)
+            }
+        }
+        window.setBackgroundDrawable(BitmapDrawable(resources, bitmap))
     }
 
     @Composable
@@ -187,11 +275,20 @@ class RadarActivity : BreezyActivity() {
                     return@Column
                 }
 
+                // The Meteoblue widget renders its map via WebGL/vector tiles, which appears to
+                // fight the animated background's hardware layer for the window's surface and
+                // blanks the whole screen. Pausing that layer while this tab is visible avoids it.
+                LaunchedEffect(radarSource) {
+                    if (::effectView.isInitialized) {
+                        effectView.setDrawable(radarSource != "meteoblue" && isBackgroundAnimationEnabled)
+                    }
+                }
+
                 // Source selector
                 val radarTabs = listOf(
                     "rainviewer" to R.string.radar_source_world,
                     "buienradar" to R.string.radar_source_nl,
-                    "windy" to R.string.radar_source_wind
+                    "meteoblue" to R.string.radar_source_meteoblue
                 )
                 TabRow(
                     selectedTabIndex = radarTabs.indexOfFirst { it.first == radarSource }.coerceAtLeast(0),
@@ -222,19 +319,8 @@ class RadarActivity : BreezyActivity() {
                             )
                         }
                     }
-                    "windy" -> {
-                        val lat = latitude
-                        val lon = longitude
-                        if (lat != null && lon != null) {
-                            WindyMap(lat, lon, modifier = Modifier.fillMaxWidth().height(480.dp))
-                        } else {
-                            Text(
-                                text = stringResource(R.string.radar_frames_unavailable),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
-                        }
+                    "meteoblue" -> {
+                        MeteoblueMap(modifier = Modifier.fillMaxWidth().height(480.dp))
                     }
                     else -> BuienradarGadgetMap()
                 }
@@ -264,7 +350,7 @@ class RadarActivity : BreezyActivity() {
                     text = stringResource(
                         when (radarSource) {
                             "buienradar" -> R.string.radar_attribution_buienradar
-                            "windy" -> R.string.radar_attribution_windy
+                            "meteoblue" -> R.string.radar_attribution_meteoblue
                             else -> R.string.radar_attribution
                         }
                     ),
@@ -303,18 +389,22 @@ class RadarActivity : BreezyActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     @Composable
-    private fun WindyMap(latitude: Double, longitude: Double, modifier: Modifier = Modifier) {
-        // Windy's official embeddable widget (no API key required for the basic embed).
-        // overlay=wind shows wind streamlines; pressure=true adds the isobar/pressure layer
-        // matching the look of generic "wind & pressure" radar sites.
-        val url = "https://embed.windy.com/embed2.html" +
-            "?lat=${"%.4f".format(Locale.US, latitude)}" +
-            "&lon=${"%.4f".format(Locale.US, longitude)}" +
-            "&detailLat=${"%.4f".format(Locale.US, latitude)}" +
-            "&detailLon=${"%.4f".format(Locale.US, longitude)}" +
-            "&zoom=6&level=surface&overlay=wind&product=ecmwf&menu=&message=true" +
-            "&marker=true&calendar=now&pressure=true&type=map&location=coordinates" +
-            "&detail=&metricWind=default&metricTemp=default&radarRange=-1"
+    private fun MeteoblueMap(modifier: Modifier = Modifier) {
+        // Meteoblue's official embeddable map widget (user's own embed/sig credentials from
+        // meteoblue.com/.../weer/widget/setupmap/...). Loaded as the WebView's own top-level page
+        // (not nested in an <iframe> wrapper) the same way RadarMap/BuienradarGadgetMap load their
+        // provider directly — wrapping it in an extra iframe caused the WebView to size itself to
+        // nearly the full screen instead of the Compose-constrained height.
+        // geoloc=detect makes the widget center on the browser's geolocation rather than fixed
+        // lat/lon query params, so the WebView needs geolocation permission granted — the app
+        // already requires location access for the wallpaper/radar location features, so we
+        // auto-grant it here rather than re-prompting.
+        val url = "https://www.meteoblue.com/nl/weer/kaarten/widget/" +
+            "?windAnimation=1&gust=1&satellite=1&cloudsAndPrecipitation=1&temperature=1" +
+            "&sunshine=1&extremeForecastIndex=1&geoloc=detect&tempunit=C&lengthunit=metric" +
+            "&windunit=km%2Fh&zoom=9&autowidth=auto&user_key=0a5701c1a618c300" +
+            "&embed_key=b96976639e93ec69" +
+            "&sig=f1a56965f0827f57cd89becfe1203c2d8490581410f23cd74a415ac95d423cbf"
         AndroidView(
             modifier = modifier,
             factory = { ctx ->
@@ -322,6 +412,14 @@ class RadarActivity : BreezyActivity() {
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
                     webViewClient = WebViewClient()
+                    webChromeClient = object : WebChromeClient() {
+                        override fun onGeolocationPermissionsShowPrompt(
+                            origin: String?,
+                            callback: GeolocationPermissions.Callback?,
+                        ) {
+                            callback?.invoke(origin, true, false)
+                        }
+                    }
                     loadUrl(url)
                 }
             }

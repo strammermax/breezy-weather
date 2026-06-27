@@ -3,6 +3,8 @@
     <!-- app. -->
     <string name="app_name">Weer</string>
     <string name="weather_kind_hollandse_lucht">Holl. wolken</string>
+    <string name="weather_kind_fog_light">Lichte mist</string>
+    <string name="weather_kind_fog_heavy">Zware mist</string>
     <!-- keyword. -->
     <string name="location_current">Huidige locatie</string>
     <string name="daily_today_short">Vand.</string>

@@ -183,6 +183,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         // automatically once the surface has a real size and a cached photo exists.
         private var mForegroundKey: String? = null
         private var mForegroundNightTint = Float.NaN
+        private var mForegroundGreyscaleAmount = 0f
         private var mCurrentLocationData: Location? = null
         private var mLoggedForegroundMissing = false
 
@@ -247,6 +248,10 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mRotatingWeatherIndex = 0
         /** Cloud cover override for fixed (non-rotating) presets like "Holl. wolken". */
         private var mForcedCloudCoverPercent: Float? = null
+        /** Intensity overrides for the fixed rain presets in the preview selector. */
+        private var mForcedPrecipitationMillimetersPerHour: Float? = null
+        /** Visibility overrides for the fixed fog presets in the preview selector. */
+        private var mForcedVisibilityMeters: Float? = null
         private var mForcedRichSky = false
         private var hasDrawn = false
         private var mDeviceOrientation: DeviceOrientation = DeviceOrientation.TOP
@@ -550,15 +555,15 @@ class MaterialLiveWallpaperService : WallpaperService() {
             // ACT-XXX: the current hour's forecasted precipitation amount (mm) drives how
             // light/heavy rain, snow, sleet, hail and thunderstorms render, on top of the
             // base profile for the weather family.
-            val currentHourPrecipitationMillimeters = rotatingScenario?.precipitationMillimetersPerHour ?: if (
-                mAutomaticWeather
-            ) {
-                mCurrentLocationData?.weather?.hourlyForecast
-                    ?.firstOrNull { it.date.time >= now - 1.hours.inWholeMilliseconds }
-                    ?.precipitation?.total?.inMillimeters?.toFloat()
-            } else {
-                null
-            }
+            val currentHourPrecipitationMillimeters = rotatingScenario?.precipitationMillimetersPerHour
+                ?: mForcedPrecipitationMillimetersPerHour
+                ?: if (mAutomaticWeather) {
+                    mCurrentLocationData?.weather?.hourlyForecast
+                        ?.firstOrNull { it.date.time >= now - 1.hours.inWholeMilliseconds }
+                        ?.precipitation?.total?.inMillimeters?.toFloat()
+                } else {
+                    null
+                }
             mSceneState = WallpaperSceneStateFactory.create(
                 weatherKind = mWeatherKind,
                 daylight = if (mAutomaticDayNight) {
@@ -576,6 +581,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     ?: mForcedCloudCoverPercent
                     ?: if (mAutomaticWeather) current?.cloudCover?.inPercent?.toFloat() else null,
                 visibilityMeters = rotatingScenario?.visibilityMeters
+                    ?: mForcedVisibilityMeters
                     ?: if (mAutomaticWeather) current?.visibility?.inMeters?.toFloat() else null,
                 sunriseMillis = mSunriseMillis,
                 sunsetMillis = mSunsetMillis,
@@ -875,6 +881,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mForeground = buildPhotoForeground()
             mForegroundKey = if (mForeground != null) key else null
             mForegroundNightTint = Float.NaN
+            mForegroundGreyscaleAmount = 0f
             updateForegroundNightTint()
             updateLayerBounds()
             lwwLog { "foreground rebuilt success=${mForeground != null} key=$key" }
@@ -1015,9 +1022,14 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private fun updateForegroundNightTint() {
             val foreground = mForeground ?: return
             val dimming = mSceneState.photoDimming.coerceIn(0f, 1f)
-            if (abs(dimming - mForegroundNightTint) < 0.001f) return
+            val greyscaleAmount = mSceneState.photoGreyscaleAmount
+            if (abs(dimming - mForegroundNightTint) < 0.001f &&
+                abs(greyscaleAmount - mForegroundGreyscaleAmount) < 0.001f
+            ) return
 
-            foreground.colorFilter = if (dimming <= 0.001f) {
+            foreground.colorFilter = if (greyscaleAmount > 0f) {
+                ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(1f - greyscaleAmount) })
+            } else if (dimming <= 0.001f) {
                 null
             } else {
                 ColorMatrixColorFilter(
@@ -1032,6 +1044,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 )
             }
             mForegroundNightTint = dimming
+            mForegroundGreyscaleAmount = greyscaleAmount
         }
 
         private fun positionPhotoAtBottom(source: Bitmap, targetWidth: Int, targetHeight: Int): Bitmap =
@@ -1107,7 +1120,12 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     SkyColors.applyFairSkyTint(colors, mDaytime)
                 else -> colors
             }
-            return SkyColors.applyOvercastTint(profiledSkyColors, mSceneState.cloudDarkness, mDaytime)
+            val overcastColors = SkyColors.applyOvercastTint(
+                profiledSkyColors,
+                mSceneState.cloudDarkness,
+                mDaytime,
+            )
+            return SkyColors.applyFogSkyTint(overcastColors, mSceneState.fogIntensity, mDaytime)
         }
 
         private fun fraction(value: Long, start: Long, end: Long): Float =
@@ -1122,7 +1140,10 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val shortestSide = min(width, height).toFloat()
             // Heavy cloud cover should mostly hide the sun/moon disc rather than show it
             // shining through a near-opaque overcast/storm ceiling.
-            val celestialOcclusion = (mSceneState.cloudDensity * mSceneState.cloudDarkness).coerceIn(0f, 1f)
+            val celestialOcclusion = max(
+                mSceneState.cloudDensity * mSceneState.cloudDarkness,
+                max(mSceneState.fogIntensity * 0.72f, mSceneState.hazeIntensity * 0.35f),
+            ).coerceIn(0f, 1f)
             val celestialVisibility = 1f - celestialOcclusion
             val sunAlpha = CelestialTiming.sunVisibility(
                 now,
@@ -1413,9 +1434,24 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 "auto" -> location?.weather?.current?.weatherCode
                 "rotating" -> null
                 "HOLLANDSE_LUCHT" -> WeatherCode.PARTLY_CLOUDY
+                "LIGHT_RAIN", "HEAVY_RAIN" -> WeatherCode.RAIN
+                "LIGHT_FOG" -> WeatherCode.HAZE
+                "HEAVY_FOG" -> WeatherCode.FOG
                 else -> WeatherCode.getInstance(configManager.weatherKind)
             }
             mForcedCloudCoverPercent = if (configManager.weatherKind == "HOLLANDSE_LUCHT") 70f else null
+            mForcedPrecipitationMillimetersPerHour = when (configManager.weatherKind) {
+                "LIGHT_RAIN" -> 1f
+                "RAIN" -> 8f
+                "HEAVY_RAIN" -> 18f
+                else -> null
+            }
+            mForcedVisibilityMeters = when (configManager.weatherKind) {
+                "LIGHT_FOG" -> 8_000f
+                "FOG" -> 3_000f
+                "HEAVY_FOG" -> 800f
+                else -> null
+            }
             mForcedRichSky = configManager.weatherKind == "HOLLANDSE_LUCHT"
             val daytime = when (configManager.dayNightType) {
                 "day" -> true

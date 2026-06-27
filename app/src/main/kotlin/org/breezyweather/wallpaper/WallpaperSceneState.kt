@@ -132,6 +132,19 @@ data class WallpaperSceneState(
 ) {
     val daytime: Boolean
         get() = daylight >= 0.5f
+
+    /** Fog desaturates the source photo before the foreground fog veil is drawn. */
+    val photoGreyscaleAmount: Float
+        get() = when {
+            weatherFamily == WallpaperWeatherFamily.HAZE -> 0.22f
+            weatherFamily != WallpaperWeatherFamily.FOG -> 0f
+            fogIntensity >= 0.95f -> 1f
+            fogIntensity >= 0.60f -> 0.85f
+            else -> 0f
+        }
+
+    val usesGreyscalePhoto: Boolean
+        get() = photoGreyscaleAmount > 0f
 }
 
 object WallpaperSceneStateFactory {
@@ -173,6 +186,15 @@ object WallpaperSceneStateFactory {
             windGustMetersPerSecond = safeWindGust,
         )
         val profile = effectProfile(condition)
+
+        // Fog weather codes cover a broad visibility range. Preserve the condition
+        // category, but let measured/forced visibility make light, normal and dense
+        // fog visibly distinct in the preview and in automatic weather mode.
+        val adjustedFogIntensity = if (family == WallpaperWeatherFamily.FOG) {
+            fogIntensityForVisibility(visibilityMeters, profile.fogIntensity)
+        } else {
+            profile.fogIntensity
+        }
 
         // ACT-XXX: scale the precipitation-driven parts of the profile by how light or
         // heavy the current hour's forecast actually is, so a drizzle and a downpour of
@@ -231,7 +253,7 @@ object WallpaperSceneStateFactory {
             cloudDensity = adjustedCloudDensity,
             cloudDarkness = adjustedCloudDarkness,
             precipitationIntensity = adjustedPrecipitationIntensity,
-            fogIntensity = profile.fogIntensity,
+            fogIntensity = adjustedFogIntensity,
             hazeIntensity = profile.hazeIntensity,
             thunderIntensity = profile.thunderIntensity,
             glassRainIntensity = adjustedGlassRainIntensity,
@@ -313,9 +335,8 @@ object WallpaperSceneStateFactory {
             // render it as Fair (mostly blue with a few loose cumulus clouds). Providers
             // that do supply a higher percentage can still promote it below.
             WallpaperWeatherFamily.PARTLY_CLOUDY -> WallpaperSkyCondition.FAIR
-            WallpaperWeatherFamily.HAZE,
-            WallpaperWeatherFamily.WIND,
-            -> WallpaperSkyCondition.PARTLY_CLOUDY
+            WallpaperWeatherFamily.HAZE -> WallpaperSkyCondition.FAIR
+            WallpaperWeatherFamily.WIND -> WallpaperSkyCondition.PARTLY_CLOUDY
             WallpaperWeatherFamily.CLOUDY,
             WallpaperWeatherFamily.FOG,
             -> WallpaperSkyCondition.MOSTLY_CLOUDY
@@ -471,6 +492,16 @@ object WallpaperSceneStateFactory {
             else -> WallpaperVisibilityCondition.CLEAR
         }
         return maxOf(familyVisibility, measured ?: familyVisibility)
+    }
+
+    private fun fogIntensityForVisibility(visibilityMeters: Float?, fallback: Float): Float {
+        val visibility = visibilityMeters?.takeIf { it.isFinite() && it >= 0f } ?: return fallback
+        return when {
+            visibility < 1_000f -> 1f
+            visibility < 5_000f -> lerp(0.80f, 0.58f, (visibility - 1_000f) / 4_000f)
+            visibility < 10_000f -> lerp(0.58f, 0.38f, (visibility - 5_000f) / 5_000f)
+            else -> 0.32f
+        }
     }
 
     /**

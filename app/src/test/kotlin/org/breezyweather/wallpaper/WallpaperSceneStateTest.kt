@@ -199,6 +199,42 @@ class WallpaperSceneStateTest {
     }
 
     @Test
+    fun `fog visibility creates light normal and heavy intensity steps`() {
+        fun state(visibilityMeters: Float) = WallpaperSceneStateFactory.create(
+            WeatherView.WEATHER_KIND_FOG,
+            daylight = 1f,
+            visibilityMeters = visibilityMeters,
+        )
+
+        val light = state(8_000f)
+        val normal = state(3_000f)
+        val heavy = state(800f)
+
+        light.fogIntensity.shouldBeLessThan(normal.fogIntensity)
+        normal.fogIntensity.shouldBeLessThan(heavy.fogIntensity)
+        light.usesGreyscalePhoto shouldBe false
+        normal.photoGreyscaleAmount shouldBe 0.85f
+        normal.usesGreyscalePhoto shouldBe true
+        heavy.photoGreyscaleAmount shouldBe 1f
+        heavy.usesGreyscalePhoto shouldBe true
+        heavy.condition.visibility shouldBe WallpaperVisibilityCondition.DENSE_FOG
+    }
+
+    @Test
+    fun `light mist uses low haze with sparse Fair clouds`() {
+        val state = WallpaperSceneStateFactory.create(
+            WeatherView.WEATHER_KIND_HAZE,
+            daylight = 1f,
+            visibilityMeters = 8_000f,
+        )
+
+        state.condition.sky shouldBe WallpaperSkyCondition.FAIR
+        state.cloudDensity shouldBe 0.18f
+        state.hazeIntensity.shouldBeGreaterThan(0f)
+        state.photoGreyscaleAmount shouldBe 0.22f
+    }
+
+    @Test
     fun `precipitation keeps an overcast sky despite a low measured cloud value`() {
         val state = WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_RAINY,

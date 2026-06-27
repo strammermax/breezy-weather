@@ -398,6 +398,25 @@ class WallpaperRepository @Inject constructor(
         }.forEach {
             photoCatalog.clearFilePath(it.id)
         }
+
+        // Backfill rows that were imported (e.g. by an older version of this function) without a
+        // sourceUrl: refreshFor()'s cache lookup requires one (it's how a cached photo gets
+        // re-activated and recorded as "recently shown"), so without it these are downloaded once,
+        // catalogued, and then permanently skipped — stuck at "0 keer getoond" forever.
+        existing.filter { it.sourceUrl == null && it.filePath?.let(::File)?.isFile == true }
+            .forEach { photo ->
+                val filePath = photo.filePath ?: return@forEach
+                photoCatalog.upsertDownloaded(
+                    id = photo.id,
+                    sourceUrl = localFileUrl(filePath),
+                    locationKey = photo.locationKey,
+                    locationName = photo.locationName,
+                    filePath = filePath,
+                    attribution = photo.attribution,
+                    processed = photo.processed,
+                )
+            }
+
         val knownPaths = existing.mapNotNull { it.filePath }.toSet()
         val urlsByPath = buildMap {
             store.allRecentUrls().forEach { (placeKey, urls) ->
@@ -414,9 +433,9 @@ class WallpaperRepository @Inject constructor(
             if (file.absolutePath in knownPaths) return@forEach
             val locationKey = file.parentFile?.name ?: "wallpaper_location"
             val locationName = locationKey.removePrefix("wallpaper_").replace('_', ' ')
-            val sourceUrl = urlsByPath[file.absolutePath]
+            val sourceUrl = urlsByPath[file.absolutePath] ?: localFileUrl(file.absolutePath)
             photoCatalog.upsertDownloaded(
-                id = sourceUrl?.let(::photoId) ?: "legacy:${file.absolutePath}",
+                id = photoId(sourceUrl),
                 sourceUrl = sourceUrl,
                 locationKey = locationKey,
                 locationName = locationName,
@@ -431,6 +450,9 @@ class WallpaperRepository @Inject constructor(
             )
         }
     }
+
+    /** Stable pseudo-URL for a cached file with no recorded source, so it remains selectable. */
+    private fun localFileUrl(path: String): String = "local-file://$path"
 
     private suspend fun activateCatalogPhoto(photo: WallpaperPhotoRecord, file: File) {
         val url = photo.sourceUrl ?: return

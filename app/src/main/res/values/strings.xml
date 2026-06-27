@@ -719,9 +719,11 @@
     <string name="radar_attribution">Data: Buienradar.nl &amp; RainViewer.com</string>
     <string name="radar_attribution_buienradar">Data: Buienradar.nl</string>
     <string name="radar_attribution_windy">Data: Windy.com</string>
+    <string name="radar_attribution_meteoblue">Data: Meteoblue.com</string>
     <string name="radar_source_world">Worldwide</string>
     <string name="radar_source_nl">Netherlands (5 days)</string>
     <string name="radar_source_wind">Wind &amp; pressure</string>
+    <string name="radar_source_meteoblue">Meteoblue</string>
     <!-- Settings (new design) -->
     <string name="settings_section_general">General</string>
     <string name="settings_background_updates">Background updates</string>
@@ -1076,11 +1078,15 @@
     <string name="weather_kind_partly_cloudy" translatable="false">@string/common_weather_text_partly_cloudy</string>
     <string name="weather_kind_hollandse_lucht" translatable="false">Dutch sky</string>
     <string name="weather_kind_cloudy" translatable="false">@string/common_weather_text_cloudy</string>
+    <string name="weather_kind_rain_light" translatable="false">@string/common_weather_text_rain_light</string>
     <string name="weather_kind_rain" translatable="false">@string/common_weather_text_rain</string>
+    <string name="weather_kind_rain_heavy" translatable="false">@string/common_weather_text_rain_heavy</string>
     <string name="weather_kind_snow" translatable="false">@string/common_weather_text_snow</string>
     <string name="weather_kind_sleet" translatable="false">@string/common_weather_text_rain_snow_mixed</string>
     <string name="weather_kind_hail">Hail</string>
+    <string name="weather_kind_fog_light">Light fog</string>
     <string name="weather_kind_fog" translatable="false">@string/common_weather_text_fog</string>
+    <string name="weather_kind_fog_heavy">Heavy fog</string>
     <string name="weather_kind_haze">Haze</string>
     <string name="weather_kind_thunder">Thunder</string>
     <string name="weather_kind_thunderstorm">Thunderstorm</string>

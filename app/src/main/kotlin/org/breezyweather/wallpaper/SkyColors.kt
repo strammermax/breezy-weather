@@ -27,6 +27,11 @@ object SkyColors {
     private val OVERCAST_DAY = intArrayOf(Color.rgb(92, 96, 104), Color.rgb(128, 132, 140))
     private val OVERCAST_NIGHT = intArrayOf(Color.rgb(24, 26, 32), Color.rgb(40, 43, 50))
 
+    // Fog removes the remaining blue cast from the sky behind the photo. Daytime
+    // stays light and diffuse; nighttime uses neutral charcoal greys.
+    private val FOG_DAY = intArrayOf(Color.rgb(178, 178, 178), Color.rgb(214, 214, 214))
+    private val FOG_NIGHT = intArrayOf(Color.rgb(48, 48, 48), Color.rgb(74, 74, 74))
+
     // "Holl. wolken": a richer, more saturated blue than the default DAY gradient,
     // modelled on a reference photo of a deep-blue Dutch sky with voluminous cumulus.
     private val RICH_SKY_DAY = intArrayOf(Color.rgb(6, 70, 152), Color.rgb(70, 148, 209))
@@ -60,6 +65,14 @@ object SkyColors {
         val overcast = if (daytime) OVERCAST_DAY else OVERCAST_NIGHT
         val amount = (cloudDarkness * 0.85f).coerceIn(0f, 1f)
         return blendSky(colors, overcast, amount)
+    }
+
+    /** Replaces the blue sky with a neutral grey gradient once visible fog is present. */
+    fun applyFogSkyTint(colors: IntArray, fogIntensity: Float, daytime: Boolean): IntArray {
+        if (fogIntensity <= 0f) return colors
+        val fog = if (daytime) FOG_DAY else FOG_NIGHT
+        val amount = (fogIntensity / 0.60f).coerceIn(0f, 1f)
+        return blendSky(colors, fog, amount)
     }
 
     /** Deepens a daytime clear-sky gradient towards [RICH_SKY_DAY] for "Holl. wolken". */

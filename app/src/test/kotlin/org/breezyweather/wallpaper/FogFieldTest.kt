@@ -51,6 +51,18 @@ class FogFieldTest {
     }
 
     @Test
+    fun `heavy fog foreground uses neutral grey values`() {
+        val color = FogFieldFactory.fogColor(
+            isHaze = false,
+            daylight = 1f,
+            neutralAmount = 1f,
+        )
+
+        color[0] shouldBe color[1]
+        color[1] shouldBe color[2]
+    }
+
+    @Test
     fun `haze uses lower maximum alpha than fog`() {
         val fog = FogFieldFactory.fogFieldParams(
             fogIntensity = 1f,
@@ -67,6 +79,19 @@ class FogFieldTest {
         val fogMax = fog.bands.maxOf { it.baseAlpha }
         val hazeMax = haze.bands.maxOf { it.baseAlpha }
         hazeMax shouldBeLessThan fogMax
+    }
+
+    @Test
+    fun `normal and heavy fog enable progressively denser foreground gradients`() {
+        val light = FogFieldFactory.fogFieldParams(0.46f, 0f, 1f, null)
+        val normal = FogFieldFactory.fogFieldParams(0.69f, 0f, 1f, null)
+        val heavy = FogFieldFactory.fogFieldParams(1f, 0f, 1f, null)
+        val haze = FogFieldFactory.fogFieldParams(0f, 1f, 1f, null)
+
+        light.foregroundGradientStrength shouldBe 0f
+        normal.foregroundGradientStrength shouldBe 0.72f
+        heavy.foregroundGradientStrength shouldBe 1f
+        haze.foregroundGradientStrength shouldBe 0.60f
     }
 
     @Test
@@ -109,8 +134,8 @@ class FogFieldTest {
     fun `combined alpha stays under the readability cap`() {
         val fog = FogFieldFactory.fogFieldParams(1f, 0f, 1f, null)
         val haze = FogFieldFactory.fogFieldParams(0f, 1f, 1f, null)
-        fog.bands.forEach { it.baseAlpha shouldBeLessThanOrEqual 0.5f }
-        haze.bands.forEach { it.baseAlpha shouldBeLessThanOrEqual 0.3f }
+        fog.bands.forEach { it.baseAlpha shouldBeLessThanOrEqual 0.68f }
+        haze.bands.forEach { it.baseAlpha shouldBeLessThanOrEqual 0.56f }
     }
 
     @Test

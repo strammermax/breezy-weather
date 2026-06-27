@@ -17,6 +17,7 @@
 package org.breezyweather.ui.common.composables
 
 import android.content.Context
+import android.content.Intent
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -69,6 +70,7 @@ import org.breezyweather.ui.settings.preference.composables.ListPreferenceWithGr
 import org.breezyweather.ui.settings.preference.composables.PreferenceView
 import org.breezyweather.ui.settings.preference.composables.SectionFooter
 import org.breezyweather.ui.settings.preference.composables.SectionHeader
+import org.breezyweather.wallpaper.LiveWallpaperConfigActivity
 import java.text.Collator
 
 @Composable
@@ -141,6 +143,17 @@ fun LocationPreference(
             )
         ) {
             IntentHelper.startMainScreenSettingsActivity(activity)
+            onClose(null)
+        }
+        PreferenceView(
+            title = "Live wallpaper",
+            iconId = R.drawable.ic_palette,
+            summary = "Wisselinterval, locatie-toegang en andere achtergrond-instellingen",
+            colors = ListItemDefaults.colors(
+                containerColor = Color.Transparent
+            )
+        ) {
+            activity.startActivity(Intent(activity, LiveWallpaperConfigActivity::class.java))
             onClose(null)
         }
 

@@ -14,6 +14,7 @@ import android.graphics.BitmapFactory
 import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PorterDuff
@@ -43,6 +44,13 @@ private fun isCloudLayerEnabled(index: Int, budget: Int): Boolean = when {
 private fun loadMaskBitmap(resources: Resources?, drawableId: Int): Bitmap =
     resources?.let { BitmapFactory.decodeResource(it, drawableId) }
         ?: Bitmap.createBitmap(1, 1, Bitmap.Config.ALPHA_8).apply { eraseColor(Color.TRANSPARENT) }
+
+private fun filteredBitmapShader(bitmap: Bitmap, tileX: Shader.TileMode, tileY: Shader.TileMode): BitmapShader =
+    BitmapShader(bitmap, tileX, tileY).apply {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            setFilterMode(BitmapShader.FILTER_MODE_LINEAR)
+        }
+    }
 
 /**
  * Weather overlay for Live Wallpaper.
@@ -93,8 +101,16 @@ internal class WallpaperWeatherEffectRenderer(
     private var canvasRenderer: CanvasRenderer? = null
     private val cloudAtlasBitmap = loadMaskBitmap(resources, R.drawable.wallpaper_cloud_atlas)
     private val overcastMaskBitmap = loadMaskBitmap(resources, R.drawable.wallpaper_overcast_mask)
-    private val cloudAtlasShader = BitmapShader(cloudAtlasBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-    private val overcastMaskShader = BitmapShader(overcastMaskBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
+    private val cloudAtlasShader = filteredBitmapShader(
+        cloudAtlasBitmap,
+        Shader.TileMode.CLAMP,
+        Shader.TileMode.CLAMP,
+    )
+    private val overcastMaskShader = filteredBitmapShader(
+        overcastMaskBitmap,
+        Shader.TileMode.REPEAT,
+        Shader.TileMode.REPEAT,
+    )
 
     init {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -275,8 +291,17 @@ internal class WallpaperWeatherEffectRenderer(
             s.setFloatUniform("fogHeight", FloatArray(4) { fogField.bands[it].height })
             s.setFloatUniform("fogBandAlpha", FloatArray(4) { if (it < qualityBudget.fogBands) fogField.bands[it].baseAlpha * qualityBudget.blurStrength else 0f })
             s.setFloatUniform("fogSpeed", FloatArray(4) { fogField.bands[it].speedFactor })
-            s.setFloatUniform("fogColor", FogFieldFactory.fogColor(fogField.isHaze, daylight))
+            s.setFloatUniform("fogIsHaze", if (fogField.isHaze) 1f else 0f)
+            s.setFloatUniform(
+                "fogColor",
+                FogFieldFactory.fogColor(
+                    fogField.isHaze,
+                    daylight,
+                    neutralAmount = if (fogField.isHaze) 0f else fogField.foregroundGradientStrength,
+                ),
+            )
             s.setFloatUniform("fogGlobalAlpha", fogField.globalAlpha * qualityBudget.blurStrength)
+            s.setFloatUniform("fogForegroundGradient", fogField.foregroundGradientStrength)
             s.setFloatUniform("starVisibility", StarFieldFactory.starVisibility(daylight))
             s.setFloatUniform("starSeed", starField.seed)
             s.setFloatUniform("effectSeed", ((randomSeed ?: 0L) % 100_000L).toFloat())
@@ -555,15 +580,60 @@ internal class WallpaperWeatherEffectRenderer(
          * near-horizon bands, mirroring the AGSL renderer's fogHazeBands.
          */
         private fun drawFog(canvas: Canvas, contribution: Float) {
-            val rgb = FogFieldFactory.fogColor(fogField.isHaze, daylight)
-            paint.color = Color.rgb(
-                (rgb[0] * 255f).toInt().coerceIn(0, 255),
-                (rgb[1] * 255f).toInt().coerceIn(0, 255),
-                (rgb[2] * 255f).toInt().coerceIn(0, 255),
+            val rgb = FogFieldFactory.fogColor(
+                fogField.isHaze,
+                daylight,
+                neutralAmount = if (fogField.isHaze) 0f else fogField.foregroundGradientStrength,
             )
+            val red = (rgb[0] * 255f).toInt().coerceIn(0, 255)
+            val green = (rgb[1] * 255f).toInt().coerceIn(0, 255)
+            val blue = (rgb[2] * 255f).toInt().coerceIn(0, 255)
+            paint.color = Color.rgb(red, green, blue)
+            val gradientStrength = fogField.foregroundGradientStrength
+            val existingFogScale = 1f - gradientStrength * 0.45f
+
+            if (gradientStrength > 0f) {
+                val alphaScale = gradientStrength * contribution
+                val gradientColors: IntArray
+                val gradientPositions: FloatArray
+                if (fogField.isHaze) {
+                    gradientColors = intArrayOf(
+                        Color.argb((26f * alphaScale).toInt().coerceIn(0, 255), red, green, blue),
+                        Color.argb((26f * alphaScale).toInt().coerceIn(0, 255), red, green, blue),
+                        Color.argb((166f * alphaScale).toInt().coerceIn(0, 255), red, green, blue),
+                        Color.argb((117f * alphaScale).toInt().coerceIn(0, 255), red, green, blue),
+                    )
+                    gradientPositions = floatArrayOf(0f, 0.45f, 0.72f, 1f)
+                } else {
+                    val topAlpha = (255f * alphaScale).toInt().coerceIn(0, 255)
+                    val middleAlpha = (225f * alphaScale).toInt().coerceIn(0, 255)
+                    val bottomAlpha = (133f * alphaScale).toInt().coerceIn(0, 255)
+                    gradientColors = intArrayOf(
+                        Color.argb(topAlpha, red, green, blue),
+                        Color.argb(topAlpha, red, green, blue),
+                        Color.argb(middleAlpha, red, green, blue),
+                        Color.argb(bottomAlpha, red, green, blue),
+                    )
+                    gradientPositions = floatArrayOf(0f, 0.30f, 0.70f, 1f)
+                }
+                paint.shader = LinearGradient(
+                    0f,
+                    0f,
+                    0f,
+                    lastHeight.toFloat(),
+                    gradientColors,
+                    gradientPositions,
+                    Shader.TileMode.CLAMP,
+                )
+                paint.alpha = 255
+                canvas.drawRect(0f, 0f, lastWidth.toFloat(), lastHeight.toFloat(), paint)
+                paint.shader = null
+            }
 
             if (fogField.globalAlpha > 0f) {
-                paint.alpha = (fogField.globalAlpha * qualityBudget.blurStrength * 255f * contribution).toInt().coerceIn(0, 255)
+                paint.alpha = (
+                    fogField.globalAlpha * existingFogScale * qualityBudget.blurStrength * 255f * contribution
+                    ).toInt().coerceIn(0, 255)
                 canvas.drawRect(0f, 0f, lastWidth.toFloat(), lastHeight.toFloat(), paint)
             }
 
@@ -572,7 +642,9 @@ internal class WallpaperWeatherEffectRenderer(
             // opacity by blurStrength (lower in Battery saver).
             fogField.bands.take(qualityBudget.fogBands).forEach { band ->
                 if (band.baseAlpha <= 0f) return@forEach
-                paint.alpha = (band.baseAlpha * qualityBudget.blurStrength * 255f * contribution).toInt().coerceIn(0, 255)
+                paint.alpha = (
+                    band.baseAlpha * existingFogScale * qualityBudget.blurStrength * 255f * contribution
+                    ).toInt().coerceIn(0, 255)
                 val centerY = band.verticalCenter * lastHeight
                 val halfHeight = band.height * lastHeight * 0.5f
                 val driftX = (fogElapsedSeconds * band.speedFactor * cloudSpeedFactor * dirSign * lastWidth * 0.01f) %
@@ -983,8 +1055,10 @@ internal class WallpaperWeatherEffectRenderer(
             uniform float fogHeight[4];
             uniform float fogBandAlpha[4];
             uniform float fogSpeed[4];
+            uniform float fogIsHaze;
             uniform float fogColor[3];
             uniform float fogGlobalAlpha;
+            uniform float fogForegroundGradient;
             uniform float starVisibility;
             uniform float starSeed;
             uniform float effectSeed;
@@ -1236,6 +1310,19 @@ internal class WallpaperWeatherEffectRenderer(
                 // rather than only a low-lying band near the horizon.
                 float globalNoise = noise21(float2(aspectUv.x * 1.6 + time * 0.01, uv.y * 2.4));
                 result += fogGlobalAlpha * (0.8 + globalNoise * 0.2);
+
+                // Heavy fog behaves as a foreground veil over the photo: distant sky
+                // disappears almost completely, while nearby ground remains faintly
+                // visible. Reduce the old band stack first so the lower edge does not
+                // become uniformly opaque, then impose the vertical opacity floor.
+                float gradientProgress = clamp((uv.y - 0.30) / 0.70, 0.0, 1.0);
+                float heavyGradient = mix(0.52, 1.0, pow(1.0 - gradientProgress, 0.32));
+                float groundRise = smoothstep(0.45, 0.72, uv.y);
+                float groundFall = mix(1.0, 0.65, smoothstep(0.85, 1.0, uv.y));
+                float lightMistGradient = 0.10 + 0.55 * groundRise * groundFall;
+                float foregroundGradient = mix(heavyGradient, lightMistGradient, fogIsHaze);
+                float heavyResult = max(result * 0.55, foregroundGradient);
+                result = mix(result, heavyResult, fogForegroundGradient);
                 return clamp(result, 0.0, 1.0);
             }
 
@@ -1747,7 +1834,10 @@ internal class WallpaperWeatherEffectRenderer(
                 // richSky cloud cores were capped at the same 0.86 ceiling as every other
                 // weather effect, so even fully-dense cumulus blended ~14% with the sky
                 // behind them — never reading as truly solid, opaque cotton-wool white.
-                float alphaCap = mix(0.86, 0.98, max(richSky, fairSky));
+                float alphaCap = max(
+                    mix(0.86, 0.98, max(richSky, fairSky)),
+                    fogForegroundGradient
+                );
                 float a = clamp(alpha, 0.0, alphaCap);
                 float3 premultiplied = color * a;
                 premultiplied = premultiplied * (1.0 - glassShadow)

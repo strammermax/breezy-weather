@@ -44,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -260,15 +261,17 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
     @Composable
     private fun PhotoPreview(photo: WallpaperPhotoRecord) {
         var bitmap by remember(photo.filePath) { mutableStateOf<android.graphics.Bitmap?>(null) }
+        val density = LocalDensity.current
         LaunchedEffect(photo.filePath) {
+            val targetHeightPx = with(density) { PREVIEW_HEIGHT.roundToPx() }
             bitmap = withContext(Dispatchers.IO) {
-                photo.filePath?.takeIf { File(it).isFile }?.let(BitmapFactory::decodeFile)
+                photo.filePath?.takeIf { File(it).isFile }?.let { decodeSampledBitmap(it, targetHeightPx) }
             }
         }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(180.dp),
+                .height(PREVIEW_HEIGHT),
             contentAlignment = Alignment.Center,
         ) {
             val image = bitmap
@@ -290,6 +293,22 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+        }
+    }
+
+    companion object {
+        private val PREVIEW_HEIGHT = 180.dp
+
+        /** Decodes [path] downsampled so its height is close to [targetHeightPx], avoiding full-res loads for thumbnails. */
+        private fun decodeSampledBitmap(path: String, targetHeightPx: Int): android.graphics.Bitmap? {
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(path, bounds)
+            if (bounds.outHeight <= 0 || targetHeightPx <= 0) return BitmapFactory.decodeFile(path)
+            var sampleSize = 1
+            while (bounds.outHeight / (sampleSize * 2) >= targetHeightPx) {
+                sampleSize *= 2
+            }
+            return BitmapFactory.decodeFile(path, BitmapFactory.Options().apply { inSampleSize = sampleSize })
         }
     }
 }
