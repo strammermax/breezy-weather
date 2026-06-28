@@ -70,7 +70,7 @@ open class NestedHorizontalRecyclerView @JvmOverloads constructor(
                     if (!mBeingDragged && !mHorizontalDragged) {
                         if (abs(x - mInitialX) > mTouchSlop || abs(y - mInitialY) > mTouchSlop) {
                             mBeingDragged = true
-                            if (abs(x - mInitialX) > abs(y - mInitialY)) {
+                            if (isHorizontalDrag(x, y)) {
                                 mHorizontalDragged = true
                             } else {
                                 parent.requestDisallowInterceptTouchEvent(false)
@@ -102,6 +102,18 @@ open class NestedHorizontalRecyclerView @JvmOverloads constructor(
         return super.onInterceptTouchEvent(ev) && mBeingDragged && mHorizontalDragged
     }
 
+    /**
+     * Whether a drag from [mInitialX]/[mInitialY] to [x]/[y] counts as horizontal. Biased
+     * towards horizontal (rather than requiring it to strictly exceed the vertical distance)
+     * since a thumb swipe across this strip is rarely perfectly horizontal, and a near-diagonal
+     * swipe used to lose to the page's vertical scroll, making the strip look unscrollable.
+     */
+    private fun isHorizontalDrag(x: Float, y: Float): Boolean {
+        val dx = abs(x - mInitialX)
+        val dy = abs(y - mInitialY)
+        return dx > dy * HORIZONTAL_BIAS_FACTOR
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent): Boolean {
         when (ev.actionMasked) {
@@ -122,7 +134,7 @@ open class NestedHorizontalRecyclerView @JvmOverloads constructor(
 
                     if (!mBeingDragged && !mHorizontalDragged) {
                         mBeingDragged = true
-                        if (abs(x - mInitialX) > abs(y - mInitialY)) {
+                        if (isHorizontalDrag(x, y)) {
                             mHorizontalDragged = true
                         } else {
                             parent.requestDisallowInterceptTouchEvent(false)
@@ -155,5 +167,13 @@ open class NestedHorizontalRecyclerView @JvmOverloads constructor(
 
     companion object {
         private const val TAG = "HorizontalRecyclerView"
+
+        /**
+         * Biases drag detection towards horizontal instead of the strict 1:1 ratio (dx > dy)
+         * this used to require. At 0.6, a swipe counts as horizontal as long as the horizontal
+         * distance is at least 60% of the vertical one — i.e. it still wins even when somewhat
+         * more vertical than horizontal, since a thumb swipe across this strip is rarely exact.
+         */
+        private const val HORIZONTAL_BIAS_FACTOR = 0.6f
     }
 }
