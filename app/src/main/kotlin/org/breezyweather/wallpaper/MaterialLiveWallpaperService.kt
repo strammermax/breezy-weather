@@ -17,7 +17,9 @@
 package org.breezyweather.wallpaper
 
 import android.app.WallpaperColors
+import android.content.res.Resources
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.ColorFilter
@@ -52,6 +54,7 @@ import breezyweather.domain.weather.reference.WeatherCode
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
 import org.breezyweather.BreezyWeather
+import org.breezyweather.R
 import org.breezyweather.common.extensions.isLandscape
 import org.breezyweather.common.extensions.sensorManager
 import org.breezyweather.common.utils.helpers.AsyncHelper
@@ -106,6 +109,18 @@ private val SEASON_GRADING_IDENTITY_MATRIX = floatArrayOf(
     0f, 0f, 1f, 0f, 0f,
     0f, 0f, 0f, 1f, 0f,
 )
+
+/**
+ * Public-domain full-moon photo (NASA/Goddard Space Flight Center Scientific Visualization
+ * Studio, ph4_full_moon_2k from https://svs.gsfc.nasa.gov/4310/) used as the [MoonDrawable]
+ * texture instead of a flat-coloured disc. Falls back to null (flat colour) if the resource is
+ * somehow missing rather than crashing the wallpaper.
+ */
+private fun loadMoonTextureBitmap(resources: Resources): Bitmap? = try {
+    BitmapFactory.decodeResource(resources, R.drawable.wallpaper_moon_texture)
+} catch (e: Exception) {
+    null
+}
 
 @AndroidEntryPoint
 class MaterialLiveWallpaperService : WallpaperService() {
@@ -219,7 +234,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private val mSunCorePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             CelestialGlow.configureCorePaint(this)
         }
-        private val mMoonDrawable = MoonDrawable()
+        private val mMoonDrawable = MoonDrawable().apply {
+            setTexture(loadMoonTextureBitmap(resources))
+        }
         private var mCelestialPaintMinute = Long.MIN_VALUE
         private var mSunPaintCenterX = Float.NaN
         private var mSunPaintCenterY = Float.NaN
@@ -1176,6 +1193,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 val size = (shortestSide * CelestialTiming.CELESTIAL_SIZE_FRACTION).toInt()
                 val halfSize = size / 2
                 mMoonDrawable.setPhaseAngle(mSceneState.moonPhaseAngle)
+                mMoonDrawable.setMirrored((mSceneState.latitude ?: 0.0) < 0.0)
                 mMoonDrawable.alpha = (moonAlpha * 255).toInt()
                 mMoonDrawable.setBounds(
                     (moonX - halfSize).toInt(),

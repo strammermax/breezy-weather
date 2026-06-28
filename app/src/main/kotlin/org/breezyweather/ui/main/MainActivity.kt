@@ -945,7 +945,7 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
                 }
                 val bitmap = withContext(Dispatchers.Default) {
                     Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
-                        WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState)
+                        WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState, resources)
                     }
                 }
                 if (this@MainActivity.getResources().configuration.orientation != 2) {

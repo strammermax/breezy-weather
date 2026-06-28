@@ -16,15 +16,19 @@
 
 package org.breezyweather.ui.common.images
 
+import android.graphics.Bitmap
+import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.ColorFilter
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.Shader
 import android.graphics.drawable.Drawable
 import androidx.annotation.ColorInt
 import kotlin.math.cos
@@ -35,7 +39,11 @@ import kotlin.math.sin
  * Draws the moon disc at the correct phase shape for the current date.
  *
  * Call [setPhaseAngle] with the value from [breezyweather.domain.weather.model.MoonPhase.angle]
- * (0 = new moon, 90 = first quarter, 180 = full moon, 270 = last quarter).
+ * (0 = new moon, 90 = first quarter, 180 = full moon, 270 = last quarter). Optionally call
+ * [setTexture] with a photographic moon bitmap (e.g. NASA's public-domain full-moon mosaic) to
+ * render a textured disc instead of the default flat-coloured one, and [setMirrored] (true south
+ * of the equator) since the Moon's lit limb appears on the opposite side from the southern
+ * hemisphere.
  */
 class MoonDrawable : Drawable() {
     private val mPaint = Paint().apply {
@@ -47,6 +55,11 @@ class MoonDrawable : Drawable() {
     @ColorInt
     private val mCoreColor: Int = Color.rgb(171, 202, 247)
     private var mAlpha: Float = 1f
+    private var mMirrored: Boolean = false
+
+    private var mTexture: Bitmap? = null
+    private var mTextureShader: BitmapShader? = null
+    private val mShaderMatrix = Matrix()
 
     private var mBounds: Rect
     private val mDiscRectF = RectF()
@@ -64,12 +77,36 @@ class MoonDrawable : Drawable() {
         mPhaseAngle = ((angleDegrees % 360f) + 360f) % 360f
     }
 
+    /** True when viewed from the southern hemisphere, where the Moon appears left-right flipped. */
+    fun setMirrored(mirrored: Boolean) {
+        mMirrored = mirrored
+    }
+
+    /** A photographic moon bitmap to render instead of [mCoreColor], or null to go back to flat colour. */
+    fun setTexture(texture: Bitmap?) {
+        mTexture = texture
+        mTextureShader = texture?.let { BitmapShader(it, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP) }
+        updateShaderMatrix()
+    }
+
+    private fun updateShaderMatrix() {
+        val texture = mTexture ?: return
+        if (mDiscRectF.isEmpty) return
+        mShaderMatrix.setRectToRect(
+            RectF(0f, 0f, texture.width.toFloat(), texture.height.toFloat()),
+            mDiscRectF,
+            Matrix.ScaleToFit.FILL
+        )
+        mTextureShader?.setLocalMatrix(mShaderMatrix)
+    }
+
     private fun ensurePosition(bounds: Rect) {
         val boundSize = min(bounds.width(), bounds.height()).toFloat()
         val radius = ((sin(Math.PI / 4) * boundSize / 2 + boundSize / 2) / 2 - 2).toFloat()
         val cx = bounds.left + bounds.width() / 2f
         val cy = bounds.top + bounds.height() / 2f
         mDiscRectF.set(cx - radius, cy - radius, cx + radius, cy + radius)
+        updateShaderMatrix()
     }
 
     override fun onBoundsChange(bounds: Rect) {
@@ -89,6 +126,9 @@ class MoonDrawable : Drawable() {
             mBounds.right.toFloat(), mBounds.bottom.toFloat(),
             null
         )
+        if (mMirrored) {
+            canvas.scale(-1f, 1f, mDiscRectF.centerX(), mDiscRectF.centerY())
+        }
 
         val a = mPhaseAngle
         when {
@@ -139,9 +179,16 @@ class MoonDrawable : Drawable() {
         canvas.restoreToCount(layerId)
     }
 
-    /** Fill entire disc or a 180° arc (half disc) with [mCoreColor] at [mAlpha]. */
+    /** Fill entire disc or a 180° arc (half disc) with the texture (if set) or [mCoreColor], at [mAlpha]. */
     private fun fill(canvas: Canvas, rect: RectF, startAngle: Float? = null) {
-        mPaint.color = mCoreColor
+        val shader = mTextureShader
+        if (shader != null) {
+            mPaint.shader = shader
+            mPaint.color = Color.WHITE
+        } else {
+            mPaint.shader = null
+            mPaint.color = mCoreColor
+        }
         mPaint.alpha = (mAlpha * 255).toInt()
         mPaint.xfermode = null
         if (startAngle == null) canvas.drawOval(rect, mPaint)

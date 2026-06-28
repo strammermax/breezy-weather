@@ -8,13 +8,16 @@
 
 package org.breezyweather.wallpaper
 
+import android.content.res.Resources
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Shader
+import org.breezyweather.R
 import org.breezyweather.ui.common.images.MoonDrawable
 import kotlin.math.min
 
@@ -30,6 +33,21 @@ import kotlin.math.min
  */
 internal object WallpaperSceneSnapshot {
 
+    /** Decoded once and reused — see [loadMoonTextureBitmap] in MaterialLiveWallpaperService.kt. */
+    private var moonTexture: Bitmap? = null
+    private var moonTextureLoaded = false
+
+    private fun moonTexture(resources: Resources): Bitmap? {
+        if (!moonTextureLoaded) {
+            moonTexture = try {
+                BitmapFactory.decodeResource(resources, R.drawable.wallpaper_moon_texture)
+            } catch (e: Exception) {
+                null
+            }
+            moonTextureLoaded = true
+        }
+        return moonTexture
+    }
 
     fun render(
         canvas: Canvas,
@@ -37,11 +55,12 @@ internal object WallpaperSceneSnapshot {
         height: Int,
         photo: Bitmap?,
         sceneState: WallpaperSceneState,
+        resources: Resources,
     ) {
         if (width <= 0 || height <= 0) return
 
         drawSkyBackground(canvas, width, height, sceneState)
-        drawCelestialBody(canvas, width, height, sceneState)
+        drawCelestialBody(canvas, width, height, sceneState, resources)
 
         // Note: the cloud/weather background pass (WallpaperWeatherEffectRenderer) relies on
         // RuntimeShader, which Android refuses to draw onto a software-backed Canvas/Bitmap
@@ -119,7 +138,13 @@ internal object WallpaperSceneSnapshot {
         return SkyColors.applyFogSkyTint(overcastColors, sceneState.fogIntensity, sceneState.daytime)
     }
 
-    private fun drawCelestialBody(canvas: Canvas, width: Int, height: Int, sceneState: WallpaperSceneState) {
+    private fun drawCelestialBody(
+        canvas: Canvas,
+        width: Int,
+        height: Int,
+        sceneState: WallpaperSceneState,
+        resources: Resources,
+    ) {
         val now = System.currentTimeMillis()
         val shortestSide = min(width, height).toFloat()
         val fogVisibility = 1f - (sceneState.fogIntensity * 0.72f).coerceIn(0f, 1f)
@@ -145,7 +170,9 @@ internal object WallpaperSceneSnapshot {
             val size = (shortestSide * CelestialTiming.CELESTIAL_SIZE_FRACTION).toInt()
             val halfSize = size / 2
             val moonDrawable = MoonDrawable()
+            moonDrawable.setTexture(moonTexture(resources))
             moonDrawable.setPhaseAngle(sceneState.moonPhaseAngle)
+            moonDrawable.setMirrored((sceneState.latitude ?: 0.0) < 0.0)
             moonDrawable.alpha = (moonAlpha * 255).toInt()
             moonDrawable.setBounds(
                 (moonX - halfSize).toInt(),

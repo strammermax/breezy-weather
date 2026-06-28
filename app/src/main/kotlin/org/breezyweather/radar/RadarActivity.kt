@@ -224,7 +224,7 @@ class RadarActivity : BreezyActivity() {
         val photo = withContext(Dispatchers.IO) { wallpaperRepository.loadCachedBitmap() }
         val bitmap = withContext(Dispatchers.Default) {
             Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
-                WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState)
+                WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState, resources)
             }
         }
         window.setBackgroundDrawable(BitmapDrawable(resources, bitmap))

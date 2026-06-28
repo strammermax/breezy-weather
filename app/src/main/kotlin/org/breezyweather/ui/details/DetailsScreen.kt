@@ -244,7 +244,7 @@ internal fun DailyWeatherScreen(
                     val photo = detailsViewModel.loadCachedPhoto()
                     val bitmap = withContext(Dispatchers.Default) {
                         Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
-                            WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState)
+                            WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState, context.resources)
                         }
                     }
                     activity.window.setBackgroundDrawable(BitmapDrawable(context.resources, bitmap))
