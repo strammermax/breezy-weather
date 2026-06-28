@@ -1,6 +1,7 @@
 package org.breezyweather.wallpaper.photo
 
 import breezyweather.data.wallpaper.WallpaperPhotoRecord
+import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -37,32 +38,90 @@ class WallpaperPhotoPriorityTest {
     private val midnight = localMillis(2)
 
     @Test
-    fun `thumbs up outranks neutral`() {
-        val selected = selectWallpaperPhoto(
-            listOf(photo("neutral", 0), photo("up", 1)),
-            emptySet(),
-        )
-
-        selected?.id shouldBe "up"
+    fun `season tier ranks a match above unknown above a different known season`() {
+        seasonTier(photo("matching", 0, season = "summer"), currentSeason = "summer") shouldBe 2
+        seasonTier(photo("unknown", 0, season = null), currentSeason = "summer") shouldBe 1
+        seasonTier(photo("wrong", 0, season = "winter"), currentSeason = "summer") shouldBe 0
     }
 
     @Test
-    fun `thumbs down only wins when nothing else is eligible`() {
-        val selected = selectWallpaperPhoto(
-            listOf(photo("down", -1), photo("neutral", 0), photo("up", 1)),
-            emptySet(),
-        )
-        selected?.id shouldBe "up"
-
-        val lastResort = selectWallpaperPhoto(
-            listOf(photo("down1", -1, views = 10), photo("down2", -1, views = 0)),
-            emptySet(),
-        )
-        lastResort?.id shouldBe "down2"
+    fun `day-night match treats unclassified photos as day`() {
+        dayNightMatches(photo("day", 0, dayPeriod = "day"), isNight = false) shouldBe true
+        dayNightMatches(photo("unclassified", 0, dayPeriod = null), isNight = false) shouldBe true
+        dayNightMatches(photo("night", 0, dayPeriod = "night"), isNight = false) shouldBe false
+        dayNightMatches(photo("night", 0, dayPeriod = "night"), isNight = true) shouldBe true
+        dayNightMatches(photo("unclassified", 0, dayPeriod = null), isNight = true) shouldBe false
     }
 
     @Test
-    fun `fewer views win within the same score`() {
+    fun `gps distance is real for known coordinates and worst-case for unknown ones`() {
+        // ~0.03 degrees latitude is ~3.3km.
+        val close = photo("close", 0, exifLat = 52.03, exifLon = 5.0)
+        val unknown = photo("unknown", 0)
+
+        gpsDistanceKmOrWorst(close, latitude = 52.0, longitude = 5.0) shouldBe (3.335847799336888 plusOrMinus 0.01)
+        gpsDistanceKmOrWorst(unknown, latitude = 52.0, longitude = 5.0) shouldBe Double.MAX_VALUE
+    }
+
+    @Test
+    fun `season beats day-night even when day-night would otherwise win`() {
+        // "wrong" matches day/night but not season; "right" matches season but not day/night.
+        // Season must win outright — no amount of day/night match compensates.
+        val selected = selectWallpaperPhoto(
+            listOf(
+                photo("wrong-season-right-daynight", 0, season = "winter", dayPeriod = "day"),
+                photo("right-season-wrong-daynight", 0, season = "summer", dayPeriod = "night"),
+            ),
+            emptySet(),
+            now = noon, // currently day, currently summer
+        )
+
+        selected?.id shouldBe "right-season-wrong-daynight"
+    }
+
+    @Test
+    fun `day-night beats gps proximity when season ties`() {
+        val selected = selectWallpaperPhoto(
+            listOf(
+                photo("far-but-daynight-matches", 0, dayPeriod = "day", exifLat = 53.0, exifLon = 5.0),
+                photo("close-but-daynight-wrong", 0, dayPeriod = "night", exifLat = 52.0, exifLon = 5.0),
+            ),
+            emptySet(),
+            latitude = 52.0,
+            longitude = 5.0,
+            now = noon, // currently day
+        )
+
+        selected?.id shouldBe "far-but-daynight-matches"
+    }
+
+    @Test
+    fun `gps proximity beats thumbs up when season and day-night tie`() {
+        val selected = selectWallpaperPhoto(
+            listOf(
+                photo("far-but-liked", 1, exifLat = 53.0, exifLon = 5.0),
+                photo("close-but-neutral", 0, exifLat = 52.03, exifLon = 5.0),
+            ),
+            emptySet(),
+            latitude = 52.0,
+            longitude = 5.0,
+        )
+
+        selected?.id shouldBe "close-but-neutral"
+    }
+
+    @Test
+    fun `thumbs up beats fewer views when everything else ties`() {
+        val selected = selectWallpaperPhoto(
+            listOf(photo("liked-but-shown-more", 1, views = 5), photo("fresh-but-neutral", 0, views = 0)),
+            emptySet(),
+        )
+
+        selected?.id shouldBe "liked-but-shown-more"
+    }
+
+    @Test
+    fun `fewer views win when everything else ties`() {
         val selected = selectWallpaperPhoto(
             listOf(photo("seen", 0, views = 4), photo("fresh", 0, views = 1)),
             emptySet(),
@@ -72,12 +131,24 @@ class WallpaperPhotoPriorityTest {
     }
 
     @Test
-    fun `view penalty is capped so it cannot outweigh other terms`() {
-        val heavilyShown = photo("heavy", 1, views = 1_000)
-        val score = wallpaperPhotoScore(heavilyShown, isNight = false, currentSeason = "summer")
-        // thumbs up (+5) + unclassified-as-day match (+20) - capped view penalty (-25): 0,
-        // regardless of how high views climbs above the cap.
-        score shouldBe 0
+    fun `thumbs down only wins when nothing else is eligible, regardless of other tiers`() {
+        // The thumbs-down photo wins every other tier (season, day/night, gps, views) but must
+        // still lose, since "not thumbs-down" is the very first tier.
+        val selected = selectWallpaperPhoto(
+            listOf(
+                photo("down-but-perfect-otherwise", -1, season = "summer", dayPeriod = "day", views = 0),
+                photo("neutral-but-worse-otherwise", 0, season = "winter", dayPeriod = "night", views = 10),
+            ),
+            emptySet(),
+            now = noon,
+        )
+        selected?.id shouldBe "neutral-but-worse-otherwise"
+
+        val lastResort = selectWallpaperPhoto(
+            listOf(photo("down1", -1, views = 10), photo("down2", -1, views = 0)),
+            emptySet(),
+        )
+        lastResort?.id shouldBe "down2"
     }
 
     @Test
@@ -92,31 +163,6 @@ class WallpaperPhotoPriorityTest {
         )
 
         selected?.id shouldBe "available"
-    }
-
-    @Test
-    fun `day-night match is scored, with unclassified photos treated as day`() {
-        val dayPhoto = photo("day", 0, dayPeriod = "day")
-        val nightPhoto = photo("night", 0, dayPeriod = "night")
-        val unclassified = photo("unclassified", 0, dayPeriod = null)
-
-        wallpaperPhotoScore(dayPhoto, isNight = false, currentSeason = "summer") shouldBe 20
-        wallpaperPhotoScore(unclassified, isNight = false, currentSeason = "summer") shouldBe 20
-        wallpaperPhotoScore(nightPhoto, isNight = false, currentSeason = "summer") shouldBe 0
-
-        wallpaperPhotoScore(nightPhoto, isNight = true, currentSeason = "summer") shouldBe 20
-        wallpaperPhotoScore(unclassified, isNight = true, currentSeason = "summer") shouldBe 0
-    }
-
-    @Test
-    fun `matching season is a bonus, unknown season is neutral, wrong season is a penalty`() {
-        val matching = photo("matching", 0, season = "summer")
-        val wrong = photo("wrong", 0, season = "winter")
-        val unknown = photo("unknown", 0, season = null)
-
-        wallpaperPhotoScore(matching, isNight = false, currentSeason = "summer") shouldBe 35
-        wallpaperPhotoScore(unknown, isNight = false, currentSeason = "summer") shouldBe 20
-        wallpaperPhotoScore(wrong, isNight = false, currentSeason = "summer") shouldBe 5
     }
 
     @Test
@@ -139,38 +185,6 @@ class WallpaperPhotoPriorityTest {
         )
 
         selected?.id shouldBe "night"
-    }
-
-    @Test
-    fun `gps proximity is a bonus within 5km, a smaller bonus within 10km, and neutral beyond or unknown`() {
-        // ~0.03 degrees latitude is ~3.3km, ~0.07 degrees is ~7.8km, ~1 degree is ~111km.
-        val close = photo("close", 0, exifLat = 52.03, exifLon = 5.0)
-        val near = photo("near", 0, exifLat = 52.07, exifLon = 5.0)
-        val far = photo("far", 0, exifLat = 53.0, exifLon = 5.0)
-        val unknown = photo("unknown", 0)
-
-        fun score(p: WallpaperPhotoRecord) =
-            wallpaperPhotoScore(p, isNight = false, currentSeason = "summer", latitude = 52.0, longitude = 5.0)
-
-        score(close) shouldBe 30 // day match (20) + close gps (10)
-        score(near) shouldBe 25 // day match (20) + near gps (5)
-        score(far) shouldBe 20 // day match (20) + no gps bonus
-        score(unknown) shouldBe 20 // day match (20), no exif gps at all
-    }
-
-    @Test
-    fun `selection prefers the gps-close photo over an equally-scored farther one`() {
-        val selected = selectWallpaperPhoto(
-            listOf(
-                photo("far", 0, exifLat = 53.0, exifLon = 5.0),
-                photo("close", 0, exifLat = 52.03, exifLon = 5.0),
-            ),
-            emptySet(),
-            latitude = 52.0,
-            longitude = 5.0,
-        )
-
-        selected?.id shouldBe "close"
     }
 
     private fun photo(

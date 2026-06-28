@@ -20,13 +20,26 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
- * Picks the best candidate among [photos] for this location, ranked by [wallpaperPhotoScore]
- * and excluding [disabled][WallpaperPhotoRecord.disabled] photos and any whose
- * [sourceUrl][WallpaperPhotoRecord.sourceUrl] is in [excludedUrls] (already tried this refresh).
+ * Picks the best candidate among [photos] for this location: a strict, lexicographic priority
+ * order (each tier only breaks ties left by the previous one — there is no additive trade-off
+ * between them), excluding [disabled][WallpaperPhotoRecord.disabled] photos and any whose
+ * [sourceUrl][WallpaperPhotoRecord.sourceUrl] is in [excludedUrls] (already tried this refresh):
  *
- * [latitude]/[longitude]/[now] only drive the day-night/season match terms of the score — they
- * intentionally don't need a fully resolved [Location] (with weather/timezone) so this stays
- * usable from a plain coordinate pair.
+ *  1. Not thumbs-down — a disliked photo only wins when every eligible candidate is disliked
+ *     (a deliberate "last resort", not a soft preference).
+ *  2. Season match (matches the current season > unknown season > a different, known season —
+ *     no snow photos in summer just because nothing else stands out).
+ *  3. Day/night match (matches now > doesn't; a photo with no day/night classification is
+ *     treated as a day photo).
+ *  4. GPS proximity to [latitude]/[longitude] — strictly closer wins; photos with no EXIF GPS
+ *     rank last in this tier (so they fall through to the remaining ones, same as everyone
+ *     else lacking GPS, rather than being treated as "close").
+ *  5. Thumbs up.
+ *  6. Fewest views.
+ *
+ * [latitude]/[longitude]/[now] only drive the day-night/season/GPS tiers — they intentionally
+ * don't need a fully resolved [Location] (with weather/timezone) so this stays usable from a
+ * plain coordinate pair.
  */
 internal fun selectWallpaperPhoto(
     photos: List<WallpaperPhotoRecord>,
@@ -46,9 +59,11 @@ internal fun selectWallpaperPhoto(
         .filterNot { it.disabled }
         .filterNot { it.sourceUrl != null && it.sourceUrl in excludedUrls }
         .sortedWith(
-            compareByDescending<WallpaperPhotoRecord> {
-                wallpaperPhotoScore(it, isNight, currentSeason, latitude, longitude)
-            }
+            compareByDescending<WallpaperPhotoRecord> { it.rating != -1 }
+                .thenByDescending { seasonTier(it, currentSeason) }
+                .thenByDescending { dayNightMatches(it, isNight) }
+                .thenBy { gpsDistanceKmOrWorst(it, latitude, longitude) }
+                .thenByDescending { it.rating == 1 }
                 .thenBy { it.viewCount }
                 .thenBy { it.lastShownAt ?: Long.MIN_VALUE }
                 .thenBy { it.createdAt }
@@ -56,62 +71,25 @@ internal fun selectWallpaperPhoto(
         .firstOrNull()
 }
 
-/**
- * Additive priority score for [photo] — higher wins. Each term is independent so a photo can
- * lose on one axis (e.g. wrong season) without being excluded outright, except thumbs-down:
- * [THUMBS_DOWN_PENALTY] is large enough that a disliked photo only wins when every other
- * eligible candidate is also disliked (a deliberate "last resort", not a soft preference).
- */
-internal fun wallpaperPhotoScore(
-    photo: WallpaperPhotoRecord,
-    isNight: Boolean,
-    currentSeason: String,
-    latitude: Double = DEFAULT_LATITUDE,
-    longitude: Double = DEFAULT_LONGITUDE,
-): Int {
-    val viewPenalty = -photo.viewCount.coerceAtMost(MAX_VIEW_PENALTY)
-
-    // Most photos have no day/night classification yet; default to "day" rather than treating
-    // it as neutral, per spec.
-    val photoIsNight = photo.dayPeriod == "night"
-    val dayNightScore = if (photoIsNight == isNight) DAY_NIGHT_MATCH_BONUS else 0
-
-    // Season is frequently unknown (null) — that must stay neutral. A *known* season is either
-    // a strong positive (matches now) or a strong negative (e.g. no snow photos in summer);
-    // unknown is never worse than a wrong season.
-    val seasonScore = when (photo.season) {
-        null -> 0
-        currentSeason -> SEASON_MATCH_BONUS
-        else -> -SEASON_MISMATCH_PENALTY
-    }
-
-    val ratingScore = when (photo.rating) {
-        1 -> THUMBS_UP_BONUS
-        -1 -> -THUMBS_DOWN_PENALTY
-        else -> 0
-    }
-
-    // The photo's own EXIF GPS (only present for a minority of photos — most are null and stay
-    // neutral, same as season). Distinct from resolved_lat/resolved_lon, which RemoveSky may
-    // fall back to a reverse-geocode/IP guess rather than the photo's actual GPS.
-    val gpsScore = gpsProximityScore(photo.exifLat, photo.exifLon, latitude, longitude)
-
-    return viewPenalty + dayNightScore + seasonScore + ratingScore + gpsScore
+/** 2 = matches [currentSeason], 1 = unknown (never worse than a wrong season), 0 = a different, known season. */
+internal fun seasonTier(photo: WallpaperPhotoRecord, currentSeason: String): Int = when (photo.season) {
+    null -> 1
+    currentSeason -> 2
+    else -> 0
 }
 
-private fun gpsProximityScore(
-    photoLatitude: Double?,
-    photoLongitude: Double?,
-    currentLatitude: Double,
-    currentLongitude: Double,
-): Int {
-    if (photoLatitude == null || photoLongitude == null) return 0
-    val distanceKm = haversineKm(photoLatitude, photoLongitude, currentLatitude, currentLongitude)
-    return when {
-        distanceKm <= GPS_CLOSE_RADIUS_KM -> GPS_CLOSE_BONUS
-        distanceKm <= GPS_NEAR_RADIUS_KM -> GPS_NEAR_BONUS
-        else -> 0
-    }
+/** Unclassified ([WallpaperPhotoRecord.dayPeriod] null) photos count as day photos. */
+internal fun dayNightMatches(photo: WallpaperPhotoRecord, isNight: Boolean): Boolean =
+    (photo.dayPeriod == "night") == isNight
+
+/**
+ * Distance in km from [photo]'s own EXIF GPS to [latitude]/[longitude], or [Double.MAX_VALUE]
+ * when unknown so it always sorts last in this tier rather than competing with real distances.
+ */
+internal fun gpsDistanceKmOrWorst(photo: WallpaperPhotoRecord, latitude: Double, longitude: Double): Double {
+    val photoLat = photo.exifLat ?: return Double.MAX_VALUE
+    val photoLon = photo.exifLon ?: return Double.MAX_VALUE
+    return haversineKm(photoLat, photoLon, latitude, longitude)
 }
 
 private fun haversineKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
@@ -132,14 +110,4 @@ private fun isCurrentlyNight(latitude: Double, longitude: Double, now: Long): Bo
 
 private const val DEFAULT_LATITUDE = 52.0
 private const val DEFAULT_LONGITUDE = 5.0
-private const val MAX_VIEW_PENALTY = 25
-private const val DAY_NIGHT_MATCH_BONUS = 20
-private const val SEASON_MATCH_BONUS = 15
-private const val SEASON_MISMATCH_PENALTY = 15
-private const val THUMBS_UP_BONUS = 5
-private const val THUMBS_DOWN_PENALTY = 1000
-private const val GPS_CLOSE_RADIUS_KM = 5.0
-private const val GPS_NEAR_RADIUS_KM = 10.0
-private const val GPS_CLOSE_BONUS = 10
-private const val GPS_NEAR_BONUS = 5
 private const val EARTH_RADIUS_KM = 6371.0
