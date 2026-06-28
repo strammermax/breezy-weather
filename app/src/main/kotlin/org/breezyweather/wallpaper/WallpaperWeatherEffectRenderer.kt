@@ -243,6 +243,20 @@ internal class WallpaperWeatherEffectRenderer(
             glass.setFloatUniform("time", elapsedSeconds)
             glass.setFloatUniform("rainAmount", glassRainIntensity)
             glass.setFloatUniform("transitionAlpha", alpha.coerceIn(0f, 1f))
+            // Onweersbui: this glass layer fully replaces every pixel with a sample from
+            // the static, software-rendered sceneTexture (see updateGlassSceneTexture),
+            // which can't include the AGSL lightning flash drawn underneath. Without this,
+            // the glass-rain overlay silently hid the flash on every "wet" thunder family.
+            glass.setFloatUniform(
+                "lightningMode",
+                if (weatherKind == WeatherView.WEATHER_KIND_THUNDER ||
+                    weatherKind == WeatherView.WEATHER_KIND_THUNDERSTORM
+                ) {
+                    1f
+                } else {
+                    0f
+                }
+            )
             glass.setInputShader("sceneTexture", sceneTexture)
             canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), paint)
         }
@@ -900,6 +914,7 @@ internal class WallpaperWeatherEffectRenderer(
             uniform float time;
             uniform float rainAmount;
             uniform float transitionAlpha;
+            uniform float lightningMode;
             uniform shader sceneTexture;
 
             float hash(float n) {
@@ -1032,6 +1047,15 @@ internal class WallpaperWeatherEffectRenderer(
                 color *= half(1.0 - dot(centeredUv, centeredUv) * 0.8);
                 color *= mix(half3(1.0), half3(0.8, 0.9, 1.3), half(0.3));
                 color *= 1.1;
+                // Onweersbui: same flash cycle as the weather shader's mode==4.0 block, so the
+                // lightning still reads through this otherwise-opaque glass-rain replacement.
+                if (lightningMode > 0.5) {
+                    float cycleLength = 8.7;
+                    float cycle = fract(time / cycleLength);
+                    float lightning = smoothstep(0.032, 0.0, abs(cycle - 0.018));
+                    lightning += smoothstep(0.018, 0.0, abs(cycle - 0.056)) * 0.45;
+                    color = mix(color, half3(0.85, 0.90, 1.0), half(clamp(lightning, 0.0, 1.0)));
+                }
                 float alpha = transitionAlpha;
                 return half4(color * half(alpha), half(alpha));
             }
@@ -1816,6 +1840,7 @@ internal class WallpaperWeatherEffectRenderer(
                     alpha += total;
                 }
 
+                float lightningFlash = 0.0;
                 if (weatherPass == 1.0 && mode == 4.0) {
                     float cycleLength = 8.7;
                     float cycle = fract(time / cycleLength);
@@ -1832,6 +1857,7 @@ internal class WallpaperWeatherEffectRenderer(
                     float bolt = lightningBolt(uv, cycleSeed) * clamp(lightning, 0.0, 1.0);
                     color = mix(color, float3(0.92, 0.96, 1.0), bolt);
                     alpha = max(alpha, min(0.95, alpha + bolt));
+                    lightningFlash = max(lightning, bolt);
                 }
 
                 // Skia composites shader output as PREMULTIPLIED alpha. Returning straight
@@ -1840,9 +1866,14 @@ internal class WallpaperWeatherEffectRenderer(
                 // richSky cloud cores were capped at the same 0.86 ceiling as every other
                 // weather effect, so even fully-dense cumulus blended ~14% with the sky
                 // behind them — never reading as truly solid, opaque cotton-wool white.
+                // The lightning flash above pushes `alpha` well past that ceiling (up to
+                // 0.95) specifically so the flash reads as a bright sky moment breaking
+                // through the storm clouds — without this, dense Onweer(sbui) clouds were
+                // already sitting at the 0.86 cap, so the flash's extra alpha got clamped
+                // straight back off and only the muted colour mix remained.
                 float alphaCap = max(
-                    mix(0.86, 0.98, max(richSky, fairSky)),
-                    fogForegroundGradient
+                    max(mix(0.86, 0.98, max(richSky, fairSky)), fogForegroundGradient),
+                    lightningFlash * 0.95
                 );
                 float a = clamp(alpha, 0.0, alphaCap);
                 float3 premultiplied = color * a;
