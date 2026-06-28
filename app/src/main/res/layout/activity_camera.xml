@@ -94,14 +94,34 @@
             android:scaleType="centerCrop"
             android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/resultTextView"
+        <HorizontalScrollView
+            android:id="@+id/uploadedThumbnailsScroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:textAlignment="center"
-            android:textColor="@android:color/black"
-            android:textSize="16sp" />
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/uploadedThumbnailsContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <ScrollView
+            android:id="@+id/resultTextScroll"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="16dp">
+
+            <TextView
+                android:id="@+id/resultTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
+        </ScrollView>
 
         <ProgressBar
             android:id="@+id/progressBar"

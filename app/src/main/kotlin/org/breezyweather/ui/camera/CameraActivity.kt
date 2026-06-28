@@ -14,8 +14,10 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.provider.MediaStore
 import android.view.View
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -42,6 +44,7 @@ import org.breezyweather.wallpaper.photo.WallpaperRepository
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import java.io.File
+import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
@@ -59,11 +62,22 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var captureButton: View
     private var captureInProgress = false
+    private val galleryLog = StringBuilder()
 
     private val pickGalleryPhotos = registerForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia()
     ) { uris ->
         if (uris.isNotEmpty()) uploadGalleryPhotos(uris)
+    }
+
+    // Without ACCESS_MEDIA_LOCATION, MediaStore silently redacts GPS EXIF from every photo we
+    // read back from the picker (see copyUriToTempFile), regardless of what the original file
+    // has. The picker is launched either way — without the permission we just fall back to
+    // treating the photo as if it had no GPS of its own.
+    private val requestMediaLocationPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {
+        pickGalleryPhotos.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 
     companion object {
@@ -74,6 +88,8 @@ class CameraActivity : AppCompatActivity() {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
+        private const val THUMBNAIL_SIZE_DIP = 96
+        private const val THUMBNAIL_MARGIN_DIP = 8
     }
 
     @Inject
@@ -115,7 +131,14 @@ class CameraActivity : AppCompatActivity() {
         }
 
         binding.galleryButton.setOnClickListener {
-            pickGalleryPhotos.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_MEDIA_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                requestMediaLocationPermission.launch(Manifest.permission.ACCESS_MEDIA_LOCATION)
+            } else {
+                pickGalleryPhotos.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            }
         }
 
         binding.retakeButton.setOnClickListener {
@@ -150,6 +173,7 @@ class CameraActivity : AppCompatActivity() {
         binding.horizonGuideLabel.visibility = View.VISIBLE
         binding.captureButton.visibility = View.VISIBLE
         binding.resultImageView.visibility = View.GONE
+        binding.uploadedThumbnailsScroll.visibility = View.GONE
         binding.resultTextView.visibility = View.GONE
         binding.retakeButton.visibility = View.GONE
         binding.setLiveWallpaperButton.visibility = View.GONE
@@ -339,16 +363,19 @@ class CameraActivity : AppCompatActivity() {
                 binding.progressBar.visibility = View.GONE
                 binding.setLiveWallpaperButton.visibility = View.GONE
                 binding.closeButton.visibility = View.VISIBLE
-                resultTextView.text = when (e) {
-                    is RemoveSkyHttpException -> formatUploadResult(false, e.statusCode, e.responseBody)
-                    is java.net.SocketTimeoutException -> getString(R.string.camera_error_timeout)
-                    is java.net.UnknownHostException -> getString(R.string.camera_error_server_down)
-                    else -> getString(R.string.camera_error_general, e.message ?: "Unknown error")
-                }
+                resultTextView.text = describeUploadError(e)
             }
         } finally {
             file.delete()
         }
+    }
+
+    /** Short, user-facing reason for an upload failure — shared by the single-photo and gallery flows. */
+    private fun describeUploadError(e: Exception): String = when (e) {
+        is RemoveSkyHttpException -> formatUploadResult(false, e.statusCode, e.responseBody)
+        is java.net.SocketTimeoutException -> getString(R.string.camera_error_timeout)
+        is java.net.UnknownHostException -> getString(R.string.camera_error_server_down)
+        else -> getString(R.string.camera_error_general, e.message ?: "Unknown error")
     }
 
     /** Writes [location] into [file]'s GPS EXIF tags, leaving every other tag untouched. */
@@ -371,7 +398,8 @@ class CameraActivity : AppCompatActivity() {
      */
     private fun uploadGalleryPhotos(uris: List<Uri>) {
         binding.resultImageView.visibility = View.GONE
-        binding.resultTextView.text = getString(R.string.camera_gallery_uploading, 1, uris.size)
+        binding.retakeButton.visibility = View.GONE // doesn't apply to a gallery batch
+        resetGalleryLog()
         binding.progressBar.visibility = View.VISIBLE
         showResultView()
 
@@ -379,19 +407,20 @@ class CameraActivity : AppCompatActivity() {
             cameraExecutor.execute {
                 var successCount = 0
                 var failureCount = 0
+                val uploadedUris = mutableListOf<Uri>()
                 uris.forEachIndexed { index, uri ->
-                    runOnUiThread {
-                        binding.resultTextView.text =
-                            getString(R.string.camera_gallery_uploading, index + 1, uris.size)
-                    }
+                    val label = "Foto ${index + 1}/${uris.size}"
+                    appendGalleryLog("$label: voorbereiden…")
                     val file = copyUriToTempFile(uri)
                     if (file == null) {
                         failureCount++
+                        appendGalleryLog("$label: ✗ kon bestand niet lezen")
                         return@forEachIndexed
                     }
                     try {
                         val locationToAdd = location?.takeIf { !hasGpsExif(file) }
                         locationToAdd?.let { addGpsToExif(file, it) }
+                        appendGalleryLog("$label: uploaden en verwerken op server…")
                         runBlocking {
                             wallpaperRepository.uploadCameraPhoto(
                                 file = file,
@@ -400,32 +429,112 @@ class CameraActivity : AppCompatActivity() {
                             )
                         }
                         successCount++
+                        uploadedUris.add(uri)
+                        appendGalleryLog("$label: ✓ opgeslagen")
                     } catch (e: Exception) {
                         failureCount++
+                        appendGalleryLog("$label: ✗ ${describeUploadError(e)}")
                     } finally {
                         file.delete()
                     }
                 }
+                appendGalleryLog("\n" + getString(R.string.camera_gallery_result, successCount, failureCount))
                 runOnUiThread {
                     binding.progressBar.visibility = View.GONE
-                    binding.resultTextView.text = getString(R.string.camera_gallery_result, successCount, failureCount)
                     binding.setLiveWallpaperButton.visibility = if (successCount > 0) View.VISIBLE else View.GONE
                     binding.closeButton.visibility = View.VISIBLE
                 }
+                showUploadedThumbnails(uploadedUris)
             }
         }
+    }
+
+    /** Resets the running upload-progress log shown in [ActivityCameraBinding.resultTextView]. */
+    private fun resetGalleryLog() {
+        galleryLog.setLength(0)
+        binding.resultTextView.text = ""
+    }
+
+    /** Appends [line] to the running upload-progress log and scrolls it into view. */
+    private fun appendGalleryLog(line: String) {
+        runOnUiThread {
+            if (galleryLog.isNotEmpty()) galleryLog.append('\n')
+            galleryLog.append(line)
+            binding.resultTextView.text = galleryLog.toString()
+            binding.resultTextScroll.post { binding.resultTextScroll.fullScroll(View.FOCUS_DOWN) }
+        }
+    }
+
+    /** Shows a small thumbnail per successfully uploaded gallery photo. */
+    private fun showUploadedThumbnails(uris: List<Uri>) {
+        if (uris.isEmpty()) return
+        val thumbnailSizePx = (THUMBNAIL_SIZE_DIP * resources.displayMetrics.density).toInt()
+        val marginPx = (THUMBNAIL_MARGIN_DIP * resources.displayMetrics.density).toInt()
+        val thumbnails = uris.mapNotNull { decodeSampledBitmap(it, thumbnailSizePx) }
+        runOnUiThread {
+            binding.uploadedThumbnailsContainer.removeAllViews()
+            thumbnails.forEach { bitmap ->
+                val imageView = ImageView(this).apply {
+                    layoutParams = LinearLayout.LayoutParams(thumbnailSizePx, thumbnailSizePx).apply {
+                        marginEnd = marginPx
+                    }
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    setImageBitmap(bitmap)
+                }
+                binding.uploadedThumbnailsContainer.addView(imageView)
+            }
+            binding.uploadedThumbnailsScroll.visibility = if (thumbnails.isNotEmpty()) View.VISIBLE else View.GONE
+        }
+    }
+
+    /** Decodes [uri] downsampled to roughly [targetSizePx], avoiding a full-resolution load for a thumbnail. */
+    private fun decodeSampledBitmap(uri: Uri, targetSizePx: Int): Bitmap? = try {
+        contentResolver.openInputStream(uri)?.use { input ->
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeStream(input, null, bounds)
+            var sampleSize = 1
+            while (bounds.outWidth / (sampleSize * 2) >= targetSizePx && bounds.outHeight / (sampleSize * 2) >= targetSizePx) {
+                sampleSize *= 2
+            }
+            contentResolver.openInputStream(uri)?.use { secondInput ->
+                BitmapFactory.decodeStream(secondInput, null, BitmapFactory.Options().apply { inSampleSize = sampleSize })
+            }
+        }
+    } catch (e: Exception) {
+        null
     }
 
     /** Copies [uri]'s raw bytes into a private temp file, preserving its EXIF exactly. */
     private fun copyUriToTempFile(uri: Uri): File? = try {
         val file = File.createTempFile("gallery_", ".jpg", cacheDir)
-        val copied = contentResolver.openInputStream(uri)?.use { input ->
+        val copied = openOriginalInputStream(uri)?.use { input ->
             file.outputStream().use { output -> input.copyTo(output) }
             true
         } ?: false
         if (copied) file else { file.delete(); null }
     } catch (e: Exception) {
         null
+    }
+
+    /**
+     * Opens [uri] via [MediaStore.setRequireOriginal] so the bytes include GPS EXIF — without
+     * this, MediaStore silently redacts location (and some other) EXIF tags from anything read
+     * through a plain content:// stream on Android 10+, regardless of what the file actually
+     * has. Falls back to the plain (possibly redacted) stream when the permission is missing or
+     * the original can't be served (e.g. the media has none to give).
+     */
+    private fun openOriginalInputStream(uri: Uri): InputStream? {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_MEDIA_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            try {
+                return contentResolver.openInputStream(MediaStore.setRequireOriginal(uri))
+            } catch (e: UnsupportedOperationException) {
+                // No original available for this URI — fall through to the redacted stream.
+            }
+        }
+        return contentResolver.openInputStream(uri)
     }
 
     /** Maps the server response to a short, user-facing verdict with a ✓/✗ marker. */

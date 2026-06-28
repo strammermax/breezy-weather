@@ -10,6 +10,9 @@
     <!-- camera. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <!-- Required to read GPS EXIF (not just location-redacted bytes) from gallery photos
+         picked for upload — see MediaStore.setRequireOriginal() usage in CameraActivity. -->
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
