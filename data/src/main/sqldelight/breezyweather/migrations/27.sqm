@@ -1,0 +1,8 @@
+ALTER TABLE wallpaper_photos
+ADD COLUMN day_period TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN country TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN season TEXT;

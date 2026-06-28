@@ -708,6 +708,12 @@
     <string name="wallpaper_photo_check_new_found">New image found and added</string>
     <string name="wallpaper_photo_check_new_none">No new images found</string>
     <string name="wallpaper_photo_check_new_failed">Could not reach the photo server</string>
+    <string name="wallpaper_photo_meta_day">day</string>
+    <string name="wallpaper_photo_meta_night">night</string>
+    <string name="wallpaper_photo_meta_season_winter">winter</string>
+    <string name="wallpaper_photo_meta_season_spring">spring</string>
+    <string name="wallpaper_photo_meta_season_summer">summer</string>
+    <string name="wallpaper_photo_meta_season_autumn">autumn</string>
     <string name="forecast_days_available">%1$d days available · swipe for more</string>
     <string name="live_wallpaper_data_age_unknown">unknown</string>
     <string name="live_wallpaper_data_stale">stale</string>

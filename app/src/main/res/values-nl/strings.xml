@@ -845,6 +845,12 @@
     <string name="wallpaper_photo_check_new_found">Nieuwe afbeelding gevonden en toegevoegd</string>
     <string name="wallpaper_photo_check_new_none">Geen nieuwe afbeeldingen gevonden</string>
     <string name="wallpaper_photo_check_new_failed">Kon geen verbinding maken met de fotoserver</string>
+    <string name="wallpaper_photo_meta_day">dag</string>
+    <string name="wallpaper_photo_meta_night">nacht</string>
+    <string name="wallpaper_photo_meta_season_winter">winter</string>
+    <string name="wallpaper_photo_meta_season_spring">lente</string>
+    <string name="wallpaper_photo_meta_season_summer">zomer</string>
+    <string name="wallpaper_photo_meta_season_autumn">herfst</string>
     <string name="forecast_days_available">%1$d dagen beschikbaar · veeg voor meer</string>
     <string name="widget_live_wallpaper_bg_source">Achtergrond-bron</string>
     <string name="about_fork_title">Gebaseerd op</string>

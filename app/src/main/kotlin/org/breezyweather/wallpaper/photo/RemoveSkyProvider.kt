@@ -70,18 +70,28 @@ class RemoveSkyProvider(
     }
 
     /**
-     * Returns the full set of currently `enabled` processed-image URLs RemoveSky knows for this
-     * location, or null when the request failed (caller must then skip pruning — a failed
-     * request is not evidence that images were disabled).
+     * Returns every currently `enabled` processed photo (URL plus day/country/season metadata)
+     * RemoveSky knows for this location, or null when the request failed (caller must then skip
+     * pruning/diffing — a failed request is not evidence that images were disabled or absent).
      */
-    suspend fun fetchEnabledUrls(latitude: Double, longitude: Double): Set<String>? =
+    suspend fun fetchEnabledPhotos(latitude: Double, longitude: Double): List<RemoveSkyEnabledPhoto>? =
         withContext(Dispatchers.IO) {
             val url = "$apiBase/search?source=local&limit=$MAX_ENABLED_URLS&lat=$latitude&lon=$longitude"
             val results = search(url) ?: return@withContext null
-            buildSet {
+            buildList {
                 for (i in 0 until results.length()) {
-                    val processedUrl = normalizeServiceUrl(results.getJSONObject(i).optString("processed_url"))
-                    if (processedUrl.isNotBlank()) add(processedUrl)
+                    val item = results.getJSONObject(i)
+                    val processedUrl = normalizeServiceUrl(item.optString("processed_url"))
+                    if (processedUrl.isBlank()) continue
+                    add(
+                        RemoveSkyEnabledPhoto(
+                            url = processedUrl,
+                            attribution = attributionOf(item),
+                            dayPeriod = item.optStringOrNull("day_period"),
+                            country = item.optStringOrNull("country"),
+                            season = item.optStringOrNull("season"),
+                        )
+                    )
                 }
             }
         }
@@ -138,6 +148,9 @@ class RemoveSkyProvider(
             RemoveSkyUploadResult(
                 processedUrl = normalizeServiceUrl(url),
                 location = resolvedLocation,
+                dayPeriod = json.optStringOrNull("day_period"),
+                country = json.optStringOrNull("country"),
+                season = json.optStringOrNull("season"),
             )
         }
     }
@@ -159,6 +172,9 @@ class RemoveSkyProvider(
                     url = processedUrl,
                     attribution = attributionOf(item),
                     alreadyProcessed = true,
+                    dayPeriod = item.optStringOrNull("day_period"),
+                    country = item.optStringOrNull("country"),
+                    season = item.optStringOrNull("season"),
                 )
             }
         }
@@ -168,15 +184,19 @@ class RemoveSkyProvider(
         var attempts = 0
         for (i in 0 until results.length()) {
             if (attempts >= MAX_PROCESS_ATTEMPTS) break
-            val imageUrl = results.getJSONObject(i).optString("image_url")
+            val item = results.getJSONObject(i)
+            val imageUrl = item.optString("image_url")
             if (imageUrl.isBlank()) continue
             attempts++
             val processedUrl = upload(imageUrl) ?: continue
             if (processedUrl in excludedUrls) continue
             return@withContext ImageResult(
                 url = processedUrl,
-                attribution = attributionOf(results.getJSONObject(i)),
+                attribution = attributionOf(item),
                 alreadyProcessed = true,
+                dayPeriod = item.optStringOrNull("day_period"),
+                country = item.optStringOrNull("country"),
+                season = item.optStringOrNull("season"),
             )
         }
         null
@@ -241,6 +261,9 @@ class RemoveSkyProvider(
         }
     }
 
+    private fun JSONObject.optStringOrNull(key: String): String? =
+        if (has(key) && !isNull(key)) optString(key).trim().ifBlank { null } else null
+
     private fun enc(value: String): String = URLEncoder.encode(value, "UTF-8")
 
     /** Keeps API-returned service URLs on the configured HTTPS origin behind a TLS proxy. */
@@ -271,7 +294,7 @@ class RemoveSkyProvider(
          * Upper bound when fetching all enabled URLs for a location to prune the local cache
          * or check for new ones. The `/search` endpoint rejects `limit` above 25 with a 400
          * (confirmed against the RemoveSky v0.3.1 API), so anything higher silently breaks
-         * every caller of [fetchEnabledUrls] by making the whole request fail.
+         * every caller of [fetchEnabledPhotos] by making the whole request fail.
          */
         private const val MAX_ENABLED_URLS = 25
         private const val USER_AGENT =
@@ -283,6 +306,18 @@ class RemoveSkyProvider(
 data class RemoveSkyUploadResult(
     val processedUrl: String,
     val location: String,
+    val dayPeriod: String? = null,
+    val country: String? = null,
+    val season: String? = null,
+)
+
+/** One entry of [RemoveSkyProvider.fetchEnabledPhotos]: a known-enabled photo plus its metadata. */
+data class RemoveSkyEnabledPhoto(
+    val url: String,
+    val attribution: String?,
+    val dayPeriod: String?,
+    val country: String?,
+    val season: String?,
 )
 
 class RemoveSkyHttpException(

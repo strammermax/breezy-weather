@@ -24,6 +24,12 @@ data class WallpaperPhotoRecord(
     val createdAt: Long,
     val updatedAt: Long,
     val lastShownAt: Long?,
+    /** "day" or "night", as classified by RemoveSky. Null if unknown. */
+    val dayPeriod: String? = null,
+    /** Country the photo was geotagged/located in, as resolved by RemoveSky. Null if unknown. */
+    val country: String? = null,
+    /** "winter"/"spring"/"summer"/"autumn", as classified by RemoveSky. Null if unknown. */
+    val season: String? = null,
 )
 
 class WallpaperPhotoRepository(
@@ -53,6 +59,9 @@ class WallpaperPhotoRepository(
         filePath: String,
         attribution: String?,
         processed: Boolean,
+        dayPeriod: String? = null,
+        country: String? = null,
+        season: String? = null,
         now: Long = System.currentTimeMillis(),
     ) = handler.await {
         wallpaper_photosQueries.upsertDownloaded(
@@ -63,6 +72,9 @@ class WallpaperPhotoRepository(
             filePath = filePath,
             attribution = attribution,
             processed = processed,
+            dayPeriod = dayPeriod,
+            country = country,
+            season = season,
             now = now,
         )
     }
@@ -102,6 +114,9 @@ class WallpaperPhotoRepository(
         createdAt: Long,
         updatedAt: Long,
         lastShownAt: Long?,
+        dayPeriod: String?,
+        country: String?,
+        season: String?,
     ) = WallpaperPhotoRecord(
         id = id,
         sourceUrl = sourceUrl,
@@ -116,5 +131,8 @@ class WallpaperPhotoRepository(
         createdAt = createdAt,
         updatedAt = updatedAt,
         lastShownAt = lastShownAt,
+        dayPeriod = dayPeriod,
+        country = country,
+        season = season,
     )
 }

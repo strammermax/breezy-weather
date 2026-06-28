@@ -200,6 +200,9 @@ class WallpaperRepository @Inject constructor(
                 filePath = cacheFile.absolutePath,
                 attribution = result.attribution,
                 processed = result.alreadyProcessed,
+                dayPeriod = result.dayPeriod,
+                country = result.country,
+                season = result.season,
             )
             store.recordRecentUrl(placeKey, url)
             if (activate) {
@@ -244,6 +247,9 @@ class WallpaperRepository @Inject constructor(
             filePath = cacheFile.absolutePath,
             attribution = "Camera / RemoveSky",
             processed = true,
+            dayPeriod = upload.dayPeriod,
+            country = upload.country,
+            season = upload.season,
         )
         store.recordRecentUrl(place.cacheFileName(), upload.processedUrl)
         store.activatePhoto(cacheFile.absolutePath, upload.processedUrl, "Camera / RemoveSky")
@@ -278,7 +284,8 @@ class WallpaperRepository @Inject constructor(
      * trigger a forced [refreshFor] to pick a replacement).
      */
     suspend fun pruneDisabledPhotos(latitude: Double, longitude: Double, place: PlaceQuery): Boolean {
-        val enabled = removeSkyProvider().fetchEnabledUrls(latitude, longitude) ?: return false
+        val enabledPhotos = removeSkyProvider().fetchEnabledPhotos(latitude, longitude) ?: return false
+        val enabled = enabledPhotos.mapTo(HashSet()) { it.url }
         val placeKey = place.cacheFileName()
 
         // 1. Trim recent-URL history to only still-enabled URLs.
@@ -309,8 +316,8 @@ class WallpaperRepository @Inject constructor(
     }
 
     /**
-     * Checks RemoveSky's *full* enabled-URL list for [place] (see [RemoveSkyProvider
-     * .fetchEnabledUrls]) against every URL already known locally for that location — whether
+     * Checks RemoveSky's *full* enabled-photo list for [place] (see [RemoveSkyProvider
+     * .fetchEnabledPhotos]) against every URL already known locally for that location — whether
      * currently downloaded, disabled, or merely "recently shown" — and downloads the first one
      * we don't have yet, without activating it as the live background.
      *
@@ -323,14 +330,14 @@ class WallpaperRepository @Inject constructor(
         val locationKey = placeKey.substringBeforeLast('.')
         synchronizePhotoCatalog()
 
-        val enabled = removeSkyProvider().fetchEnabledUrls(latitude, longitude)
+        val enabledPhotos = removeSkyProvider().fetchEnabledPhotos(latitude, longitude)
             ?: return CheckForNewPhotosResult.REQUEST_FAILED
         val known = photoCatalog.getForLocation(locationKey).mapNotNullTo(HashSet()) { it.sourceUrl }
-        val newUrl = enabled.firstOrNull { it !in known } ?: return CheckForNewPhotosResult.NONE_FOUND
+        val newPhoto = enabledPhotos.firstOrNull { it.url !in known } ?: return CheckForNewPhotosResult.NONE_FOUND
 
-        val bitmap = downloadSkyBitmap(newUrl, alreadyProcessed = true)
+        val bitmap = downloadSkyBitmap(newPhoto.url, alreadyProcessed = true)
             ?: return CheckForNewPhotosResult.REQUEST_FAILED
-        val cacheFile = cacheFile(place, newUrl)
+        val cacheFile = cacheFile(place, newPhoto.url)
         try {
             val written = cacheFile.outputStream().use {
                 bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it)
@@ -344,13 +351,16 @@ class WallpaperRepository @Inject constructor(
         }
         cacheFile.setLastModified(System.currentTimeMillis())
         photoCatalog.upsertDownloaded(
-            id = photoId(newUrl),
-            sourceUrl = newUrl,
+            id = photoId(newPhoto.url),
+            sourceUrl = newPhoto.url,
             locationKey = locationKey,
             locationName = place.displayName,
             filePath = cacheFile.absolutePath,
-            attribution = null,
+            attribution = newPhoto.attribution,
             processed = true,
+            dayPeriod = newPhoto.dayPeriod,
+            country = newPhoto.country,
+            season = newPhoto.season,
         )
         pruneLocationCache(cacheFile.parentFile, cacheFile)
         prunePhotoCache(cacheFile)

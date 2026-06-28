@@ -27,6 +27,12 @@ data class ImageResult(
      * RemoveSky service. The caller must then NOT run the on-device [SkySegmenter] again.
      */
     val alreadyProcessed: Boolean = false,
+    /** "day" or "night", as classified by RemoveSky from the source image. Null if unknown. */
+    val dayPeriod: String? = null,
+    /** Country the photo was geotagged/located in, as resolved by RemoveSky. Null if unknown. */
+    val country: String? = null,
+    /** "winter"/"spring"/"summer"/"autumn", as classified by RemoveSky. Null if unknown. */
+    val season: String? = null,
 )
 
 /**

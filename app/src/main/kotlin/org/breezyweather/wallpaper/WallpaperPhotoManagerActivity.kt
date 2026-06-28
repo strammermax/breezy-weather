@@ -240,6 +240,25 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
         }
     }
 
+    /** "Nederland · winter · dag" style caption from RemoveSky's country/season/day_period, or null if none known. */
+    @Composable
+    private fun photoMetaLine(photo: WallpaperPhotoRecord): String? {
+        val seasonLabel = when (photo.season) {
+            "winter" -> stringResource(R.string.wallpaper_photo_meta_season_winter)
+            "spring" -> stringResource(R.string.wallpaper_photo_meta_season_spring)
+            "summer" -> stringResource(R.string.wallpaper_photo_meta_season_summer)
+            "autumn" -> stringResource(R.string.wallpaper_photo_meta_season_autumn)
+            else -> null
+        }
+        val dayPeriodLabel = when (photo.dayPeriod) {
+            "day" -> stringResource(R.string.wallpaper_photo_meta_day)
+            "night" -> stringResource(R.string.wallpaper_photo_meta_night)
+            else -> null
+        }
+        val parts = listOfNotNull(photo.country?.takeIf { it.isNotBlank() }, seasonLabel, dayPeriodLabel)
+        return parts.takeIf { it.isNotEmpty() }?.joinToString(" · ")
+    }
+
     @Composable
     private fun PhotoCard(photo: WallpaperPhotoRecord) {
         Card(modifier = Modifier.fillMaxWidth()) {
@@ -253,6 +272,14 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(photo.locationName, fontWeight = FontWeight.Bold)
+                            val metaLine = photoMetaLine(photo)
+                            if (metaLine != null) {
+                                Text(
+                                    metaLine,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                             Text(
                                 stringResource(R.string.wallpaper_photo_views, photo.viewCount),
                                 style = MaterialTheme.typography.bodySmall,
