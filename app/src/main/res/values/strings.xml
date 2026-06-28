@@ -480,6 +480,9 @@
     <string name="action_retake">Retake</string>
     <string name="camera_uploading">Uploading photo...</string>
     <string name="camera_upload_success">Photo uploaded</string>
+    <string name="camera_gallery">Gallery</string>
+    <string name="camera_gallery_uploading">Uploading photo %1$d of %2$d…</string>
+    <string name="camera_gallery_result">%1$d uploaded, %2$d failed</string>
     <string name="camera_error_timeout">Could not connect to server (timeout)</string>
     <string name="camera_error_server_down">Server is unavailable</string>
     <string name="camera_error_general">Upload failed: %s</string>

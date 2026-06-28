@@ -823,6 +823,9 @@
     <string name="camera_set_live_wallpaper">Zet als live wallpaper</string>
     <string name="camera_close">Sluiten</string>
     <string name="camera_live_wallpaper_unavailable">Live wallpaper kon niet worden geopend</string>
+    <string name="camera_gallery">Galerij</string>
+    <string name="camera_gallery_uploading">Foto %1$d van %2$d uploaden…</string>
+    <string name="camera_gallery_result">%1$d geüpload, %2$d mislukt</string>
     <string name="action_radar">Regenradar</string>
     <string name="radar_title">Regenradar</string>
     <string name="radar_section_radar_map">Radarkaart (RainViewer)</string>

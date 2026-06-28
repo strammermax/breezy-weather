@@ -64,6 +64,18 @@
             android:background="@drawable/camera_capture_button_inner" />
     </FrameLayout>
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/galleryButton"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:text="@string/camera_gallery"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="@id/captureButton"
+        app:layout_constraintTop_toTopOf="@id/captureButton"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <LinearLayout
         android:id="@+id/resultContainer"
         android:layout_width="match_parent"

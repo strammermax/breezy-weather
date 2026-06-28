@@ -499,6 +499,7 @@ dependencies {
     implementation(libs.cardview)
     implementation(libs.swiperefreshlayout)
     implementation(libs.bundles.camerax)
+    implementation(libs.exifinterface)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.activity.compose)

@@ -10,6 +10,7 @@ import android.graphics.Matrix
 import android.location.Location
 import android.location.LocationManager
 import android.media.ExifInterface
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -18,6 +19,8 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -27,6 +30,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
+import androidx.exifinterface.media.ExifInterface as AndroidXExifInterface
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.breezyweather.R
@@ -38,7 +42,6 @@ import org.breezyweather.wallpaper.photo.WallpaperRepository
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import java.io.File
-import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
@@ -56,7 +59,13 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var captureButton: View
     private var captureInProgress = false
-    
+
+    private val pickGalleryPhotos = registerForActivityResult(
+        ActivityResultContracts.PickMultipleVisualMedia()
+    ) { uris ->
+        if (uris.isNotEmpty()) uploadGalleryPhotos(uris)
+    }
+
     companion object {
         private const val REQUEST_CODE_PERMISSIONS = 10
         private const val REQUEST_CODE_LOCATION_PERMISSIONS = 11
@@ -104,7 +113,11 @@ class CameraActivity : AppCompatActivity() {
         binding.captureButton.setOnClickListener {
             takePhoto()
         }
-        
+
+        binding.galleryButton.setOnClickListener {
+            pickGalleryPhotos.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        }
+
         binding.retakeButton.setOnClickListener {
             showCameraView()
         }
@@ -239,7 +252,7 @@ class CameraActivity : AppCompatActivity() {
 
                 fetchLocation { location ->
                     cameraExecutor.execute {
-                        uploadImage(file, bitmap, location)
+                        uploadImage(file, location)
                     }
                 }
             }
@@ -298,18 +311,17 @@ class CameraActivity : AppCompatActivity() {
             ?: locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
     }
 
-    private fun uploadImage(file: File, bitmap: Bitmap, location: Location?) {
-        var compressedFile: File? = null
+    private fun uploadImage(file: File, location: Location?) {
         try {
-            // Compress the (correctly oriented) image
-            compressedFile = File.createTempFile("compressed_", ".jpg", cacheDir)
-            val outputStream = FileOutputStream(compressedFile)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
-            outputStream.close()
+            // Upload the camera's own JPEG bytes as-is (not a Bitmap.compress() re-encode,
+            // which carries no EXIF support at all) so every EXIF tag the sensor wrote
+            // (datetime, make/model, orientation, ...) survives the upload. CameraX doesn't
+            // attach GPS itself, so fill it in from the location fix when one is available.
+            location?.let { addGpsToExif(file, it) }
 
             runBlocking {
                 wallpaperRepository.uploadCameraPhoto(
-                    file = compressedFile,
+                    file = file,
                     latitude = location?.latitude,
                     longitude = location?.longitude,
                 )
@@ -335,9 +347,85 @@ class CameraActivity : AppCompatActivity() {
                 }
             }
         } finally {
-            compressedFile?.delete()
             file.delete()
         }
+    }
+
+    /** Writes [location] into [file]'s GPS EXIF tags, leaving every other tag untouched. */
+    private fun addGpsToExif(file: File, location: Location) {
+        val exif = AndroidXExifInterface(file.absolutePath)
+        exif.setLatLong(location.latitude, location.longitude)
+        exif.saveAttributes()
+    }
+
+    private fun hasGpsExif(file: File): Boolean = try {
+        AndroidXExifInterface(file.absolutePath).latLong != null
+    } catch (e: Exception) {
+        false
+    }
+
+    /**
+     * Uploads several gallery photos one at a time, each keeping its own EXIF as-is — unlike a
+     * fresh camera capture, a gallery photo may already carry its own GPS (where it was
+     * actually taken), so the current location fix is only added when one isn't already there.
+     */
+    private fun uploadGalleryPhotos(uris: List<Uri>) {
+        binding.resultImageView.visibility = View.GONE
+        binding.resultTextView.text = getString(R.string.camera_gallery_uploading, 1, uris.size)
+        binding.progressBar.visibility = View.VISIBLE
+        showResultView()
+
+        fetchLocation { location ->
+            cameraExecutor.execute {
+                var successCount = 0
+                var failureCount = 0
+                uris.forEachIndexed { index, uri ->
+                    runOnUiThread {
+                        binding.resultTextView.text =
+                            getString(R.string.camera_gallery_uploading, index + 1, uris.size)
+                    }
+                    val file = copyUriToTempFile(uri)
+                    if (file == null) {
+                        failureCount++
+                        return@forEachIndexed
+                    }
+                    try {
+                        val locationToAdd = location?.takeIf { !hasGpsExif(file) }
+                        locationToAdd?.let { addGpsToExif(file, it) }
+                        runBlocking {
+                            wallpaperRepository.uploadCameraPhoto(
+                                file = file,
+                                latitude = locationToAdd?.latitude,
+                                longitude = locationToAdd?.longitude,
+                            )
+                        }
+                        successCount++
+                    } catch (e: Exception) {
+                        failureCount++
+                    } finally {
+                        file.delete()
+                    }
+                }
+                runOnUiThread {
+                    binding.progressBar.visibility = View.GONE
+                    binding.resultTextView.text = getString(R.string.camera_gallery_result, successCount, failureCount)
+                    binding.setLiveWallpaperButton.visibility = if (successCount > 0) View.VISIBLE else View.GONE
+                    binding.closeButton.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
+    /** Copies [uri]'s raw bytes into a private temp file, preserving its EXIF exactly. */
+    private fun copyUriToTempFile(uri: Uri): File? = try {
+        val file = File.createTempFile("gallery_", ".jpg", cacheDir)
+        val copied = contentResolver.openInputStream(uri)?.use { input ->
+            file.outputStream().use { output -> input.copyTo(output) }
+            true
+        } ?: false
+        if (copied) file else { file.delete(); null }
+    } catch (e: Exception) {
+        null
     }
 
     /** Maps the server response to a short, user-facing verdict with a ✓/✗ marker. */
