@@ -30,6 +30,9 @@ data class WallpaperPhotoRecord(
     val country: String? = null,
     /** "winter"/"spring"/"summer"/"autumn", as classified by RemoveSky. Null if unknown. */
     val season: String? = null,
+    /** The photo's own EXIF GPS coordinates, distinct from the matched place. Null if unknown. */
+    val exifLat: Double? = null,
+    val exifLon: Double? = null,
 )
 
 class WallpaperPhotoRepository(
@@ -62,6 +65,8 @@ class WallpaperPhotoRepository(
         dayPeriod: String? = null,
         country: String? = null,
         season: String? = null,
+        exifLat: Double? = null,
+        exifLon: Double? = null,
         now: Long = System.currentTimeMillis(),
     ) = handler.await {
         wallpaper_photosQueries.upsertDownloaded(
@@ -75,6 +80,8 @@ class WallpaperPhotoRepository(
             dayPeriod = dayPeriod,
             country = country,
             season = season,
+            exifLat = exifLat,
+            exifLon = exifLon,
             now = now,
         )
     }
@@ -117,6 +124,8 @@ class WallpaperPhotoRepository(
         dayPeriod: String?,
         country: String?,
         season: String?,
+        exifLat: Double?,
+        exifLon: Double?,
     ) = WallpaperPhotoRecord(
         id = id,
         sourceUrl = sourceUrl,
@@ -134,5 +143,7 @@ class WallpaperPhotoRepository(
         dayPeriod = dayPeriod,
         country = country,
         season = season,
+        exifLat = exifLat,
+        exifLon = exifLon,
     )
 }

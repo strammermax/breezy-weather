@@ -33,6 +33,12 @@ data class ImageResult(
     val country: String? = null,
     /** "winter"/"spring"/"summer"/"autumn", as classified by RemoveSky. Null if unknown. */
     val season: String? = null,
+    /**
+     * The photo's own EXIF GPS coordinates (where the camera was, not just the matched place) —
+     * only present for a minority of photos. Null if unknown.
+     */
+    val exifLatitude: Double? = null,
+    val exifLongitude: Double? = null,
 )
 
 /**

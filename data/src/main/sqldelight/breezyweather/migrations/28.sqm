@@ -1,0 +1,5 @@
+ALTER TABLE wallpaper_photos
+ADD COLUMN exif_lat REAL;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN exif_lon REAL;

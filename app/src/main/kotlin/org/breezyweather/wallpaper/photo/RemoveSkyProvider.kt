@@ -90,6 +90,8 @@ class RemoveSkyProvider(
                             dayPeriod = item.optStringOrNull("day_period"),
                             country = item.optStringOrNull("country"),
                             season = item.optStringOrNull("season"),
+                            exifLatitude = item.optDoubleOrNull("exif_lat"),
+                            exifLongitude = item.optDoubleOrNull("exif_lon"),
                         )
                     )
                 }
@@ -145,12 +147,17 @@ class RemoveSkyProvider(
             val resolvedLocation = json.optString("location").trim().ifBlank {
                 throw RemoveSkyHttpException(response.code, "Missing processed image location")
             }
+            // exif_gps is [lat, lon] (the photo's own EXIF GPS, distinct from the lat/lon we
+            // sent for place matching) — null when the source has no GPS EXIF.
+            val exifGps = json.optJSONArray("exif_gps")
             RemoveSkyUploadResult(
                 processedUrl = normalizeServiceUrl(url),
                 location = resolvedLocation,
                 dayPeriod = json.optStringOrNull("day_period"),
                 country = json.optStringOrNull("country"),
                 season = json.optStringOrNull("season"),
+                exifLatitude = exifGps?.takeIf { it.length() >= 2 }?.optDouble(0)?.takeIf { it.isFinite() },
+                exifLongitude = exifGps?.takeIf { it.length() >= 2 }?.optDouble(1)?.takeIf { it.isFinite() },
             )
         }
     }
@@ -175,6 +182,8 @@ class RemoveSkyProvider(
                     dayPeriod = item.optStringOrNull("day_period"),
                     country = item.optStringOrNull("country"),
                     season = item.optStringOrNull("season"),
+                    exifLatitude = item.optDoubleOrNull("exif_lat"),
+                    exifLongitude = item.optDoubleOrNull("exif_lon"),
                 )
             }
         }
@@ -197,6 +206,8 @@ class RemoveSkyProvider(
                 dayPeriod = item.optStringOrNull("day_period"),
                 country = item.optStringOrNull("country"),
                 season = item.optStringOrNull("season"),
+                exifLatitude = item.optDoubleOrNull("exif_lat"),
+                exifLongitude = item.optDoubleOrNull("exif_lon"),
             )
         }
         null
@@ -264,6 +275,9 @@ class RemoveSkyProvider(
     private fun JSONObject.optStringOrNull(key: String): String? =
         if (has(key) && !isNull(key)) optString(key).trim().ifBlank { null } else null
 
+    private fun JSONObject.optDoubleOrNull(key: String): Double? =
+        if (has(key) && !isNull(key)) optDouble(key).takeIf { it.isFinite() } else null
+
     private fun enc(value: String): String = URLEncoder.encode(value, "UTF-8")
 
     /** Keeps API-returned service URLs on the configured HTTPS origin behind a TLS proxy. */
@@ -309,6 +323,8 @@ data class RemoveSkyUploadResult(
     val dayPeriod: String? = null,
     val country: String? = null,
     val season: String? = null,
+    val exifLatitude: Double? = null,
+    val exifLongitude: Double? = null,
 )
 
 /** One entry of [RemoveSkyProvider.fetchEnabledPhotos]: a known-enabled photo plus its metadata. */
@@ -318,6 +334,8 @@ data class RemoveSkyEnabledPhoto(
     val dayPeriod: String?,
     val country: String?,
     val season: String?,
+    val exifLatitude: Double? = null,
+    val exifLongitude: Double? = null,
 )
 
 class RemoveSkyHttpException(

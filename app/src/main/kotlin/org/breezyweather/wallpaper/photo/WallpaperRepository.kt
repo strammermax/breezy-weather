@@ -160,6 +160,8 @@ class WallpaperRepository @Inject constructor(
                 photo.sourceUrl != null && photo.filePath?.let { File(it).isFile } == true
             },
             tried,
+            latitude = latitude,
+            longitude = longitude,
         )
         if (cachedCandidate != null) {
             val cachedFile = File(cachedCandidate.filePath!!)
@@ -203,6 +205,8 @@ class WallpaperRepository @Inject constructor(
                 dayPeriod = result.dayPeriod,
                 country = result.country,
                 season = result.season,
+                exifLat = result.exifLatitude,
+                exifLon = result.exifLongitude,
             )
             store.recordRecentUrl(placeKey, url)
             if (activate) {
@@ -250,6 +254,8 @@ class WallpaperRepository @Inject constructor(
             dayPeriod = upload.dayPeriod,
             country = upload.country,
             season = upload.season,
+            exifLat = upload.exifLatitude,
+            exifLon = upload.exifLongitude,
         )
         store.recordRecentUrl(place.cacheFileName(), upload.processedUrl)
         store.activatePhoto(cacheFile.absolutePath, upload.processedUrl, "Camera / RemoveSky")
@@ -361,6 +367,8 @@ class WallpaperRepository @Inject constructor(
             dayPeriod = newPhoto.dayPeriod,
             country = newPhoto.country,
             season = newPhoto.season,
+            exifLat = newPhoto.exifLatitude,
+            exifLon = newPhoto.exifLongitude,
         )
         pruneLocationCache(cacheFile.parentFile, cacheFile)
         prunePhotoCache(cacheFile)

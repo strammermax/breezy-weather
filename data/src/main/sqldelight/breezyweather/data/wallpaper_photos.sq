@@ -16,7 +16,9 @@ CREATE TABLE wallpaper_photos(
     last_shown_at INTEGER,
     day_period TEXT,
     country TEXT,
-    season TEXT
+    season TEXT,
+    exif_lat REAL,
+    exif_lon REAL
 );
 
 CREATE INDEX wallpaper_photos_location_idx ON wallpaper_photos(location_key);
@@ -42,12 +44,12 @@ upsertDownloaded:
 INSERT INTO wallpaper_photos(
     id, source_url, location_key, location_name, file_path, attribution, processed,
     rating, disabled, view_count, created_at, updated_at, last_shown_at,
-    day_period, country, season
+    day_period, country, season, exif_lat, exif_lon
 )
 VALUES (
     :id, :sourceUrl, :locationKey, :locationName, :filePath, :attribution, :processed,
     0, 0, 0, :now, :now, NULL,
-    :dayPeriod, :country, :season
+    :dayPeriod, :country, :season, :exifLat, :exifLon
 )
 ON CONFLICT(id) DO UPDATE SET
     source_url = coalesce(excluded.source_url, source_url),
@@ -59,7 +61,9 @@ ON CONFLICT(id) DO UPDATE SET
     updated_at = excluded.updated_at,
     day_period = coalesce(excluded.day_period, day_period),
     country = coalesce(excluded.country, country),
-    season = coalesce(excluded.season, season);
+    season = coalesce(excluded.season, season),
+    exif_lat = coalesce(excluded.exif_lat, exif_lat),
+    exif_lon = coalesce(excluded.exif_lon, exif_lon);
 
 setRating:
 UPDATE wallpaper_photos
