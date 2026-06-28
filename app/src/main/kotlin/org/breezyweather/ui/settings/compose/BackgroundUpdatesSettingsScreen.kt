@@ -106,11 +106,17 @@ fun BackgroundSettingsScreen(
                 val valueArray = stringArrayResource(R.array.automatic_refresh_rate_values)
                 val nameArray = stringArrayResource(R.array.automatic_refresh_rates).mapIndexed { index, value ->
                     UpdateInterval.entries.firstOrNull { it.id == valueArray[index] }?.let { updateInterval ->
-                        updateInterval.interval?.formatTime(
-                            context = context,
-                            smallestUnit = DurationUnit.MINUTES,
-                            unitWidth = UnitWidth.LONG
-                        )
+                        // "Automatisch" keeps its own label rather than showing its 1-hour
+                        // baseline, since the actual cadence varies with the adaptive refresh.
+                        if (updateInterval == UpdateInterval.INTERVAL_AUTO) {
+                            null
+                        } else {
+                            updateInterval.interval?.formatTime(
+                                context = context,
+                                smallestUnit = DurationUnit.MINUTES,
+                                unitWidth = UnitWidth.LONG
+                            )
+                        }
                     } ?: value
                 }.toTypedArray()
                 val dialogNeverRefreshOpenState = remember { mutableStateOf(false) }

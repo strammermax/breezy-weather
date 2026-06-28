@@ -29,6 +29,8 @@
     <!-- automatic refresh rate. -->
     <string-array name="automatic_refresh_rates">
         <item>@string/settings_background_updates_refresh_never</item>
+        <item>@string/settings_background_updates_refresh_auto</item>
+        <item>15 min</item>
         <item>30 min</item>
         <item>1 hr</item>
         <item>1 hr and 30 min</item>
@@ -40,6 +42,8 @@
     </string-array>
     <string-array name="automatic_refresh_rate_values">
         <item>never</item>
+        <item>auto</item>
+        <item>0:15</item>
         <item>0:30</item>
         <item>1:00</item>
         <item>1:30</item>

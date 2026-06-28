@@ -29,6 +29,15 @@ enum class UpdateInterval(
 ) : BaseEnum {
 
     INTERVAL_NEVER("never", null),
+
+    /**
+     * A 1-hour baseline, battery-friendly when nothing is happening — the adaptive refresh (see
+     * [org.breezyweather.background.weather.needsAdaptiveRefresh]) fills in the gaps with a
+     * short-interval follow-up whenever there's an active alert or the forecast is about to
+     * change, so this combines a calm default with fast reaction when it actually matters.
+     */
+    INTERVAL_AUTO("auto", 1.hours),
+    INTERVAL_0_15("0:15", 15.minutes),
     INTERVAL_0_30("0:30", 30.minutes),
     INTERVAL_1_00("1:00", 1.hours),
     INTERVAL_1_30("1:30", 1.5.hours),
@@ -45,7 +54,7 @@ enum class UpdateInterval(
             value: String,
         ) = entries.firstOrNull {
             it.id == value
-        } ?: INTERVAL_1_30
+        } ?: INTERVAL_AUTO
     }
 
     override val valueArrayId = R.array.automatic_refresh_rate_values

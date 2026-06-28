@@ -332,6 +332,15 @@ class WeatherUpdateJob @AssistedInject constructor(
                     .with(Location::class.java)
                     .postValue(it.second)
             }
+
+            // Re-evaluate the short-interval follow-up for every location we just refreshed:
+            // schedules one while an alert is active or the forecast is about to change, cancels
+            // it once neither applies any more (falling back to the normal polling rate).
+            newUpdates.forEach { (_, updated) ->
+                locationList.firstOrNull { it.formattedId == updated.formattedId }?.let {
+                    scheduleAdaptiveRefresh(context, it)
+                }
+            }
         }
 
         if (failedUpdates.isNotEmpty()) {
@@ -452,8 +461,47 @@ class WeatherUpdateJob @AssistedInject constructor(
         private const val MINUTES_PER_HOUR: Long = 60
         private const val BACKOFF_DELAY_MINUTES: Long = 10
 
+        private const val WORK_NAME_ADAPTIVE_PREFIX = "WeatherUpdate-adaptive-"
+
+        /**
+         * How soon to follow up while [needsAdaptiveRefresh] holds. A one-time work request
+         * (unlike [PeriodicWorkRequestBuilder]) has no 15-minute platform floor, so this can be
+         * genuinely shorter than the user's configured polling rate.
+         */
+        private const val ADAPTIVE_REFRESH_DELAY_MINUTES = 10L
+
         fun cancelAllWorks(context: Context) {
             context.workManager.cancelAllWorkByTag(TAG)
+        }
+
+        /**
+         * Schedules a one-time follow-up refresh for [location] in [ADAPTIVE_REFRESH_DELAY_MINUTES]
+         * when [needsAdaptiveRefresh] holds (an active alert, or precipitation expected to start
+         * or stop within the next two hours) — cancels any pending one otherwise, so this falls
+         * straight back to the user's configured polling rate once nothing urgent is happening.
+         *
+         * Never schedules anything when auto-refresh is disabled ("Nooit") or already at/below
+         * this delay — there'd be nothing to speed up.
+         */
+        fun scheduleAdaptiveRefresh(context: Context, location: Location) {
+            val workName = WORK_NAME_ADAPTIVE_PREFIX + location.formattedId
+            val wm = context.workManager
+            val pollingRate = SettingsManager.getInstance(context).updateInterval.interval
+            if (pollingRate == null ||
+                pollingRate.inWholeMinutes <= ADAPTIVE_REFRESH_DELAY_MINUTES ||
+                !needsAdaptiveRefresh(location.weather)
+            ) {
+                wm.cancelUniqueWork(workName)
+                return
+            }
+
+            val inputData = workDataOf(KEY_LOCATION to location.formattedId)
+            val request = OneTimeWorkRequestBuilder<WeatherUpdateJob>()
+                .addTag(TAG)
+                .setInitialDelay(ADAPTIVE_REFRESH_DELAY_MINUTES, TimeUnit.MINUTES)
+                .setInputData(inputData)
+                .build()
+            wm.enqueueUniqueWork(workName, ExistingWorkPolicy.REPLACE, request)
         }
 
         fun setupTask(
@@ -461,7 +509,10 @@ class WeatherUpdateJob @AssistedInject constructor(
         ) {
             val settings = SettingsManager.getInstance(context)
             val pollingRate = settings.updateInterval.interval
-            if (pollingRate != null && pollingRate > 15.minutes) {
+            // WorkManager clamps any PeriodicWorkRequest below its 15-minute platform floor, so
+            // exactly 15 minutes is the shortest interval that's genuinely honored (not just
+            // silently rounded up to 15 while claiming to be shorter).
+            if (pollingRate != null && pollingRate >= 15.minutes) {
                 val constraints = Constraints(
                     requiredNetworkType = NetworkType.CONNECTED,
                     requiresBatteryNotLow = settings.ignoreUpdatesWhenBatteryLow

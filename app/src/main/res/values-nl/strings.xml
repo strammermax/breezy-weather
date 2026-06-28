@@ -158,6 +158,7 @@
     <string name="widget_style_nano">Nano</string>
     <string name="settings_background_updates_refresh_title">Vernieuwingsfrequentie</string>
     <string name="settings_background_updates_refresh_never">Nooit</string>
+    <string name="settings_background_updates_refresh_auto">Automatisch</string>
     <string name="settings_units">Eenheden</string>
     <string name="settings_units_pressure">Drukeenheid</string>
     <string name="settings_main_cards_title">Tegels</string>
