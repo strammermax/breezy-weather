@@ -19,6 +19,16 @@ package org.breezyweather.wallpaper
 import android.content.Context
 import org.breezyweather.domain.settings.ConfigStore
 
+internal const val WEATHER_TYPE_ROTATING_TEST = "200"
+internal const val WEATHER_TYPE_DUTCH_CLOUDS = "201"
+
+internal fun normalizeWallpaperWeatherType(value: String): String = when (value) {
+    // Migrate values written by versions before the visual-only types received numeric IDs.
+    "rotating" -> WEATHER_TYPE_ROTATING_TEST
+    "HOLLANDSE_LUCHT" -> WEATHER_TYPE_DUTCH_CLOUDS
+    else -> value
+}
+
 class LiveWallpaperConfigManager(context: Context) {
     val weatherKind: String
     val dayNightType: String
@@ -34,7 +44,7 @@ class LiveWallpaperConfigManager(context: Context) {
 
     init {
         val config = ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
-        weatherKind = config.getString(KEY_WEATHER_KIND, null) ?: "auto"
+        weatherKind = normalizeWallpaperWeatherType(config.getString(KEY_WEATHER_KIND, null) ?: "auto")
         dayNightType = config.getString(KEY_DAY_NIGHT_TYPE, null) ?: "auto"
         animationsEnabled = config.getBoolean(KEY_ANIMATIONS_ENABLED, false)
         parallaxEnabled = config.getBoolean(KEY_PARALLAX_ENABLED, false)

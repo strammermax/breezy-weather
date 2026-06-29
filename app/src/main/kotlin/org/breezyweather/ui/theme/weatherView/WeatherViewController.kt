@@ -65,23 +65,26 @@ object WeatherViewController {
     }
 
     fun getWeatherText(weatherCode: WeatherCode): String {
-        val values = BreezyWeather.instance.resources.getStringArray(R.array.live_wallpaper_weather_kinds)
-        val index = when (weatherCode) {
-            WeatherCode.CLEAR -> 0
-            WeatherCode.PARTLY_CLOUDY -> 1
-            WeatherCode.CLOUDY -> 2
-            WeatherCode.RAIN -> 3
-            WeatherCode.SNOW -> 4
-            WeatherCode.SLEET -> 5
-            WeatherCode.HAIL -> 6
-            WeatherCode.FOG -> 7
-            WeatherCode.HAZE -> 8
-            WeatherCode.THUNDER -> 9
-            WeatherCode.THUNDERSTORM -> 10
-            WeatherCode.WIND -> 11
-            else -> 0
-        }
-        // ignore "automatic"
-        return values[index + 1]
+        return BreezyWeather.instance.getString(getWeatherTextResource(weatherCode))
+    }
+
+    /**
+     * Weather data must never be translated through the live-wallpaper preset array. That
+     * array also contains visual-only modes (codes 200 and 201), so its positions are not
+     * weather-code positions and can change independently.
+     */
+    internal fun getWeatherTextResource(weatherCode: WeatherCode): Int = when (weatherCode) {
+        WeatherCode.CLEAR -> R.string.weather_kind_clear
+        WeatherCode.PARTLY_CLOUDY -> R.string.weather_kind_partly_cloudy
+        WeatherCode.CLOUDY -> R.string.weather_kind_cloudy
+        WeatherCode.RAIN -> R.string.weather_kind_rain
+        WeatherCode.SNOW -> R.string.weather_kind_snow
+        WeatherCode.SLEET -> R.string.weather_kind_sleet
+        WeatherCode.HAIL -> R.string.weather_kind_hail
+        WeatherCode.FOG -> R.string.weather_kind_fog
+        WeatherCode.HAZE -> R.string.weather_kind_haze
+        WeatherCode.THUNDER -> R.string.weather_kind_thunder
+        WeatherCode.THUNDERSTORM -> R.string.weather_kind_thunderstorm
+        WeatherCode.WIND -> R.string.weather_kind_wind
     }
 }

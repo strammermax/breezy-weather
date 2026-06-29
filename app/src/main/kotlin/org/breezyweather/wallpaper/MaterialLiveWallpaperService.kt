@@ -1423,7 +1423,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val settingsManager = SettingsManager.getInstance(applicationContext)
             val configManager = LiveWallpaperConfigManager(this@MaterialLiveWallpaperService)
             mAnimate = configManager.animationsEnabled
-            mRotatingWeather = configManager.weatherKind == "rotating"
+            mRotatingWeather = configManager.weatherKind == WEATHER_TYPE_ROTATING_TEST
             mRotatingWeatherIndex = 0
             mRotation2D = 0f
             mRotation3D = 0f
@@ -1450,14 +1450,14 @@ class MaterialLiveWallpaperService : WallpaperService() {
             }
             val weatherKind = when (configManager.weatherKind) {
                 "auto" -> location?.weather?.current?.weatherCode
-                "rotating" -> null
-                "HOLLANDSE_LUCHT" -> WeatherCode.PARTLY_CLOUDY
+                WEATHER_TYPE_ROTATING_TEST -> null
+                WEATHER_TYPE_DUTCH_CLOUDS -> WeatherCode.PARTLY_CLOUDY
                 "LIGHT_RAIN", "HEAVY_RAIN" -> WeatherCode.RAIN
                 "LIGHT_FOG" -> WeatherCode.HAZE
                 "HEAVY_FOG" -> WeatherCode.FOG
                 else -> WeatherCode.getInstance(configManager.weatherKind)
             }
-            mForcedCloudCoverPercent = if (configManager.weatherKind == "HOLLANDSE_LUCHT") 70f else null
+            mForcedCloudCoverPercent = if (configManager.weatherKind == WEATHER_TYPE_DUTCH_CLOUDS) 70f else null
             mForcedPrecipitationMillimetersPerHour = when (configManager.weatherKind) {
                 "LIGHT_RAIN" -> 1f
                 "RAIN" -> 8f
@@ -1470,7 +1470,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 "HEAVY_FOG" -> 800f
                 else -> null
             }
-            mForcedRichSky = configManager.weatherKind == "HOLLANDSE_LUCHT"
+            mForcedRichSky = configManager.weatherKind == WEATHER_TYPE_DUTCH_CLOUDS
             val daytime = when (configManager.dayNightType) {
                 "day" -> true
                 "night" -> false

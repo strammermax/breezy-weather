@@ -219,10 +219,12 @@
     </string-array>
     <string-array name="live_wallpaper_weather_kind_values">
         <item>auto</item>
-        <item>rotating</item>
+        <!-- App-only visual test code; WMO weather codes currently end at 99. -->
+        <item>200</item>
         <item>CLEAR</item>
         <item>PARTLY_CLOUDY</item>
-        <item>HOLLANDSE_LUCHT</item>
+        <!-- App-only Dutch-cloud preset, kept outside the official WMO range. -->
+        <item>201</item>
         <item>CLOUDY</item>
         <item>LIGHT_RAIN</item>
         <item>RAIN</item>
