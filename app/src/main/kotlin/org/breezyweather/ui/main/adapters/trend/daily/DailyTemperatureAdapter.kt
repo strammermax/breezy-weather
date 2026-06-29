@@ -31,6 +31,7 @@ import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.common.extensions.formatMeasure
 import org.breezyweather.common.extensions.formatPercent
+import org.breezyweather.common.extensions.formatValue
 import org.breezyweather.common.extensions.getCalendarMonth
 import org.breezyweather.common.extensions.getThemeColor
 import org.breezyweather.common.options.appearance.DetailScreen
@@ -42,6 +43,7 @@ import org.breezyweather.ui.theme.ThemeManager
 import org.breezyweather.ui.theme.resource.ResourceHelper
 import org.breezyweather.ui.theme.resource.providers.ResourceProvider
 import org.breezyweather.unit.formatting.UnitWidth
+import org.breezyweather.unit.precipitation.Precipitation.Companion.millimeters
 import org.breezyweather.unit.temperature.TemperatureUnit
 import java.util.Date
 import kotlin.math.max
@@ -59,8 +61,13 @@ class DailyTemperatureAdapter(
     private val mResourceProvider: ResourceProvider = provider
     private val mDaytimeTemperatures: Array<Float?>
     private val mNighttimeTemperatures: Array<Float?>
+    private val mDailyPrecipitation: Array<Float?>
     private var mHighestTemperature: Float? = null
     private var mLowestTemperature: Float? = null
+    // Scaled to the highest *actual* daily total below (init block), not a fixed heavy-rain
+    // threshold — otherwise routine light rain would render as a barely-visible sliver next to
+    // an arbitrary, usually-unreached maximum.
+    private var mHighestDailyPrecipitation = 1.0.millimeters.inMicrometers.toFloat()
 
     inner class ViewHolder(itemView: View) : AbsDailyTrendAdapter.ViewHolder(itemView) {
         private val mPolylineAndHistogramView = PolylineAndHistogramView(itemView.context)
@@ -120,8 +127,19 @@ class DailyTemperatureAdapter(
             )
             val daytimePrecipitationProbability = daily.day?.precipitationProbability?.total
             val nighttimePrecipitationProbability = daily.night?.precipitationProbability?.total
-            val p = listOfNotNull(daytimePrecipitationProbability, nighttimePrecipitationProbability)
-                .takeIf { it.isNotEmpty() }?.maxBy { it.value }
+            val daytimeIsSnow = (daily.day?.precipitationProbability?.snow?.value ?: 0L) >
+                (daily.day?.precipitationProbability?.rain?.value ?: 0L)
+            val nighttimeIsSnow = (daily.night?.precipitationProbability?.snow?.value ?: 0L) >
+                (daily.night?.precipitationProbability?.rain?.value ?: 0L)
+            val dayPrecipitation = daily.day?.precipitation?.total
+            val nightPrecipitation = daily.night?.precipitation?.total
+            // Distinguish "known to be 0mm" (show it, connect the line) from "no data at all"
+            // (leave a gap) — both day and night absent is the only case treated as unknown.
+            val totalPrecipitation = if (dayPrecipitation != null || nightPrecipitation != null) {
+                ((dayPrecipitation?.inMillimeters ?: 0.0) + (nightPrecipitation?.inMillimeters ?: 0.0)).millimeters
+            } else {
+                null
+            }
             mPolylineAndHistogramView.setData(
                 buildTemperatureArrayForItem(mDaytimeTemperatures, position),
                 buildTemperatureArrayForItem(mNighttimeTemperatures, position),
@@ -144,6 +162,16 @@ class DailyTemperatureAdapter(
                 100f,
                 0f
             )
+            mPolylineAndHistogramView.setPrecipPolylineData(
+                buildTemperatureArrayForItem(mDailyPrecipitation, position),
+                totalPrecipitation?.formatMeasure(
+                    activity,
+                    valueWidth = UnitWidth.SHORT,
+                    unitWidth = UnitWidth.SHORT
+                ),
+                mHighestDailyPrecipitation,
+                0f
+            )
             val lightTheme = ThemeManager.isLightTheme(itemView.context, location)
             val dayColor = ContextCompat.getColor(itemView.context, R.color.colorTemperatureDay)
             val nightColor = ContextCompat.getColor(itemView.context, R.color.colorTemperatureNight)
@@ -162,19 +190,35 @@ class DailyTemperatureAdapter(
                 activity.getThemeColor(R.attr.colorBodyText),
                 activity.getThemeColor(R.attr.colorPrecipitationProbability)
             )
-            mPolylineAndHistogramView.setHistogramAlpha(if (lightTheme) 0.2f else 0.5f)
-            dailyItem.setPrecipitationProbability(
-                p?.takeIf { showPrecipitationProbability }?.formatPercent(activity, UnitWidth.NARROW)
+            mPolylineAndHistogramView.setPrecipColors(
+                activity.getThemeColor(R.attr.colorPrecipitationProbability),
+                activity.getThemeColor(R.attr.colorPrecipitationProbability)
+            )
+            dailyItem.setPrecipitationProbabilityDay(
+                daytimePrecipitationProbability?.takeIf { showPrecipitationProbability }
+                    ?.formatPercent(activity, UnitWidth.NARROW),
+                daytimeIsSnow
+            )
+            dailyItem.setPrecipitationProbabilityNight(
+                nighttimePrecipitationProbability?.takeIf { showPrecipitationProbability }
+                    ?.formatPercent(activity, UnitWidth.NARROW),
+                nighttimeIsSnow
             )
             dailyItem.setPrecipitationProbabilityColor(
                 activity.getThemeColor(R.attr.colorTitleText)
             )
-            val wind = daily.day?.wind ?: daily.night?.wind
-            val windIcon = wind?.drawableArrow?.let {
-                AppCompatResources.getDrawable(activity, it)
-            }
-            windIcon?.colorFilter = PorterDuffColorFilter(wind?.getColor(activity) ?: 0, PorterDuff.Mode.SRC_ATOP)
-            dailyItem.setWindDirection(windIcon)
+            dailyItem.setWindForceTextColor(
+                activity.getThemeColor(R.attr.colorTitleText)
+            )
+            val dayWind = daily.day?.wind
+            val dayWindIcon = dayWind?.drawableArrow?.let { AppCompatResources.getDrawable(activity, it) }
+            dayWindIcon?.colorFilter = PorterDuffColorFilter(dayWind?.getColor(activity) ?: 0, PorterDuff.Mode.SRC_ATOP)
+            dailyItem.setWindDirectionDay(dayWindIcon, dayWind?.speed?.inBeaufort?.toString())
+            val nightWind = daily.night?.wind
+            val nightWindIcon = nightWind?.drawableArrow?.let { AppCompatResources.getDrawable(activity, it) }
+            nightWindIcon?.colorFilter =
+                PorterDuffColorFilter(nightWind?.getColor(activity) ?: 0, PorterDuff.Mode.SRC_ATOP)
+            dailyItem.setWindDirectionNight(nightWindIcon, nightWind?.speed?.inBeaufort?.toString())
             dailyItem.setNightIconDrawable(
                 daily.night?.weatherCode?.let { ResourceHelper.getWeatherIcon(mResourceProvider, it, false) },
                 missingIconVisibility = View.INVISIBLE
@@ -246,6 +290,32 @@ class DailyTemperatureAdapter(
                 i += 2
             }
         }
+        mDailyPrecipitation = arrayOfNulls(max(0, weather.dailyForecast.size * 2 - 1))
+        run {
+            var i = 0
+            while (i < mDailyPrecipitation.size) {
+                val daily = weather.dailyForecast.getOrNull(i / 2)
+                val day = daily?.day?.precipitation?.total
+                val night = daily?.night?.precipitation?.total
+                mDailyPrecipitation[i] = if (day != null || night != null) {
+                    ((day?.inMicrometers ?: 0.0) + (night?.inMicrometers ?: 0.0)).toFloat()
+                } else {
+                    null
+                }
+                i += 2
+            }
+        }
+        run {
+            var i = 1
+            while (i < mDailyPrecipitation.size) {
+                if (mDailyPrecipitation[i - 1] != null && mDailyPrecipitation[i + 1] != null) {
+                    mDailyPrecipitation[i] = (mDailyPrecipitation[i - 1]!! + mDailyPrecipitation[i + 1]!!) * 0.5f
+                } else {
+                    mDailyPrecipitation[i] = null
+                }
+                i += 2
+            }
+        }
         weather.normals.getOrElse(Date().getCalendarMonth(location)) { null }?.let { normals ->
             mHighestTemperature = normals.daytimeTemperature?.value?.toFloat()
             mLowestTemperature = normals.nighttimeTemperature?.value?.toFloat()
@@ -266,6 +336,11 @@ class DailyTemperatureAdapter(
                 if (mLowestTemperature == null || it < mLowestTemperature!!) {
                     mLowestTemperature = it.toFloat()
                 }
+            }
+            val dailyTotalPrecipitation = (daily.day?.precipitation?.total?.inMicrometers ?: 0.0) +
+                (daily.night?.precipitation?.total?.inMicrometers ?: 0.0)
+            if (dailyTotalPrecipitation > mHighestDailyPrecipitation) {
+                mHighestDailyPrecipitation = dailyTotalPrecipitation.toFloat()
             }
         }
     }

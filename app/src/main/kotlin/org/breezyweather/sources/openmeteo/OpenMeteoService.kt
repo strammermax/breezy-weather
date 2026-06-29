@@ -769,7 +769,13 @@ class OpenMeteoService @Inject constructor(
             ?.split(",")
             ?.mapNotNull {
                 OpenMeteoWeatherModel.getInstance(it)
-            } ?: listOf(OpenMeteoWeatherModel.BEST_MATCH)
+            }
+            // "Best match" can mix models with different forecast-day coverage per variable
+            // (e.g. a short-range high-res model for temperature, a longer-range one for the
+            // weather code), leaving later days with a date/icon but no temperature or
+            // precipitation. KNMI Seamless blends short- and long-range data consistently
+            // across the full requested range, for this app's NL/Benelux-focused usage.
+            ?: listOf(OpenMeteoWeatherModel.KNMI_SEAMLESS)
     }
 
     data class WeatherModelStatus(

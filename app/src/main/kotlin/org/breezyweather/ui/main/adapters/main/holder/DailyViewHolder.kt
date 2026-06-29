@@ -123,6 +123,15 @@ class DailyViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
 
         title.text = context.getString(if (hourlyMode) R.string.hourly_forecast else R.string.daily_forecast)
 
+        // The RecyclerView's height is fixed in the layout XML to the daily dimension, since
+        // this one view is shared between both modes — without this, hourly mode left a tall
+        // empty gap below its (shorter) rows, showing the wallpaper photo through the card.
+        trendRecyclerView.layoutParams = trendRecyclerView.layoutParams.apply {
+            height = context.resources.getDimensionPixelSize(
+                if (hourlyMode) R.dimen.hourly_trend_item_height else R.dimen.daily_trend_item_height
+            )
+        }
+
         val sub = if (hourlyMode) weather.current?.hourlyForecast else weather.current?.dailyForecast
         if (!hourlyMode) {
             val availableDays = weather.dailyForecastStartingToday.size
@@ -173,14 +182,15 @@ class DailyViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
             buttonGroup.visibility = View.VISIBLE
             buttonGroup.children.filter { it is MaterialButton }.toList().forEach { buttonGroup.removeView(it) }
 
+            // Icon-only hamburger button (rather than a text button showing the current trend
+            // name) so it stays narrow and the title + mode toggle + this button fit on one line.
             val dropdownButton = MaterialButton(
                 context,
                 null,
-                com.google.android.material.R.attr.materialButtonOutlinedStyle
+                com.google.android.material.R.attr.materialIconButtonStyle
             )
             dropdownButton.isCheckable = false
-            dropdownButton.textSize = 11f
-            dropdownButton.text = displayNames.getOrNull(currentIndex)
+            dropdownButton.icon = ContextCompat.getDrawable(context, R.drawable.ic_list)
             dropdownButton.contentDescription = context.getString(R.string.action_more)
             dropdownButton.setOnClickListener { anchor ->
                 PopupMenu(context, anchor).apply {
@@ -191,7 +201,6 @@ class DailyViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                         applyIndex(menuItem.itemId)
                         selectedTabValue = displayNames[menuItem.itemId]
                         setSelectedTabCallback?.invoke(displayNames[menuItem.itemId])
-                        dropdownButton.text = displayNames[menuItem.itemId]
                         true
                     }
                     show()

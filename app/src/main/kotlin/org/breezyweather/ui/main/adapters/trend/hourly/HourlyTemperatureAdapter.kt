@@ -28,6 +28,7 @@ import androidx.core.content.ContextCompat
 import breezyweather.domain.location.model.Location
 import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
+import org.breezyweather.common.extensions.currentLocale
 import org.breezyweather.common.extensions.formatMeasure
 import org.breezyweather.common.extensions.formatPercent
 import org.breezyweather.common.extensions.getCalendarMonth
@@ -35,12 +36,15 @@ import org.breezyweather.common.extensions.getThemeColor
 import org.breezyweather.common.options.appearance.DetailScreen
 import org.breezyweather.domain.weather.model.drawableArrow
 import org.breezyweather.domain.weather.model.getColor
+import org.breezyweather.domain.weather.model.getUVColor
 import org.breezyweather.ui.common.widgets.trend.TrendRecyclerView
 import org.breezyweather.ui.common.widgets.trend.chart.PolylineAndHistogramView
 import org.breezyweather.ui.theme.ThemeManager
 import org.breezyweather.ui.theme.resource.ResourceHelper
 import org.breezyweather.ui.theme.resource.providers.ResourceProvider
 import org.breezyweather.unit.formatting.UnitWidth
+import org.breezyweather.unit.formatting.format
+import org.breezyweather.unit.precipitation.Precipitation.Companion.millimeters
 import org.breezyweather.unit.temperature.TemperatureUnit
 import java.util.Date
 import kotlin.math.max
@@ -57,8 +61,12 @@ class HourlyTemperatureAdapter(
 ) : AbsHourlyTrendAdapter(activity, location) {
     private val mResourceProvider: ResourceProvider = provider
     private val mTemperatures: Array<Float?>
+    private val mHourlyPrecipitation: Array<Float?>
     private var mHighestTemperature: Float? = null
     private var mLowestTemperature: Float? = null
+    // Scaled to the highest *actual* hourly amount below (init block), not a fixed threshold —
+    // otherwise routine light rain would render as a barely-visible sliver.
+    private var mHighestHourlyPrecipitation = 1.0.millimeters.inMicrometers.toFloat()
 
     inner class ViewHolder(itemView: View) : AbsHourlyTrendAdapter.ViewHolder(itemView) {
         private val mPolylineAndHistogramView = PolylineAndHistogramView(itemView.context)
@@ -110,6 +118,18 @@ class HourlyTemperatureAdapter(
                 100f,
                 0f
             )
+            val hourlyPrecipitation = hourly.precipitation?.total
+            mPolylineAndHistogramView.setPrecipPolylineData(
+                buildTemperatureArrayForItem(mHourlyPrecipitation, position),
+                hourlyPrecipitation?.formatMeasure(
+                    activity,
+                    valueWidth = UnitWidth.SHORT,
+                    unitWidth = UnitWidth.SHORT
+                ),
+                mHighestHourlyPrecipitation,
+                0f,
+                regionTopFraction = 0.78f
+            )
             val lightTheme = ThemeManager.isLightTheme(itemView.context, location)
             val dayColor = ContextCompat.getColor(itemView.context, R.color.colorTemperatureDay)
             val nightColor = ContextCompat.getColor(itemView.context, R.color.colorTemperatureNight)
@@ -128,7 +148,10 @@ class HourlyTemperatureAdapter(
                 activity.getThemeColor(R.attr.colorBodyText),
                 activity.getThemeColor(R.attr.colorPrecipitationProbability)
             )
-            mPolylineAndHistogramView.setHistogramAlpha(if (lightTheme) 0.2f else 0.5f)
+            mPolylineAndHistogramView.setPrecipColors(
+                activity.getThemeColor(R.attr.colorPrecipitationProbability),
+                activity.getThemeColor(R.attr.colorPrecipitationProbability)
+            )
             hourlyItem.setPrecipitationProbability(
                 p?.takeIf { showPrecipitationProbability }?.formatPercent(activity, UnitWidth.NARROW)
             )
@@ -140,7 +163,14 @@ class HourlyTemperatureAdapter(
                 AppCompatResources.getDrawable(activity, it)
             }
             windIcon?.colorFilter = PorterDuffColorFilter(wind?.getColor(activity) ?: 0, PorterDuff.Mode.SRC_ATOP)
-            hourlyItem.setWindDirection(windIcon)
+            hourlyItem.setWindDirection(windIcon, wind?.speed?.inBeaufort?.toString())
+            hourlyItem.setWindForceTextColor(
+                activity.getThemeColor(R.attr.colorTitleText)
+            )
+            hourlyItem.setUVIndex(
+                hourly.uV?.index?.format(decimals = 0, locale = activity.currentLocale),
+                hourly.uV?.getUVColor(activity) ?: activity.getThemeColor(R.attr.colorTitleText)
+            )
             hourlyItem.contentDescription = talkBackBuilder.toString()
             hourlyItem.setOnClickListener {
                 onItemClicked(activity, location, bindingAdapterPosition, DetailScreen.TAG_CONDITIONS)
@@ -202,6 +232,33 @@ class HourlyTemperatureAdapter(
                     }
                 }
             }
+        mHourlyPrecipitation = arrayOfNulls(max(0, weather.nextHourlyForecast.size * 2 - 1))
+        run {
+            var i = 0
+            while (i < mHourlyPrecipitation.size) {
+                val precip = weather.nextHourlyForecast.getOrNull(i / 2)?.precipitation?.total
+                mHourlyPrecipitation[i] = precip?.inMicrometers?.toFloat()
+                i += 2
+            }
+        }
+        run {
+            var i = 1
+            while (i < mHourlyPrecipitation.size) {
+                if (mHourlyPrecipitation[i - 1] != null && mHourlyPrecipitation[i + 1] != null) {
+                    mHourlyPrecipitation[i] = (mHourlyPrecipitation[i - 1]!! + mHourlyPrecipitation[i + 1]!!) * 0.5f
+                } else {
+                    mHourlyPrecipitation[i] = null
+                }
+                i += 2
+            }
+        }
+        weather.nextHourlyForecast.forEach { hourly ->
+            hourly.precipitation?.total?.inMicrometers?.let {
+                if (it > mHighestHourlyPrecipitation) {
+                    mHighestHourlyPrecipitation = it.toFloat()
+                }
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

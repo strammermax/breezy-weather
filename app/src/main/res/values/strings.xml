@@ -494,6 +494,17 @@
     <string name="camera_result_no_sky_at_top">Geen lucht bovenaan in beeld</string>
     <string name="camera_result_too_little_sky">Te weinig lucht bovenaan in beeld</string>
     <string name="camera_result_not_landscape">Geen landschapsfoto gedetecteerd</string>
+    <string name="camera_result_unknown_reason">Afgekeurd (onbekende reden)</string>
+    <string name="camera_card_source">Bron: %1$s</string>
+    <string name="camera_card_location">Locatie: %1$s</string>
+    <string name="camera_check_ok">Geschikt</string>
+    <string name="camera_source_camera">Camera</string>
+    <string name="camera_source_gallery">Galerij</string>
+    <string name="camera_check_sky">Lucht</string>
+    <string name="camera_check_outdoor">Buiten</string>
+    <string name="camera_check_color">Kleur</string>
+    <string name="camera_check_gps">GPS</string>
+    <string name="camera_check_date">Datum</string>
     <string name="action_add_debug_location" translatable="false">Add debug location</string>
     <string name="action_edit_location">Edit this location</string>
     <string name="action_open_in_other_app">Open in another app</string>

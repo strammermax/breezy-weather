@@ -1,0 +1,11 @@
+<!-- drawable/snowflake-outline.xml -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:height="24dp"
+    android:width="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="?attr/colorControlNormal">
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M11,1.5H13V5.21L15.59,2.62L17,4.04L13,8.04V10.6L17.13,8.2L17.88,9.97L13.75,12.35L17.88,14.73L17.13,16.5L13,14.1V16.66L17,20.66L15.59,22.08L13,19.49V23.2H11V19.49L8.41,22.08L7,20.66L11,16.66V14.1L6.87,16.5L6.12,14.73L10.25,12.35L6.12,9.97L6.87,8.2L11,10.6V8.04L7,4.04L8.41,2.62L11,5.21V1.5Z" />
+</vector>

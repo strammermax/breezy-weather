@@ -60,11 +60,21 @@ class HourlyTrendItemView @JvmOverloads constructor(
         isAntiAlias = true
         textAlign = Paint.Align.LEFT
     }
+    private val mWindForceTextPaint = Paint().apply {
+        isAntiAlias = true
+        textAlign = Paint.Align.LEFT
+    }
+    private val mUVTextPaint = Paint().apply {
+        isAntiAlias = true
+        textAlign = Paint.Align.CENTER
+    }
     private var mHourText: String? = null
     private var mPrecipitationText: String? = null
     private val mPrecipitationIconDrawable: Drawable? = ContextCompat.getDrawable(context, R.drawable.ic_water)?.mutate()
     private val mPrecipitationIconSize: Int
     private var mWindIconDrawable: Drawable? = null
+    private var mWindForceText: String? = null
+    private var mUVText: String? = null
     private val mWindIconSize: Int
 
     @IntDef(INVISIBLE, GONE)
@@ -85,6 +95,8 @@ class HourlyTrendItemView @JvmOverloads constructor(
     private var mPrecipitationRowHeight = 0f
     private var mWindRowTop = 0f
     private var mWindRowHeight = 0f
+    private var mUVRowTop = 0f
+    private var mUVRowHeight = 0f
     private val mIconSize: Int
     override var chartTop: Int = 0
         private set
@@ -101,8 +113,17 @@ class HourlyTrendItemView @JvmOverloads constructor(
             typeface = getContext().getTypefaceFromTextAppearance(R.style.content_text)
             textSize = getContext().resources.getDimensionPixelSize(R.dimen.subtitle_text_size).toFloat()
         }
+        mWindForceTextPaint.apply {
+            typeface = getContext().getTypefaceFromTextAppearance(R.style.content_text)
+            textSize = getContext().resources.getDimensionPixelSize(R.dimen.subtitle_text_size).toFloat()
+        }
+        mUVTextPaint.apply {
+            typeface = getContext().getTypefaceFromTextAppearance(R.style.content_text)
+            textSize = getContext().resources.getDimensionPixelSize(R.dimen.subtitle_text_size).toFloat()
+        }
         setTextColor(Color.BLACK)
         setPrecipitationProbabilityColor(Color.GRAY)
+        setWindForceTextColor(Color.GRAY)
         mIconSize = getContext().dpToPx(ICON_SIZE_DIP.toFloat()).toInt()
         mPrecipitationIconSize = getContext().dpToPx(PRECIPITATION_ICON_SIZE_DIP.toFloat()).toInt()
         mWindIconSize = getContext().dpToPx(WIND_ICON_SIZE_DIP.toFloat()).toInt()
@@ -152,6 +173,15 @@ class HourlyTrendItemView @JvmOverloads constructor(
         y += mWindRowHeight
         y += textMargin
 
+        // UV index row, below the wind row — extra margin so it reads as its own row instead
+        // of crowding the wind row above it.
+        y += textMargin
+        val uvFontMetrics = mUVTextPaint.fontMetrics
+        mUVRowHeight = uvFontMetrics.bottom - uvFontMetrics.top
+        mUVRowTop = y
+        y += mUVRowHeight
+        y += textMargin
+
         // margin bottom.
         val marginBottom = context.dpToPx(TrendRecyclerView.ITEM_MARGIN_BOTTOM_DIP.toFloat())
 
@@ -183,19 +213,6 @@ class HourlyTrendItemView @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas) {
-        // highlight background for the current hour's column.
-        if (mHighlighted) {
-            canvas.drawRoundRect(
-                0f,
-                0f,
-                measuredWidth.toFloat(),
-                measuredHeight.toFloat(),
-                mHighlightRadius,
-                mHighlightRadius,
-                mHighlightPaint
-            )
-        }
-
         // hour text.
         mHourText?.let {
             mHourTextPaint.color = mContentColor
@@ -234,12 +251,57 @@ class HourlyTrendItemView @JvmOverloads constructor(
             )
         }
 
-        // wind direction arrow, centered below the precipitation row.
-        mWindIconDrawable?.let {
-            it.setBounds(0, 0, mWindIconSize, mWindIconSize)
-            canvas.withTranslation((measuredWidth - mWindIconSize) / 2f, mWindRowTop) {
-                it.draw(canvas)
+        // wind direction arrow + Beaufort force, centered below the precipitation row.
+        mWindIconDrawable?.let { icon ->
+            val forceText = mWindForceText
+            val textWidth = forceText?.let { mWindForceTextPaint.measureText(it) } ?: 0f
+            val iconTextGap = forceText?.let { mWindIconSize / 4f } ?: 0f
+            val groupWidth = mWindIconSize + iconTextGap + textWidth
+            val groupLeft = (measuredWidth - groupWidth) / 2f
+            val rowCenterY = mWindRowTop + mWindRowHeight / 2f
+
+            icon.setBounds(0, 0, mWindIconSize, mWindIconSize)
+            canvas.withTranslation(groupLeft, mWindRowTop) {
+                icon.draw(canvas)
             }
+            forceText?.let {
+                val textFontMetrics = mWindForceTextPaint.fontMetrics
+                canvas.drawText(
+                    it,
+                    groupLeft + mWindIconSize + iconTextGap,
+                    rowCenterY - (textFontMetrics.top + textFontMetrics.bottom) / 2f,
+                    mWindForceTextPaint
+                )
+            }
+        }
+
+        // UV index, centered below the wind row.
+        mUVText?.let { text ->
+            val textFontMetrics = mUVTextPaint.fontMetrics
+            canvas.drawText(
+                text,
+                measuredWidth / 2f,
+                mUVRowTop - textFontMetrics.top,
+                mUVTextPaint
+            )
+        }
+    }
+
+    override fun dispatchDraw(canvas: Canvas) {
+        // Drawn after children (the chart) so the current-hour highlight overlays the whole
+        // column uniformly, including the chart area below the icon/precipitation/wind rows —
+        // drawing it in onDraw() instead left it hidden under the chart's own background fill.
+        super.dispatchDraw(canvas)
+        if (mHighlighted) {
+            canvas.drawRoundRect(
+                0f,
+                0f,
+                measuredWidth.toFloat(),
+                measuredHeight.toFloat(),
+                mHighlightRadius,
+                mHighlightRadius,
+                mHighlightPaint
+            )
         }
     }
 
@@ -264,8 +326,20 @@ class HourlyTrendItemView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun setWindDirection(d: Drawable?) {
+    fun setWindDirection(d: Drawable?, forceText: String? = null) {
         mWindIconDrawable = d
+        mWindForceText = forceText
+        invalidate()
+    }
+
+    fun setWindForceTextColor(@ColorInt color: Int) {
+        mWindForceTextPaint.color = color
+        invalidate()
+    }
+
+    fun setUVIndex(text: String?, @ColorInt color: Int) {
+        mUVText = text
+        mUVTextPaint.color = color
         invalidate()
     }
 

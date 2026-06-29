@@ -27,7 +27,7 @@
         <TextView
             android:id="@+id/daily_block_title"
             android:accessibilityHeading="true"
-            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textAppearance="?attr/textAppearanceTitleSmall"
             android:textColor="?attr/colorSurfaceInverse"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -38,13 +38,15 @@
             app:layout_constraintEnd_toStartOf="@+id/daily_block_controls_row"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Controls: toggle + dropdown, right-aligned, vertically centred with title -->
+        <!-- Controls: toggle + dropdown, right-aligned, vertically centred with title.
+             Margin kept small so the row sits close to the card edge, leaving the title as
+             much width as possible to fit "Verwachting per dag" on one line. -->
         <LinearLayout
             android:id="@+id/daily_block_controls_row"
             android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/large_margin"
+            android:layout_marginEnd="4dp"
             android:gravity="center_vertical"
             app:layout_constraintTop_toTopOf="@+id/daily_block_title"
             app:layout_constraintBottom_toBottomOf="@+id/daily_block_title"
@@ -70,7 +72,7 @@
 
         <TextView
             android:id="@+id/daily_block_subtitle"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="@dimen/small_margin"
             android:layout_marginHorizontal="@dimen/large_margin"
             android:layout_width="match_parent"
             style="@style/content_text"
@@ -81,7 +83,7 @@
             android:id="@+id/daily_block_trendRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="@dimen/daily_trend_item_height"
-            android:layout_marginTop="@dimen/small_margin"
+            android:layout_marginTop="@dimen/normal_margin"
             tools:ignore="UnusedAttribute"
             app:layout_constraintTop_toBottomOf="@+id/daily_block_subtitle"
             app:layout_constraintStart_toStartOf="parent" />

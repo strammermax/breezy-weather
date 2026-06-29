@@ -4,8 +4,10 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.Matrix
 import android.location.Location
 import android.location.LocationManager
@@ -17,12 +19,11 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.view.View
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -33,12 +34,15 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
 import androidx.exifinterface.media.ExifInterface as AndroidXExifInterface
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.breezyweather.R
 import org.breezyweather.databinding.ActivityCameraBinding
 import org.breezyweather.wallpaper.LiveWallpaperConfigActivity
 import org.breezyweather.wallpaper.launchLiveWallpaperPicker
+import org.breezyweather.wallpaper.photo.RemoveSkyCheckResult
 import org.breezyweather.wallpaper.photo.RemoveSkyHttpException
 import org.breezyweather.wallpaper.photo.WallpaperRepository
 import kotlinx.coroutines.runBlocking
@@ -64,20 +68,40 @@ class CameraActivity : AppCompatActivity() {
     private var captureInProgress = false
     private val galleryLog = StringBuilder()
 
+    // The privacy-sandboxed Photo Picker (PickMultipleVisualMedia) never honors
+    // MediaStore.setRequireOriginal()/ACCESS_MEDIA_LOCATION, even when granted — confirmed
+    // "Working As Intended" by Google (issuetracker.google.com/issues/243294058). Real GPS EXIF
+    // is only readable from genuine MediaStore URIs, so gallery upload uses the classic
+    // ACTION_GET_CONTENT gallery intent instead, which does return real MediaStore URIs.
     private val pickGalleryPhotos = registerForActivityResult(
-        ActivityResultContracts.PickMultipleVisualMedia()
-    ) { uris ->
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val data = result.data
+        val uris = buildList {
+            data?.clipData?.let { clipData ->
+                for (i in 0 until clipData.itemCount) add(clipData.getItemAt(i).uri)
+            }
+            data?.data?.let { if (isEmpty()) add(it) }
+        }
         if (uris.isNotEmpty()) uploadGalleryPhotos(uris)
     }
 
-    // Without ACCESS_MEDIA_LOCATION, MediaStore silently redacts GPS EXIF from every photo we
-    // read back from the picker (see copyUriToTempFile), regardless of what the original file
-    // has. The picker is launched either way — without the permission we just fall back to
-    // treating the photo as if it had no GPS of its own.
-    private val requestMediaLocationPermission = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
+    // READ_MEDIA_IMAGES (33+) / READ_EXTERNAL_STORAGE (<33) so the gallery intent below can
+    // resolve real MediaStore URIs at all; ACCESS_MEDIA_LOCATION so those URIs' GPS EXIF isn't
+    // redacted. The gallery intent launches regardless of the result — without these, photos
+    // just fall back to being treated as if they have no GPS of their own.
+    private val requestGalleryPermissions = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
     ) {
-        pickGalleryPhotos.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        launchGalleryPicker()
+    }
+
+    private fun launchGalleryPicker() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+            type = "image/*"
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        }
+        pickGalleryPhotos.launch(intent)
     }
 
     companion object {
@@ -89,7 +113,6 @@ class CameraActivity : AppCompatActivity() {
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
         private const val THUMBNAIL_SIZE_DIP = 96
-        private const val THUMBNAIL_MARGIN_DIP = 8
     }
 
     @Inject
@@ -131,13 +154,28 @@ class CameraActivity : AppCompatActivity() {
         }
 
         binding.galleryButton.setOnClickListener {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_MEDIA_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED
-            ) {
-                requestMediaLocationPermission.launch(Manifest.permission.ACCESS_MEDIA_LOCATION)
+            val readMediaPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Manifest.permission.READ_MEDIA_IMAGES
             } else {
-                pickGalleryPhotos.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            }
+            val missingPermissions = buildList {
+                if (ContextCompat.checkSelfPermission(this@CameraActivity, readMediaPermission) !=
+                    PackageManager.PERMISSION_GRANTED
+                ) {
+                    add(readMediaPermission)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                    ContextCompat.checkSelfPermission(this@CameraActivity, Manifest.permission.ACCESS_MEDIA_LOCATION) !=
+                    PackageManager.PERMISSION_GRANTED
+                ) {
+                    add(Manifest.permission.ACCESS_MEDIA_LOCATION)
+                }
+            }
+            if (missingPermissions.isNotEmpty()) {
+                requestGalleryPermissions.launch(missingPermissions.toTypedArray())
+            } else {
+                launchGalleryPicker()
             }
         }
 
@@ -173,7 +211,7 @@ class CameraActivity : AppCompatActivity() {
         binding.horizonGuideLabel.visibility = View.VISIBLE
         binding.captureButton.visibility = View.VISIBLE
         binding.resultImageView.visibility = View.GONE
-        binding.uploadedThumbnailsScroll.visibility = View.GONE
+        binding.uploadResultCardsScroll.visibility = View.GONE
         binding.resultTextView.visibility = View.GONE
         binding.retakeButton.visibility = View.GONE
         binding.setLiveWallpaperButton.visibility = View.GONE
@@ -187,7 +225,9 @@ class CameraActivity : AppCompatActivity() {
         binding.horizonGuideLabel.visibility = View.GONE
         binding.captureButton.visibility = View.GONE
         binding.resultImageView.visibility = View.VISIBLE
+        binding.resultTextScroll.visibility = View.VISIBLE
         binding.resultTextView.visibility = View.VISIBLE
+        binding.uploadResultCardsScroll.visibility = View.GONE
         binding.retakeButton.visibility = View.VISIBLE
         binding.resultContainer.visibility = View.VISIBLE
     }
@@ -276,7 +316,7 @@ class CameraActivity : AppCompatActivity() {
 
                 fetchLocation { location ->
                     cameraExecutor.execute {
-                        uploadImage(file, location)
+                        uploadImage(file, bitmap, location)
                     }
                 }
             }
@@ -335,7 +375,7 @@ class CameraActivity : AppCompatActivity() {
             ?: locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
     }
 
-    private fun uploadImage(file: File, location: Location?) {
+    private fun uploadImage(file: File, bitmap: Bitmap, location: Location?) {
         try {
             // Upload the camera's own JPEG bytes as-is (not a Bitmap.compress() re-encode,
             // which carries no EXIF support at all) so every EXIF tag the sensor wrote
@@ -343,7 +383,7 @@ class CameraActivity : AppCompatActivity() {
             // attach GPS itself, so fill it in from the location fix when one is available.
             location?.let { addGpsToExif(file, it) }
 
-            runBlocking {
+            val result = runBlocking {
                 wallpaperRepository.uploadCameraPhoto(
                     file = file,
                     latitude = location?.latitude,
@@ -351,19 +391,40 @@ class CameraActivity : AppCompatActivity() {
                 )
             }
 
-            runOnUiThread {
-                binding.progressBar.visibility = View.GONE
-                binding.resultTextView.text = "✓ " + getString(R.string.camera_result_saved)
-                binding.setLiveWallpaperButton.visibility = View.VISIBLE
-                binding.closeButton.visibility = View.VISIBLE
-            }
+            renderResultCards(
+                listOf(
+                    UploadCardData(
+                        thumbnail = bitmap,
+                        source = getString(R.string.camera_source_camera),
+                        locationName = result.location,
+                        processedUrl = result.processedUrl,
+                        uploadFailureReason = null,
+                    )
+                )
+            )
 
         } catch (e: Exception) {
-            runOnUiThread {
-                binding.progressBar.visibility = View.GONE
-                binding.setLiveWallpaperButton.visibility = View.GONE
+            val rejectionCode = extractRejectionReasonCode(e)
+            if (rejectionCode != null || e is RemoveSkyHttpException) {
                 binding.closeButton.visibility = View.VISIBLE
-                resultTextView.text = describeUploadError(e)
+                renderResultCards(
+                    listOf(
+                        UploadCardData(
+                            thumbnail = bitmap,
+                            source = getString(R.string.camera_source_camera),
+                            locationName = null,
+                            processedUrl = null,
+                            uploadFailureReason = rejectionCode ?: "unknown",
+                        )
+                    )
+                )
+            } else {
+                runOnUiThread {
+                    binding.progressBar.visibility = View.GONE
+                    binding.setLiveWallpaperButton.visibility = View.GONE
+                    binding.closeButton.visibility = View.VISIBLE
+                    resultTextView.text = describeUploadError(e)
+                }
             }
         } finally {
             file.delete()
@@ -378,6 +439,19 @@ class CameraActivity : AppCompatActivity() {
         else -> getString(R.string.camera_error_general, e.message ?: "Unknown error")
     }
 
+    /**
+     * The server's suitability rejection code (e.g. "no_sky_at_top") from a `/upload` 400
+     * response's `detail.reason`, or null when [e] isn't that kind of per-photo rejection.
+     */
+    private fun extractRejectionReasonCode(e: Exception): String? {
+        val body = (e as? RemoveSkyHttpException)?.responseBody?.takeIf { it.isNotBlank() } ?: return null
+        return try {
+            JSONObject(body).optJSONObject("detail")?.optString("reason")?.ifBlank { null }
+        } catch (ex: Exception) {
+            null
+        }
+    }
+
     /** Writes [location] into [file]'s GPS EXIF tags, leaving every other tag untouched. */
     private fun addGpsToExif(file: File, location: Location) {
         val exif = AndroidXExifInterface(file.absolutePath)
@@ -385,10 +459,11 @@ class CameraActivity : AppCompatActivity() {
         exif.saveAttributes()
     }
 
-    private fun hasGpsExif(file: File): Boolean = try {
-        AndroidXExifInterface(file.absolutePath).latLong != null
+    /** Reads [lat, lon] from [file]'s EXIF, or null if there's none (or it can't be read). */
+    private fun readGpsExif(file: File): DoubleArray? = try {
+        AndroidXExifInterface(file.absolutePath).latLong
     } catch (e: Exception) {
-        false
+        null
     }
 
     /**
@@ -404,10 +479,18 @@ class CameraActivity : AppCompatActivity() {
         showResultView()
 
         fetchLocation { location ->
+            appendGalleryLog(
+                if (location != null) {
+                    "Huidige locatie: %.5f, %.5f".format(location.latitude, location.longitude)
+                } else {
+                    "Huidige locatie: onbekend"
+                }
+            )
             cameraExecutor.execute {
                 var successCount = 0
                 var failureCount = 0
-                val uploadedUris = mutableListOf<Uri>()
+                val cardData = mutableListOf<UploadCardData>()
+                val thumbnailSizePx = (THUMBNAIL_SIZE_DIP * resources.displayMetrics.density).toInt()
                 uris.forEachIndexed { index, uri ->
                     val label = "Foto ${index + 1}/${uris.size}"
                     appendGalleryLog("$label: voorbereiden…")
@@ -417,34 +500,59 @@ class CameraActivity : AppCompatActivity() {
                         appendGalleryLog("$label: ✗ kon bestand niet lezen")
                         return@forEachIndexed
                     }
+                    val exifLatLong = readGpsExif(file)
+                    if (exifLatLong == null) {
+                        failureCount++
+                        appendGalleryLog("$label: ✗ geen EXIF-GPS in foto, overgeslagen")
+                        file.delete()
+                        return@forEachIndexed
+                    }
+                    appendGalleryLog("$label: EXIF-GPS gevonden: %.5f, %.5f".format(exifLatLong[0], exifLatLong[1]))
                     try {
-                        val locationToAdd = location?.takeIf { !hasGpsExif(file) }
-                        locationToAdd?.let { addGpsToExif(file, it) }
                         appendGalleryLog("$label: uploaden en verwerken op server…")
-                        runBlocking {
+                        val result = runBlocking {
                             wallpaperRepository.uploadCameraPhoto(
                                 file = file,
-                                latitude = locationToAdd?.latitude,
-                                longitude = locationToAdd?.longitude,
+                                latitude = exifLatLong[0],
+                                longitude = exifLatLong[1],
                             )
                         }
                         successCount++
-                        uploadedUris.add(uri)
+                        cardData.add(
+                            UploadCardData(
+                                thumbnail = decodeSampledBitmap(uri, thumbnailSizePx),
+                                source = getString(R.string.camera_source_gallery),
+                                locationName = result.location,
+                                processedUrl = result.processedUrl,
+                                uploadFailureReason = null,
+                            )
+                        )
                         appendGalleryLog("$label: ✓ opgeslagen")
                     } catch (e: Exception) {
                         failureCount++
                         appendGalleryLog("$label: ✗ ${describeUploadError(e)}")
+                        val rejectionCode = extractRejectionReasonCode(e)
+                        if (rejectionCode != null) {
+                            cardData.add(
+                                UploadCardData(
+                                    thumbnail = decodeSampledBitmap(uri, thumbnailSizePx),
+                                    source = getString(R.string.camera_source_gallery),
+                                    locationName = null,
+                                    processedUrl = null,
+                                    uploadFailureReason = rejectionCode,
+                                )
+                            )
+                        }
                     } finally {
                         file.delete()
                     }
                 }
                 appendGalleryLog("\n" + getString(R.string.camera_gallery_result, successCount, failureCount))
                 runOnUiThread {
-                    binding.progressBar.visibility = View.GONE
                     binding.setLiveWallpaperButton.visibility = if (successCount > 0) View.VISIBLE else View.GONE
                     binding.closeButton.visibility = View.VISIBLE
                 }
-                showUploadedThumbnails(uploadedUris)
+                renderResultCards(cardData)
             }
         }
     }
@@ -465,26 +573,126 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-    /** Shows a small thumbnail per successfully uploaded gallery photo. */
-    private fun showUploadedThumbnails(uris: List<Uri>) {
-        if (uris.isEmpty()) return
-        val thumbnailSizePx = (THUMBNAIL_SIZE_DIP * resources.displayMetrics.density).toInt()
-        val marginPx = (THUMBNAIL_MARGIN_DIP * resources.displayMetrics.density).toInt()
-        val thumbnails = uris.mapNotNull { decodeSampledBitmap(it, thumbnailSizePx) }
-        runOnUiThread {
-            binding.uploadedThumbnailsContainer.removeAllViews()
-            thumbnails.forEach { bitmap ->
-                val imageView = ImageView(this).apply {
-                    layoutParams = LinearLayout.LayoutParams(thumbnailSizePx, thumbnailSizePx).apply {
-                        marginEnd = marginPx
-                    }
-                    scaleType = ImageView.ScaleType.CENTER_CROP
-                    setImageBitmap(bitmap)
-                }
-                binding.uploadedThumbnailsContainer.addView(imageView)
-            }
-            binding.uploadedThumbnailsScroll.visibility = if (thumbnails.isNotEmpty()) View.VISIBLE else View.GONE
+    private data class UploadCardData(
+        val thumbnail: Bitmap?,
+        val source: String,
+        val locationName: String?,
+        /** Set on a successful upload; used to fetch `/check` diagnostics. Null on rejection. */
+        val processedUrl: String?,
+        /** Server rejection code (e.g. "no_sky_at_top") when the upload itself was rejected. */
+        val uploadFailureReason: String?,
+    )
+
+    /**
+     * Calls RemoveSky's `/check` for each successfully uploaded photo and renders one result
+     * card per attempted photo (success or rejected) — replaces the upload-progress log once
+     * done. Rejected photos never reached `/check`, so they only show the rejection reason.
+     */
+    private fun renderResultCards(results: List<UploadCardData>) {
+        binding.progressBar.let { runOnUiThread { it.visibility = View.GONE } }
+        if (results.isEmpty()) return
+        val checked = results.map { data ->
+            data to data.processedUrl?.let { runBlocking { wallpaperRepository.checkUploadedPhoto(it) } }
         }
+        runOnUiThread {
+            binding.resultTextScroll.visibility = View.GONE
+            binding.uploadResultCardsContainer.removeAllViews()
+            checked.forEach { (data, check) ->
+                binding.uploadResultCardsContainer.addView(buildResultCard(data, check))
+            }
+            binding.uploadResultCardsScroll.visibility = View.VISIBLE
+        }
+    }
+
+    private fun buildResultCard(data: UploadCardData, check: RemoveSkyCheckResult?): View {
+        val card = layoutInflater.inflate(R.layout.item_camera_upload_result, binding.uploadResultCardsContainer, false)
+        val thumbnailView = card.findViewById<ImageView>(R.id.cardThumbnail)
+        if (data.thumbnail != null) {
+            thumbnailView.setImageBitmap(data.thumbnail)
+        } else {
+            thumbnailView.visibility = View.GONE
+        }
+        card.findViewById<TextView>(R.id.cardSource).text = getString(R.string.camera_card_source, data.source)
+
+        val locationView = card.findViewById<TextView>(R.id.cardLocation)
+        if (data.locationName != null) {
+            locationView.visibility = View.VISIBLE
+            locationView.text = getString(R.string.camera_card_location, data.locationName)
+        }
+
+        val reasonView = card.findViewById<TextView>(R.id.cardReason)
+        when {
+            check != null && check.ok -> {
+                reasonView.visibility = View.VISIBLE
+                reasonView.setTextColor(Color.parseColor("#2E7D32"))
+                reasonView.text = "✓ " + getString(R.string.camera_check_ok)
+            }
+            check != null && !check.ok -> {
+                reasonView.visibility = View.VISIBLE
+                reasonView.setTextColor(Color.parseColor("#C62828"))
+                reasonView.text = "✗ " + reasonText(check.reason)
+            }
+            data.uploadFailureReason != null -> {
+                reasonView.visibility = View.VISIBLE
+                reasonView.setTextColor(Color.parseColor("#C62828"))
+                reasonView.text = "✗ " + reasonText(data.uploadFailureReason)
+            }
+            else -> reasonView.visibility = View.GONE
+        }
+
+        val checksGroup = card.findViewById<ChipGroup>(R.id.cardChecksGroup)
+        check?.checks?.let { c ->
+            addCheckChip(checksGroup, R.string.camera_check_sky, c.hasSkyTop)
+            addCheckChip(checksGroup, R.string.camera_check_outdoor, c.isOutdoor)
+            addCheckChip(checksGroup, R.string.camera_check_color, c.hasColor)
+            addCheckChip(checksGroup, R.string.camera_check_gps, c.hasGps)
+            addCheckChip(checksGroup, R.string.camera_check_date, c.hasDate)
+        }
+
+        val badgesGroup = card.findViewById<ChipGroup>(R.id.cardBadgesGroup)
+        check?.checks?.isNightVisual?.let { isNight ->
+            val label = getString(if (isNight) R.string.wallpaper_photo_meta_night else R.string.wallpaper_photo_meta_day)
+            addBadgeChip(badgesGroup, label)
+        }
+        check?.checks?.seasonVisual?.let { season ->
+            seasonLabel(season)?.let { addBadgeChip(badgesGroup, it) }
+        }
+
+        return card
+    }
+
+    private fun addCheckChip(group: ChipGroup, @StringRes labelRes: Int, value: Boolean?) {
+        val chip = layoutInflater.inflate(R.layout.item_camera_check_chip, group, false) as Chip
+        chip.text = getString(labelRes)
+        val color = when (value) {
+            true -> "#C8E6C9"
+            false -> "#FFCDD2"
+            null -> "#E0E0E0"
+        }
+        chip.chipBackgroundColor = ColorStateList.valueOf(Color.parseColor(color))
+        group.addView(chip)
+    }
+
+    private fun addBadgeChip(group: ChipGroup, label: String) {
+        val chip = layoutInflater.inflate(R.layout.item_camera_check_chip, group, false) as Chip
+        chip.text = label
+        chip.chipBackgroundColor = ColorStateList.valueOf(Color.parseColor("#BBDEFB"))
+        group.addView(chip)
+    }
+
+    private fun reasonText(reason: String?): String = when (reason) {
+        "no_sky_at_top" -> getString(R.string.camera_result_no_sky_at_top)
+        "insufficient_sky_in_top_region" -> getString(R.string.camera_result_too_little_sky)
+        "clip_not_landscape" -> getString(R.string.camera_result_not_landscape)
+        else -> getString(R.string.camera_result_unknown_reason)
+    }
+
+    private fun seasonLabel(season: String): String? = when (season) {
+        "winter" -> getString(R.string.wallpaper_photo_meta_season_winter)
+        "spring" -> getString(R.string.wallpaper_photo_meta_season_spring)
+        "summer" -> getString(R.string.wallpaper_photo_meta_season_summer)
+        "autumn" -> getString(R.string.wallpaper_photo_meta_season_autumn)
+        else -> null
     }
 
     /** Decodes [uri] downsampled to roughly [targetSizePx], avoiding a full-resolution load for a thumbnail. */

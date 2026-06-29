@@ -98,6 +98,47 @@ class RemoveSkyProvider(
             }
         }
 
+    /**
+     * Runs RemoveSky's suitability diagnostics (sky-at-top, outdoor, color, GPS, date, season)
+     * against an already-hosted image, e.g. right after [uploadFile] — used to show the user
+     * why their own upload was or wasn't a good background photo.
+     */
+    suspend fun checkImage(url: String): RemoveSkyCheckResult? = withContext(Dispatchers.IO) {
+        try {
+            val request = get("$apiBase/check?url=${enc(url)}")
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext null
+                val body = response.body?.string() ?: return@withContext null
+                val json = JSONObject(body)
+                val info = json.optJSONObject("info")
+                val checksJson = info?.optJSONObject("checks")
+                RemoveSkyCheckResult(
+                    ok = json.optBoolean("ok"),
+                    reason = json.optStringOrNull("reason"),
+                    skyFraction = if (json.has("sky_fraction") && !json.isNull("sky_fraction")) {
+                        json.optDouble("sky_fraction")
+                    } else {
+                        null
+                    },
+                    checks = checksJson?.let {
+                        RemoveSkyChecks(
+                            hasSkyTop = it.optBooleanOrNull("has_sky_top"),
+                            isOutdoor = it.optBooleanOrNull("is_outdoor"),
+                            hasColor = it.optBooleanOrNull("has_color"),
+                            hasGps = it.optBooleanOrNull("has_gps"),
+                            hasDate = it.optBooleanOrNull("has_date"),
+                            isNightVisual = it.optBooleanOrNull("is_night_visual"),
+                            seasonVisual = it.optStringOrNull("season_visual"),
+                        )
+                    },
+                )
+            }
+        } catch (e: Throwable) {
+            log("check error for $url: ${e.message}")
+            null
+        }
+    }
+
     suspend fun healthStatus(): String? = withContext(Dispatchers.IO) {
         try {
             client.newCall(get("$apiBase/health")).execute().use { response ->
@@ -278,6 +319,9 @@ class RemoveSkyProvider(
     private fun JSONObject.optDoubleOrNull(key: String): Double? =
         if (has(key) && !isNull(key)) optDouble(key).takeIf { it.isFinite() } else null
 
+    private fun JSONObject.optBooleanOrNull(key: String): Boolean? =
+        if (has(key) && !isNull(key)) optBoolean(key) else null
+
     private fun enc(value: String): String = URLEncoder.encode(value, "UTF-8")
 
     /** Keeps API-returned service URLs on the configured HTTPS origin behind a TLS proxy. */
@@ -342,3 +386,22 @@ class RemoveSkyHttpException(
     val statusCode: Int,
     val responseBody: String,
 ) : Exception("RemoveSky HTTP $statusCode")
+
+/** Result of [RemoveSkyProvider.checkImage] — why a photo was or wasn't accepted as a background. */
+data class RemoveSkyCheckResult(
+    val ok: Boolean,
+    /** Short failure code, e.g. "no_sky_at_top", "clip_not_landscape". Null when [ok]. */
+    val reason: String?,
+    val skyFraction: Double?,
+    val checks: RemoveSkyChecks?,
+)
+
+data class RemoveSkyChecks(
+    val hasSkyTop: Boolean?,
+    val isOutdoor: Boolean?,
+    val hasColor: Boolean?,
+    val hasGps: Boolean?,
+    val hasDate: Boolean?,
+    val isNightVisual: Boolean?,
+    val seasonVisual: String?,
+)

@@ -39,6 +39,12 @@ data class WallpaperCacheStats(
     val totalBytes: Long,
 )
 
+data class CameraUploadResult(
+    val file: File,
+    val processedUrl: String,
+    val location: String?,
+)
+
 enum class CheckForNewPhotosResult {
     FOUND,
     NONE_FOUND,
@@ -225,7 +231,7 @@ class WallpaperRepository @Inject constructor(
         file: File,
         latitude: Double?,
         longitude: Double?,
-    ): File {
+    ): CameraUploadResult {
         val upload = removeSkyProvider().uploadFile(file, latitude, longitude)
         val place = PlaceQuery(city = upload.location)
         val bitmap = downloadSkyBitmap(upload.processedUrl, alreadyProcessed = true)
@@ -262,8 +268,14 @@ class WallpaperRepository @Inject constructor(
         photoCatalog.markShown(photoId(upload.processedUrl))
         pruneLocationCache(cacheFile.parentFile, cacheFile)
         prunePhotoCache(cacheFile)
-        return cacheFile
+        return CameraUploadResult(cacheFile, upload.processedUrl, upload.location)
     }
+
+    /**
+     * Runs RemoveSky's suitability diagnostics against an already-uploaded photo's URL — used to
+     * show the user why their own camera/gallery upload was or wasn't a good background photo.
+     */
+    suspend fun checkUploadedPhoto(url: String): RemoveSkyCheckResult? = removeSkyProvider().checkImage(url)
 
     /**
      * Downloads [url] and returns the bitmap to cache: the sky-erased (transparent) version when

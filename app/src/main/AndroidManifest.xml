@@ -20,6 +20,10 @@
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
+    <!-- API 33+ equivalent of READ_EXTERNAL_STORAGE, scoped to images — needed (together with
+         ACCESS_MEDIA_LOCATION) to read real MediaStore URIs with intact GPS EXIF for the
+         gallery upload picker; the Photo Picker contract alone never honors setRequireOriginal. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <!-- background jobs -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />

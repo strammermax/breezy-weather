@@ -243,7 +243,7 @@ class BreezyTimeZoneService @Inject constructor(
             "NF" -> "Pacific/Norfolk"
             "NG" -> "Africa/Lagos"
             "NI" -> "America/Managua"
-            "NL" -> "Europe/Brussels"
+            "NL" -> "Europe/Amsterdam"
             "NO" -> "Europe/Berlin"
             "NP" -> "Asia/Kathmandu"
             "NR" -> "Pacific/Nauru"
