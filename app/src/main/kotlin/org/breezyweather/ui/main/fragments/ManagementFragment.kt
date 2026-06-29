@@ -529,6 +529,7 @@ open class ManagementFragment : MainModuleFragment(), TouchReactor {
                 (requireActivity() as MainActivity).sourceManager,
                 mClickListener = { formattedId ->
                     viewModel.setLocation(formattedId)
+                    (requireActivity() as MainActivity).refreshLiveWallpaperPhoto()
                     parentFragmentManager.popBackStack()
                 },
                 mDragListener = { holder ->

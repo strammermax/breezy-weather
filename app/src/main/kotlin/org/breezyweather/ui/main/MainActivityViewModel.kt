@@ -448,6 +448,19 @@ class MainActivityViewModel @Inject constructor(
                         total = locationList.size,
                         index = index
                     )
+
+                    // The live wallpaper always reads the first location in this list (it has
+                    // no reactive listener of its own), so switching here also moves it to the
+                    // top — otherwise the wallpaper would keep showing whichever location used
+                    // to be first.
+                    if (index != 0) {
+                        swapLocations(index, 0)
+                    }
+
+                    // Mirror pull-to-refresh: switching to a location you haven't looked at in a
+                    // while shouldn't show stale weather until the next scheduled background
+                    // update happens to run.
+                    updateWithUpdatingChecking(triggeredByUser = true, checkPermissions = true)
                 }
             }
         }
