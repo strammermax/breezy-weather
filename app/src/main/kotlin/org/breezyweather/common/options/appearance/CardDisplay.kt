@@ -56,7 +56,11 @@ enum class CardDisplay(
     CARD_SUN("sun", R.string.ephemeris_sun),
     CARD_MOON("moon", R.string.ephemeris_moon),
     CARD_CLOCK("clock", R.string.clock),
-    CARD_RADAR("radar", R.string.action_radar),
+    CARD_RADAR(
+        "radar",
+        R.string.action_radar,
+        { activity -> IntentHelper.startRadarTileSettingsActivity(activity) },
+    ),
     CARD_WIDGET(
         "widget",
         R.string.widget_tile,

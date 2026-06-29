@@ -386,6 +386,20 @@ class SettingsManager private constructor(
         }
         get() = config.getString("tile_text_color", null) ?: "auto"
 
+    var radarTileSource: String
+        set(value) {
+            config.edit().putString("radar_tile_source", value).apply()
+            notifySettingsChanged()
+        }
+        get() = config.getString("radar_tile_source", null) ?: "rainviewer"
+
+    var radarTileMapStyle: String
+        set(value) {
+            config.edit().putString("radar_tile_map_style", value).apply()
+            notifySettingsChanged()
+        }
+        get() = config.getString("radar_tile_map_style", null) ?: "auto"
+
     var isGravitySensorEnabled: Boolean
         set(value) {
             config.edit().putBoolean("gravity_sensor_switch", value).apply()

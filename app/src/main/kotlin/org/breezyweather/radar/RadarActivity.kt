@@ -24,10 +24,7 @@ import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.ViewGroup
-import android.webkit.GeolocationPermissions
-import android.webkit.WebChromeClient
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -37,7 +34,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -70,6 +66,7 @@ import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.common.extensions.isBackgroundAnimationEnabled
 import org.breezyweather.domain.location.model.isDaylight
+import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.ui.common.widgets.Material3Scaffold
 import org.breezyweather.ui.common.widgets.insets.FitStatusBarTopAppBar
 import org.breezyweather.ui.theme.compose.BreezyWeatherTheme
@@ -113,6 +110,9 @@ class RadarActivity : BreezyActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        radarSource = intent.getStringExtra(EXTRA_RADAR_SOURCE)
+            ?.takeIf { it in RADAR_SOURCES }
+            ?: "rainviewer"
         // Same sky-gradient backdrop as the main screen / details screen (ACT-013/ACT-014),
         // instead of an opaque Material surface, so this screen doesn't look like a different app.
         window.setBackgroundDrawableResource(R.drawable.bg_glass_sky)
@@ -320,9 +320,9 @@ class RadarActivity : BreezyActivity() {
                         }
                     }
                     "meteoblue" -> {
-                        MeteoblueMap(modifier = Modifier.fillMaxWidth().height(480.dp))
+                        MeteoblueMap(latitude, longitude, modifier = Modifier.fillMaxWidth().height(480.dp))
                     }
-                    else -> BuienradarGadgetMap()
+                    else -> BuienradarMap(latitude, longitude, modifier = Modifier.fillMaxWidth().height(480.dp))
                 }
 
                 // Rain trend chart — only shown for the RainViewer tab
@@ -376,7 +376,12 @@ class RadarActivity : BreezyActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     @Composable
     private fun RadarMap(latitude: Double, longitude: Double, modifier: Modifier = Modifier) {
-        val dark = isSystemInDarkTheme()
+        val dark = when (SettingsManager.getInstance(this).radarTileMapStyle) {
+            "dark" -> true
+            "light" -> false
+            else -> resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK ==
+                android.content.res.Configuration.UI_MODE_NIGHT_YES
+        }
         AndroidView(
             modifier = modifier,
             factory = { ctx ->
@@ -389,38 +394,12 @@ class RadarActivity : BreezyActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     @Composable
-    private fun MeteoblueMap(modifier: Modifier = Modifier) {
-        // Meteoblue's official embeddable map widget (user's own embed/sig credentials from
-        // meteoblue.com/.../weer/widget/setupmap/...). Loaded as the WebView's own top-level page
-        // (not nested in an <iframe> wrapper) the same way RadarMap/BuienradarGadgetMap load their
-        // provider directly — wrapping it in an extra iframe caused the WebView to size itself to
-        // nearly the full screen instead of the Compose-constrained height.
-        // geoloc=detect makes the widget center on the browser's geolocation rather than fixed
-        // lat/lon query params, so the WebView needs geolocation permission granted — the app
-        // already requires location access for the wallpaper/radar location features, so we
-        // auto-grant it here rather than re-prompting.
-        val url = "https://www.meteoblue.com/nl/weer/kaarten/widget/" +
-            "?windAnimation=1&gust=1&satellite=1&cloudsAndPrecipitation=1&temperature=1" +
-            "&sunshine=1&extremeForecastIndex=1&geoloc=detect&tempunit=C&lengthunit=metric" +
-            "&windunit=km%2Fh&zoom=9&autowidth=auto&user_key=0a5701c1a618c300" +
-            "&embed_key=b96976639e93ec69" +
-            "&sig=f1a56965f0827f57cd89becfe1203c2d8490581410f23cd74a415ac95d423cbf"
+    private fun MeteoblueMap(latitude: Double?, longitude: Double?, modifier: Modifier = Modifier) {
         AndroidView(
             modifier = modifier,
             factory = { ctx ->
                 WebView(ctx).apply {
-                    settings.javaScriptEnabled = true
-                    settings.domStorageEnabled = true
-                    webViewClient = WebViewClient()
-                    webChromeClient = object : WebChromeClient() {
-                        override fun onGeolocationPermissionsShowPrompt(
-                            origin: String?,
-                            callback: GeolocationPermissions.Callback?,
-                        ) {
-                            callback?.invoke(origin, true, false)
-                        }
-                    }
-                    loadUrl(url)
+                    RadarWebMapLoader.loadMeteoblue(this, latitude, longitude)
                 }
             }
         )
@@ -428,22 +407,12 @@ class RadarActivity : BreezyActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     @Composable
-    private fun BuienradarGadgetMap() {
-        // The small "radarfivedays" gadget is just a looping GIF of the last ~2h, with no
-        // way to look forward (its `time=` param is ignored). Buienradar's own site has the
-        // -1u/+3u/+8u/+24u/+48u map the user actually wants, but that widget isn't exposed as
-        // a standalone embeddable gadget — only their full homepage carries it, and that page
-        // sends X-Frame-Options: SAMEORIGIN (so it refuses to load inside an <iframe>).
-        // Loading it as the WebView's own top-level page (not nested in an iframe) sidesteps
-        // that header entirely, the same way RadarMap/WindyMap load their provider directly.
+    private fun BuienradarMap(latitude: Double?, longitude: Double?, modifier: Modifier = Modifier) {
         AndroidView(
-            modifier = Modifier.fillMaxWidth().height(640.dp),
+            modifier = modifier,
             factory = { ctx ->
                 WebView(ctx).apply {
-                    settings.javaScriptEnabled = true
-                    settings.domStorageEnabled = true
-                    webViewClient = WebViewClient()
-                    loadUrl("https://www.buienradar.nl/")
+                    RadarWebMapLoader.loadBuienradar(this, latitude, longitude)
                 }
             }
         )
@@ -451,10 +420,13 @@ class RadarActivity : BreezyActivity() {
 
     companion object {
         private const val EXTRA_LOCATION_ID = "radar_location_id"
+        private const val EXTRA_RADAR_SOURCE = "radar_source"
+        private val RADAR_SOURCES = setOf("rainviewer", "buienradar", "meteoblue")
 
-        fun createIntent(context: Context, location: Location): Intent {
+        fun createIntent(context: Context, location: Location, radarSource: String? = null): Intent {
             return Intent(context, RadarActivity::class.java).apply {
                 putExtra(EXTRA_LOCATION_ID, location.formattedId)
+                radarSource?.let { putExtra(EXTRA_RADAR_SOURCE, it) }
             }
         }
     }

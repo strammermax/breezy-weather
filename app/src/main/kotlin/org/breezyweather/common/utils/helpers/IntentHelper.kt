@@ -38,6 +38,7 @@ import org.breezyweather.ui.settings.activities.DailyTrendDisplayManageActivity
 import org.breezyweather.ui.settings.activities.DependenciesActivity
 import org.breezyweather.ui.settings.activities.DetailsOverviewDisplayManageActivity
 import org.breezyweather.ui.settings.activities.HourlyTrendDisplayManageActivity
+import org.breezyweather.ui.settings.activities.RadarTileSettingsActivity
 import org.breezyweather.ui.settings.activities.PreviewIconActivity
 import org.breezyweather.ui.settings.activities.PrivacyPolicyActivity
 import org.breezyweather.ui.settings.activities.SettingsActivity
@@ -148,6 +149,10 @@ object IntentHelper {
 
     fun startWidgetTileSelectActivity(activity: Activity) {
         activity.startActivity(Intent(activity, WidgetTileSelectActivity::class.java))
+    }
+
+    fun startRadarTileSettingsActivity(activity: Activity) {
+        activity.startActivity(Intent(activity, RadarTileSettingsActivity::class.java))
     }
 
     fun startDailyTrendDisplayManageActivity(activity: Activity) {

@@ -206,6 +206,11 @@
             android:theme="@style/BreezyWeatherTheme" />
 
         <activity
+            android:name=".ui.settings.activities.RadarTileSettingsActivity"
+            android:label="@string/settings_radar_tile_title"
+            android:theme="@style/BreezyWeatherTheme" />
+
+        <activity
             android:name=".ui.settings.activities.DetailsOverviewDisplayManageActivity"
             android:label="@string/details_overview_select"
             android:theme="@style/BreezyWeatherTheme" />

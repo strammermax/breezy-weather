@@ -17,7 +17,9 @@ import breezyweather.domain.location.model.Location
 import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.radar.RadarActivity
+import org.breezyweather.radar.RadarWebMapLoader
 import org.breezyweather.radar.RainViewerMap
+import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.ui.theme.resource.providers.ResourceProvider
 
 class RadarViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
@@ -34,12 +36,25 @@ class RadarViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
     ) {
         super.onBindView(activity, location, provider, listAnimationEnabled, itemAnimationEnabled)
         radarMap.onResume()
-        val dark = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
-            Configuration.UI_MODE_NIGHT_YES
-        RainViewerMap.load(radarMap, location.latitude, location.longitude, dark, compact = true)
+        val settings = SettingsManager.getInstance(context)
+        when (settings.radarTileSource) {
+            "buienradar" -> RadarWebMapLoader.loadBuienradar(radarMap, location.latitude, location.longitude)
+            "meteoblue" -> RadarWebMapLoader.loadMeteoblue(radarMap, location.latitude, location.longitude)
+            else -> {
+                val dark = when (settings.radarTileMapStyle) {
+                    "dark" -> true
+                    "light" -> false
+                    else -> context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
+                        Configuration.UI_MODE_NIGHT_YES
+                }
+                RainViewerMap.load(radarMap, location.latitude, location.longitude, dark, compact = true)
+            }
+        }
 
         itemView.contentDescription = context.getString(R.string.action_radar)
-        itemView.setOnClickListener { context.startActivity(RadarActivity.createIntent(context, location)) }
+        itemView.setOnClickListener {
+            context.startActivity(RadarActivity.createIntent(context, location, settings.radarTileSource))
+        }
         radarMap.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_UP) itemView.performClick()
             true
