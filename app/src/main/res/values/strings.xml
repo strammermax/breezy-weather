@@ -374,6 +374,7 @@
     <string name="visibility_short">Visibility</string>
     <string name="visibility_about">About visibility</string>
     <string name="visibility_about_description">Visibility tells you how far away you can clearly see objects like buildings and hills. Visibility can be affected by precipitation, fog, dust, smoke or haze.</string>
+    <string name="details_overview_visibility_label">Visibility: %1$s</string>
     <string name="visibility_scale">Visibility scale</string>
     <!-- 10 to 20 km, %1$s = 10, %2$s = 20 km -->
     <string name="visibility_from_to_number">%1$s to %2$s</string>

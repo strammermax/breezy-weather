@@ -192,6 +192,7 @@
     <string name="ephemeris_moonrise_at">Maanopgang om %s</string>
     <string name="ephemeris_moonset_at">Maansondergang om %s</string>
     <string name="visibility">Zicht</string>
+    <string name="details_overview_visibility_label">Zicht: %1$s</string>
     <string name="dew_point">Dauwpunt</string>
     <string name="message_server_timeout">Verzoek is verlopen</string>
     <string name="widget_custom_subtitle_keyword_cv_description">Huidig zicht</string>

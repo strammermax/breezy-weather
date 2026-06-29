@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import breezyweather.domain.location.model.Location
@@ -68,7 +67,6 @@ import org.breezyweather.common.extensions.toCalendarWithTimeZone
 import org.breezyweather.common.extensions.toTimezoneSpecificHour
 import org.breezyweather.common.extensions.windowHeightInDp
 import org.breezyweather.domain.settings.SettingsManager
-import org.breezyweather.ui.theme.ThemeManager
 import java.util.Calendar
 import java.util.Date
 import kotlin.math.max
@@ -114,14 +112,9 @@ fun BreezyBarChart(
         maxY = maxY
     )
 
-    val lineColor = Color(context.getThemeColor(com.google.android.material.R.attr.colorOutline))
-    val labelColor = colorResource(
-        if (ThemeManager.isLightTheme(context, location)) {
-            R.color.colorTextGrey
-        } else {
-            R.color.colorTextGrey2nd
-        }
-    )
+    val glassStyle = rememberGlassChartStyle()
+    val lineColor = glassStyle.outline
+    val labelColor = glassStyle.content
     val marker = rememberDefaultCartesianMarker(
         label = if (markerFormatter == null) {
             // TODO: Report upstream to have a way to hide it
@@ -211,6 +204,7 @@ fun BreezyBarChart(
         consumeMoveEvents = true,
         modifier = modifier
             .height(max(BAR_CHART_HEIGHT_MIN_DP.toFloat(), context.windowHeightInDp.div(4)).dp)
+            .withGlassChartBackground(glassStyle.background)
     )
 }
 

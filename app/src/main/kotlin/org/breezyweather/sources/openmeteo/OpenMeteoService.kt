@@ -384,7 +384,7 @@ class OpenMeteoService @Inject constructor(
 
         return CurrentWrapper(
             weatherText = getWeatherText(context, current.weatherCode),
-            weatherCode = getWeatherCode(current.weatherCode),
+            weatherCode = getOpenMeteoWeatherCode(current.weatherCode),
             temperature = TemperatureWrapper(
                 temperature = current.temperature?.celsius,
                 feelsLike = current.apparentTemperature?.celsius
@@ -465,7 +465,7 @@ class OpenMeteoService @Inject constructor(
                     date = hourlyResult.time[i].seconds.inWholeMilliseconds.toDate(),
                     isDaylight = if (hourlyResult.isDay?.getOrNull(i) != null) hourlyResult.isDay[i] > 0 else null,
                     weatherText = getWeatherText(context, hourlyResult.weatherCode?.getOrNull(i)),
-                    weatherCode = getWeatherCode(hourlyResult.weatherCode?.getOrNull(i)),
+                    weatherCode = getOpenMeteoWeatherCode(hourlyResult.weatherCode?.getOrNull(i)),
                     temperature = TemperatureWrapper(
                         temperature = hourlyResult.temperature?.getOrNull(i)?.celsius,
                         feelsLike = hourlyResult.apparentTemperature?.getOrNull(i)?.celsius
@@ -602,30 +602,6 @@ class OpenMeteoService @Inject constructor(
             95 -> context.getString(R.string.openmeteo_weather_text_thunderstorm_slight_or_moderate)
             96 -> context.getString(R.string.openmeteo_weather_text_thunderstorm_with_slight_hail)
             99 -> context.getString(R.string.openmeteo_weather_text_thunderstorm_with_heavy_hail)
-            else -> null
-        }
-    }
-
-    private fun getWeatherCode(
-        icon: Int?,
-    ): WeatherCode? {
-        return when (icon) {
-            null -> null
-            0, 1 -> WeatherCode.CLEAR // Clear sky or Mainly clear
-            2 -> WeatherCode.PARTLY_CLOUDY // Partly cloudy
-            3 -> WeatherCode.CLOUDY // Overcast
-            45, 48 -> WeatherCode.FOG // Fog and depositing rime fog
-            51, 53, 55, // Drizzle: Light, moderate, and dense intensity
-            56, 57, // Freezing Drizzle: Light and dense intensity
-            61, 63, 65, // Rain: Slight, moderate and heavy intensity
-            66, 67, // Freezing Rain: Light and heavy intensity
-            80, 81, 82, // Rain showers: Slight, moderate, and violent
-            -> WeatherCode.RAIN
-            71, 73, 75, // Snow fall: Slight, moderate, and heavy intensity
-            85, 86, // Snow showers slight and heavy
-            -> WeatherCode.SNOW
-            77 -> WeatherCode.SLEET // Snow grains
-            95, 96, 99 -> WeatherCode.THUNDERSTORM // Thunderstorm with slight and heavy hail
             else -> null
         }
     }

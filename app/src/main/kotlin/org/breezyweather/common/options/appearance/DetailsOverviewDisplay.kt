@@ -38,6 +38,10 @@ enum class DetailsOverviewDisplay(
     TAG_DEW_POINT("dew_point", R.string.dew_point),
     TAG_PRESSURE("pressure", R.string.pressure),
     TAG_OZONE("ozone", R.string.air_quality_o3_voice),
+    TAG_SUN("sun", R.string.ephemeris_sun),
+    TAG_MOON("moon", R.string.ephemeris_moon),
+    TAG_AIR_QUALITY("air_quality", R.string.air_quality),
+    TAG_POLLEN("pollen", R.string.pollen),
     ;
 
     companion object {

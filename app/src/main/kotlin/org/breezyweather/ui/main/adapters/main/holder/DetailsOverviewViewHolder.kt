@@ -47,19 +47,27 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import breezyweather.domain.location.model.Location
 import org.breezyweather.R
 import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.common.extensions.formatMeasure
 import org.breezyweather.common.extensions.formatPercent
+import org.breezyweather.common.extensions.getFormattedTime
 import org.breezyweather.common.extensions.getVisibilityDescription
+import org.breezyweather.common.extensions.is12Hour
 import org.breezyweather.common.options.appearance.DetailScreen
 import org.breezyweather.common.options.appearance.DetailsOverviewDisplay
 import org.breezyweather.common.utils.helpers.IntentHelper
 import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.domain.weather.model.getDirection
+import org.breezyweather.domain.weather.model.getDescription
+import org.breezyweather.domain.weather.model.getIndex
+import org.breezyweather.domain.weather.model.getIndexName
 import org.breezyweather.domain.weather.model.getLevel
+import org.breezyweather.domain.weather.model.getName
+import org.breezyweather.domain.weather.model.validAirQuality
 import org.breezyweather.ui.theme.ThemeManager
 import org.breezyweather.ui.theme.compose.BreezyWeatherTheme
 import org.breezyweather.ui.theme.resource.providers.ResourceProvider
@@ -96,6 +104,7 @@ class DetailsOverviewViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
         val infoText: String,
         val tag: DetailsOverviewDisplay,
         val iconRotation: Float = 0f,
+        val labelOverride: String? = null,
     )
 
     @Composable
@@ -159,7 +168,11 @@ class DetailsOverviewViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                 R.string.visibility,
                 current?.visibility?.getVisibilityDescription(context)
                     ?: context.getString(R.string.visibility_about_description),
-                DetailsOverviewDisplay.TAG_VISIBILITY
+                DetailsOverviewDisplay.TAG_VISIBILITY,
+                labelOverride = context.getString(
+                    R.string.details_overview_visibility_label,
+                    current?.visibility?.getVisibilityDescription(context) ?: "-",
+                ),
             ),
             DetailItem(
                 R.string.wind,
@@ -226,6 +239,44 @@ class DetailsOverviewViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                 R.string.air_quality_o3_voice,
                 context.getString(R.string.air_quality_o3_sources),
                 DetailsOverviewDisplay.TAG_OZONE
+            ),
+            DetailItem(
+                R.string.ephemeris_sun,
+                R.drawable.weather_clear_day_mini_xml,
+                location.weather?.today?.sun?.riseDate?.getFormattedTime(location, context, context.is12Hour) ?: "-",
+                DetailScreen.TAG_SUN_MOON,
+                R.string.ephemeris_about,
+                context.getString(R.string.ephemeris_about_rise),
+                DetailsOverviewDisplay.TAG_SUN,
+            ),
+            DetailItem(
+                R.string.ephemeris_moon,
+                R.drawable.weather_clear_night_mini_xml,
+                location.weather?.today?.moonPhase?.getDescription(context) ?: "-",
+                DetailScreen.TAG_SUN_MOON,
+                R.string.ephemeris_about,
+                context.getString(R.string.ephemeris_about_rise),
+                DetailsOverviewDisplay.TAG_MOON,
+            ),
+            DetailItem(
+                R.string.air_quality,
+                R.drawable.weather_haze_mini_xml,
+                location.weather?.validAirQuality?.getIndex()?.toString() ?: "-",
+                DetailScreen.TAG_AIR_QUALITY,
+                R.string.air_quality_index_about,
+                context.getString(R.string.air_quality_index_about_description_1),
+                DetailsOverviewDisplay.TAG_AIR_QUALITY,
+                labelOverride = location.weather?.validAirQuality?.getName(context)
+                    ?.let { "${context.getString(R.string.air_quality)}: $it" },
+            ),
+            DetailItem(
+                R.string.pollen,
+                R.drawable.ic_allergy,
+                location.weather?.today?.pollen?.getIndexName(context) ?: "-",
+                DetailScreen.TAG_POLLEN,
+                R.string.pollen,
+                context.getString(R.string.pollen),
+                DetailsOverviewDisplay.TAG_POLLEN,
             )
         )
 
@@ -328,16 +379,25 @@ class DetailsOverviewViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = stringResource(item.labelId),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = item.labelOverride ?: stringResource(item.labelId),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
-            IconButton(onClick = onInfoClick) {
+            IconButton(
+                onClick = onInfoClick,
+                modifier = Modifier
+                    .align(Alignment.Top)
+                    .size(32.dp),
+            ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_help),
                     contentDescription = stringResource(R.string.action_help),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }
