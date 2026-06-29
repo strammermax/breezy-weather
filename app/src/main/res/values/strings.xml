@@ -754,6 +754,13 @@
     <string name="radar_source_nl">Netherlands (5 days)</string>
     <string name="radar_source_wind">Wind &amp; pressure</string>
     <string name="radar_source_meteoblue">Meteoblue</string>
+    <string name="radar_source_buienradar">Buienradar</string>
+    <string name="settings_radar_tile_title">Rain radar tile</string>
+    <string name="settings_radar_tile_source">Radar source</string>
+    <string name="settings_radar_tile_world_style">Worldwide map style</string>
+    <string name="radar_map_style_auto">Automatic</string>
+    <string name="radar_map_style_dark">Black</string>
+    <string name="radar_map_style_light">White</string>
     <!-- Settings (new design) -->
     <string name="settings_section_general">General</string>
     <string name="settings_background_updates">Background updates</string>

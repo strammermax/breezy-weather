@@ -837,6 +837,13 @@
     <string name="radar_section_radar_map">Radarkaart (RainViewer)</string>
     <string name="radar_section_rain_trend">Regen-trend (Buienradar)</string>
     <string name="radar_frames_unavailable">Radar niet beschikbaar</string>
+    <string name="radar_source_buienradar">Buienradar</string>
+    <string name="settings_radar_tile_title">Regenradartegel</string>
+    <string name="settings_radar_tile_source">Radar op de tegel</string>
+    <string name="settings_radar_tile_world_style">Stijl van Worldwide</string>
+    <string name="radar_map_style_auto">Automatisch</string>
+    <string name="radar_map_style_dark">Zwart</string>
+    <string name="radar_map_style_light">Wit</string>
     <string name="widget_live_wallpaper_photo_background">Foto-achtergrond van locatie</string>
     <string name="widget_live_wallpaper_photo_background_summary">Gebruik een foto van waar je bent als achtergrond, met de weer-animatie eroverheen</string>
     <string name="widget_live_wallpaper_cache_usage">%1$d achtergrondfoto’s gecachet · %2$.1f MB gebruikt</string>
