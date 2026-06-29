@@ -36,6 +36,7 @@ import org.breezyweather.ui.settings.activities.CardDisplayManageActivity
 import org.breezyweather.ui.settings.activities.WidgetTileSelectActivity
 import org.breezyweather.ui.settings.activities.DailyTrendDisplayManageActivity
 import org.breezyweather.ui.settings.activities.DependenciesActivity
+import org.breezyweather.ui.settings.activities.DetailsOverviewDisplayManageActivity
 import org.breezyweather.ui.settings.activities.HourlyTrendDisplayManageActivity
 import org.breezyweather.ui.settings.activities.PreviewIconActivity
 import org.breezyweather.ui.settings.activities.PrivacyPolicyActivity
@@ -155,6 +156,10 @@ object IntentHelper {
 
     fun startHourlyTrendDisplayManageActivity(activity: Activity) {
         activity.startActivity(Intent(activity, HourlyTrendDisplayManageActivity::class.java))
+    }
+
+    fun startDetailsOverviewDisplayManageActivity(activity: Activity) {
+        activity.startActivity(Intent(activity, DetailsOverviewDisplayManageActivity::class.java))
     }
 
     fun startMainScreenSettingsActivity(activity: Activity) {

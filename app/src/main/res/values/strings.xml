@@ -9,6 +9,8 @@
     <string name="current_weather">Current weather</string>
     <!-- Nowcasting is a FORECAST of the next 2-3 hours, also called "immediate forecast" -->
     <string name="precipitation_nowcasting">Precipitation nowcasting</string>
+    <string name="details_overview">Details</string>
+    <string name="details_overview_select">Choose details</string>
     <string name="air_quality">Air quality</string>
     <!-- About 12 characters max -->
     <string name="air_quality_short">Air quality</string>
@@ -85,6 +87,8 @@
     <!-- Translate while taking into account it is a text spread on 2 lines (3 may overlap) of about 12 characters each -->
     <string name="precipitation_total_night">Nighttime precipitation</string>
     <string name="precipitation_probability">Precipitation probability</string>
+    <string name="precipitation_probability_about_description">The precipitation probability is the likelihood of measurable rain, snow or other precipitation occurring during the given hour.</string>
+    <string name="precipitation_about_description">The precipitation amount is the total quantity of rain, snow or other precipitation expected to fall during the given hour.</string>
     <string name="precipitation_duration">Precipitation duration</string>
     <string name="precipitation_thunderstorm">Thunderstorm</string>
     <string name="precipitation_rain">Rain</string>
@@ -112,6 +116,8 @@
     <string name="wind_gusts_short">Gusts</string>
     <!-- From NE -->
     <string name="wind_origin">From %s</string>
+    <string name="wind_direction">Wind direction</string>
+    <string name="wind_direction_about_description">Wind direction tells you where the wind is blowing from, shown as a compass direction (e.g. North West).</string>
     <string name="wind_direction_variable">Variable</string>
     <string name="wind_direction_N">North</string>
     <string name="wind_direction_NE">North East</string>

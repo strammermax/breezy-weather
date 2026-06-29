@@ -92,6 +92,8 @@
     <string name="temperature_wind_chill">Windkou</string>
     <string name="temperature_degree_day">Daggraad dag</string>
     <string name="precipitation_nowcasting">Verwachte neerslag</string>
+    <string name="details_overview">Details</string>
+    <string name="details_overview_select">Onderdelen kiezen</string>
     <string name="common_weather_text_rain_snow_mixed_showers">Regen- en sneeuwbuien</string>
     <string name="widget_clock_font_sans_serif_light">Sans Serif Light</string>
     <string name="widget_clock_font_sans_serif">Sans Serif</string>
@@ -217,6 +219,8 @@
     <string name="settings_debug_dump_crash_logs_title">Crashlogs delen</string>
     <string name="precipitation_duration">Neerslagduur</string>
     <string name="precipitation_probability">Neerslagkans</string>
+    <string name="precipitation_probability_about_description">De neerslagkans is de waarschijnlijkheid dat er tijdens het betreffende uur meetbare regen, sneeuw of andere neerslag valt.</string>
+    <string name="precipitation_about_description">De neerslaghoeveelheid is de totale hoeveelheid regen, sneeuw of andere neerslag die tijdens het betreffende uur wordt verwacht.</string>
     <string name="precipitation_rain">Regen</string>
     <string name="pollen_betula">Berk</string>
     <string name="ephemeris_moon_phase_waning_gibbous">Afnemende maan</string>
@@ -686,6 +690,8 @@
     <string name="wind_speed_about_description">De windsnelheid wordt gemeten door de windsnelheden over een bepaalde periode te middelen. Windvlagen zijn plotselinge windstoten die doorgaans minder dan 20 seconden aanhouden.</string>
     <string name="wind_gusts_short">Vlagen</string>
     <string name="wind_origin">Vanuit %s</string>
+    <string name="wind_direction">Windrichting</string>
+    <string name="wind_direction_about_description">De windrichting geeft aan uit welke richting de wind komt, weergegeven als kompasrichting (bijv. Noordwest).</string>
     <string name="air_quality_index_about_description_2">De schaal die in deze app wordt gebruikt, is gebaseerd op aanbevelingen van de Wereldgezondheidsorganisatie, i.p.v. lokale regelgeving, om betekenisvolle categorieën te hanteren en het gemakkelijker te maken om de vervuilingsniveaus tussen landen te vergelijken.</string>
     <string name="air_quality_index_scale">Luchtkwaliteitsindexschaal</string>
     <string name="air_quality_index_harmless_exposure">Onschadelijke blootstelling</string>

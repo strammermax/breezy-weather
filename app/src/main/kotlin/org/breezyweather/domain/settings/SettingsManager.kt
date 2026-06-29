@@ -29,6 +29,7 @@ import org.breezyweather.common.options.WidgetWeekIconMode
 import org.breezyweather.common.options.appearance.BackgroundAnimationMode
 import org.breezyweather.common.options.appearance.CardDisplay
 import org.breezyweather.common.options.appearance.DailyTrendDisplay
+import org.breezyweather.common.options.appearance.DetailsOverviewDisplay
 import org.breezyweather.common.options.appearance.HourlyTrendDisplay
 import org.breezyweather.common.options.appearance.WidgetTileType
 import org.breezyweather.unit.distance.DistanceUnit
@@ -70,6 +71,7 @@ class SettingsManager private constructor(
             "&uv" +
             "&visibility" +
             "&pressure" +
+            "&details_overview" +
             "&sun" +
             "&moon"
         const val DEFAULT_DAILY_TREND_DISPLAY = "temperature" +
@@ -322,6 +324,20 @@ class SettingsManager private constructor(
         get() = HourlyTrendDisplay
             .toHourlyTrendDisplayList(
                 config.getString("hourly_trend_display", DEFAULT_HOURLY_TREND_DISPLAY)
+            )
+            .toMutableList()
+
+    var detailsOverviewDisplayList: List<DetailsOverviewDisplay>
+        set(value) {
+            config
+                .edit()
+                .putString("details_overview_display", DetailsOverviewDisplay.toValue(value))
+                .apply()
+            notifySettingsChanged()
+        }
+        get() = DetailsOverviewDisplay
+            .toDetailsOverviewDisplayList(
+                config.getString("details_overview_display", null)
             )
             .toMutableList()
 

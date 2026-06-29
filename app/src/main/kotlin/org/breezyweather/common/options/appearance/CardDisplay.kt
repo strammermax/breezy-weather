@@ -48,6 +48,11 @@ enum class CardDisplay(
     CARD_UV("uv", R.string.uv_index),
     CARD_VISIBILITY("visibility", R.string.visibility),
     CARD_PRESSURE("pressure", R.string.pressure),
+    CARD_DETAILS_OVERVIEW(
+        "details_overview",
+        R.string.details_overview,
+        { activity -> IntentHelper.startDetailsOverviewDisplayManageActivity(activity) }
+    ),
     CARD_SUN("sun", R.string.ephemeris_sun),
     CARD_MOON("moon", R.string.ephemeris_moon),
     CARD_CLOCK("clock", R.string.clock),

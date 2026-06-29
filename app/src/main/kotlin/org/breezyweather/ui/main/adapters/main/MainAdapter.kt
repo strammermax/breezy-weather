@@ -35,6 +35,7 @@ import org.breezyweather.ui.main.adapters.main.holder.AirQualityViewHolder
 import org.breezyweather.ui.main.adapters.main.holder.AlertViewHolder
 import org.breezyweather.ui.main.adapters.main.holder.ClockViewHolder
 import org.breezyweather.ui.main.adapters.main.holder.DailyViewHolder
+import org.breezyweather.ui.main.adapters.main.holder.DetailsOverviewViewHolder
 import org.breezyweather.ui.main.adapters.main.holder.FooterViewHolder
 import org.breezyweather.ui.main.adapters.main.holder.HeaderViewHolder
 import org.breezyweather.ui.main.adapters.main.holder.HourlyViewHolder
@@ -159,6 +160,9 @@ class MainAdapter(
                 if (c === CardDisplay.CARD_PRESSURE && weather.current?.pressure == null) {
                     continue
                 }
+                if (c === CardDisplay.CARD_DETAILS_OVERVIEW && weather.current == null) {
+                    continue
+                }
                 if (c === CardDisplay.CARD_SUN &&
                     (weather.dailyForecast.isEmpty() || weather.today?.sun == null)
                 ) {
@@ -197,6 +201,7 @@ class MainAdapter(
         ViewType.POLLEN -> PollenViewHolder(parent)
         ViewType.VISIBILITY -> VisibilityViewHolder(parent)
         ViewType.PRESSURE -> PressureViewHolder(parent)
+        ViewType.DETAILS_OVERVIEW -> DetailsOverviewViewHolder(parent)
         ViewType.SUN -> SunViewHolder(parent)
         ViewType.MOON -> MoonViewHolder(parent)
         ViewType.CLOCK -> ClockViewHolder(parent)
@@ -356,6 +361,7 @@ class MainAdapter(
             CardDisplay.CARD_UV -> ViewType.UV
             CardDisplay.CARD_VISIBILITY -> ViewType.VISIBILITY
             CardDisplay.CARD_PRESSURE -> ViewType.PRESSURE
+            CardDisplay.CARD_DETAILS_OVERVIEW -> ViewType.DETAILS_OVERVIEW
             CardDisplay.CARD_SUN -> ViewType.SUN
             CardDisplay.CARD_MOON -> ViewType.MOON
             CardDisplay.CARD_CLOCK -> ViewType.CLOCK
@@ -375,6 +381,7 @@ class MainAdapter(
             ViewType.UV -> CardDisplay.CARD_UV
             ViewType.VISIBILITY -> CardDisplay.CARD_VISIBILITY
             ViewType.PRESSURE -> CardDisplay.CARD_PRESSURE
+            ViewType.DETAILS_OVERVIEW -> CardDisplay.CARD_DETAILS_OVERVIEW
             ViewType.SUN -> CardDisplay.CARD_SUN
             ViewType.MOON -> CardDisplay.CARD_MOON
             ViewType.CLOCK -> CardDisplay.CARD_CLOCK
