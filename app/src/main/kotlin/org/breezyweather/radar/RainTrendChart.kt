@@ -33,6 +33,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import org.breezyweather.R
 import kotlin.math.max
 
 /**
@@ -130,7 +132,7 @@ fun RainTrendChart(
                 style = MaterialTheme.typography.labelSmall
             )
             Text(
-                text = "max ${"%.1f".format(dataMax)} mm/u",
+                text = stringResource(R.string.radar_rain_maximum, dataMax),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelSmall
             )

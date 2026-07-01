@@ -63,7 +63,7 @@ class CrashLogUtils(
             true
         } catch (e: Throwable) {
             e.printStackTrace()
-            withUIContext { SnackbarHelper.showSnackbar("Failed to get logs") }
+            withUIContext { SnackbarHelper.showSnackbar(context.getString(R.string.settings_debug_dump_logs_failed)) }
             false
         }
     }

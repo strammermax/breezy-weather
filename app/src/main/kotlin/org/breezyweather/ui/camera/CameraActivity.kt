@@ -270,7 +270,7 @@ class CameraActivity : AppCompatActivity() {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
             } catch (e: Exception) {
-                Toast.makeText(this, "Failed to start camera", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.camera_start_failed, Toast.LENGTH_SHORT).show()
             }
         }, ContextCompat.getMainExecutor(this))
     }
@@ -302,7 +302,7 @@ class CameraActivity : AppCompatActivity() {
                     DiagnosticLogger.log(this@CameraActivity, "Camera", "Capture failed", exception)
                     captureInProgress = false
                     binding.captureButton.isEnabled = true
-                    Toast.makeText(this@CameraActivity, "Photo capture failed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@CameraActivity, R.string.camera_capture_failed, Toast.LENGTH_SHORT).show()
                 }
             }
         )
@@ -587,9 +587,9 @@ class CameraActivity : AppCompatActivity() {
         fetchLocation { location ->
             appendGalleryLog(
                 if (location != null) {
-                    "Huidige locatie: %.5f, %.5f".format(location.latitude, location.longitude)
+                    getString(R.string.camera_gallery_current_location, location.latitude, location.longitude)
                 } else {
-                    "Huidige locatie: onbekend"
+                    getString(R.string.camera_gallery_current_location_unknown)
                 }
             )
             cameraExecutor.execute {
@@ -598,24 +598,24 @@ class CameraActivity : AppCompatActivity() {
                 val cardData = mutableListOf<UploadCardData>()
                 val thumbnailSizePx = (THUMBNAIL_SIZE_DIP * resources.displayMetrics.density).toInt()
                 uris.forEachIndexed { index, uri ->
-                    val label = "Foto ${index + 1}/${uris.size}"
-                    appendGalleryLog("$label: voorbereiden…")
+                    val label = getString(R.string.camera_gallery_photo_label, index + 1, uris.size)
+                    appendGalleryLog(getString(R.string.camera_gallery_preparing, label))
                     val file = copyUriToTempFile(uri)
                     if (file == null) {
                         failureCount++
-                        appendGalleryLog("$label: ✗ kon bestand niet lezen")
+                        appendGalleryLog(getString(R.string.camera_gallery_cannot_read, label))
                         return@forEachIndexed
                     }
                     val exifLatLong = readGpsExif(file)
                     if (exifLatLong == null) {
                         failureCount++
-                        appendGalleryLog("$label: ✗ geen EXIF-GPS in foto, overgeslagen")
+                        appendGalleryLog(getString(R.string.camera_gallery_no_exif_gps, label))
                         file.delete()
                         return@forEachIndexed
                     }
-                    appendGalleryLog("$label: EXIF-GPS gevonden: %.5f, %.5f".format(exifLatLong[0], exifLatLong[1]))
+                    appendGalleryLog(getString(R.string.camera_gallery_exif_gps_found, label, exifLatLong[0], exifLatLong[1]))
                     try {
-                        appendGalleryLog("$label: uploaden en verwerken op server…")
+                        appendGalleryLog(getString(R.string.camera_gallery_processing, label))
                         val result = runBlocking {
                             wallpaperRepository.uploadCameraPhoto(
                                 file = file,
@@ -633,10 +633,10 @@ class CameraActivity : AppCompatActivity() {
                                 uploadFailureReason = null,
                             )
                         )
-                        appendGalleryLog("$label: ✓ opgeslagen")
+                        appendGalleryLog(getString(R.string.camera_gallery_saved, label))
                     } catch (e: Exception) {
                         failureCount++
-                        appendGalleryLog("$label: ✗ ${describeUploadError(e)}")
+                        appendGalleryLog(getString(R.string.camera_gallery_failed, label, describeUploadError(e)))
                         val rejectionCode = extractRejectionReasonCode(e)
                         if (rejectionCode != null) {
                             cardData.add(
@@ -885,7 +885,7 @@ class CameraActivity : AppCompatActivity() {
             if (allPermissionsGranted()) {
                 startCamera()
             } else {
-                Toast.makeText(this, "Camera permission is required", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.camera_permission_required, Toast.LENGTH_SHORT).show()
                 finish()
             }
         }

@@ -146,9 +146,9 @@ fun LocationPreference(
             onClose(null)
         }
         PreferenceView(
-            title = "Live wallpaper",
+            title = stringResource(R.string.settings_modules_live_wallpaper_title),
             iconId = R.drawable.ic_palette,
-            summary = "Wisselinterval, locatie-toegang en andere achtergrond-instellingen",
+            summary = stringResource(R.string.settings_live_wallpaper_location_summary),
             colors = ListItemDefaults.colors(
                 containerColor = Color.Transparent
             )

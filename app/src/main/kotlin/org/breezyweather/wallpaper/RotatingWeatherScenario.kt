@@ -8,10 +8,12 @@
 
 package org.breezyweather.wallpaper
 
+import androidx.annotation.StringRes
+import org.breezyweather.R
 import org.breezyweather.ui.theme.weatherView.WeatherView
 
 internal data class RotatingWeatherScenario(
-    val label: String,
+    @StringRes val labelRes: Int,
     val weatherKind: Int,
     val precipitationMillimetersPerHour: Float? = null,
     val cloudCoverPercent: Float? = null,
@@ -28,44 +30,44 @@ internal object RotatingWeatherScenarios {
      * are appended after row 17 rather than dropped.
      */
     val ALL = listOf(
-        RotatingWeatherScenario("Onbewolkt", WeatherView.WEATHER_KIND_CLEAR, cloudCoverPercent = 0f),
-        RotatingWeatherScenario("Fair", WeatherView.WEATHER_KIND_CLEAR, cloudCoverPercent = 20f),
-        RotatingWeatherScenario("Partly cloudy", WeatherView.WEATHER_KIND_CLOUD, cloudCoverPercent = 45f),
+        RotatingWeatherScenario(R.string.weather_kind_clear, WeatherView.WEATHER_KIND_CLEAR, cloudCoverPercent = 0f),
+        RotatingWeatherScenario(R.string.weather_kind_fair, WeatherView.WEATHER_KIND_CLEAR, cloudCoverPercent = 20f),
+        RotatingWeatherScenario(R.string.weather_kind_partly_cloudy, WeatherView.WEATHER_KIND_CLOUD, cloudCoverPercent = 45f),
         // Reference look (camiel, 2026-06-20): rich, deep-blue sky with voluminous,
         // clustered cumulus that have real depth/colour contrast — bigger and denser
         // than "Partly cloudy" so the masses read individually instead of scattered.
         RotatingWeatherScenario(
-            "Holl. wolken",
+            R.string.weather_kind_hollandse_lucht,
             WeatherView.WEATHER_KIND_CLOUD,
             cloudCoverPercent = 70f,
             richSky = true,
         ),
-        RotatingWeatherScenario("Mostly cloudy", WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 75f),
-        RotatingWeatherScenario("Overcast", WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 100f),
-        RotatingWeatherScenario("Lichte regen", WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 1f),
-        RotatingWeatherScenario("Regen", WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 8f),
-        RotatingWeatherScenario("Zware regen", WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 18f),
-        RotatingWeatherScenario("Sneeuw", WeatherView.WEATHER_KIND_SNOW, precipitationMillimetersPerHour = 8f),
-        RotatingWeatherScenario("Natte sneeuw", WeatherView.WEATHER_KIND_SLEET, precipitationMillimetersPerHour = 3f),
-        RotatingWeatherScenario("Hagel", WeatherView.WEATHER_KIND_HAIL, precipitationMillimetersPerHour = 18f),
-        RotatingWeatherScenario("Lichte mist", WeatherView.WEATHER_KIND_HAZE, visibilityMeters = 8_000f),
-        RotatingWeatherScenario("Mist", WeatherView.WEATHER_KIND_FOG, visibilityMeters = 3_000f),
-        RotatingWeatherScenario("Zware mist", WeatherView.WEATHER_KIND_FOG, visibilityMeters = 800f),
-        RotatingWeatherScenario("Onweer", WeatherView.WEATHER_KIND_THUNDER),
+        RotatingWeatherScenario(R.string.weather_kind_mostly_cloudy, WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 75f),
+        RotatingWeatherScenario(R.string.weather_kind_cloudy, WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 100f),
+        RotatingWeatherScenario(R.string.weather_kind_rain_light, WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 1f),
+        RotatingWeatherScenario(R.string.weather_kind_rain, WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 8f),
+        RotatingWeatherScenario(R.string.weather_kind_rain_heavy, WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 18f),
+        RotatingWeatherScenario(R.string.weather_kind_snow, WeatherView.WEATHER_KIND_SNOW, precipitationMillimetersPerHour = 8f),
+        RotatingWeatherScenario(R.string.weather_kind_sleet, WeatherView.WEATHER_KIND_SLEET, precipitationMillimetersPerHour = 3f),
+        RotatingWeatherScenario(R.string.weather_kind_hail, WeatherView.WEATHER_KIND_HAIL, precipitationMillimetersPerHour = 18f),
+        RotatingWeatherScenario(R.string.weather_kind_fog_light, WeatherView.WEATHER_KIND_HAZE, visibilityMeters = 8_000f),
+        RotatingWeatherScenario(R.string.weather_kind_fog, WeatherView.WEATHER_KIND_FOG, visibilityMeters = 3_000f),
+        RotatingWeatherScenario(R.string.weather_kind_fog_heavy, WeatherView.WEATHER_KIND_FOG, visibilityMeters = 800f),
+        RotatingWeatherScenario(R.string.weather_kind_thunder, WeatherView.WEATHER_KIND_THUNDER),
         RotatingWeatherScenario(
-            "Onweersbui",
+            R.string.weather_kind_thunderstorm,
             WeatherView.WEATHER_KIND_THUNDERSTORM,
             precipitationMillimetersPerHour = 18f,
         ),
-        RotatingWeatherScenario("Wind", WeatherView.WEATHER_KIND_WIND),
+        RotatingWeatherScenario(R.string.weather_kind_wind, WeatherView.WEATHER_KIND_WIND),
         RotatingWeatherScenario(
-            "Regen + dichte mist",
+            R.string.weather_kind_rain_dense_fog,
             WeatherView.WEATHER_KIND_RAINY,
             precipitationMillimetersPerHour = 8f,
             visibilityMeters = 800f,
         ),
         // Extra intensity variants, not separate rows in the sheet but kept for coverage.
-        RotatingWeatherScenario("Lichte sneeuw", WeatherView.WEATHER_KIND_SNOW, precipitationMillimetersPerHour = 1f),
-        RotatingWeatherScenario("Zware sneeuw", WeatherView.WEATHER_KIND_SNOW, precipitationMillimetersPerHour = 18f),
+        RotatingWeatherScenario(R.string.weather_kind_snow_light, WeatherView.WEATHER_KIND_SNOW, precipitationMillimetersPerHour = 1f),
+        RotatingWeatherScenario(R.string.weather_kind_snow_heavy, WeatherView.WEATHER_KIND_SNOW, precipitationMillimetersPerHour = 18f),
     )
 }

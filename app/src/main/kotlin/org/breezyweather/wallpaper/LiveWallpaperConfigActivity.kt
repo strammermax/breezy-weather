@@ -236,7 +236,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 wallpaperRepository.removeSkyHealthStatus()
             }
             if (removeSkyHealthStatus != "ok") {
-                refreshStatusValue.value = "RemoveSky health check failed"
+                refreshStatusValue.value = getString(R.string.widget_live_wallpaper_removesky_health_failed)
                 refreshBusyValue.value = false
                 return@launch
             }
@@ -359,7 +359,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         Material3Scaffold(
             topBar = {
                 FitStatusBarTopAppBar(
-                    title = "Live wallpaper",
+                    title = stringResource(R.string.settings_modules_live_wallpaper_title),
                     onBackPressed = { finish() }
                 )
             }
@@ -410,9 +410,9 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 }
                 item {
                     SwitchPreferenceView(
-                        title = "Parallax effect",
-                        summary = { _: Context, _: Boolean ->
-                            "Shifts layers when scrolling between home screens"
+                        title = stringResource(R.string.widget_live_wallpaper_parallax),
+                        summary = { context: Context, _: Boolean ->
+                            context.getString(R.string.widget_live_wallpaper_parallax_summary)
                         },
                         checked = parallaxEnabledValue.value,
                         withState = false,
@@ -443,13 +443,14 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
                         ) {
                             Text(
-                                text = "Achtergrond wisselt elke " +
-                                    "${photoRefreshIntervalMinutesValue.value.roundToInt()} min",
+                                text = stringResource(
+                                    R.string.widget_live_wallpaper_refresh_interval,
+                                    photoRefreshIntervalMinutesValue.value.roundToInt(),
+                                ),
                                 fontWeight = FontWeight.Bold,
                             )
                             Text(
-                                text = "Kiest een andere (gecachte) foto van de huidige locatie, of haalt " +
-                                    "nieuwe op als de cache leeg is.",
+                                text = stringResource(R.string.widget_live_wallpaper_refresh_interval_summary),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.bodySmall,
                             )
@@ -476,9 +477,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             ) {
                                 Spacer(modifier = Modifier.height(dimensionResource(R.dimen.small_margin)))
                                 Text(
-                                    text = "Zet \"Locatie altijd toestaan\" aan zodat de achtergrond ook " +
-                                        "verandert als je verhuist terwijl de app niet open staat. Zonder " +
-                                        "deze toestemming gebruikt de wisseling de laatst bekende locatie.",
+                                    text = stringResource(R.string.widget_live_wallpaper_background_location_summary),
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     style = MaterialTheme.typography.bodySmall,
                                 )
@@ -499,7 +498,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                         .fillMaxWidth()
                                         .padding(top = 6.dp),
                                 ) {
-                                    Text("Locatietoegang instellen")
+                                    Text(stringResource(R.string.widget_live_wallpaper_background_location_action))
                                 }
                             }
                         }
@@ -512,7 +511,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         )
                     ) {
                         Text(
-                            text = "Experimental",
+                            text = stringResource(R.string.widget_live_wallpaper_experimental),
                             color = MaterialTheme.colorScheme.secondary,
                             fontWeight = FontWeight.Bold
                         )
@@ -520,10 +519,9 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 }
                 item {
                     SwitchPreferenceView(
-                        title = "Seasonal grading (experimental)",
-                        summary = { _: Context, _: Boolean ->
-                            "Subtle, season-based colour and light shift on top of the scene. " +
-                                "Does not change the background photo."
+                        title = stringResource(R.string.widget_live_wallpaper_seasonal_grading),
+                        summary = { context: Context, _: Boolean ->
+                            context.getString(R.string.widget_live_wallpaper_seasonal_grading_summary)
                         },
                         checked = seasonGradingEnabledValue.value,
                         withState = false,
@@ -539,8 +537,10 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
                         ) {
                             Text(
-                                text = "Grading strength: " +
-                                    "${(seasonGradingStrengthValue.value * 100).roundToInt()}%",
+                                text = stringResource(
+                                    R.string.widget_live_wallpaper_grading_strength,
+                                    (seasonGradingStrengthValue.value * 100).roundToInt(),
+                                ),
                                 fontWeight = FontWeight.Bold,
                             )
                             Slider(
@@ -558,7 +558,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                     ) {
                         val cacheLimitMb = photoCacheLimitMbValue.value.roundToInt()
                         Text(
-                            text = "Photo cache: $cacheLimitMb MB",
+                            text = stringResource(R.string.widget_live_wallpaper_photo_cache, cacheLimitMb),
                             fontWeight = FontWeight.Bold,
                         )
                         val cacheUsedMb = cachedPhotoBytesValue.value / BYTES_PER_MB.toDouble()
@@ -605,8 +605,10 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             Text(stringResource(R.string.wallpaper_photo_manager_title))
                         }
                         Text(
-                            text = "The last ${WallpaperImageStore.RECENT_URL_COUNT} photos per location " +
-                                "are skipped when choosing a new background.",
+                            text = stringResource(
+                                R.string.widget_live_wallpaper_recent_photos_skipped,
+                                WallpaperImageStore.RECENT_URL_COUNT,
+                            ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodySmall,
                         )
@@ -630,7 +632,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         )
                         val maxPhotos = maxPhotosPerLocationValue.value.roundToInt()
                         Text(
-                            text = "Maximum per location: $maxPhotos photos",
+                            text = stringResource(R.string.widget_live_wallpaper_max_per_location, maxPhotos),
                             fontWeight = FontWeight.Bold,
                         )
                         Slider(
@@ -658,12 +660,12 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                 nowMillis = System.currentTimeMillis(),
                             )
                             Text(
-                                text = "Weather: " + dataAgeLabel(context, weatherRefreshedAtValue.value, freshness.isWeatherStale),
+                                text = stringResource(R.string.widget_live_wallpaper_weather_age, dataAgeLabel(context, weatherRefreshedAtValue.value, freshness.isWeatherStale)),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.bodySmall,
                             )
                             Text(
-                                text = "Photo: " + dataAgeLabel(context, photoRefreshedAtValue.value, freshness.isPhotoStale),
+                                text = stringResource(R.string.widget_live_wallpaper_photo_age, dataAgeLabel(context, photoRefreshedAtValue.value, freshness.isPhotoStale)),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.bodySmall,
                             )
@@ -671,7 +673,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         }
                         if (currentLocationValue.value.isNotBlank()) {
                             Text(
-                                text = "Current location: ${currentLocationValue.value}",
+                                text = stringResource(R.string.widget_live_wallpaper_current_location, currentLocationValue.value),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.small_margin)))

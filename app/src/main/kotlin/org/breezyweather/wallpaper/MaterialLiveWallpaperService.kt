@@ -717,7 +717,10 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private fun drawRotatingWeatherLabel(canvas: Canvas) {
             if (!mRotatingWeather) return
 
-            val label = "Rotating: ${RotatingWeatherScenarios.ALL[mRotatingWeatherIndex].label}"
+            val label = getString(
+                R.string.widget_live_wallpaper_rotating_label,
+                getString(RotatingWeatherScenarios.ALL[mRotatingWeatherIndex].labelRes),
+            )
             val textSize = (canvas.height * 0.022f).coerceIn(34f, 60f)
             mRotatingLabelPaint.textSize = textSize
             mRotatingLabelPaint.textAlign = Paint.Align.CENTER

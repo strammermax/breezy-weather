@@ -147,7 +147,7 @@ fun DebugSettingsScreen(
                 clickablePreferenceItem(R.string.settings_debug_force_weather_update) { id ->
                     PreferenceViewWithCard(
                         title = stringResource(id),
-                        summary = "Execute job for debugging purpose",
+                        summary = stringResource(R.string.settings_debug_force_weather_update_summary),
                         enabled = hasNotificationPermission,
                         isLast = true
                     ) {
