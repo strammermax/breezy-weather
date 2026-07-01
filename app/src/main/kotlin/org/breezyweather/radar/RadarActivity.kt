@@ -27,33 +27,47 @@ import android.view.ViewGroup
 import android.webkit.WebView
 import android.widget.FrameLayout
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.lifecycle.lifecycleScope
 import breezyweather.data.location.LocationRepository
 import breezyweather.data.weather.WeatherRepository
@@ -247,9 +261,37 @@ class RadarActivity : BreezyActivity() {
         MaterialTheme(colorScheme = glassColorScheme) {
             Material3Scaffold(
                 topBar = {
-                    FitStatusBarTopAppBar(
-                        title = stringResource(R.string.radar_title),
-                        onBackPressed = { finish() }
+                    TopAppBar(
+                        title = { Text(stringResource(R.string.radar_title)) },
+                        navigationIcon = {
+                            IconButton(onClick = { finish() }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(R.string.action_back)
+                                )
+                            }
+                        },
+                        actions = {
+                            placeName?.let {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(end = 12.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                                ) {
+                                    Text(text = it, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        },
+                        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Transparent,
+                            scrolledContainerColor = Color.Transparent,
+                            titleContentColor = glassContentColor,
+                            navigationIconContentColor = glassContentColor,
+                            actionIconContentColor = glassContentColor
+                        )
                     )
                 },
                 containerColor = Color.Transparent,
@@ -260,27 +302,19 @@ class RadarActivity : BreezyActivity() {
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .padding(paddings)
-                    .padding(16.dp)
             ) {
-                placeName?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
                 if (loading) {
-                    CircularProgressIndicator(modifier = Modifier.padding(top = 24.dp))
+                    CircularProgressIndicator(modifier = Modifier.padding(16.dp).padding(top = 24.dp))
                     return@Column
                 }
 
-                // The Meteoblue widget renders its map via WebGL/vector tiles, which appears to
-                // fight the animated background's hardware layer for the window's surface and
-                // blanks the whole screen. Pausing that layer while this tab is visible avoids it.
+                // The Meteoblue and Buienradar widgets render their maps via WebGL/canvas, which
+                // appears to fight the animated background's hardware layer for the window's
+                // surface and blanks the whole screen. Pausing that layer while either tab is
+                // visible avoids it — RainViewer's Leaflet map doesn't have this conflict.
                 LaunchedEffect(radarSource) {
                     if (::effectView.isInitialized) {
-                        effectView.setDrawable(radarSource != "meteoblue" && isBackgroundAnimationEnabled)
+                        effectView.setDrawable(radarSource == "rainviewer" && isBackgroundAnimationEnabled)
                     }
                 }
 
@@ -292,13 +326,16 @@ class RadarActivity : BreezyActivity() {
                 )
                 TabRow(
                     selectedTabIndex = radarTabs.indexOfFirst { it.first == radarSource }.coerceAtLeast(0),
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    contentColor = glassContentColor
                 ) {
                     radarTabs.forEach { (source, labelRes) ->
                         Tab(
                             selected = radarSource == source,
                             onClick = { radarSource = source },
-                            text = { Text(stringResource(labelRes)) }
+                            text = { Text(stringResource(labelRes)) },
+                            selectedContentColor = glassContentColor,
+                            unselectedContentColor = glassContentColor.copy(alpha = 0.7f)
                         )
                     }
                 }
@@ -315,7 +352,7 @@ class RadarActivity : BreezyActivity() {
                                 text = stringResource(R.string.radar_frames_unavailable),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(top = 8.dp)
+                                modifier = Modifier.padding(16.dp)
                             )
                         }
                     }
@@ -327,23 +364,25 @@ class RadarActivity : BreezyActivity() {
 
                 // Rain trend chart — only shown for the RainViewer tab
                 if (radarSource == "rainviewer") {
-                    SectionTitle(stringResource(R.string.radar_section_rain_trend))
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        listOf(2, 3, 6, 12, 24).forEach { hours ->
-                            FilterChip(
-                                selected = trendRange == hours,
-                                onClick = { trendRange = hours },
-                                label = { Text("${hours}u") }
-                            )
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        SectionTitle(stringResource(R.string.radar_section_rain_trend))
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            listOf(2, 3, 6, 12, 24).forEach { hours ->
+                                FilterChip(
+                                    selected = trendRange == hours,
+                                    onClick = { trendRange = hours },
+                                    label = { Text("${hours}u") }
+                                )
+                            }
                         }
+                        RainTrendChart(
+                            points = if (trendRange <= 2) rainTrend else hourlyTrend.take(trendRange),
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
-                    RainTrendChart(
-                        points = if (trendRange <= 2) rainTrend else hourlyTrend.take(trendRange),
-                        modifier = Modifier.fillMaxWidth()
-                    )
                 }
 
                 Text(
@@ -356,7 +395,7 @@ class RadarActivity : BreezyActivity() {
                     ),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 16.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp).padding(top = 16.dp, bottom = 16.dp)
                 )
             }
             }

@@ -39,14 +39,15 @@ internal object RadarWebMapLoader {
                 callback?.invoke(origin, true, false)
             }
         }
-        // The widget's own "geoloc=detect" centers on the device's IP-based location, which
-        // ignores the app's selected location entirely. The page initializes mapbox-gl with
-        // `hash: 'coords'`, a *named* hash param, so the URL must be "#coords=zoom/lat/lng"
-        // (not the bare "#zoom/lat/lng" mapbox-gl uses when `hash: true`) to re-center it.
+        // The maps app (not the limited widget embed) initializes mapbox-gl with `hash: 'coords'`,
+        // a *named* hash param, so the URL must be "#coords=zoom/lat/lng&map=..." (not the bare
+        // "#zoom/lat/lng" mapbox-gl uses when `hash: true`) to re-center it and pick the layers.
+        // The "weil-am-rhein_..." style place slug in the path is cosmetic/SEO-only — the page
+        // loads fine without it and the hash always wins for the displayed location and layers.
         val url = if (latitude != null && longitude != null) {
-            String.format(Locale.US, "%s#coords=9/%.4f/%.4f", METEOBLUE_WIDGET_URL, latitude, longitude)
+            String.format(Locale.US, "%s#coords=9/%.4f/%.4f&map=%s", METEOBLUE_MAPS_URL, latitude, longitude, METEOBLUE_MAP_LAYERS)
         } else {
-            METEOBLUE_WIDGET_URL
+            "$METEOBLUE_MAPS_URL#map=$METEOBLUE_MAP_LAYERS"
         }
         webView.loadUrl(url)
     }
@@ -60,10 +61,8 @@ internal object RadarWebMapLoader {
 
     private const val BUIENRADAR_WIDGET_URL = "https://www.buienradar.nl/nederland/neerslag/buienradar"
 
-    private const val METEOBLUE_WIDGET_URL = "https://www.meteoblue.com/nl/weer/kaarten/widget/" +
-        "?windAnimation=1&gust=1&satellite=1&cloudsAndPrecipitation=1&temperature=1" +
-        "&sunshine=1&extremeForecastIndex=1&geoloc=detect&tempunit=C&lengthunit=metric" +
-        "&windunit=km%2Fh&zoom=9&autowidth=auto&user_key=0a5701c1a618c300" +
-        "&embed_key=b96976639e93ec69" +
-        "&sig=f1a56965f0827f57cd89becfe1203c2d8490581410f23cd74a415ac95d423cbf"
+    private const val METEOBLUE_MAPS_URL = "https://www.meteoblue.com/nl/weer/kaarten/"
+
+    // radar~radarMapEU~none~none~pressure2mOverlay: EU radar layer with a sea-level pressure overlay.
+    private const val METEOBLUE_MAP_LAYERS = "radar~radarMapEU~none~none~pressure2mOverlay"
 }
