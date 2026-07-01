@@ -114,13 +114,27 @@ class WallpaperImageStore(context: Context) {
             config.edit().putString(KEY_CACHED_ATTRIBUTION, value).apply()
         }
 
+    /**
+     * Absolute path of the depth map for the currently cached photo, or null if not available.
+     * Grayscale PNG (L mode): pixel 255 = nearest to camera, 0 = furthest.
+     */
+    var cachedDepthMapPath: String?
+        get() = config.getString(KEY_CACHED_DEPTH_PATH, null)
+        set(value) {
+            config.edit().putString(KEY_CACHED_DEPTH_PATH, value).apply()
+        }
+
     /** Atomically switches the active wallpaper photo, avoiding partially updated cache state. */
-    fun activatePhoto(path: String, url: String, attribution: String?) {
+    fun activatePhoto(path: String, url: String, attribution: String?, depthPath: String? = null) {
         config.edit()
             .putBoolean(KEY_ENABLED, true)
             .putString(KEY_CACHED_PATH, path)
             .putString(KEY_CACHED_URL, url)
             .putString(KEY_CACHED_ATTRIBUTION, attribution)
+            .apply {
+                if (depthPath != null) putString(KEY_CACHED_DEPTH_PATH, depthPath)
+                else remove(KEY_CACHED_DEPTH_PATH)
+            }
             .apply()
     }
 
@@ -129,6 +143,7 @@ class WallpaperImageStore(context: Context) {
             .remove(KEY_CACHED_PATH)
             .remove(KEY_CACHED_URL)
             .remove(KEY_CACHED_ATTRIBUTION)
+            .remove(KEY_CACHED_DEPTH_PATH)
             .apply()
     }
 
@@ -218,6 +233,7 @@ class WallpaperImageStore(context: Context) {
         private const val KEY_CACHED_PATH = "cached_photo_path"
         private const val KEY_CACHED_URL = "cached_photo_url"
         private const val KEY_CACHED_ATTRIBUTION = "cached_photo_attribution"
+        private const val KEY_CACHED_DEPTH_PATH = "cached_depth_map_path"
         private const val KEY_RECENT_URLS = "recent_urls"
         private const val KEY_LOCATION_DATA = "location_data"
         private const val KEY_PHOTO_REFRESHED_AT = "photo_refreshed_at"

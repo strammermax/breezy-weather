@@ -173,6 +173,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
         // The processed location photo is the middle layer: sky and celestial body behind it,
         // weather effects in front of it.
         private var mForeground: Drawable? = null
+        /** Far-depth foreground layer (buildings, distant objects) — drawn BEFORE cloud layers. */
+        private var mForegroundFar: Drawable? = null
         private var mGlassSceneBitmap: Bitmap? = null
         private var mGlassSceneCanvas: Canvas? = null
         private var mGlassSceneShader: Shader? = null
@@ -348,6 +350,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     }
                     it.withTranslation(-celestialOffset, 0f) {
                         drawCelestialBody(it)
+                    }
+                    // Far foreground (distant buildings, mountains) drawn BEHIND all cloud layers
+                    // so cloud animations appear in front of them.
+                    mForegroundFar?.let { far ->
+                        it.withTranslation(-fgOffset, 0f) { far.draw(it) }
                     }
                     val transitionProgress = mTransitionManager.transitionProgress()
                     if (transitionProgress == null && mOutgoingEffectRenderer != null) {
@@ -898,13 +905,14 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val key = "$path|${file.lastModified()}|${mSizes[0]}x${mSizes[1]}|$mParallaxEnabled"
             if (key == mForegroundKey && mForeground != null) return
 
+            mForegroundFar = null
             mForeground = buildPhotoForeground()
             mForegroundKey = if (mForeground != null) key else null
             mForegroundNightTint = Float.NaN
             mForegroundGreyscaleAmount = 0f
             updateForegroundNightTint()
             updateLayerBounds()
-            lwwLog { "foreground rebuilt success=${mForeground != null} key=$key" }
+            lwwLog { "foreground rebuilt success=${mForeground != null} key=$key depthSplit=${mForegroundFar != null}" }
         }
 
         private fun updateGlassSceneTexture(
@@ -994,9 +1002,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 val fgExtra = (width * PARALLAX_FG_FACTOR).toInt()
                 mBackground?.setBounds(-bgExtra, 0, width + bgExtra, height)
                 mForeground?.setBounds(-fgExtra, 0, width + fgExtra, height)
+                mForegroundFar?.setBounds(-fgExtra, 0, width + fgExtra, height)
             } else {
                 mBackground?.setBounds(0, 0, width, height)
                 mForeground?.setBounds(0, 0, width, height)
+                mForegroundFar?.setBounds(0, 0, width, height)
             }
             lwwLog { "layer bounds updated ${width}x$height parallax=$mParallaxEnabled" }
         }
@@ -1021,22 +1031,68 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 return null
             }
             return try {
-                // Width must match the parallax bounds (1 + 2 * factor) so the BitmapDrawable
-                // is never stretched into wider bounds.
                 val width = if (mParallaxEnabled) {
                     (mSizes[0] * (1f + 2 * PARALLAX_FG_FACTOR)).toInt()
                 } else {
                     mSizes[0]
                 }
                 val positioned = positionPhotoAtBottom(source, width, mSizes[1])
-                lwwLog { "buildPhotoForeground ok: src=${source.width}x${source.height} -> ${width}x${mSizes[1]}" }
-                BitmapDrawable(resources, positioned)
+
+                // If a depth map is available, split foreground into near (in front of clouds)
+                // and far (behind clouds) layers for a cloud-fly-through effect.
+                val depth = mWallpaperRepository.loadCachedDepthBitmap()
+                if (depth != null) {
+                    val (near, far) = splitBitmapByDepth(positioned, depth)
+                    depth.recycle()
+                    mForegroundFar = BitmapDrawable(resources, far)
+                    lwwLog { "buildPhotoForeground ok (depth split): ${width}x${mSizes[1]}" }
+                    BitmapDrawable(resources, near)
+                } else {
+                    lwwLog { "buildPhotoForeground ok: src=${source.width}x${source.height} -> ${width}x${mSizes[1]}" }
+                    BitmapDrawable(resources, positioned)
+                }
             } catch (e: Throwable) {
                 lwwLog { "buildPhotoForeground failed: ${e.message}" }
                 null
             } finally {
                 source.recycle()
             }
+        }
+
+        /**
+         * Splits [rgba] into two bitmaps based on the grayscale [depth] map (255=near, 0=far).
+         * Returns (nearBitmap, farBitmap): pixels above [threshold] go to near, the rest to far.
+         * Transparent pixels in the RGBA source remain transparent in both outputs.
+         */
+        private fun splitBitmapByDepth(
+            rgba: Bitmap,
+            depth: Bitmap,
+            threshold: Int = 128,
+        ): Pair<Bitmap, Bitmap> {
+            val w = rgba.width
+            val h = rgba.height
+            val depthScaled = if (depth.width == w && depth.height == h) depth
+                              else Bitmap.createScaledBitmap(depth, w, h, true)
+            val rgbaPixels  = IntArray(w * h)
+            val depthPixels = IntArray(w * h)
+            rgba.getPixels(rgbaPixels, 0, w, 0, 0, w, h)
+            depthScaled.getPixels(depthPixels, 0, w, 0, 0, w, h)
+            if (depthScaled !== depth) depthScaled.recycle()
+
+            val nearPixels = IntArray(w * h)
+            val farPixels  = IntArray(w * h)
+            for (i in rgbaPixels.indices) {
+                // Depth is stored as a greyscale ARGB — take the red channel as intensity.
+                val depthVal = (depthPixels[i] shr 16) and 0xFF
+                if (depthVal > threshold) nearPixels[i] = rgbaPixels[i]
+                else                      farPixels[i]  = rgbaPixels[i]
+            }
+
+            val nearBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            val farBitmap  = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            nearBitmap.setPixels(nearPixels, 0, w, 0, 0, w, h)
+            farBitmap.setPixels(farPixels,  0, w, 0, 0, w, h)
+            return Pair(nearBitmap, farBitmap)
         }
 
         private fun updateForegroundNightTint() {
@@ -1047,7 +1103,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 abs(greyscaleAmount - mForegroundGreyscaleAmount) < 0.001f
             ) return
 
-            foreground.colorFilter = if (greyscaleAmount > 0f) {
+            val filter = if (greyscaleAmount > 0f) {
                 ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(1f - greyscaleAmount) })
             } else if (dimming <= 0.001f) {
                 null
@@ -1063,6 +1119,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     }
                 )
             }
+            foreground.colorFilter = filter
+            mForegroundFar?.colorFilter = filter
             mForegroundNightTint = dimming
             mForegroundGreyscaleAmount = greyscaleAmount
         }

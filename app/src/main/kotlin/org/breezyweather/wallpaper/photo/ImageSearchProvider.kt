@@ -39,6 +39,12 @@ data class ImageResult(
      */
     val exifLatitude: Double? = null,
     val exifLongitude: Double? = null,
+    /**
+     * URL of a grayscale depth map (PNG, same resolution as the processed RGBA). Pixel value
+     * 255 = nearest to camera, 0 = furthest. Used to split the foreground into near/far layers
+     * so cloud animations can appear to fly between scene elements. Null if not yet generated.
+     */
+    val depthUrl: String? = null,
 )
 
 /**

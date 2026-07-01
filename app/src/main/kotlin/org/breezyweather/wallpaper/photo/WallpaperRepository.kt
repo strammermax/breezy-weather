@@ -216,7 +216,8 @@ class WallpaperRepository @Inject constructor(
             )
             store.recordRecentUrl(placeKey, url)
             if (activate) {
-                store.activatePhoto(cacheFile.absolutePath, url, result.attribution)
+                val depthPath = result.depthUrl?.let { downloadAndCacheDepthMap(it, place, url) }
+                store.activatePhoto(cacheFile.absolutePath, url, result.attribution, depthPath)
                 photoCatalog.markShown(photoId(url))
             }
             pruneLocationCache(cacheFile.parentFile, cacheFile)
@@ -264,7 +265,8 @@ class WallpaperRepository @Inject constructor(
             exifLon = upload.exifLongitude,
         )
         store.recordRecentUrl(place.cacheFileName(), upload.processedUrl)
-        store.activatePhoto(cacheFile.absolutePath, upload.processedUrl, "Camera / RemoveSky")
+        val depthPath = upload.depthUrl?.let { downloadAndCacheDepthMap(it, place, upload.processedUrl) }
+        store.activatePhoto(cacheFile.absolutePath, upload.processedUrl, "Camera / RemoveSky", depthPath)
         photoCatalog.markShown(photoId(upload.processedUrl))
         pruneLocationCache(cacheFile.parentFile, cacheFile)
         prunePhotoCache(cacheFile)
@@ -404,6 +406,39 @@ class WallpaperRepository @Inject constructor(
         } catch (e: Throwable) {
             null
         }
+    }
+
+    /**
+     * Loads the cached depth map as a grayscale [Bitmap], or null when not available.
+     * Pixel value 255 = nearest to camera, 0 = furthest (matches server-side convention).
+     */
+    fun loadCachedDepthBitmap(): Bitmap? {
+        val path = store.cachedDepthMapPath ?: return null
+        val file = File(path)
+        if (!file.exists()) return null
+        return try {
+            BitmapFactory.decodeFile(file.absolutePath)
+        } catch (e: Throwable) {
+            null
+        }
+    }
+
+    private suspend fun downloadAndCacheDepthMap(depthUrl: String, place: PlaceQuery, photoUrl: String): String? =
+        withContext(Dispatchers.Default) {
+            try {
+                val bytes = downloadBytes(depthUrl) ?: return@withContext null
+                val file = depthCacheFile(place, photoUrl)
+                file.outputStream().use { it.write(bytes) }
+                file.absolutePath
+            } catch (e: Throwable) {
+                null
+            }
+        }
+
+    private fun depthCacheFile(place: PlaceQuery, url: String): File {
+        val placeName = place.cacheFileName().substringBeforeLast('.')
+        val locationDirectory = File(photoCacheDir(), placeName).apply { mkdirs() }
+        return File(locationDirectory, "${url.sha256Prefix()}_depth.png")
     }
 
     fun hasCachedPhoto(): Boolean {

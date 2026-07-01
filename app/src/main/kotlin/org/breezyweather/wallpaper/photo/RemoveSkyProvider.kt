@@ -92,6 +92,7 @@ class RemoveSkyProvider(
                             season = item.optStringOrNull("season"),
                             exifLatitude = item.optDoubleOrNull("exif_lat"),
                             exifLongitude = item.optDoubleOrNull("exif_lon"),
+                            depthUrl = item.optStringOrNull("depth_url")?.let(::normalizeServiceUrl),
                         )
                     )
                 }
@@ -202,6 +203,7 @@ class RemoveSkyProvider(
                 season = json.optStringOrNull("season"),
                 exifLatitude = exifGps?.takeIf { it.length() >= 2 }?.optDouble(0)?.takeIf { it.isFinite() },
                 exifLongitude = exifGps?.takeIf { it.length() >= 2 }?.optDouble(1)?.takeIf { it.isFinite() },
+                depthUrl = json.optStringOrNull("depth_url")?.let(::normalizeServiceUrl),
             )
         }
     }
@@ -228,6 +230,7 @@ class RemoveSkyProvider(
                     season = item.optStringOrNull("season"),
                     exifLatitude = item.optDoubleOrNull("exif_lat"),
                     exifLongitude = item.optDoubleOrNull("exif_lon"),
+                    depthUrl = item.optStringOrNull("depth_url")?.let(::normalizeServiceUrl),
                 )
             }
         }
@@ -241,7 +244,8 @@ class RemoveSkyProvider(
             val imageUrl = item.optString("image_url")
             if (imageUrl.isBlank()) continue
             attempts++
-            val processedUrl = upload(imageUrl) ?: continue
+            val uploadResult = uploadFull(imageUrl) ?: continue
+            val processedUrl = uploadResult.first
             if (processedUrl in excludedUrls) continue
             return@withContext ImageResult(
                 url = processedUrl,
@@ -252,6 +256,7 @@ class RemoveSkyProvider(
                 season = item.optStringOrNull("season"),
                 exifLatitude = item.optDoubleOrNull("exif_lat"),
                 exifLongitude = item.optDoubleOrNull("exif_lon"),
+                depthUrl = uploadResult.second,
             )
         }
         null
@@ -271,8 +276,8 @@ class RemoveSkyProvider(
         null
     }
 
-    /** POST upload with `url=` so RemoveSky removes the sky; returns the processed PNG URL. */
-    private fun upload(imageUrl: String): String? = try {
+    /** POST upload with `url=` so RemoveSky removes the sky; returns (processedUrl, depthUrl?). */
+    private fun uploadFull(imageUrl: String): Pair<String, String?>? = try {
         val form = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart("url", imageUrl)
@@ -284,12 +289,15 @@ class RemoveSkyProvider(
             .build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
-                // 400 = not a usable landscape (e.g. no sky) -> caller tries the next candidate.
                 log("upload HTTP ${response.code} for $imageUrl")
                 null
             } else {
-                response.body?.string()?.let {
-                    JSONObject(it).optString("url").ifBlank { null }?.let(::normalizeServiceUrl)
+                response.body?.string()?.let { body ->
+                    val json = JSONObject(body)
+                    val processedUrl = json.optString("url").ifBlank { null }
+                        ?.let(::normalizeServiceUrl) ?: return@let null
+                    val depthUrl = json.optStringOrNull("depth_url")?.let(::normalizeServiceUrl)
+                    Pair(processedUrl, depthUrl)
                 }
             }
         }
@@ -372,6 +380,8 @@ data class RemoveSkyUploadResult(
     val season: String? = null,
     val exifLatitude: Double? = null,
     val exifLongitude: Double? = null,
+    /** Depth map URL (grayscale PNG, 255=near, 0=far). Null if not yet generated. */
+    val depthUrl: String? = null,
 )
 
 /** One entry of [RemoveSkyProvider.fetchEnabledPhotos]: a known-enabled photo plus its metadata. */
@@ -383,6 +393,8 @@ data class RemoveSkyEnabledPhoto(
     val season: String?,
     val exifLatitude: Double? = null,
     val exifLongitude: Double? = null,
+    /** Depth map URL (grayscale PNG, 255=near, 0=far). Null if not yet generated. */
+    val depthUrl: String? = null,
 )
 
 class RemoveSkyHttpException(
