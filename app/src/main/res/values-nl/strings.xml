@@ -481,6 +481,12 @@
     <string name="common_weather_text_rain_snow_mixed_heavy">Zware regen en sneeuw</string>
     <string name="settings_debug_dump_crash_logs_saved">Crashlogs opgeslagen</string>
     <string name="settings_debug_dump_crash_logs_tap_to_open">Tik om te openen</string>
+    <string name="settings_debug_logging_title">Debuglogging</string>
+    <string name="settings_debug_logging_summary_on">Aan — aanvullende diagnostiek wordt opgeslagen</string>
+    <string name="settings_debug_logging_summary_off">Uit — tijdelijk inschakelen tijdens het reproduceren van een probleem</string>
+    <string name="settings_debug_delete_logs_title">Lokale debuglogs verwijderen?</string>
+    <string name="settings_debug_delete_logs_message">De ZIP is aangemaakt. Wil je alle verzamelde debuglogs van deze telefoon verwijderen?</string>
+    <string name="settings_debug_keep_logs">Bewaren</string>
     <string name="notification_channel_crash_logs">Crashlogs</string>
     <string name="dew_point_short">Dauwpunt</string>
     <string name="cloud_cover_short">Bewolking</string>

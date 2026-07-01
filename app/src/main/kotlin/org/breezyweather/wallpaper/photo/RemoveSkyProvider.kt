@@ -162,7 +162,10 @@ class RemoveSkyProvider(
             .addFormDataPart(
                 "file",
                 file.name,
-                file.asRequestBody("image/jpeg".toMediaTypeOrNull()),
+                file.asRequestBody(
+                    (if (file.extension.equals("webp", ignoreCase = true)) "image/webp" else "image/jpeg")
+                        .toMediaTypeOrNull()
+                ),
             )
             .apply {
                 location?.takeIf { it.isNotBlank() }?.let { addFormDataPart("location", it) }

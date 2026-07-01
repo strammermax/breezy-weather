@@ -136,7 +136,7 @@ class NotificationReceiver : BroadcastReceiver() {
         internal fun openErrorLogPendingActivity(context: Context, uri: Uri): PendingIntent {
             val intent = Intent().apply {
                 action = Intent.ACTION_VIEW
-                setDataAndType(uri, "text/plain")
+                setDataAndType(uri, "application/zip")
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
             }
             return PendingIntent.getActivity(

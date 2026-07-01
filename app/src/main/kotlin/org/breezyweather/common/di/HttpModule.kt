@@ -31,6 +31,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import okhttp3.tls.HandshakeCertificates
 import org.breezyweather.BreezyWeather
 import org.breezyweather.R
+import org.breezyweather.common.utils.DiagnosticLogger
 import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
@@ -85,6 +86,29 @@ class HttpModule {
                     50L * 1024L * 1024L // 50 MiB
                 )
             )
+            .addInterceptor { chain ->
+                val request = chain.request()
+                if (!DiagnosticLogger.isEnabled(app)) return@addInterceptor chain.proceed(request)
+                val started = System.nanoTime()
+                val safeUrl = "${request.url.scheme}://${request.url.host}${request.url.encodedPath}"
+                DiagnosticLogger.log(app, "Network", "${request.method} $safeUrl started")
+                try {
+                    chain.proceed(request).also { response ->
+                        val elapsedMs = (System.nanoTime() - started) / 1_000_000
+                        DiagnosticLogger.log(app, "Network", "${request.method} $safeUrl -> ${response.code} (${elapsedMs} ms)")
+                        val contentType = response.body.contentType()?.toString().orEmpty()
+                        if (contentType.startsWith("text/") || contentType.contains("json")) {
+                            val body = runCatching { response.peekBody(512L * 1024L).string() }.getOrNull()
+                            body?.takeIf(String::isNotBlank)?.let {
+                                DiagnosticLogger.log(app, "Server response $safeUrl", it)
+                            }
+                        }
+                    }
+                } catch (error: Exception) {
+                    DiagnosticLogger.log(app, "Network", "${request.method} $safeUrl failed", error)
+                    throw error
+                }
+            }
             .addInterceptor(loggingInterceptor)
             .build()
     }

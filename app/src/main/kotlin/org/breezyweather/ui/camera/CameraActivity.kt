@@ -40,6 +40,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.breezyweather.R
 import org.breezyweather.databinding.ActivityCameraBinding
+import org.breezyweather.common.utils.DiagnosticLogger
 import org.breezyweather.wallpaper.LiveWallpaperConfigActivity
 import org.breezyweather.wallpaper.launchLiveWallpaperPicker
 import org.breezyweather.wallpaper.photo.RemoveSkyCheckResult
@@ -113,6 +114,23 @@ class CameraActivity : AppCompatActivity() {
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
         private const val THUMBNAIL_SIZE_DIP = 96
+        // A phone sensor JPEG is commonly 12-50 MP. Keeping that entire bitmap in memory while
+        // encoding can exceed Android's heap; this is still ample for a wallpaper/server upload.
+        private const val CAMERA_UPLOAD_MAX_DIMENSION = 2560
+        private const val CAMERA_UPLOAD_WEBP_QUALITY = 88
+        private val EXIF_STRUCTURE_FIELDS = setOf(
+            "TAG_IMAGE_WIDTH",
+            "TAG_IMAGE_LENGTH",
+            "TAG_PIXEL_X_DIMENSION",
+            "TAG_PIXEL_Y_DIMENSION",
+            "TAG_ORIENTATION",
+            "TAG_COMPRESSION",
+            "TAG_STRIP_OFFSETS",
+            "TAG_ROWS_PER_STRIP",
+            "TAG_STRIP_BYTE_COUNTS",
+            "TAG_JPEG_INTERCHANGE_FORMAT",
+            "TAG_JPEG_INTERCHANGE_FORMAT_LENGTH",
+        )
     }
 
     @Inject
@@ -276,10 +294,12 @@ class CameraActivity : AppCompatActivity() {
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    DiagnosticLogger.log(this@CameraActivity, "Camera", "Capture saved (${photoFile.length()} bytes)")
                     showCapturedPhotoAndUpload(photoFile)
                 }
 
                 override fun onError(exception: ImageCaptureException) {
+                    DiagnosticLogger.log(this@CameraActivity, "Camera", "Capture failed", exception)
                     captureInProgress = false
                     binding.captureButton.isEnabled = true
                     Toast.makeText(this@CameraActivity, "Photo capture failed", Toast.LENGTH_SHORT).show()
@@ -288,9 +308,18 @@ class CameraActivity : AppCompatActivity() {
         )
     }
 
-    /** Decodes the captured JPEG and rotates it according to its EXIF orientation tag. */
+    /** Decodes the captured JPEG at an upload-safe size and applies its EXIF rotation. */
     private fun decodeRotatedBitmap(file: File): Bitmap {
-        val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(file.absolutePath, bounds)
+        require(bounds.outWidth > 0 && bounds.outHeight > 0) { "Captured photo could not be decoded" }
+        var sampleSize = 1
+        while (maxOf(bounds.outWidth, bounds.outHeight) / sampleSize > CAMERA_UPLOAD_MAX_DIMENSION) {
+            sampleSize *= 2
+        }
+        val bitmap = requireNotNull(
+            BitmapFactory.decodeFile(file.absolutePath, BitmapFactory.Options().apply { inSampleSize = sampleSize })
+        ) { "Captured photo could not be decoded" }
         val rotationDegrees = when (ExifInterface(file.absolutePath).getAttributeInt(
             ExifInterface.TAG_ORIENTATION,
             ExifInterface.ORIENTATION_NORMAL
@@ -302,22 +331,88 @@ class CameraActivity : AppCompatActivity() {
         }
         if (rotationDegrees == 0) return bitmap
         val matrix = Matrix().apply { postRotate(rotationDegrees.toFloat()) }
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true).also {
+            if (it !== bitmap) bitmap.recycle()
+        }
+    }
+
+    /**
+     * Encodes [bitmap] as a compact temporary WebP and copies every EXIF attribute understood
+     * by AndroidX from the CameraX JPEG. The pixels have already been rotated, so orientation is
+     * normalised to prevent the server from rotating the WebP a second time.
+     */
+    private fun createUploadWebp(sourceJpeg: File, bitmap: Bitmap): File {
+        val webp = File.createTempFile("camera_upload_", ".webp", cacheDir)
+        try {
+            val written = webp.outputStream().use { output ->
+                @Suppress("DEPRECATION")
+                bitmap.compress(
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) Bitmap.CompressFormat.WEBP_LOSSY
+                    else Bitmap.CompressFormat.WEBP,
+                    CAMERA_UPLOAD_WEBP_QUALITY,
+                    output,
+                )
+            }
+            check(written) { "WebP conversion failed" }
+            copyExifAttributes(sourceJpeg, webp)
+            DiagnosticLogger.log(
+                this,
+                "Camera",
+                "WebP reference=${webp.name} (${bitmap.width}x${bitmap.height}, ${webp.length()} bytes, EXIF copied)",
+            )
+            return webp
+        } catch (e: Exception) {
+            webp.delete()
+            throw e
+        }
+    }
+
+    private fun copyExifAttributes(sourceFile: File, destinationFile: File) {
+        val source = AndroidXExifInterface(sourceFile.absolutePath)
+        val destination = AndroidXExifInterface(destinationFile.absolutePath)
+        AndroidXExifInterface::class.java.fields
+            .asSequence()
+            .filter {
+                it.name.startsWith("TAG_") &&
+                    it.name !in EXIF_STRUCTURE_FIELDS &&
+                    it.type == String::class.java
+            }
+            .mapNotNull { runCatching { it.get(null) as? String }.getOrNull() }
+            .distinct()
+            .forEach { tag ->
+                source.getAttribute(tag)?.let { value ->
+                    runCatching { destination.setAttribute(tag, value) }
+                }
+            }
+        destination.setAttribute(
+            AndroidXExifInterface.TAG_ORIENTATION,
+            AndroidXExifInterface.ORIENTATION_NORMAL.toString(),
+        )
+        destination.saveAttributes()
     }
 
     private fun showCapturedPhotoAndUpload(file: File) {
         cameraExecutor.execute {
-            val bitmap = decodeRotatedBitmap(file)
-            runOnUiThread {
-                binding.resultImageView.setImageBitmap(bitmap)
-                binding.resultTextView.text = getString(R.string.camera_uploading)
-                binding.progressBar.visibility = View.VISIBLE
-                showResultView()
+            try {
+                val bitmap = decodeRotatedBitmap(file)
+                runOnUiThread {
+                    binding.resultImageView.setImageBitmap(bitmap)
+                    binding.resultTextView.text = getString(R.string.camera_uploading)
+                    binding.progressBar.visibility = View.VISIBLE
+                    showResultView()
 
-                fetchLocation { location ->
-                    cameraExecutor.execute {
-                        uploadImage(file, bitmap, location)
+                    fetchLocation { location ->
+                        cameraExecutor.execute {
+                            uploadImage(file, bitmap, location)
+                        }
                     }
+                }
+            } catch (e: Exception) {
+                file.delete()
+                runOnUiThread {
+                    captureInProgress = false
+                    binding.captureButton.isEnabled = true
+                    Toast.makeText(this, describeUploadError(e), Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -376,20 +471,29 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun uploadImage(file: File, bitmap: Bitmap, location: Location?) {
+        var uploadFile: File? = null
         try {
-            // Upload the camera's own JPEG bytes as-is (not a Bitmap.compress() re-encode,
-            // which carries no EXIF support at all) so every EXIF tag the sensor wrote
-            // (datetime, make/model, orientation, ...) survives the upload. CameraX doesn't
-            // attach GPS itself, so fill it in from the location fix when one is available.
+            // CameraX doesn't attach GPS itself. Add it before copying the JPEG metadata into
+            // the smaller WebP that is actually sent to the server.
             location?.let { addGpsToExif(file, it) }
+            location?.let {
+                DiagnosticLogger.log(this, "Camera GPS", "latitude=${it.latitude}, longitude=${it.longitude}")
+            }
+            uploadFile = createUploadWebp(file, bitmap)
+            DiagnosticLogger.log(this, "Camera", "Upload started")
 
             val result = runBlocking {
                 wallpaperRepository.uploadCameraPhoto(
-                    file = file,
+                    file = uploadFile,
                     latitude = location?.latitude,
                     longitude = location?.longitude,
                 )
             }
+            DiagnosticLogger.log(
+                this,
+                "Camera",
+                "Upload and server processing completed; processedUrl=${result.processedUrl}",
+            )
 
             renderResultCards(
                 listOf(
@@ -404,6 +508,7 @@ class CameraActivity : AppCompatActivity() {
             )
 
         } catch (e: Exception) {
+            DiagnosticLogger.log(this, "Camera", "Upload failed", e)
             val rejectionCode = extractRejectionReasonCode(e)
             if (rejectionCode != null || e is RemoveSkyHttpException) {
                 binding.closeButton.visibility = View.VISIBLE
@@ -427,6 +532,7 @@ class CameraActivity : AppCompatActivity() {
                 }
             }
         } finally {
+            uploadFile?.delete()
             file.delete()
         }
     }

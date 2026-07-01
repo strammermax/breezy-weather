@@ -979,6 +979,12 @@
     <string name="settings_debug_dump_crash_logs_summary">Saves error logs to a file for sharing with the developers</string>
     <string name="settings_debug_dump_crash_logs_saved">Crash logs saved</string>
     <string name="settings_debug_dump_crash_logs_tap_to_open">Tap to open</string>
+    <string name="settings_debug_logging_title">Debug logging</string>
+    <string name="settings_debug_logging_summary_on">Enabled — additional diagnostics are being saved</string>
+    <string name="settings_debug_logging_summary_off">Disabled — enable temporarily while reproducing a problem</string>
+    <string name="settings_debug_delete_logs_title">Delete local debug logs?</string>
+    <string name="settings_debug_delete_logs_message">The ZIP has been prepared. Do you want to remove all collected debug logs from this phone?</string>
+    <string name="settings_debug_keep_logs">Keep</string>
     <!-- Only shown in debug builds, so we don’t need translations -->
     <string name="settings_debug_section_unit_formatting" translatable="false">Unit formatting</string>
     <string name="settings_debug_use_numberformatter" translatable="false">Use NumberFormatter when possible</string>

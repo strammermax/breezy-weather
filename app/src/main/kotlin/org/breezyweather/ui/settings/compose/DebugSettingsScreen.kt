@@ -20,7 +20,12 @@ import android.os.Build
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +38,7 @@ import org.breezyweather.R
 import org.breezyweather.background.weather.WeatherUpdateJob
 import org.breezyweather.common.extensions.plus
 import org.breezyweather.common.utils.CrashLogUtils
+import org.breezyweather.common.utils.DiagnosticLogger
 import org.breezyweather.common.utils.helpers.SnackbarHelper
 import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.ui.common.composables.AnimatedVisibilitySlideVertically
@@ -62,6 +68,8 @@ fun DebugSettingsScreen(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
+    val diagnosticLogging = remember { mutableStateOf(DiagnosticLogger.isEnabled(context)) }
+    val askToDeleteLogs = remember { mutableStateOf(false) }
     val scrollBehavior = generateCollapsedScrollBehavior()
 
     Material3Scaffold(
@@ -114,9 +122,24 @@ fun DebugSettingsScreen(
                     isLast = !BreezyWeather.instance.debugMode
                 ) {
                     scope.launch {
-                        CrashLogUtils(context).dumpLogs()
+                        if (CrashLogUtils(context).dumpLogs()) askToDeleteLogs.value = true
                     }
                 }
+            }
+
+            smallSeparatorItem()
+            switchPreferenceItem(R.string.settings_debug_logging_title) { id ->
+                SwitchPreferenceView(
+                    titleId = id,
+                    summaryOnId = R.string.settings_debug_logging_summary_on,
+                    summaryOffId = R.string.settings_debug_logging_summary_off,
+                    checked = diagnosticLogging.value,
+                    isLast = !BreezyWeather.instance.debugMode,
+                    onValueChanged = { enabled ->
+                        diagnosticLogging.value = enabled
+                        DiagnosticLogger.setEnabled(context, enabled)
+                    }
+                )
             }
 
             if (BreezyWeather.instance.debugMode) {
@@ -196,5 +219,24 @@ fun DebugSettingsScreen(
 
             bottomInsetItem()
         }
+    }
+
+    if (askToDeleteLogs.value) {
+        AlertDialog(
+            onDismissRequest = { askToDeleteLogs.value = false },
+            title = { Text(stringResource(R.string.settings_debug_delete_logs_title)) },
+            text = { Text(stringResource(R.string.settings_debug_delete_logs_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    DiagnosticLogger.deleteAll(context)
+                    askToDeleteLogs.value = false
+                }) { Text(stringResource(R.string.action_delete)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { askToDeleteLogs.value = false }) {
+                    Text(stringResource(R.string.settings_debug_keep_logs))
+                }
+            },
+        )
     }
 }

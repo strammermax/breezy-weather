@@ -30,6 +30,8 @@ import org.breezyweather.common.extensions.withNonCancellableContext
 import org.breezyweather.common.extensions.withUIContext
 import org.breezyweather.common.utils.helpers.SnackbarHelper
 import org.breezyweather.remoteviews.Notifications
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 /**
  * Taken from Mihon
@@ -42,17 +44,34 @@ class CrashLogUtils(
     private val context: Context,
 ) {
 
-    suspend fun dumpLogs() = withNonCancellableContext {
+    suspend fun dumpLogs(): Boolean = withNonCancellableContext {
         try {
-            val file = context.createFileInCacheDir("breezyweather_crash_logs.txt")
-            Runtime.getRuntime().exec("logcat *:E -d -f ${file.absolutePath}").waitFor()
-            file.appendText(getDebugInfo())
+            val crashLog = context.createFileInCacheDir("breezyweather_crash_logs.txt")
+            Runtime.getRuntime().exec("logcat *:E -d -f ${crashLog.absolutePath}").waitFor()
+            crashLog.appendText("\n\n=== Device and app information ===\n")
+            crashLog.appendText(getDebugInfo())
 
-            showNotification(file.getUriCompat(context))
+            val archive = context.createFileInCacheDir("breezyweather_debug_logs.zip")
+            ZipOutputStream(archive.outputStream().buffered()).use { zip ->
+                addToZip(zip, crashLog, "crash/breezyweather_crash_logs.txt")
+                DiagnosticLogger.files(context).forEach { logFile ->
+                    addToZip(zip, logFile, "debug/${logFile.name}")
+                }
+            }
+
+            showNotification(archive.getUriCompat(context))
+            true
         } catch (e: Throwable) {
             e.printStackTrace()
             withUIContext { SnackbarHelper.showSnackbar("Failed to get logs") }
+            false
         }
+    }
+
+    private fun addToZip(zip: ZipOutputStream, file: java.io.File, name: String) {
+        zip.putNextEntry(ZipEntry(name))
+        file.inputStream().use { it.copyTo(zip) }
+        zip.closeEntry()
     }
 
     fun getDebugInfo(): String {
