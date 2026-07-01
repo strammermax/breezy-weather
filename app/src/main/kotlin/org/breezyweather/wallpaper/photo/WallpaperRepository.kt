@@ -438,7 +438,8 @@ class WallpaperRepository @Inject constructor(
     private fun depthCacheFile(place: PlaceQuery, url: String): File {
         val placeName = place.cacheFileName().substringBeforeLast('.')
         val locationDirectory = File(photoCacheDir(), placeName).apply { mkdirs() }
-        return File(locationDirectory, "${url.sha256Prefix()}_depth.png")
+        val ext = if (url.endsWith(".webp", ignoreCase = true)) "webp" else "png"
+        return File(locationDirectory, "${url.sha256Prefix()}_depth.$ext")
     }
 
     fun hasCachedPhoto(): Boolean {
