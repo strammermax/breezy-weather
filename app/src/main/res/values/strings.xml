@@ -724,6 +724,11 @@
     <string name="widget_live_wallpaper_seasonal_grading">Seasonal grading (experimental)</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Subtle, season-based colour and light shift on top of the scene. Does not change the background photo.</string>
     <string name="widget_live_wallpaper_grading_strength">Grading strength: %1$d%%</string>
+    <string name="widget_live_wallpaper_new_clouds">New clouds (experimental)</string>
+    <string name="widget_live_wallpaper_new_clouds_summary">Renders clouds using the wolkentypes prototype instead of the built-in cloud renderer.</string>
+    <string name="widget_live_wallpaper_new_clouds_tuning">New clouds tuning (debug build only)</string>
+    <string name="widget_live_wallpaper_new_clouds_wind">Wind speed: %1$d%%</string>
+    <string name="widget_live_wallpaper_new_clouds_density">Density: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Photo cache: %1$d MB</string>
     <string name="widget_live_wallpaper_recent_photos_skipped">The last %1$d photos per location are skipped when choosing a new background.</string>
     <string name="widget_live_wallpaper_max_per_location">Maximum per location: %1$d photos</string>

@@ -769,6 +769,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 updateRendererDaylight(sceneState.daylight)
                 return
             }
+            val liveWallpaperConfig = LiveWallpaperConfigManager(applicationContext)
             val newRenderer = if (WallpaperWeatherEffectRenderer.supports(sceneState.weatherKind)) {
                 WallpaperWeatherEffectRenderer(
                     sceneState.weatherKind,
@@ -795,13 +796,15 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     glassRainIntensity = sceneState.glassRainIntensity,
                     precipitationIntensity = sceneState.precipitationIntensity,
                     precipitationTiltSlope = sceneState.precipitationTiltSlope,
-                    qualityProfile = LiveWallpaperConfigManager(applicationContext).qualityProfile,
+                    qualityProfile = liveWallpaperConfig.qualityProfile,
                     resources = resources,
                     richSky = sceneState.richSky,
                     fairSky = sceneState.condition.sky == WallpaperSkyCondition.FAIR,
-                    useNewClouds = LiveWallpaperConfigManager(applicationContext).newCloudsEnabled,
+                    useNewClouds = liveWallpaperConfig.newCloudsEnabled,
                     newCloudsParams = CloudEngineAdapter.sceneParams(sceneState),
                     cloudEngineContext = applicationContext,
+                    newCloudsWindMultiplier = liveWallpaperConfig.newCloudsWindMultiplier,
+                    newCloudsDensityMultiplier = liveWallpaperConfig.newCloudsDensityMultiplier,
                 )
             } else {
                 null

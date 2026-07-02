@@ -67,6 +67,7 @@ internal class WallpaperEffectView @JvmOverloads constructor(
             weatherKind = weatherKind,
             daylight = daylight,
         )
+        val liveWallpaperConfig = LiveWallpaperConfigManager(context)
         renderer = WallpaperWeatherEffectRenderer(
             weatherKind = state.weatherKind,
             daylight = state.daylight,
@@ -89,9 +90,11 @@ internal class WallpaperEffectView @JvmOverloads constructor(
             precipitationIntensity = state.precipitationIntensity,
             precipitationTiltSlope = state.precipitationTiltSlope,
             resources = resources,
-            useNewClouds = LiveWallpaperConfigManager(context).newCloudsEnabled,
+            useNewClouds = liveWallpaperConfig.newCloudsEnabled,
             newCloudsParams = CloudEngineAdapter.sceneParams(state),
             cloudEngineContext = context,
+            newCloudsWindMultiplier = liveWallpaperConfig.newCloudsWindMultiplier,
+            newCloudsDensityMultiplier = liveWallpaperConfig.newCloudsDensityMultiplier,
         )
     }
 

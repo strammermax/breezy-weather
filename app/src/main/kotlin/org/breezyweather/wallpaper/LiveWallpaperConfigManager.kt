@@ -49,6 +49,14 @@ class LiveWallpaperConfigManager(context: Context) {
      */
     val newCloudsEnabled: Boolean
 
+    /**
+     * Debug-only tuning (see [org.breezyweather.wallpaper.LiveWallpaperConfigActivity]'s
+     * `BuildConfig.DEBUG`-gated section): extra multipliers layered on top of
+     * [CloudEngineAdapter]'s weather-derived values, both 1f (neutral) by default.
+     */
+    val newCloudsWindMultiplier: Float
+    val newCloudsDensityMultiplier: Float
+
     init {
         val config = ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
         weatherKind = normalizeWallpaperWeatherType(config.getString(KEY_WEATHER_KIND, null) ?: "auto")
@@ -60,6 +68,8 @@ class LiveWallpaperConfigManager(context: Context) {
         seasonGradingStrength = config.getFloat(KEY_SEASON_GRADING_STRENGTH, DEFAULT_SEASON_GRADING_STRENGTH)
             .coerceIn(0f, 1f)
         newCloudsEnabled = config.getBoolean(KEY_NEW_CLOUDS_ENABLED, false)
+        newCloudsWindMultiplier = config.getFloat(KEY_NEW_CLOUDS_WIND_MULTIPLIER, 1f).coerceIn(0.1f, 4f)
+        newCloudsDensityMultiplier = config.getFloat(KEY_NEW_CLOUDS_DENSITY_MULTIPLIER, 1f).coerceIn(0.1f, 3f)
     }
 
     companion object {
@@ -73,6 +83,8 @@ class LiveWallpaperConfigManager(context: Context) {
         private const val KEY_SEASON_GRADING_STRENGTH = "season_grading_strength"
         private const val DEFAULT_SEASON_GRADING_STRENGTH = 0.5f
         private const val KEY_NEW_CLOUDS_ENABLED = "new_clouds_enabled"
+        private const val KEY_NEW_CLOUDS_WIND_MULTIPLIER = "new_clouds_wind_multiplier"
+        private const val KEY_NEW_CLOUDS_DENSITY_MULTIPLIER = "new_clouds_density_multiplier"
 
         fun update(
             context: Context,
@@ -84,6 +96,8 @@ class LiveWallpaperConfigManager(context: Context) {
             seasonGradingEnabled: Boolean? = null,
             seasonGradingStrength: Float? = null,
             newCloudsEnabled: Boolean? = null,
+            newCloudsWindMultiplier: Float? = null,
+            newCloudsDensityMultiplier: Float? = null,
         ) {
             val editor = ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
                 .edit()
@@ -102,6 +116,12 @@ class LiveWallpaperConfigManager(context: Context) {
             }
             if (newCloudsEnabled != null) {
                 editor.putBoolean(KEY_NEW_CLOUDS_ENABLED, newCloudsEnabled)
+            }
+            if (newCloudsWindMultiplier != null) {
+                editor.putFloat(KEY_NEW_CLOUDS_WIND_MULTIPLIER, newCloudsWindMultiplier.coerceIn(0.1f, 4f))
+            }
+            if (newCloudsDensityMultiplier != null) {
+                editor.putFloat(KEY_NEW_CLOUDS_DENSITY_MULTIPLIER, newCloudsDensityMultiplier.coerceIn(0.1f, 3f))
             }
             editor.apply()
         }

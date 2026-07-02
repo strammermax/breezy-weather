@@ -102,6 +102,9 @@ internal class WallpaperWeatherEffectRenderer(
     private val useNewClouds: Boolean = false,
     private val newCloudsParams: CloudEngineSceneParams? = null,
     private val cloudEngineContext: Context? = null,
+    /** Debug-build-only tuning multipliers, see [LiveWallpaperConfigManager]. Neutral (1f) by default. */
+    private val newCloudsWindMultiplier: Float = 1f,
+    private val newCloudsDensityMultiplier: Float = 1f,
 ) {
     private var daylight = daylight.coerceIn(0f, 1f)
     private val daytime: Boolean
@@ -119,7 +122,8 @@ internal class WallpaperWeatherEffectRenderer(
             CloudEngineRenderer(cloudEngineContext).apply {
                 profile = cloudProfileFor(newCloudsParams.weatherId)
                 weatherId = newCloudsParams.weatherId
-                windSpeedMultiplier = newCloudsParams.windSpeedMultiplier
+                windSpeedMultiplier = newCloudsParams.windSpeedMultiplier * newCloudsWindMultiplier
+                densityMultiplier = newCloudsParams.densityMultiplier * newCloudsDensityMultiplier
             }
         } else {
             null
