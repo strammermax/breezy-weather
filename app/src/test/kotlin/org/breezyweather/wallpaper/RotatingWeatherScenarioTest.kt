@@ -25,7 +25,7 @@ class RotatingWeatherScenarioTest {
 
     @Test
     fun `scenario labels are unique`() {
-        RotatingWeatherScenarios.ALL.map { it.label }.distinct().size shouldBe RotatingWeatherScenarios.ALL.size
+        RotatingWeatherScenarios.ALL.map { it.labelRes }.distinct().size shouldBe RotatingWeatherScenarios.ALL.size
     }
 
     @Test
