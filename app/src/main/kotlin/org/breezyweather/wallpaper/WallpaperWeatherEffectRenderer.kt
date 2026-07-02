@@ -8,6 +8,7 @@
 
 package org.breezyweather.wallpaper
 
+import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -24,6 +25,8 @@ import android.graphics.RuntimeShader
 import android.graphics.Shader
 import android.os.Build
 import android.util.Log
+import com.wolkentypes.app.clouds.CloudEngineRenderer
+import com.wolkentypes.app.clouds.cloudProfileFor
 import org.breezyweather.R
 import org.breezyweather.ui.theme.weatherView.WeatherView
 import java.util.Random
@@ -90,6 +93,15 @@ internal class WallpaperWeatherEffectRenderer(
     private val richSky: Boolean = false,
     /** Fair: sparse, small but optically solid cumulus against a clear blue sky. */
     private val fairSky: Boolean = false,
+    /**
+     * Experimental: render the background weather pass's clouds via the `:cloud-engine` module
+     * (the wolkentypes prototype) instead of the built-in AGSL/Canvas cloud renderer. Backed by
+     * [LiveWallpaperConfigManager.newCloudsEnabled], off by default. Every other pass (fog,
+     * precipitation, glass rain, stars) is unaffected — see [draw].
+     */
+    private val useNewClouds: Boolean = false,
+    private val newCloudsParams: CloudEngineSceneParams? = null,
+    private val cloudEngineContext: Context? = null,
 ) {
     private var daylight = daylight.coerceIn(0f, 1f)
     private val daytime: Boolean
@@ -98,6 +110,20 @@ internal class WallpaperWeatherEffectRenderer(
     private var shaderPaint: Paint? = null
     private var glassShader: RuntimeShader? = null
     private var glassShaderPaint: Paint? = null
+    // Stars are normally baked into the same background pass as the legacy clouds (in the AGSL
+    // uber-shader, or CanvasRenderer.drawClouds); cloud-engine only draws clouds, so enabling it
+    // trades away the night starfield for as long as it's active. Acceptable for an
+    // off-by-default experimental toggle whose whole purpose is the cloud look itself.
+    private val cloudEngineRenderer: CloudEngineRenderer? =
+        if (useNewClouds && cloudEngineContext != null && newCloudsParams != null) {
+            CloudEngineRenderer(cloudEngineContext).apply {
+                profile = cloudProfileFor(newCloudsParams.weatherId)
+                weatherId = newCloudsParams.weatherId
+                windSpeedMultiplier = newCloudsParams.windSpeedMultiplier
+            }
+        } else {
+            null
+        }
     private var canvasRenderer: CanvasRenderer? = null
     private val cloudAtlasBitmap = loadMaskBitmap(resources, R.drawable.wallpaper_cloud_atlas)
     private val overcastMaskBitmap = loadMaskBitmap(resources, R.drawable.wallpaper_overcast_mask)
@@ -194,6 +220,7 @@ internal class WallpaperWeatherEffectRenderer(
         if (!animate) return
         val delta = min(intervalMillis, MAX_FRAME_INTERVAL_MILLIS).coerceAtLeast(0L)
         elapsedSeconds += delta / 1000f
+        cloudEngineRenderer?.update(elapsedSeconds)
         qualityBudget = WallpaperQualityProfileFactory.budgetFor(degradationTracker.recordFrame(delta.toFloat()))
         updateAdaptivePrecipitationQuality(intervalMillis)
 
@@ -265,6 +292,11 @@ internal class WallpaperWeatherEffectRenderer(
     private fun draw(canvas: Canvas, pass: Float, alpha: Float = 1f) {
         if (canvas.width <= 0 || canvas.height <= 0) return
         if (alpha <= 0f) return
+
+        if (pass == WEATHER_PASS_BACKGROUND && cloudEngineRenderer != null) {
+            cloudEngineRenderer.draw(canvas, alpha)
+            return
+        }
 
         val s = shader
         val sp = shaderPaint

@@ -42,6 +42,13 @@ class LiveWallpaperConfigManager(context: Context) {
     /** ACT-012: user-chosen strength in 0f..1f, scaled down by [WallpaperSeasonGrading.MAX_SEASON_GRADING_STRENGTH]. */
     val seasonGradingStrength: Float
 
+    /**
+     * Experimental: render clouds via the `:cloud-engine` module (the wolkentypes prototype's
+     * PNG-sprite clouds) instead of the built-in AGSL/Canvas cloud renderer. Off by default;
+     * the built-in renderer is unaffected either way.
+     */
+    val newCloudsEnabled: Boolean
+
     init {
         val config = ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
         weatherKind = normalizeWallpaperWeatherType(config.getString(KEY_WEATHER_KIND, null) ?: "auto")
@@ -52,6 +59,7 @@ class LiveWallpaperConfigManager(context: Context) {
         seasonGradingEnabled = config.getBoolean(KEY_SEASON_GRADING_ENABLED, false)
         seasonGradingStrength = config.getFloat(KEY_SEASON_GRADING_STRENGTH, DEFAULT_SEASON_GRADING_STRENGTH)
             .coerceIn(0f, 1f)
+        newCloudsEnabled = config.getBoolean(KEY_NEW_CLOUDS_ENABLED, false)
     }
 
     companion object {
@@ -64,6 +72,7 @@ class LiveWallpaperConfigManager(context: Context) {
         private const val KEY_SEASON_GRADING_ENABLED = "season_grading_enabled"
         private const val KEY_SEASON_GRADING_STRENGTH = "season_grading_strength"
         private const val DEFAULT_SEASON_GRADING_STRENGTH = 0.5f
+        private const val KEY_NEW_CLOUDS_ENABLED = "new_clouds_enabled"
 
         fun update(
             context: Context,
@@ -74,6 +83,7 @@ class LiveWallpaperConfigManager(context: Context) {
             qualityProfile: WallpaperQualityProfile? = null,
             seasonGradingEnabled: Boolean? = null,
             seasonGradingStrength: Float? = null,
+            newCloudsEnabled: Boolean? = null,
         ) {
             val editor = ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
                 .edit()
@@ -89,6 +99,9 @@ class LiveWallpaperConfigManager(context: Context) {
             }
             if (seasonGradingStrength != null) {
                 editor.putFloat(KEY_SEASON_GRADING_STRENGTH, seasonGradingStrength.coerceIn(0f, 1f))
+            }
+            if (newCloudsEnabled != null) {
+                editor.putBoolean(KEY_NEW_CLOUDS_ENABLED, newCloudsEnabled)
             }
             editor.apply()
         }

@@ -478,6 +478,7 @@ aboutLibraries {
 }
 
 dependencies {
+    implementation(projects.cloudEngine)
     implementation(projects.data)
     implementation(projects.domain)
     implementation(projects.mapsUtils)

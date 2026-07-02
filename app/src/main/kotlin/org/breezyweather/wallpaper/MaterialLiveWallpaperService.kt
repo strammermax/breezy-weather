@@ -799,6 +799,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     resources = resources,
                     richSky = sceneState.richSky,
                     fairSky = sceneState.condition.sky == WallpaperSkyCondition.FAIR,
+                    useNewClouds = LiveWallpaperConfigManager(applicationContext).newCloudsEnabled,
+                    newCloudsParams = CloudEngineAdapter.sceneParams(sceneState),
+                    cloudEngineContext = applicationContext,
                 )
             } else {
                 null

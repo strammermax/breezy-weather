@@ -89,6 +89,9 @@ internal class WallpaperEffectView @JvmOverloads constructor(
             precipitationIntensity = state.precipitationIntensity,
             precipitationTiltSlope = state.precipitationTiltSlope,
             resources = resources,
+            useNewClouds = LiveWallpaperConfigManager(context).newCloudsEnabled,
+            newCloudsParams = CloudEngineAdapter.sceneParams(state),
+            cloudEngineContext = context,
         )
     }
 
