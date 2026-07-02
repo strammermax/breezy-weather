@@ -34,6 +34,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "BreezyWeather"
 include(":app")
+include(":cloud-engine")
 include(":data")
 include(":domain")
 include(":maps-utils")
