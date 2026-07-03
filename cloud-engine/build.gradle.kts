@@ -10,4 +10,7 @@ configure<LibraryExtension> {
 
 dependencies {
     implementation(libs.core.ktx)
+
+    testImplementation(libs.bundles.test)
+    testRuntimeOnly(libs.junit.platform)
 }

@@ -8,6 +8,8 @@
 
 package org.breezyweather.wallpaper
 
+import com.wolkentypes.app.clouds.CloudAmount
+import com.wolkentypes.app.clouds.cloudProfileFor
 import io.kotest.matchers.floats.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.floats.shouldBeLessThanOrEqual
 import io.kotest.matchers.shouldBe
@@ -131,6 +133,31 @@ class CloudEngineAdapterTest {
                 val params = CloudEngineAdapter.sceneParams(scene(kind))
                 params.densityMultiplier shouldBeGreaterThanOrEqual 0f
                 params.densityMultiplier shouldBeLessThanOrEqual 1f
+            }
+    }
+
+    @Test
+    fun `every weather kind the adapter can produce yields a cloud-engine profile with visible coverage`() {
+        // End-to-end check tying the adapter's output directly to cloud-engine's lookup: proves
+        // that for every WeatherView.WEATHER_KIND_*, the weatherId CloudEngineAdapter derives
+        // actually resolves to a profile the renderer will draw something for (except Clear,
+        // which is correctly empty). Directly covers the "Thunderstorm looked flat grey" manual
+        // observation -- this test would fail if that weatherId's profile were empty.
+        WeatherView::class.java.declaredFields
+            .filter { it.name.startsWith("WEATHER_KIND_") && it.name != "WEATHER_KIND_NULL" }
+            .map { it.getInt(null) }
+            .forEach { kind ->
+                val weatherId = CloudEngineAdapter.sceneParams(scene(kind)).weatherId
+                val profile = cloudProfileFor(weatherId)
+                if (weatherId == "clear") {
+                    profile.layers.values.forEach { it.amount shouldBe CloudAmount.NONE }
+                } else {
+                    val hasVisibleLayer = profile.layers.values.any { it.amount != CloudAmount.NONE }
+                    assert(hasVisibleLayer) {
+                        "WEATHER_KIND=$kind -> weatherId=\"$weatherId\" -> cloudProfileFor has no " +
+                            "visible layer, so cloud-engine would render nothing for this weather kind"
+                    }
+                }
             }
     }
 }
