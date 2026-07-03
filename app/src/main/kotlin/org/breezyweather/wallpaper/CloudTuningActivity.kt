@@ -8,14 +8,17 @@
 
 package org.breezyweather.wallpaper
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -49,12 +52,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.fragment.app.FragmentActivity
 import com.wolkentypes.app.clouds.CloudAmount
 import com.wolkentypes.app.clouds.CloudLayer
 import com.wolkentypes.app.clouds.CloudSurfaceView
@@ -63,7 +67,13 @@ import com.wolkentypes.app.clouds.LayerCloudConfig
 import com.wolkentypes.app.clouds.cloudProfileFor
 import com.wolkentypes.app.clouds.loadPreset
 import com.wolkentypes.app.clouds.savePreset
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.ui.theme.compose.BreezyWeatherTheme
+import org.breezyweather.wallpaper.photo.WallpaperRepository
+import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -78,12 +88,23 @@ import kotlin.math.roundToInt
  * Only reachable from a `BuildConfig.DEBUG`-gated button in [LiveWallpaperConfigActivity]; never
  * linked from anywhere else, so it cannot be reached in a release build.
  */
-class CloudTuningActivity : FragmentActivity() {
+@AndroidEntryPoint
+class CloudTuningActivity : BreezyActivity() {
+
+    @Inject
+    lateinit var wallpaperRepository: WallpaperRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            var backgroundBitmap by remember { mutableStateOf<Bitmap?>(null) }
+            LaunchedEffect(Unit) {
+                backgroundBitmap = withContext(Dispatchers.IO) { wallpaperRepository.loadCachedBitmap() }
+            }
             BreezyWeatherTheme {
-                Surface(Modifier.fillMaxSize()) { CloudTuningScreen(onBack = { finish() }) }
+                Surface(Modifier.fillMaxSize()) {
+                    CloudTuningScreen(onBack = { finish() }, backgroundBitmap = backgroundBitmap)
+                }
             }
         }
     }
@@ -91,7 +112,7 @@ class CloudTuningActivity : FragmentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CloudTuningScreen(onBack: () -> Unit) {
+private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
     val context = LocalContext.current
     var weatherMenuExpanded by remember { mutableStateOf(false) }
     var controlsExpanded by remember { mutableStateOf(true) }
@@ -157,6 +178,17 @@ private fun CloudTuningScreen(onBack: () -> Unit) {
                     view.layerDepthMultiplier = depth
                 },
             )
+            // Same composition as the real live wallpaper: sky+clouds fill the screen, the
+            // cached location photo (if any) sits in the foreground third so the tuning preview
+            // matches what actually ends up on the home screen instead of a flat gradient.
+            if (backgroundBitmap != null) {
+                Image(
+                    bitmap = backgroundBitmap.asImageBitmap(),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().fillMaxHeight(.35f),
+                )
+            }
             Column(
                 Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
