@@ -127,7 +127,18 @@ class SkySegmenter(context: Context) {
         return buffer
     }
 
-    /** Copies [source] and clears the alpha of every pixel whose [labels] cell is sky. */
+    /**
+     * Copies [source] and clears the alpha of every pixel classified as sky.
+     *
+     * The model's [INPUT_SIZE]x[INPUT_SIZE] output is far coarser than a typical wallpaper photo,
+     * so fine detail (gaps between tree leaves/branches against the sky) shows up as small,
+     * blocky "sky" specks scattered inside otherwise-solid foliage. Naively upscaling that with
+     * nearest-neighbour sampling turns each such speck into a hard-edged transparent hole, through
+     * which the weather layer's clouds visibly "poke through" the trees. To avoid that: (1) erode
+     * isolated sky specks out of the low-resolution mask via a 3x3 majority vote before upscaling,
+     * and (2) upscale with bilinear interpolation instead of nearest-neighbour, so what remains at
+     * genuine sky/foreground boundaries gets a soft edge rather than a blocky one.
+     */
     private fun applyMask(source: Bitmap, labels: Array<FloatArray>): Bitmap {
         val width = source.width
         val height = source.height
@@ -135,21 +146,74 @@ class SkySegmenter(context: Context) {
         // A copy of an opaque (JPEG) bitmap keeps hasAlpha=false, which makes Android ignore the
         // alpha channel and save an opaque PNG. Enable alpha so the erased sky stays transparent.
         result.setHasAlpha(true)
+
+        val skyMask = Array(INPUT_SIZE) { y -> BooleanArray(INPUT_SIZE) { x -> labels[y][x].toInt() == SKY_CLASS } }
+        val refinedMask = erodeIsolatedSky(skyMask)
+
         val pixels = IntArray(width * height)
         result.getPixels(pixels, 0, width, 0, 0, width, height)
         for (y in 0 until height) {
-            val my = (y * INPUT_SIZE / height).coerceIn(0, INPUT_SIZE - 1)
-            val row = labels[my]
             val base = y * width
             for (x in 0 until width) {
-                val mx = (x * INPUT_SIZE / width).coerceIn(0, INPUT_SIZE - 1)
-                if (row[mx].toInt() == SKY_CLASS) {
+                if (isSkyBilinear(refinedMask, x, y, width, height)) {
                     pixels[base + x] = pixels[base + x] and 0x00FFFFFF // alpha = 0
                 }
             }
         }
         result.setPixels(pixels, 0, width, 0, 0, width, height)
         return result
+    }
+
+    /**
+     * 3x3 majority-vote erosion: a cell stays "sky" only when most of its neighbours (including
+     * itself) are too. An isolated sky speck surrounded by foliage has almost no sky neighbours
+     * and gets erased; a pixel well inside a large sky region is unaffected.
+     */
+    private fun erodeIsolatedSky(mask: Array<BooleanArray>): Array<BooleanArray> {
+        val size = INPUT_SIZE
+        return Array(size) { y ->
+            BooleanArray(size) { x ->
+                if (!mask[y][x]) {
+                    false
+                } else {
+                    var skyNeighbours = 0
+                    var total = 0
+                    for (dy in -1..1) {
+                        for (dx in -1..1) {
+                            val ny = y + dy
+                            val nx = x + dx
+                            if (ny in 0 until size && nx in 0 until size) {
+                                total++
+                                if (mask[ny][nx]) skyNeighbours++
+                            }
+                        }
+                    }
+                    skyNeighbours.toFloat() / total >= EROSION_MAJORITY_THRESHOLD
+                }
+            }
+        }
+    }
+
+    /**
+     * Bilinearly samples [mask] (at the model's [INPUT_SIZE] resolution) for full-photo pixel
+     * ([x], [y]), thresholded at 0.5, so the upscale doesn't produce hard blocky edges.
+     */
+    private fun isSkyBilinear(mask: Array<BooleanArray>, x: Int, y: Int, width: Int, height: Int): Boolean {
+        val fx = (x + 0.5f) * INPUT_SIZE / width - 0.5f
+        val fy = (y + 0.5f) * INPUT_SIZE / height - 0.5f
+        val x0 = fx.toInt().coerceIn(0, INPUT_SIZE - 1)
+        val y0 = fy.toInt().coerceIn(0, INPUT_SIZE - 1)
+        val x1 = (x0 + 1).coerceAtMost(INPUT_SIZE - 1)
+        val y1 = (y0 + 1).coerceAtMost(INPUT_SIZE - 1)
+        val tx = (fx - x0).coerceIn(0f, 1f)
+        val ty = (fy - y0).coerceIn(0f, 1f)
+        val v00 = if (mask[y0][x0]) 1f else 0f
+        val v10 = if (mask[y0][x1]) 1f else 0f
+        val v01 = if (mask[y1][x0]) 1f else 0f
+        val v11 = if (mask[y1][x1]) 1f else 0f
+        val top = v00 * (1 - tx) + v10 * tx
+        val bottom = v01 * (1 - tx) + v11 * tx
+        return (top * (1 - ty) + bottom * ty) >= 0.5f
     }
 
     private fun loadInterpreter(): Interpreter? = try {
@@ -174,6 +238,10 @@ class SkySegmenter(context: Context) {
 
         /** ADE20K (1-indexed) class for "sky": 0=bg, 1=wall, 2=building, 3=sky. */
         private const val SKY_CLASS = 3
+
+        /** Minimum fraction of sky neighbours (of 9, including self) a cell needs in the 3x3
+         *  majority-vote erosion pass to remain "sky" -- see [erodeIsolatedSky]. */
+        private const val EROSION_MAJORITY_THRESHOLD = 0.6f
 
         // The model measures sky conservatively (~half of what a person perceives), so these
         // measured thresholds correspond to roughly "25%+ visible sky, located at the top".
