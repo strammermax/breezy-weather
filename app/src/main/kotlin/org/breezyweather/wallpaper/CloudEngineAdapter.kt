@@ -8,6 +8,10 @@
 
 package org.breezyweather.wallpaper
 
+import android.content.Context
+import com.wolkentypes.app.clouds.cloudProfileFor
+import com.wolkentypes.app.clouds.loadPreset
+
 /**
  * Render parameters for the `:cloud-engine` module (the wolkentypes prototype), derived from
  * [WallpaperSceneState] as a pure function. [weatherId] is one of the keys understood by
@@ -23,12 +27,53 @@ data class CloudEngineSceneParams(
     val densityMultiplier: Float,
 )
 
+/** How much to darken/desaturate the background photo, see [CloudEngineAdapter.photoTint]. */
+data class CloudEnginePhotoTint(
+    val dimming: Float,
+    val greyscaleAmount: Float,
+)
+
 object CloudEngineAdapter {
     fun sceneParams(state: WallpaperSceneState): CloudEngineSceneParams = CloudEngineSceneParams(
         weatherId = weatherId(state),
         windSpeedMultiplier = state.windFactor,
         densityMultiplier = state.cloudDensity.coerceIn(0f, 1f),
     )
+
+    /**
+     * [WallpaperSceneState.photoDimming]/[WallpaperSceneState.photoGreyscaleAmount] are derived
+     * from the *legacy* cloud model's `cloudDensity`/`cloudDarkness` and know nothing about
+     * cloud-engine or its per-weatherId [com.wolkentypes.app.clouds.CloudTuningActivity] presets.
+     * So tuning e.g. "Overcast"'s "Overall amount" slider up or down in the debug tuning screen
+     * previously had no effect on how dark/desaturated the background photo looked, even though
+     * it visibly changes how much sky the clouds cover. This scales both by how far the tuned
+     * preset's density sits from that weatherId's default density (1.0 = no change), so the photo
+     * tint stays consistent with what's actually drawn. Returns the untouched scene values when
+     * no preset has been saved yet for this weatherId.
+     */
+    fun photoTint(state: WallpaperSceneState, context: Context): CloudEnginePhotoTint {
+        val weatherId = weatherId(state)
+        val baseDensity = cloudProfileFor(weatherId).density
+        val preset = loadPreset(context, weatherId)
+        return scaledPhotoTint(state, preset?.density, baseDensity)
+    }
+
+    /**
+     * The pure density-ratio math behind [photoTint], split out so it's testable without a real
+     * [Context]/`SharedPreferences` (this module has no Robolectric set up). [presetDensity] is
+     * `null` when no tuning-screen preset has been saved yet for this weatherId, in which case the
+     * scene's own values pass through unchanged.
+     */
+    internal fun scaledPhotoTint(state: WallpaperSceneState, presetDensity: Float?, baseDensity: Float): CloudEnginePhotoTint {
+        if (presetDensity == null || baseDensity <= 0f) {
+            return CloudEnginePhotoTint(state.photoDimming, state.photoGreyscaleAmount)
+        }
+        val densityRatio = (presetDensity / baseDensity).coerceIn(0f, 3f)
+        return CloudEnginePhotoTint(
+            dimming = (state.photoDimming * densityRatio).coerceIn(0f, 1f),
+            greyscaleAmount = (state.photoGreyscaleAmount * densityRatio).coerceIn(0f, 1f),
+        )
+    }
 
     private fun weatherId(state: WallpaperSceneState): String {
         val condition = state.condition

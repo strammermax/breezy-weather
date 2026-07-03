@@ -15,6 +15,7 @@ import io.kotest.matchers.floats.shouldBeLessThanOrEqual
 import io.kotest.matchers.shouldBe
 import org.breezyweather.ui.theme.weatherView.WeatherView
 import org.junit.jupiter.api.Test
+import kotlin.math.abs
 
 class CloudEngineAdapterTest {
     private fun scene(
@@ -159,5 +160,53 @@ class CloudEngineAdapterTest {
                     }
                 }
             }
+    }
+
+    @Test
+    fun `no saved preset leaves the scene's photo tint unchanged`() {
+        val state = scene(WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 95f)
+        val tint = CloudEngineAdapter.scaledPhotoTint(state, presetDensity = null, baseDensity = 1.8f)
+        tint.dimming shouldBe state.photoDimming
+        tint.greyscaleAmount shouldBe state.photoGreyscaleAmount
+    }
+
+    @Test
+    fun `preset density equal to the base density leaves photo tint unchanged`() {
+        val state = scene(WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 95f)
+        val tint = CloudEngineAdapter.scaledPhotoTint(state, presetDensity = 1.8f, baseDensity = 1.8f)
+        (abs(tint.dimming - state.photoDimming) < 0.001f) shouldBe true
+        (abs(tint.greyscaleAmount - state.photoGreyscaleAmount) < 0.001f) shouldBe true
+    }
+
+    @Test
+    fun `tuning density above the default darkens the photo more`() {
+        val state = scene(WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 95f)
+        val boosted = CloudEngineAdapter.scaledPhotoTint(state, presetDensity = 3.6f, baseDensity = 1.8f)
+        boosted.dimming shouldBeGreaterThanOrEqual state.photoDimming
+    }
+
+    @Test
+    fun `tuning density below the default lightens the photo`() {
+        val state = scene(WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 95f)
+        val reduced = CloudEngineAdapter.scaledPhotoTint(state, presetDensity = 0.9f, baseDensity = 1.8f)
+        reduced.dimming shouldBeLessThanOrEqual state.photoDimming
+    }
+
+    @Test
+    fun `photo tint always stays within 0f to 1f even for extreme preset densities`() {
+        val state = scene(WeatherView.WEATHER_KIND_THUNDERSTORM)
+        val extreme = CloudEngineAdapter.scaledPhotoTint(state, presetDensity = 50f, baseDensity = 1.15f)
+        extreme.dimming shouldBeGreaterThanOrEqual 0f
+        extreme.dimming shouldBeLessThanOrEqual 1f
+        extreme.greyscaleAmount shouldBeGreaterThanOrEqual 0f
+        extreme.greyscaleAmount shouldBeLessThanOrEqual 1f
+    }
+
+    @Test
+    fun `a zero base density falls back to the scene's own photo tint`() {
+        val state = scene(WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 95f)
+        val tint = CloudEngineAdapter.scaledPhotoTint(state, presetDensity = 2f, baseDensity = 0f)
+        tint.dimming shouldBe state.photoDimming
+        tint.greyscaleAmount shouldBe state.photoGreyscaleAmount
     }
 }

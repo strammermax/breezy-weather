@@ -1101,8 +1101,17 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
         private fun updateForegroundNightTint() {
             val foreground = mForeground ?: return
-            val dimming = mSceneState.photoDimming.coerceIn(0f, 1f)
-            val greyscaleAmount = mSceneState.photoGreyscaleAmount
+            // When "New clouds" is on, a tuned cloud-engine preset's density can differ a lot from
+            // the legacy cloudDensity/cloudDarkness this dimming was originally derived from --
+            // without this, cranking a weather type's cloud coverage up/down in the debug tuning
+            // screen would visibly change the sky but leave the photo looking untouched.
+            val tint = if (LiveWallpaperConfigManager(applicationContext).newCloudsEnabled) {
+                CloudEngineAdapter.photoTint(mSceneState, applicationContext)
+            } else {
+                CloudEnginePhotoTint(mSceneState.photoDimming, mSceneState.photoGreyscaleAmount)
+            }
+            val dimming = tint.dimming.coerceIn(0f, 1f)
+            val greyscaleAmount = tint.greyscaleAmount
             if (abs(dimming - mForegroundNightTint) < 0.001f &&
                 abs(greyscaleAmount - mForegroundGreyscaleAmount) < 0.001f
             ) return
