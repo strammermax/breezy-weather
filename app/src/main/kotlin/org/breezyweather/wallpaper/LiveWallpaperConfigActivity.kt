@@ -155,8 +155,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
 
     /** Experimental: render clouds via the `:cloud-engine` module (wolke-refactor-plan, Stap 6). */
     private lateinit var newCloudsEnabledValue: MutableState<Boolean>
-    private lateinit var newCloudsWindMultiplierValue: MutableState<Float>
-    private lateinit var newCloudsDensityMultiplierValue: MutableState<Float>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -177,8 +175,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         seasonGradingStrengthValue = mutableFloatStateOf(liveWallpaperConfigManager.seasonGradingStrength)
 
         newCloudsEnabledValue = mutableStateOf(liveWallpaperConfigManager.newCloudsEnabled)
-        newCloudsWindMultiplierValue = mutableFloatStateOf(liveWallpaperConfigManager.newCloudsWindMultiplier)
-        newCloudsDensityMultiplierValue = mutableFloatStateOf(liveWallpaperConfigManager.newCloudsDensityMultiplier)
 
         wallpaperImageStore = WallpaperImageStore(this)
         photoBackgroundEnabledValue = mutableStateOf(wallpaperImageStore.photoBackgroundEnabled)
@@ -339,8 +335,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
             seasonGradingEnabled = seasonGradingEnabledValue.value,
             seasonGradingStrength = seasonGradingStrengthValue.value,
             newCloudsEnabled = newCloudsEnabledValue.value,
-            newCloudsWindMultiplier = newCloudsWindMultiplierValue.value,
-            newCloudsDensityMultiplier = newCloudsDensityMultiplierValue.value,
         )
     }
 
@@ -579,52 +573,19 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         persistCoreSettings()
                     }
                 }
-                // wolke-refactor-plan Stap 6: tuning is deliberately debug-build-only, not just
-                // hidden-by-default, so it can never ship visible in a release build.
+                // wolke-refactor-plan Stap 6: the tuning screen is deliberately debug-build-only,
+                // not just hidden-by-default, so it can never ship reachable in a release build.
                 if (BuildConfig.DEBUG && newCloudsEnabledValue.value) {
                     item {
-                        Column(
-                            modifier = Modifier.padding(
-                                horizontal = dimensionResource(R.dimen.normal_margin)
-                            )
+                        OutlinedButton(
+                            onClick = {
+                                startActivity(Intent(this@LiveWallpaperConfigActivity, CloudTuningActivity::class.java))
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = dimensionResource(R.dimen.normal_margin)),
                         ) {
-                            Text(
-                                text = stringResource(R.string.widget_live_wallpaper_new_clouds_tuning),
-                                color = MaterialTheme.colorScheme.secondary,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                    item {
-                        Column(
-                            modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
-                        ) {
-                            Text(
-                                text = stringResource(
-                                    R.string.widget_live_wallpaper_new_clouds_wind,
-                                    (newCloudsWindMultiplierValue.value * 100).roundToInt(),
-                                ),
-                                fontWeight = FontWeight.Bold,
-                            )
-                            Slider(
-                                value = newCloudsWindMultiplierValue.value,
-                                onValueChange = { newCloudsWindMultiplierValue.value = it },
-                                valueRange = 0.2f..3f,
-                                onValueChangeFinished = { persistCoreSettings() },
-                            )
-                            Text(
-                                text = stringResource(
-                                    R.string.widget_live_wallpaper_new_clouds_density,
-                                    (newCloudsDensityMultiplierValue.value * 100).roundToInt(),
-                                ),
-                                fontWeight = FontWeight.Bold,
-                            )
-                            Slider(
-                                value = newCloudsDensityMultiplierValue.value,
-                                onValueChange = { newCloudsDensityMultiplierValue.value = it },
-                                valueRange = 0.2f..2f,
-                                onValueChangeFinished = { persistCoreSettings() },
-                            )
+                            Text(stringResource(R.string.widget_live_wallpaper_new_clouds_tuning))
                         }
                     }
                 }

@@ -93,8 +93,6 @@ internal class WallpaperEffectView @JvmOverloads constructor(
             useNewClouds = liveWallpaperConfig.newCloudsEnabled,
             newCloudsParams = CloudEngineAdapter.sceneParams(state),
             cloudEngineContext = context,
-            newCloudsWindMultiplier = liveWallpaperConfig.newCloudsWindMultiplier,
-            newCloudsDensityMultiplier = liveWallpaperConfig.newCloudsDensityMultiplier,
         )
     }
 

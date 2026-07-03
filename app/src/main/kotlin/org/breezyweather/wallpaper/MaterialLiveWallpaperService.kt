@@ -803,8 +803,6 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     useNewClouds = liveWallpaperConfig.newCloudsEnabled,
                     newCloudsParams = CloudEngineAdapter.sceneParams(sceneState),
                     cloudEngineContext = applicationContext,
-                    newCloudsWindMultiplier = liveWallpaperConfig.newCloudsWindMultiplier,
-                    newCloudsDensityMultiplier = liveWallpaperConfig.newCloudsDensityMultiplier,
                 )
             } else {
                 null

@@ -27,6 +27,7 @@ import android.os.Build
 import android.util.Log
 import com.wolkentypes.app.clouds.CloudEngineRenderer
 import com.wolkentypes.app.clouds.cloudProfileFor
+import com.wolkentypes.app.clouds.loadPreset
 import org.breezyweather.R
 import org.breezyweather.ui.theme.weatherView.WeatherView
 import java.util.Random
@@ -102,9 +103,6 @@ internal class WallpaperWeatherEffectRenderer(
     private val useNewClouds: Boolean = false,
     private val newCloudsParams: CloudEngineSceneParams? = null,
     private val cloudEngineContext: Context? = null,
-    /** Debug-build-only tuning multipliers, see [LiveWallpaperConfigManager]. Neutral (1f) by default. */
-    private val newCloudsWindMultiplier: Float = 1f,
-    private val newCloudsDensityMultiplier: Float = 1f,
 ) {
     private var daylight = daylight.coerceIn(0f, 1f)
     private val daytime: Boolean
@@ -119,11 +117,22 @@ internal class WallpaperWeatherEffectRenderer(
     // off-by-default experimental toggle whose whole purpose is the cloud look itself.
     private val cloudEngineRenderer: CloudEngineRenderer? =
         if (useNewClouds && cloudEngineContext != null && newCloudsParams != null) {
+            // A saved CloudTuningActivity preset for this weatherId (debug builds only, see
+            // wolke-refactor-plan Stap 6) replaces the base profile/density/wind wholesale --
+            // it represents an artist-tuned look for that weather type, not a modifier layered
+            // on top of it. No preset saved yet just falls back to the plain weather-derived
+            // profile, exactly like the wolkentypes prototype's own behaviour.
+            val baseProfile = cloudProfileFor(newCloudsParams.weatherId)
+            val preset = loadPreset(cloudEngineContext, newCloudsParams.weatherId)
             CloudEngineRenderer(cloudEngineContext).apply {
-                profile = cloudProfileFor(newCloudsParams.weatherId)
+                profile = if (preset != null) {
+                    baseProfile.copy(layers = preset.layers, density = preset.density)
+                } else {
+                    baseProfile
+                }
                 weatherId = newCloudsParams.weatherId
-                windSpeedMultiplier = newCloudsParams.windSpeedMultiplier * newCloudsWindMultiplier
-                densityMultiplier = newCloudsParams.densityMultiplier * newCloudsDensityMultiplier
+                windSpeedMultiplier = preset?.wind ?: newCloudsParams.windSpeedMultiplier
+                layerDepthMultiplier = preset?.depth ?: 1f
             }
         } else {
             null
