@@ -115,7 +115,7 @@ class CloudEngineRenderer(private val context: Context) {
     private fun bankVariant(type: CloudTextureType): CloudAsset? {
         val options = cloudAssets.filter { it.type == type }
         if (type == CloudTextureType.HORIZON_BANK) {
-            options.firstOrNull { it.fileName == "horizon-bank.png" }?.let { return it }
+            options.firstOrNull { it.fileName == "horizon-bank.webp" }?.let { return it }
         }
         return options.getOrNull(Math.floorMod(profile.hashCode(), options.size.coerceAtLeast(1)))
     }
@@ -268,7 +268,7 @@ class CloudEngineRenderer(private val context: Context) {
             drawAsset(canvas, bank, x, top, width, height, .96f)
         }
 
-        cloudAssets.firstOrNull { it.fileName == "dark-midfield-cloudy-01.png" }?.let { bank ->
+        cloudAssets.firstOrNull { it.fileName == "dark-midfield-cloudy-01.webp" }?.let { bank ->
             val width = screenWidth * 1.72f
             val height = width / bank.aspectRatio
             val travel = screenWidth + width
@@ -288,7 +288,7 @@ class CloudEngineRenderer(private val context: Context) {
     }
 
     private fun drawRainFront(canvas: Canvas, screenWidth: Float, screenHeight: Float, pxPerDp: Float, time: Float) {
-        val front = cloudAssets.firstOrNull { it.fileName == "dark-midfield-rain-front-01.png" } ?: return
+        val front = cloudAssets.firstOrNull { it.fileName == "dark-midfield-rain-front-01.webp" } ?: return
         val isShower = weatherId == "showers"
         val width = screenWidth * (if (isShower) 1.38f else 1.82f)
         val height = width / front.aspectRatio

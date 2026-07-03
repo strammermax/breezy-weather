@@ -43,18 +43,19 @@ internal fun loadCloudAssets(context: Context, weatherId: String? = null): List<
         return loadCloudAssetsFromFolder(context, baseFolder) +
             loadCloudAssetsFromFolder(context, rainFolder)
     }
-    val folder = perWeatherFolder?.takeIf { hasPngFiles(context, it) } ?: SHARED_FOLDER
+    val folder = perWeatherFolder?.takeIf { hasWebpFiles(context, it) } ?: SHARED_FOLDER
     return loadCloudAssetsFromFolder(context, folder)
 }
 
-private fun hasPngFiles(context: Context, folder: String): Boolean =
-    context.assets.list(folder).orEmpty().any { it.endsWith(".png", ignoreCase = true) }
+private fun hasWebpFiles(context: Context, folder: String): Boolean =
+    context.assets.list(folder).orEmpty().any { it.endsWith(".webp", ignoreCase = true) }
 
 private fun loadCloudAssetsFromFolder(context: Context, folder: String): List<CloudAsset> {
     // Bestandsnamen zijn het contract: hierdoor worden nieuwe, zelf gegenereerde assets
-    // automatisch gevonden zonder de Kotlin-code opnieuw aan te passen.
+    // automatisch gevonden zonder de Kotlin-code opnieuw aan te passen. Assets zijn lossy WebP
+    // (niet PNG) om de APK-grootte te beperken -- 34 bestanden gingen van 23MB naar 1,5MB.
     val paths = context.assets.list(folder).orEmpty()
-        .filter { it.endsWith(".png", ignoreCase = true) }
+        .filter { it.endsWith(".webp", ignoreCase = true) }
         .sorted()
         .mapNotNull { name ->
             val type = when {
