@@ -76,6 +76,11 @@ class DetailsActivity : BreezyActivity() {
         if (::effectView.isInitialized) effectView.setDrawable(false)
     }
 
+    /** Lets [DetailsScreen]'s snapshot renderer hand the near/foreground photo layer to [effectView]. */
+    fun setForegroundPhoto(bitmap: android.graphics.Bitmap?, greyscaleAmount: Float) {
+        if (::effectView.isInitialized) effectView.setForegroundPhoto(bitmap, greyscaleAmount)
+    }
+
     companion object {
         const val KEY_FORMATTED_LOCATION_ID = "FORMATTED_LOCATION_ID"
         const val KEY_CURRENT_DAILY_INDEX = "CURRENT_DAILY_INDEX"

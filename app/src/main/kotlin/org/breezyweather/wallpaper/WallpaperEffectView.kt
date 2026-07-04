@@ -17,7 +17,11 @@
 package org.breezyweather.wallpaper
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.Choreographer
 import android.view.View
@@ -42,6 +46,22 @@ internal class WallpaperEffectView @JvmOverloads constructor(
     private var renderer: WallpaperWeatherEffectRenderer? = null
     private var shouldAnimate = false
     private var lastFrameNanos = 0L
+
+    /** Near/foreground photo content (e.g. a building), drawn between the two weather passes
+     *  so clouds stay behind it — see [WallpaperSceneSnapshot.render]'s `depth` parameter. */
+    private var foregroundPhoto: Bitmap? = null
+    private var foregroundPaint = Paint(Paint.FILTER_BITMAP_FLAG)
+
+    /** Sets (or clears, with null) the near-photo layer and its night/greyscale tint. */
+    fun setForegroundPhoto(bitmap: Bitmap?, greyscaleAmount: Float = 0f) {
+        foregroundPhoto = bitmap
+        foregroundPaint = Paint(Paint.FILTER_BITMAP_FLAG).apply {
+            if (greyscaleAmount > 0f) {
+                colorFilter = ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(1f - greyscaleAmount) })
+            }
+        }
+        invalidate()
+    }
 
     private val frameCallback = object : Choreographer.FrameCallback {
         override fun doFrame(frameTimeNanos: Long) {
@@ -121,6 +141,7 @@ internal class WallpaperEffectView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         val r = renderer ?: return
         r.drawBackgroundWeatherPass(canvas)
+        foregroundPhoto?.let { canvas.drawBitmap(it, 0f, 0f, foregroundPaint) }
         r.drawForegroundWeatherPass(canvas)
         r.drawGlassRainDrops(canvas)
     }

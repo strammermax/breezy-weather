@@ -33,6 +33,8 @@ import kotlin.math.min
  */
 internal object WallpaperSceneSnapshot {
 
+    private val PHOTO_PAINT = Paint(Paint.FILTER_BITMAP_FLAG)
+
     /** Decoded once and reused — see [loadMoonTextureBitmap] in MaterialLiveWallpaperService.kt. */
     private var moonTexture: Bitmap? = null
     private var moonTextureLoaded = false
@@ -49,6 +51,20 @@ internal object WallpaperSceneSnapshot {
         return moonTexture
     }
 
+    /**
+     * Renders the static sky/celestial layer (and, when [depth] is available, the *far* photo
+     * split) onto [canvas], and returns the photo bitmap the caller must draw *on top of* the
+     * animated weather layer (see [WallpaperEffectView.setForegroundPhoto]) — this is either
+     * the *near* depth split, or, when there's no depth map, the whole positioned [photo].
+     *
+     * This mirrors [MaterialLiveWallpaperService]'s actual draw order: the sky/far-photo layer
+     * comes before the cloud background pass, while the foreground photo (near split, or the
+     * whole photo when there's nothing to split) is drawn *between* the background and
+     * foreground weather passes — never before both, which would let clouds paint over the
+     * entire photo including near/foreground content like a building.
+     *
+     * Returns null (nothing for the caller to draw) when there's no [photo].
+     */
     fun render(
         canvas: Canvas,
         width: Int,
@@ -56,19 +72,31 @@ internal object WallpaperSceneSnapshot {
         photo: Bitmap?,
         sceneState: WallpaperSceneState,
         resources: Resources,
-    ) {
-        if (width <= 0 || height <= 0) return
+        depth: Bitmap? = null,
+    ): Bitmap? {
+        if (width <= 0 || height <= 0) return null
 
         drawSkyBackground(canvas, width, height, sceneState)
         drawCelestialBody(canvas, width, height, sceneState, resources)
 
-        // Note: the cloud/weather background pass (WallpaperWeatherEffectRenderer) relies on
-        // RuntimeShader, which Android refuses to draw onto a software-backed Canvas/Bitmap
-        // (IllegalArgumentException: "Software rendering doesn't support RuntimeShader").
-        // Since this snapshot is rendered onto a software bitmap for use as a static
-        // background drawable, that pass is intentionally skipped here.
+        // Note: the cloud/weather passes (WallpaperWeatherEffectRenderer) rely on RuntimeShader,
+        // which Android refuses to draw onto a software-backed Canvas/Bitmap
+        // (IllegalArgumentException: "Software rendering doesn't support RuntimeShader"). Since
+        // this snapshot is rendered onto a software bitmap for use as a static background
+        // drawable, those passes are drawn separately by WallpaperEffectView on top.
+        if (photo == null) return null
 
-        if (photo != null) {
+        val positioned = WallpaperPhotoLayout.positionAtBottom(photo, width, height)
+        val (foregroundLayer, farLayer) = if (depth != null) {
+            val (near, far) = WallpaperPhotoLayout.splitByDepth(positioned, depth)
+            positioned.recycle()
+            near to far
+        } else {
+            positioned to null
+        }
+
+        if (farLayer != null) {
+            val drawFar: (Canvas) -> Unit = { it.drawBitmap(farLayer, 0f, 0f, PHOTO_PAINT) }
             if (sceneState.usesGreyscalePhoto) {
                 val greyscalePaint = Paint().apply {
                     colorFilter = ColorMatrixColorFilter(
@@ -76,12 +104,13 @@ internal object WallpaperSceneSnapshot {
                     )
                 }
                 canvas.saveLayer(null, greyscalePaint)
-                drawPhotoForeground(canvas, width, height, photo)
+                drawFar(canvas)
                 canvas.restore()
             } else {
-                drawPhotoForeground(canvas, width, height, photo)
+                drawFar(canvas)
             }
         }
+        return foregroundLayer
     }
 
     private fun drawSkyBackground(canvas: Canvas, width: Int, height: Int, sceneState: WallpaperSceneState) {
@@ -196,9 +225,5 @@ internal object WallpaperSceneSnapshot {
             CelestialGlow.configureCorePaint(this)
         }
         CelestialGlow.draw(canvas, centerX, centerY, glowRadius, coreRadius, alpha, glowPaint, corePaint)
-    }
-
-    private fun drawPhotoForeground(canvas: Canvas, width: Int, height: Int, photo: Bitmap) {
-        WallpaperPhotoLayout.drawOnCanvas(canvas, width, height, photo)
     }
 }

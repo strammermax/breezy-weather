@@ -22,12 +22,10 @@ import android.graphics.Paint
 import android.graphics.RectF
 
 /**
- * Shared photo-placement logic for the live wallpaper and the detail-screen snapshot.
- *
- * The photo always anchors to the bottom of the target area. Two rendering paths:
- * - [drawOnCanvas]: used by [WallpaperSceneSnapshot] — draws inline, fits to height fraction.
- * - [positionAtBottom]: used by [MaterialLiveWallpaperService] — bakes into a new bitmap,
- *   covers the full target width so there are no side gaps regardless of aspect ratio.
+ * Shared photo-placement logic for the live wallpaper and its in-app snapshot/effect views.
+ * The photo always anchors to the bottom of the target area, via [positionAtBottom] — bakes
+ * into a new bitmap covering the full target width so there are no side gaps regardless of
+ * aspect ratio. [splitByDepth] then optionally divides that into near/far layers.
  */
 internal object WallpaperPhotoLayout {
 
@@ -35,27 +33,6 @@ internal object WallpaperPhotoLayout {
     const val PHOTO_HEIGHT_FRACTION = 0.52f
 
     private val paint = Paint(Paint.FILTER_BITMAP_FLAG)
-
-    /**
-     * Draws [photo] centred horizontally and anchored to the bottom of [canvas],
-     * scaled so its height equals [height] × [PHOTO_HEIGHT_FRACTION].
-     * Any excess photo width beyond [width] is cropped equally on both sides.
-     */
-    fun drawOnCanvas(canvas: Canvas, width: Int, height: Int, photo: Bitmap) {
-        val scale = maxOf(
-            width.toFloat() / photo.width,
-            height * PHOTO_HEIGHT_FRACTION / photo.height,
-        )
-        val photoWidth = photo.width * scale
-        val photoHeight = photo.height * scale
-        val left = (width - photoWidth) / 2f
-        canvas.drawBitmap(
-            photo,
-            null,
-            RectF(left, height - photoHeight, left + photoWidth, height.toFloat()),
-            paint,
-        )
-    }
 
     /**
      * Returns a new [targetWidth] × [targetHeight] bitmap with [source] placed at the
@@ -81,5 +58,41 @@ internal object WallpaperPhotoLayout {
             paint,
         )
         return result
+    }
+
+    /**
+     * Splits [rgba] into two bitmaps based on the grayscale [depth] map (255=near, 0=far).
+     * Returns (nearBitmap, farBitmap): pixels above [threshold] go to near, the rest to far.
+     * Transparent pixels in the RGBA source remain transparent in both outputs.
+     *
+     * Shared by [MaterialLiveWallpaperService] (animated cloud-fly-through) and
+     * [WallpaperSceneSnapshot] (static in-app preview) so both draw clouds behind the same
+     * near/foreground pixels instead of the snapshot painting clouds over the whole photo.
+     */
+    fun splitByDepth(rgba: Bitmap, depth: Bitmap, threshold: Int = 128): Pair<Bitmap, Bitmap> {
+        val w = rgba.width
+        val h = rgba.height
+        val depthScaled = if (depth.width == w && depth.height == h) depth
+                          else Bitmap.createScaledBitmap(depth, w, h, true)
+        val rgbaPixels  = IntArray(w * h)
+        val depthPixels = IntArray(w * h)
+        rgba.getPixels(rgbaPixels, 0, w, 0, 0, w, h)
+        depthScaled.getPixels(depthPixels, 0, w, 0, 0, w, h)
+        if (depthScaled !== depth) depthScaled.recycle()
+
+        val nearPixels = IntArray(w * h)
+        val farPixels  = IntArray(w * h)
+        for (i in rgbaPixels.indices) {
+            // Depth is stored as a greyscale ARGB — take the red channel as intensity.
+            val depthVal = (depthPixels[i] shr 16) and 0xFF
+            if (depthVal > threshold) nearPixels[i] = rgbaPixels[i]
+            else                      farPixels[i]  = rgbaPixels[i]
+        }
+
+        val nearBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val farBitmap  = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        nearBitmap.setPixels(nearPixels, 0, w, 0, 0, w, h)
+        farBitmap.setPixels(farPixels,  0, w, 0, 0, w, h)
+        return Pair(nearBitmap, farBitmap)
     }
 }

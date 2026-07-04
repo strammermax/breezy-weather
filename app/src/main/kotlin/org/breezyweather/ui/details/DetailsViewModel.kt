@@ -67,6 +67,11 @@ class DetailsViewModel @Inject constructor(
         wallpaperRepository.loadCachedBitmap()
     }
 
+    /** Same depth map the live wallpaper uses to keep clouds behind near/foreground photo content. */
+    suspend fun loadCachedDepthMap(): Bitmap? = withContext(Dispatchers.IO) {
+        wallpaperRepository.loadCachedDepthBitmap()
+    }
+
     init {
         reloadLocation()
     }

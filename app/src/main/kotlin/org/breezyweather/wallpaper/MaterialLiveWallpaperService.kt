@@ -1046,7 +1046,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 // and far (behind clouds) layers for a cloud-fly-through effect.
                 val depth = mWallpaperRepository.loadCachedDepthBitmap()
                 if (depth != null) {
-                    val (near, far) = splitBitmapByDepth(positioned, depth)
+                    val (near, far) = WallpaperPhotoLayout.splitByDepth(positioned, depth)
                     depth.recycle()
                     mForegroundFar = BitmapDrawable(resources, far)
                     lwwLog { "buildPhotoForeground ok (depth split): ${width}x${mSizes[1]}" }
@@ -1061,42 +1061,6 @@ class MaterialLiveWallpaperService : WallpaperService() {
             } finally {
                 source.recycle()
             }
-        }
-
-        /**
-         * Splits [rgba] into two bitmaps based on the grayscale [depth] map (255=near, 0=far).
-         * Returns (nearBitmap, farBitmap): pixels above [threshold] go to near, the rest to far.
-         * Transparent pixels in the RGBA source remain transparent in both outputs.
-         */
-        private fun splitBitmapByDepth(
-            rgba: Bitmap,
-            depth: Bitmap,
-            threshold: Int = 128,
-        ): Pair<Bitmap, Bitmap> {
-            val w = rgba.width
-            val h = rgba.height
-            val depthScaled = if (depth.width == w && depth.height == h) depth
-                              else Bitmap.createScaledBitmap(depth, w, h, true)
-            val rgbaPixels  = IntArray(w * h)
-            val depthPixels = IntArray(w * h)
-            rgba.getPixels(rgbaPixels, 0, w, 0, 0, w, h)
-            depthScaled.getPixels(depthPixels, 0, w, 0, 0, w, h)
-            if (depthScaled !== depth) depthScaled.recycle()
-
-            val nearPixels = IntArray(w * h)
-            val farPixels  = IntArray(w * h)
-            for (i in rgbaPixels.indices) {
-                // Depth is stored as a greyscale ARGB — take the red channel as intensity.
-                val depthVal = (depthPixels[i] shr 16) and 0xFF
-                if (depthVal > threshold) nearPixels[i] = rgbaPixels[i]
-                else                      farPixels[i]  = rgbaPixels[i]
-            }
-
-            val nearBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-            val farBitmap  = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-            nearBitmap.setPixels(nearPixels, 0, w, 0, 0, w, h)
-            farBitmap.setPixels(farPixels,  0, w, 0, 0, w, h)
-            return Pair(nearBitmap, farBitmap)
         }
 
         private fun updateForegroundNightTint() {

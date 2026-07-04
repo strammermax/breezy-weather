@@ -242,11 +242,27 @@ internal fun DailyWeatherScreen(
                     )
 
                     val photo = detailsViewModel.loadCachedPhoto()
+                    // Same depth map the live wallpaper uses to keep clouds behind near/foreground
+                    // photo content (e.g. a building) instead of painting over the whole photo.
+                    val depth = detailsViewModel.loadCachedDepthMap()
+                    var nearPhoto: Bitmap? = null
                     val bitmap = withContext(Dispatchers.Default) {
                         Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
-                            WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState, context.resources)
+                            nearPhoto = WallpaperSceneSnapshot.render(
+                                Canvas(it),
+                                width,
+                                height,
+                                photo,
+                                sceneState,
+                                context.resources,
+                                depth,
+                            )
                         }
                     }
+                    (activity as? DetailsActivity)?.setForegroundPhoto(
+                        nearPhoto,
+                        if (sceneState.usesGreyscalePhoto) sceneState.photoGreyscaleAmount else 0f,
+                    )
                     activity.window.setBackgroundDrawable(BitmapDrawable(context.resources, bitmap))
                 }
 
