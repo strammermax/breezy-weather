@@ -16,7 +16,7 @@
 
 package livewallpaperweather.domain.weather.model
 
-import com.livewallpaperweather.unit.ratio.Ratio
+import com.liveweatherwallpaperapp.unit.ratio.Ratio
 import java.io.Serializable
 
 /**

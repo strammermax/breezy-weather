@@ -16,7 +16,7 @@
 
 package livewallpaperweather.domain.weather.model
 
-import com.livewallpaperweather.unit.precipitation.Precipitation
+import com.liveweatherwallpaperapp.unit.precipitation.Precipitation
 import java.io.Serializable
 import java.util.Date
 import kotlin.math.log10

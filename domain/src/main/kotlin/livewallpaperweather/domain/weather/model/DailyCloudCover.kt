@@ -16,7 +16,7 @@
 
 package livewallpaperweather.domain.weather.model
 
-import com.livewallpaperweather.unit.ratio.Ratio
+import com.liveweatherwallpaperapp.unit.ratio.Ratio
 
 data class DailyCloudCover(
     override val average: Ratio? = null,

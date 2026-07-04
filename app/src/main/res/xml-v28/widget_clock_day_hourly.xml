@@ -8,5 +8,5 @@
     android:initialLayout="@layout/widget_clock_day_hourly"
     android:resizeMode="horizontal|vertical"
     android:widgetFeatures="reconfigurable"
-    android:configure="com.livewallpaperweather.remoteviews.config.ClockDayHourlyWidgetConfigActivity"
+    android:configure="com.liveweatherwallpaperapp.remoteviews.config.ClockDayHourlyWidgetConfigActivity"
     android:widgetCategory="home_screen|keyguard" />

@@ -64,7 +64,7 @@
                 android:layout_height="wrap_content"
                 app:layout_constraintGuide_percent="0.88" />
 
-            <com.livewallpaperweather.ui.common.widgets.ArcProgress
+            <com.liveweatherwallpaperapp.ui.common.widgets.ArcProgress
                 android:id="@+id/pressure_progress"
                 android:layout_width="0dp"
                 android:layout_height="0dp"

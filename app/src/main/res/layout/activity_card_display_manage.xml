@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.livewallpaperweather.ui.common.widgets.insets.FitSystemBarAppBarLayout
+        <com.liveweatherwallpaperapp.ui.common.widgets.insets.FitSystemBarAppBarLayout
             android:id="@+id/appBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -27,7 +27,7 @@
                 app:navigationIcon="@drawable/ic_toolbar_back"
                 app:navigationContentDescription="@string/action_back" />
 
-        </com.livewallpaperweather.ui.common.widgets.insets.FitSystemBarAppBarLayout>
+        </com.liveweatherwallpaperapp.ui.common.widgets.insets.FitSystemBarAppBarLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"

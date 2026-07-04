@@ -49,7 +49,7 @@
                 android:layout_height="wrap_content"
                 app:layout_constraintGuide_percent="0.9" />
 
-            <com.livewallpaperweather.ui.common.widgets.astro.SunMoonView
+            <com.liveweatherwallpaperapp.ui.common.widgets.astro.SunMoonView
                 android:id="@+id/container_main_sun_moon_controlView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -117,7 +117,7 @@
                 app:layout_constraintStart_toEndOf="@+id/rise_time"
                 tools:text="18:00" />
 
-            <com.livewallpaperweather.ui.common.widgets.astro.MoonPhaseView
+            <com.liveweatherwallpaperapp.ui.common.widgets.astro.MoonPhaseView
                 android:id="@+id/description_icon"
                 android:layout_width="0dp"
                 android:layout_height="0dp"

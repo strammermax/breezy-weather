@@ -8,6 +8,6 @@
     android:initialLayout="@layout/widget_remote"
     android:previewImage="@drawable/widget_trend_daily"
     android:resizeMode="horizontal|vertical"
-    android:configure="com.livewallpaperweather.remoteviews.config.DailyTrendWidgetConfigActivity"
+    android:configure="com.liveweatherwallpaperapp.remoteviews.config.DailyTrendWidgetConfigActivity"
     android:widgetFeatures="reconfigurable"
     android:widgetCategory="home_screen|keyguard" />

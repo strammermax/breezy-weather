@@ -8,5 +8,5 @@
     android:initialLayout="@layout/widget_multi_city_horizontal"
     android:previewImage="@drawable/widget_multi_city"
     android:resizeMode="horizontal|vertical"
-    android:configure="com.livewallpaperweather.remoteviews.config.MultiCityWidgetConfigActivity"
+    android:configure="com.liveweatherwallpaperapp.remoteviews.config.MultiCityWidgetConfigActivity"
     android:widgetCategory="home_screen|keyguard" />

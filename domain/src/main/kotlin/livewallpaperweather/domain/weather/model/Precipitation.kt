@@ -22,11 +22,11 @@ import java.io.Serializable
  * Precipitation.
  */
 data class Precipitation(
-    val total: com.livewallpaperweather.unit.precipitation.Precipitation? = null,
-    val thunderstorm: com.livewallpaperweather.unit.precipitation.Precipitation? = null,
-    val rain: com.livewallpaperweather.unit.precipitation.Precipitation? = null,
-    val snow: com.livewallpaperweather.unit.precipitation.Precipitation? = null,
-    val ice: com.livewallpaperweather.unit.precipitation.Precipitation? = null,
+    val total: com.liveweatherwallpaperapp.unit.precipitation.Precipitation? = null,
+    val thunderstorm: com.liveweatherwallpaperapp.unit.precipitation.Precipitation? = null,
+    val rain: com.liveweatherwallpaperapp.unit.precipitation.Precipitation? = null,
+    val snow: com.liveweatherwallpaperapp.unit.precipitation.Precipitation? = null,
+    val ice: com.liveweatherwallpaperapp.unit.precipitation.Precipitation? = null,
 ) : Serializable {
 
     companion object {

@@ -18,9 +18,9 @@ package livewallpaperweather.domain.weather.model
 
 import livewallpaperweather.domain.weather.reference.WeatherCode
 import livewallpaperweather.domain.weather.wrappers.HourlyWrapper
-import com.livewallpaperweather.unit.distance.Distance
-import com.livewallpaperweather.unit.pressure.Pressure
-import com.livewallpaperweather.unit.ratio.Ratio
+import com.liveweatherwallpaperapp.unit.distance.Distance
+import com.liveweatherwallpaperapp.unit.pressure.Pressure
+import com.liveweatherwallpaperapp.unit.ratio.Ratio
 import java.io.Serializable
 import java.util.Date
 
@@ -39,7 +39,7 @@ data class Hourly(
     val airQuality: AirQuality? = null,
     val uV: UV? = null,
     val relativeHumidity: Ratio? = null,
-    val dewPoint: com.livewallpaperweather.unit.temperature.Temperature? = null,
+    val dewPoint: com.liveweatherwallpaperapp.unit.temperature.Temperature? = null,
     /**
      * Pressure at sea level
      * Use Kotlin extensions to initialize this value, like 1013.25.hectopascals

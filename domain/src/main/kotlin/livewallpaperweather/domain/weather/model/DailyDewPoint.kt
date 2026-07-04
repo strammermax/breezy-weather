@@ -16,7 +16,7 @@
 
 package livewallpaperweather.domain.weather.model
 
-import com.livewallpaperweather.unit.temperature.Temperature
+import com.liveweatherwallpaperapp.unit.temperature.Temperature
 
 data class DailyDewPoint(
     override val average: Temperature? = null,

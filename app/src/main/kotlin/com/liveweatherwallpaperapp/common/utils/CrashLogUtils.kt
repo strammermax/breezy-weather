@@ -1,0 +1,102 @@
+/*
+ * This file is part of Breezy Weather.
+ *
+ * Breezy Weather is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation, version 3 of the License.
+ *
+ * Breezy Weather is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Breezy Weather. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package com.liveweatherwallpaperapp.common.utils
+
+import android.content.Context
+import android.net.Uri
+import android.os.Build
+import com.liveweatherwallpaperapp.BuildConfig
+import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.background.receiver.NotificationReceiver
+import com.liveweatherwallpaperapp.common.extensions.cancelNotification
+import com.liveweatherwallpaperapp.common.extensions.createFileInCacheDir
+import com.liveweatherwallpaperapp.common.extensions.getUriCompat
+import com.liveweatherwallpaperapp.common.extensions.notify
+import com.liveweatherwallpaperapp.common.extensions.withNonCancellableContext
+import com.liveweatherwallpaperapp.common.extensions.withUIContext
+import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
+import com.liveweatherwallpaperapp.remoteviews.Notifications
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
+
+/**
+ * Taken from Mihon
+ * Apache License, Version 2.0
+ *
+ * https://github.com/mihonapp/mihon/blob/aa498360db90350f2642e6320dc55e7d474df1fd/app/src/main/java/eu/kanade/tachiyomi/util/CrashLogUtil.kt
+ */
+
+class CrashLogUtils(
+    private val context: Context,
+) {
+
+    suspend fun dumpLogs(): Boolean = withNonCancellableContext {
+        try {
+            val crashLog = context.createFileInCacheDir("breezyweather_crash_logs.txt")
+            Runtime.getRuntime().exec("logcat *:E -d -f ${crashLog.absolutePath}").waitFor()
+            crashLog.appendText("\n\n=== Device and app information ===\n")
+            crashLog.appendText(getDebugInfo())
+
+            val archive = context.createFileInCacheDir("breezyweather_debug_logs.zip")
+            ZipOutputStream(archive.outputStream().buffered()).use { zip ->
+                addToZip(zip, crashLog, "crash/breezyweather_crash_logs.txt")
+                DiagnosticLogger.files(context).forEach { logFile ->
+                    addToZip(zip, logFile, "debug/${logFile.name}")
+                }
+            }
+
+            showNotification(archive.getUriCompat(context))
+            true
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            withUIContext { SnackbarHelper.showSnackbar(context.getString(R.string.settings_debug_dump_logs_failed)) }
+            false
+        }
+    }
+
+    private fun addToZip(zip: ZipOutputStream, file: java.io.File, name: String) {
+        zip.putNextEntry(ZipEntry(name))
+        file.inputStream().use { it.copyTo(zip) }
+        zip.closeEntry()
+    }
+
+    fun getDebugInfo(): String {
+        return """
+            App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}, ${BuildConfig.COMMIT_SHA}, ${BuildConfig.VERSION_CODE}
+            Android version: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT}); build ${Build.DISPLAY}
+            Device brand: ${Build.BRAND}
+            Device manufacturer: ${Build.MANUFACTURER}
+            Device name: ${Build.DEVICE} (${Build.PRODUCT})
+            Device model: ${Build.MODEL}
+        """.trimIndent()
+    }
+
+    private fun showNotification(uri: Uri) {
+        context.cancelNotification(Notifications.ID_CRASH_LOGS)
+
+        context.notify(
+            Notifications.ID_CRASH_LOGS,
+            Notifications.CHANNEL_CRASH_LOGS
+        ) {
+            setContentTitle(context.getString(R.string.settings_debug_dump_crash_logs_saved))
+            setContentText(context.getString(R.string.settings_debug_dump_crash_logs_tap_to_open))
+            setSmallIcon(R.drawable.ic_alert)
+
+            setContentIntent(NotificationReceiver.openErrorLogPendingActivity(context, uri))
+        }
+    }
+}

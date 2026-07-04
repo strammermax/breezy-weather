@@ -8,7 +8,7 @@ Reference images for `WallpaperVisualRegressionTest`
 ```
 export JAVA_HOME="/c/Program Files/Eclipse Adoptium/jdk-17.0.19.10-hotspot"
 ./gradlew :app:connectedBasicDebugAndroidTest \
-  -Pandroid.testInstrumentationRunnerArguments.class=com.livewallpaperweather.wallpaper.WallpaperVisualRegressionTest
+  -Pandroid.testInstrumentationRunnerArguments.class=com.liveweatherwallpaperapp.wallpaper.WallpaperVisualRegressionTest
 ```
 
 Requires a running emulator or device (API 21+). AGSL effect passes only run on API 33+
@@ -46,7 +46,7 @@ app/src/androidTest/assets/wallpaper-regression-baseline/
 Generated images are written under the instrumentation target app's external files directory:
 
 ```
-adb pull /storage/emulated/0/Android/data/com.livewallpaperweather.debug/files/wallpaper-regression test-artifacts/regression-baseline
+adb pull /storage/emulated/0/Android/data/com.liveweatherwallpaperapp.debug/files/wallpaper-regression test-artifacts/regression-baseline
 ```
 
 - A missing packaged baseline is a test failure; clean devices never bless current output.

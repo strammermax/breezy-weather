@@ -14,7 +14,7 @@ Een YoWindow-achtige live wallpaper:
 
 ## Nieuwe componenten (deze repo voegt toe)
 
-Alles in package `com.livewallpaperweather.wallpaper.photo`:
+Alles in package `com.liveweatherwallpaperapp.wallpaper.photo`:
 
 | Bestand | Rol |
 |---|---|
@@ -89,7 +89,7 @@ adb install -r app\build\outputs\apk\basic\debug\app-basic-debug.apk
 ```
 (De exacte APK-naam hangt af van de product flavors; check `app\build\outputs\apk\`.)
 
-## Neerslagradar (package `com.livewallpaperweather.radar`)
+## Neerslagradar (package `com.liveweatherwallpaperapp.radar`)
 
 Twee onafhankelijke bronnen, bewust naast elkaar zodat we later kunnen vergelijken welke het
 beste werkt:

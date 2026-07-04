@@ -42,14 +42,14 @@ import livewallpaperweather.domain.weather.model.Wind
 import livewallpaperweather.domain.weather.reference.AlertSeverity
 import livewallpaperweather.domain.weather.reference.Month
 import livewallpaperweather.domain.weather.reference.WeatherCode
-import com.livewallpaperweather.unit.distance.Distance
-import com.livewallpaperweather.unit.pollen.PollenConcentration
-import com.livewallpaperweather.unit.pollutant.PollutantConcentration
-import com.livewallpaperweather.unit.precipitation.Precipitation
-import com.livewallpaperweather.unit.pressure.Pressure
-import com.livewallpaperweather.unit.ratio.Ratio
-import com.livewallpaperweather.unit.speed.Speed
-import com.livewallpaperweather.unit.temperature.Temperature
+import com.liveweatherwallpaperapp.unit.distance.Distance
+import com.liveweatherwallpaperapp.unit.pollen.PollenConcentration
+import com.liveweatherwallpaperapp.unit.pollutant.PollutantConcentration
+import com.liveweatherwallpaperapp.unit.precipitation.Precipitation
+import com.liveweatherwallpaperapp.unit.pressure.Pressure
+import com.liveweatherwallpaperapp.unit.ratio.Ratio
+import com.liveweatherwallpaperapp.unit.speed.Speed
+import com.liveweatherwallpaperapp.unit.temperature.Temperature
 import java.util.Date
 import kotlin.time.Duration
 

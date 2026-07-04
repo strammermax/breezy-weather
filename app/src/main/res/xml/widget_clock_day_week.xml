@@ -8,5 +8,5 @@
     android:initialLayout="@layout/widget_clock_day_week"
     android:previewImage="@drawable/widget_clock_day_week"
     android:resizeMode="horizontal|vertical"
-    android:configure="com.livewallpaperweather.remoteviews.config.ClockDayWeekWidgetConfigActivity"
+    android:configure="com.liveweatherwallpaperapp.remoteviews.config.ClockDayWeekWidgetConfigActivity"
     android:widgetCategory="home_screen|keyguard" />

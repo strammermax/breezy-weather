@@ -22,8 +22,8 @@ import java.io.Serializable
  * Degree Day
  */
 class DegreeDay(
-    val heating: com.livewallpaperweather.unit.temperature.Temperature? = null,
-    val cooling: com.livewallpaperweather.unit.temperature.Temperature? = null,
+    val heating: com.liveweatherwallpaperapp.unit.temperature.Temperature? = null,
+    val cooling: com.liveweatherwallpaperapp.unit.temperature.Temperature? = null,
 ) : Serializable {
 
     val isValid = (heating != null && heating.value > 0L) || (cooling != null && cooling.value > 0L)

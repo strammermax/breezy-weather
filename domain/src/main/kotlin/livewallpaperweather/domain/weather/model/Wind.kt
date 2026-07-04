@@ -16,7 +16,7 @@
 
 package livewallpaperweather.domain.weather.model
 
-import com.livewallpaperweather.unit.speed.Speed
+import com.liveweatherwallpaperapp.unit.speed.Speed
 import java.io.Serializable
 
 /**

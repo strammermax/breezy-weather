@@ -16,7 +16,7 @@
 
 package livewallpaperweather.domain.weather.model
 
-import com.livewallpaperweather.unit.pollutant.PollutantConcentration
+import com.liveweatherwallpaperapp.unit.pollutant.PollutantConcentration
 import java.io.Serializable
 
 /**

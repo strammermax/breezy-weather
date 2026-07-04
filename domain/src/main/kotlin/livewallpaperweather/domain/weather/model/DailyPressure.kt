@@ -16,7 +16,7 @@
 
 package livewallpaperweather.domain.weather.model
 
-import com.livewallpaperweather.unit.pressure.Pressure
+import com.liveweatherwallpaperapp.unit.pressure.Pressure
 
 data class DailyPressure(
     override val average: Pressure? = null,

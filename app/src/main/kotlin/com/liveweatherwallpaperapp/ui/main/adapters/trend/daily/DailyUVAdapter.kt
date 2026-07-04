@@ -1,0 +1,144 @@
+/*
+ * This file is part of Breezy Weather.
+ *
+ * Breezy Weather is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation, version 3 of the License.
+ *
+ * Breezy Weather is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Breezy Weather. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package com.liveweatherwallpaperapp.ui.main.adapters.trend.daily
+
+import android.annotation.SuppressLint
+import android.content.Context
+import android.graphics.Color
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.UV
+import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.common.activities.BreezyActivity
+import com.liveweatherwallpaperapp.common.extensions.currentLocale
+import com.liveweatherwallpaperapp.common.extensions.getThemeColor
+import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
+import com.liveweatherwallpaperapp.domain.weather.model.getContentDescription
+import com.liveweatherwallpaperapp.domain.weather.model.getUVColor
+import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendRecyclerView
+import com.liveweatherwallpaperapp.ui.common.widgets.trend.chart.PolylineAndHistogramView
+import com.liveweatherwallpaperapp.ui.theme.ThemeManager
+import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherViewController
+import com.liveweatherwallpaperapp.unit.formatting.format
+import kotlin.math.roundToInt
+
+/**
+ * Daily UV adapter.
+ */
+class DailyUVAdapter(
+    activity: BreezyActivity,
+    location: Location,
+) : AbsDailyTrendAdapter(activity, location) {
+    private var mHighestIndex = UV.UV_INDEX_HIGH.toFloat()
+
+    inner class ViewHolder(itemView: View) : AbsDailyTrendAdapter.ViewHolder(itemView) {
+        private val mPolylineAndHistogramView = PolylineAndHistogramView(itemView.context)
+
+        init {
+            dailyItem.chartItemView = mPolylineAndHistogramView
+        }
+
+        @SuppressLint("SetTextI18n, InflateParams", "DefaultLocale")
+        fun onBindView(activity: BreezyActivity, location: Location, position: Int) {
+            val talkBackBuilder = StringBuilder(activity.getString(R.string.tag_uv))
+            super.onBindView(activity, location, talkBackBuilder, position)
+            val weather = location.weather!!
+            val daily = weather.dailyForecast[position]
+
+            val index = daily.uV?.index
+            if (index != null) {
+                talkBackBuilder.append(activity.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
+                    .append(daily.uV!!.getContentDescription(activity))
+            }
+            mPolylineAndHistogramView.setData(
+                null, null,
+                null, null,
+                null, null,
+                index?.roundToInt()?.toFloat() ?: 0f, index?.format(decimals = 0, locale = activity.currentLocale),
+                mHighestIndex, 0f
+            )
+            mPolylineAndHistogramView.setLineColors(
+                daily.uV?.getUVColor(activity) ?: Color.TRANSPARENT,
+                daily.uV?.getUVColor(activity) ?: Color.TRANSPARENT,
+                activity.getThemeColor(com.google.android.material.R.attr.colorOutline)
+            )
+
+            val themeColors = ThemeManager.getInstance(itemView.context)
+                .weatherThemeDelegate
+                .getThemeColors(
+                    itemView.context,
+                    WeatherViewController.getWeatherKind(location),
+                    WeatherViewController.isDaylight(location)
+                )
+            val lightTheme = ThemeManager.isLightTheme(itemView.context, location)
+            mPolylineAndHistogramView.setShadowColors(themeColors[1], themeColors[2], lightTheme)
+            mPolylineAndHistogramView.setTextColors(
+                activity.getThemeColor(R.attr.colorTitleText),
+                activity.getThemeColor(R.attr.colorBodyText),
+                activity.getThemeColor(R.attr.colorTitleText)
+            )
+            mPolylineAndHistogramView.setHistogramAlpha(if (lightTheme) 1f else 0.5f)
+            dailyItem.contentDescription = talkBackBuilder.toString()
+            dailyItem.setOnClickListener {
+                onItemClicked(activity, location, bindingAdapterPosition, DetailScreen.TAG_UV_INDEX)
+            }
+        }
+    }
+
+    init {
+        location.weather!!.dailyForecast
+            .mapNotNull { it.uV?.index }
+            .maxOrNull()
+            ?.let {
+                if (it > mHighestIndex) {
+                    mHighestIndex = it.toFloat()
+                }
+            }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_trend_daily, parent, false)
+        return ViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: AbsDailyTrendAdapter.ViewHolder, position: Int) {
+        (holder as ViewHolder).onBindView(activity, location, position)
+    }
+
+    override fun getItemCount() = location.weather!!.dailyForecast.size
+
+    override fun isValid(location: Location) = location.weather!!.dailyForecast.any {
+        it.uV?.index != null
+    }
+
+    override fun getDisplayName(context: Context) = context.getString(R.string.tag_uv)
+
+    override fun bindBackgroundForHost(host: TrendRecyclerView) {
+        val keyLineList = mutableListOf<TrendRecyclerView.KeyLine>()
+        keyLineList.add(
+            TrendRecyclerView.KeyLine(
+                UV.UV_INDEX_MIDDLE.toFloat(),
+                UV.UV_INDEX_MIDDLE.format(decimals = 0, locale = activity.currentLocale),
+                activity.getString(R.string.uv_alert_level),
+                TrendRecyclerView.KeyLine.ContentPosition.ABOVE_LINE
+            )
+        )
+        host.setData(keyLineList, mHighestIndex, 0f)
+    }
+}

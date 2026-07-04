@@ -1,4 +1,4 @@
-import com.livewallpaperweather.unit.precipitation.Precipitation;
+import com.liveweatherwallpaperapp.unit.precipitation.Precipitation;
 
 CREATE TABLE minutelys(
     _id INTEGER NOT NULL PRIMARY KEY,

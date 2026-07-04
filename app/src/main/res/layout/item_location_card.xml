@@ -8,7 +8,7 @@
     app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
     tools:ignore="UnusedAttribute">
 
-    <com.livewallpaperweather.ui.common.widgets.slidingItem.SlidingItemContainerLayout
+    <com.liveweatherwallpaperapp.ui.common.widgets.slidingItem.SlidingItemContainerLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -103,6 +103,6 @@
 
         </LinearLayout>
 
-    </com.livewallpaperweather.ui.common.widgets.slidingItem.SlidingItemContainerLayout>
+    </com.liveweatherwallpaperapp.ui.common.widgets.slidingItem.SlidingItemContainerLayout>
 
 </com.google.android.material.card.MaterialCardView>

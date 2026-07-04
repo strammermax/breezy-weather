@@ -21,10 +21,10 @@ plugins {
 val supportedAbi = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
 
 configure<ApplicationExtension> {
-    namespace = "com.livewallpaperweather"
+    namespace = "com.liveweatherwallpaperapp"
 
     defaultConfig {
-        applicationId = "com.livewallpaperweather"
+        applicationId = "com.liveweatherwallpaperapp"
         // LiveWallpaperWeather's own version (fork of Breezy Weather 6.2.2).
         // Auto-bumped: the patch = commits since the fork base, so each commit raises the
         // version by one (1.0.0 -> 1.0.1 -> ...). versionCode stays above the Breezy base.

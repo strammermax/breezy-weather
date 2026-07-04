@@ -16,7 +16,7 @@
 
 package livewallpaperweather.domain.weather.model
 
-import com.livewallpaperweather.unit.distance.Distance
+import com.liveweatherwallpaperapp.unit.distance.Distance
 
 data class DailyVisibility(
     override val average: Distance? = null,

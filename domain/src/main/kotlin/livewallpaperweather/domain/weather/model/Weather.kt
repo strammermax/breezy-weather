@@ -22,7 +22,7 @@ import livewallpaperweather.domain.weather.wrappers.DailyWrapper
 import livewallpaperweather.domain.weather.wrappers.HourlyWrapper
 import livewallpaperweather.domain.weather.wrappers.PollenWrapper
 import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import com.livewallpaperweather.unit.precipitation.Precipitation.Companion.micrometers
+import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.micrometers
 import java.io.Serializable
 import java.util.Date
 import kotlin.time.Duration

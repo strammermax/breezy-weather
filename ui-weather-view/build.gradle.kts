@@ -5,7 +5,7 @@ plugins {
 }
 
 configure<LibraryExtension> {
-    namespace = "com.livewallpaperweather.ui.theme.weatherView"
+    namespace = "com.liveweatherwallpaperapp.ui.theme.weatherView"
 
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")

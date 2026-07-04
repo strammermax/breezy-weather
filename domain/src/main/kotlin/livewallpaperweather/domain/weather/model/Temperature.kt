@@ -23,14 +23,14 @@ import java.io.Serializable
  * Temperature.
  */
 data class Temperature(
-    val temperature: com.livewallpaperweather.unit.temperature.Temperature? = null,
-    val sourceFeelsLike: com.livewallpaperweather.unit.temperature.Temperature? = null,
-    val computedApparent: com.livewallpaperweather.unit.temperature.Temperature? = null,
-    val computedWindChill: com.livewallpaperweather.unit.temperature.Temperature? = null,
-    val computedHumidex: com.livewallpaperweather.unit.temperature.Temperature? = null,
+    val temperature: com.liveweatherwallpaperapp.unit.temperature.Temperature? = null,
+    val sourceFeelsLike: com.liveweatherwallpaperapp.unit.temperature.Temperature? = null,
+    val computedApparent: com.liveweatherwallpaperapp.unit.temperature.Temperature? = null,
+    val computedWindChill: com.liveweatherwallpaperapp.unit.temperature.Temperature? = null,
+    val computedHumidex: com.liveweatherwallpaperapp.unit.temperature.Temperature? = null,
 ) : Serializable {
 
-    val feelsLikeTemperature: com.livewallpaperweather.unit.temperature.Temperature? = sourceFeelsLike
+    val feelsLikeTemperature: com.liveweatherwallpaperapp.unit.temperature.Temperature? = sourceFeelsLike
         ?: computedApparent
         ?: computedWindChill
         ?: computedHumidex

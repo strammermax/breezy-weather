@@ -1,4 +1,4 @@
-import com.livewallpaperweather.unit.temperature.Temperature;
+import com.liveweatherwallpaperapp.unit.temperature.Temperature;
 
 CREATE TABLE normals(
     _id INTEGER NOT NULL PRIMARY KEY,

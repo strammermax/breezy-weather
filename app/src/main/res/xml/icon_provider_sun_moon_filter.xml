@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <item name="sun" value="com.livewallpaperweather.ui.common.images.SunDrawable" />
-    <item name="moon" value="com.livewallpaperweather.ui.common.images.MoonDrawable" />
+    <item name="sun" value="com.liveweatherwallpaperapp.ui.common.images.SunDrawable" />
+    <item name="moon" value="com.liveweatherwallpaperapp.ui.common.images.MoonDrawable" />
 
 </resources>
