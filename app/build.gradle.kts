@@ -21,7 +21,7 @@ plugins {
 val supportedAbi = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
 
 configure<ApplicationExtension> {
-    namespace = "org.breezyweather"
+    namespace = "com.livewallpaperweather"
 
     defaultConfig {
         applicationId = "com.livewallpaperweather"
@@ -45,12 +45,37 @@ configure<ApplicationExtension> {
         vectorDrawables.useSupportLibrary = true
     }
 
+    // Per-ABI split APKs are only meaningful for a direct APK build (assemble*), not an Android
+    // App Bundle (bundle* — used for Play Store uploads): Play's own dynamic delivery does the
+    // ABI slicing there, and combining resource shrinking with ABI splits on a bundle task hits
+    // an AGP bug ("Multiple shrunk-resources files found", https://issuetracker.google.com/402800800).
+    val isBuildingBundle = gradle.startParameter.taskNames.any { it.contains("bundle", ignoreCase = true) }
     splits {
         abi {
-            isEnable = true
+            isEnable = !isBuildingBundle
             reset()
             include(*supportedAbi.toTypedArray())
             isUniversalApk = true
+        }
+    }
+
+    // Release signing: reads from keystore.properties (gitignored, never committed — see
+    // .gitignore's "Signing" section). Absent on machines without it (e.g. CI, other
+    // contributors), in which case assembleRelease/bundleRelease just produce an unsigned build.
+    val keystorePropertiesFile = rootProject.file("keystore.properties")
+    val keystoreProperties = Properties().apply {
+        if (keystorePropertiesFile.exists()) {
+            keystorePropertiesFile.inputStream().use { load(it) }
+        }
+    }
+    if (keystorePropertiesFile.exists()) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
         }
     }
 
@@ -64,6 +89,9 @@ configure<ApplicationExtension> {
             isDebuggable = false
             isCrunchPngs = false // No need to do that, we already optimized them
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

@@ -52,4 +52,9 @@ bin/
 /*.png
 docs/testfotos/
 /outputs/
+
+### Signing (never commit a real keystore or its credentials) ###
+*.jks
+*.keystore
+keystore.properties
 docs/~$*.xlsx
