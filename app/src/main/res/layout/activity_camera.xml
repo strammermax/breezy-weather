@@ -91,7 +91,8 @@
             android:id="@+id/resultImageView"
             android:layout_width="match_parent"
             android:layout_height="300dp"
-            android:scaleType="centerCrop"
+            android:background="#000000"
+            android:scaleType="fitCenter"
             android:visibility="gone" />
 
         <ScrollView
@@ -133,11 +134,43 @@
             android:visibility="gone" />
 
         <Button
+            android:id="@+id/stopUploadButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/camera_stop_upload"
+            android:visibility="gone" />
+
+        <Button
             android:id="@+id/retakeButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/action_retake" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/previewUploadButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/camera_preview_upload"
+            android:visibility="gone" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/processButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/camera_process_photo"
+            android:visibility="gone" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/saveSelectedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/camera_save_selected"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/setLiveWallpaperButton"

@@ -140,6 +140,13 @@ class RemoveSkyProvider(
         }
     }
 
+    /** Aborts any in-flight or queued request previously tagged with [cancelTag] (see [uploadFile]). */
+    fun cancelTaggedCalls(cancelTag: Any) {
+        (client.dispatcher.queuedCalls() + client.dispatcher.runningCalls())
+            .filter { it.request().tag(Any::class.java) === cancelTag }
+            .forEach { it.cancel() }
+    }
+
     suspend fun healthStatus(): String? = withContext(Dispatchers.IO) {
         try {
             client.newCall(get("$apiBase/health")).execute().use { response ->
@@ -157,6 +164,8 @@ class RemoveSkyProvider(
         latitude: Double?,
         longitude: Double?,
         location: String? = null,
+        /** Tag applied to the request so [cancelTaggedCalls] can abort it mid-flight. */
+        cancelTag: Any? = null,
     ): RemoveSkyUploadResult = withContext(Dispatchers.IO) {
         val form = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
@@ -178,6 +187,7 @@ class RemoveSkyProvider(
             .url("$apiBase/upload")
             .post(form)
             .header("User-Agent", USER_AGENT)
+            .apply { cancelTag?.let { tag(Any::class.java, it) } }
             .build()
 
         client.newCall(request).execute().use { response ->

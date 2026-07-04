@@ -486,6 +486,11 @@
     <string name="action_camera">Camera</string>
     <string name="action_retake">Retake</string>
     <string name="camera_uploading">Uploading photo...</string>
+    <string name="camera_preview_upload">Upload</string>
+    <string name="camera_step_location">Getting location…</string>
+    <string name="camera_step_uploading">Uploading photo…</string>
+    <string name="camera_step_uploading_done">✓ Photo uploaded</string>
+    <string name="camera_step_checking">Checking photo…</string>
     <string name="camera_upload_success">Photo uploaded</string>
     <string name="camera_gallery">Gallery</string>
     <string name="camera_gallery_uploading">Uploading photo %1$d of %2$d…</string>
@@ -502,6 +507,15 @@
     <string name="camera_result_too_little_sky">Te weinig lucht bovenaan in beeld</string>
     <string name="camera_result_not_landscape">Geen landschapsfoto gedetecteerd</string>
     <string name="camera_result_unknown_reason">Afgekeurd (onbekende reden)</string>
+    <string name="camera_result_unknown_reason_with_code">Afgekeurd (reden: %1$s)</string>
+    <string name="camera_process_photo">Verwerk</string>
+    <string name="camera_photo_processed">Foto verwerkt en ingesteld als achtergrond</string>
+    <string name="camera_stop_upload">Stoppen</string>
+    <string name="camera_gallery_stopped">Upload gestopt door gebruiker</string>
+    <string name="camera_save_selected">Bewaar</string>
+    <string name="camera_card_select">Gebruiken</string>
+    <string name="camera_photos_saved">%1$d foto(\'s) opgeslagen</string>
+    <string name="camera_no_photos_selected">Selecteer eerst een geschikte foto</string>
     <string name="camera_card_source">Bron: %1$s</string>
     <string name="camera_card_location">Locatie: %1$s</string>
     <string name="camera_check_ok">Geschikt</string>
@@ -752,7 +766,7 @@
     <string name="camera_gallery_cannot_read">%1$s: ✗ could not read file</string>
     <string name="camera_gallery_no_exif_gps">%1$s: ✗ no EXIF GPS in photo; skipped</string>
     <string name="camera_gallery_exif_gps_found">%1$s: EXIF GPS found: %2$.5f, %3$.5f</string>
-    <string name="camera_gallery_processing">%1$s: uploading and processing on server…</string>
+    <string name="camera_gallery_processing">%1$s: uploading and checking on server…</string>
     <string name="camera_gallery_saved">%1$s: ✓ saved</string>
     <string name="camera_gallery_failed">%1$s: ✗ %2$s</string>
     <string name="settings_debug_dump_logs_failed">Failed to collect logs</string>

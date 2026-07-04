@@ -18,6 +18,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.view.View
+import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -41,8 +42,8 @@ import javax.inject.Inject
 import org.breezyweather.R
 import org.breezyweather.databinding.ActivityCameraBinding
 import org.breezyweather.common.utils.DiagnosticLogger
-import org.breezyweather.wallpaper.LiveWallpaperConfigActivity
 import org.breezyweather.wallpaper.launchLiveWallpaperPicker
+import org.breezyweather.wallpaper.photo.CameraUploadResult
 import org.breezyweather.wallpaper.photo.RemoveSkyCheckResult
 import org.breezyweather.wallpaper.photo.RemoveSkyHttpException
 import org.breezyweather.wallpaper.photo.WallpaperRepository
@@ -67,7 +68,31 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var captureButton: View
     private var captureInProgress = false
-    private val galleryLog = StringBuilder()
+    private val progressLog = StringBuilder()
+
+    /** The just-captured photo waiting in the pre-upload preview, or null once uploaded/discarded. */
+    private var pendingCaptureFile: File? = null
+    private var pendingCaptureBitmap: Bitmap? = null
+
+    /** An approved, uploaded-but-not-yet-activated camera photo, set by [processButton]. */
+    private var pendingActivation: CameraUploadResult? = null
+
+    /** Whether the current result screen came from the gallery batch flow (vs. a single capture). */
+    private var isGalleryFlow = false
+
+    /** Set by [stopUploadButton] — checked between photos so a gallery batch can be stopped early. */
+    @Volatile
+    private var galleryUploadCancelled = false
+
+    /** Tag on the in-flight single-photo upload request, so [stopUploadButton] can abort it. */
+    private var currentUploadCancelTag: Any? = null
+
+    /** Set by [stopUploadButton] for the single-photo flow — suppresses the error UI once cancelled. */
+    @Volatile
+    private var singleUploadCancelled = false
+
+    /** Checkbox -> upload result for each approved gallery card, read by [saveSelectedButton]. */
+    private val gallerySelection = mutableListOf<Pair<CheckBox, CameraUploadResult>>()
 
     // The privacy-sandboxed Photo Picker (PickMultipleVisualMedia) never honors
     // MediaStore.setRequireOriginal()/ACCESS_MEDIA_LOCATION, even when granted — confirmed
@@ -198,7 +223,73 @@ class CameraActivity : AppCompatActivity() {
         }
 
         binding.retakeButton.setOnClickListener {
+            if (isGalleryFlow) {
+                // "Herkansing" for a gallery batch means re-picking photos, not going to the camera.
+                launchGalleryPicker()
+                return@setOnClickListener
+            }
+            pendingCaptureFile?.delete()
+            pendingCaptureFile = null
+            pendingCaptureBitmap = null
             showCameraView()
+        }
+
+        binding.previewUploadButton.setOnClickListener {
+            val file = pendingCaptureFile ?: return@setOnClickListener
+            val bitmap = pendingCaptureBitmap ?: return@setOnClickListener
+            pendingCaptureFile = null
+            pendingCaptureBitmap = null
+            startUpload(file, bitmap)
+        }
+
+        binding.stopUploadButton.setOnClickListener {
+            when {
+                // Already stopped once — the button now closes the screen.
+                galleryUploadCancelled || singleUploadCancelled -> finish()
+                isGalleryFlow -> {
+                    galleryUploadCancelled = true
+                    currentUploadCancelTag?.let { wallpaperRepository.cancelCameraUpload(it) }
+                    binding.stopUploadButton.text = getString(R.string.camera_close)
+                }
+                else -> {
+                    singleUploadCancelled = true
+                    currentUploadCancelTag?.let { wallpaperRepository.cancelCameraUpload(it) }
+                    binding.stopUploadButton.text = getString(R.string.camera_close)
+                }
+            }
+        }
+
+        binding.processButton.setOnClickListener {
+            val result = pendingActivation ?: return@setOnClickListener
+            pendingActivation = null
+            binding.processButton.isEnabled = false
+            cameraExecutor.execute {
+                runBlocking { wallpaperRepository.activateCameraPhoto(result) }
+                runOnUiThread {
+                    Toast.makeText(this, R.string.camera_photo_processed, Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
+        }
+
+        binding.saveSelectedButton.setOnClickListener {
+            val selected = gallerySelection.filter { (checkbox, _) -> checkbox.isChecked }.map { it.second }
+            if (selected.isEmpty()) {
+                Toast.makeText(this, R.string.camera_no_photos_selected, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            binding.saveSelectedButton.isEnabled = false
+            cameraExecutor.execute {
+                // Only one photo can be "active" at a time; activating each in turn leaves the
+                // last selected photo as the live wallpaper background, but every selected photo
+                // still gets cached and catalogued along the way.
+                runBlocking { selected.forEach { wallpaperRepository.activateCameraPhoto(it) } }
+                runOnUiThread {
+                    binding.saveSelectedButton.visibility = View.GONE
+                    binding.saveSelectedButton.isEnabled = true
+                    Toast.makeText(this, getString(R.string.camera_photos_saved, selected.size), Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
         binding.setLiveWallpaperButton.setOnClickListener {
@@ -208,20 +299,18 @@ class CameraActivity : AppCompatActivity() {
         }
 
         binding.closeButton.setOnClickListener {
-            openLiveWallpaperSettings()
+            finish()
         }
-        
+
         binding.toolbar.setNavigationOnClickListener {
-            openLiveWallpaperSettings()
+            finish()
         }
     }
 
-    private fun openLiveWallpaperSettings() {
-        startActivity(Intent(this, LiveWallpaperConfigActivity::class.java))
-        finish()
-    }
-    
     private fun showCameraView() {
+        pendingActivation = null
+        isGalleryFlow = false
+        gallerySelection.clear()
         captureInProgress = false
         binding.captureButton.isEnabled = true
         binding.cameraPreviewView.visibility = View.VISIBLE
@@ -231,10 +320,38 @@ class CameraActivity : AppCompatActivity() {
         binding.resultImageView.visibility = View.GONE
         binding.uploadResultCardsScroll.visibility = View.GONE
         binding.resultTextView.visibility = View.GONE
+        binding.stopUploadButton.visibility = View.GONE
         binding.retakeButton.visibility = View.GONE
+        binding.previewUploadButton.visibility = View.GONE
+        binding.processButton.visibility = View.GONE
+        binding.saveSelectedButton.visibility = View.GONE
         binding.setLiveWallpaperButton.visibility = View.GONE
         binding.closeButton.visibility = View.GONE
         binding.resultContainer.visibility = View.GONE
+    }
+
+    /** Shows the just-captured photo with a choice to retake or upload it — nothing is sent yet. */
+    private fun showCapturePreview(file: File, bitmap: Bitmap) {
+        isGalleryFlow = false
+        pendingCaptureFile = file
+        pendingCaptureBitmap = bitmap
+        binding.cameraPreviewView.visibility = View.GONE
+        binding.horizonGuideLine.visibility = View.GONE
+        binding.horizonGuideLabel.visibility = View.GONE
+        binding.captureButton.visibility = View.GONE
+        binding.resultImageView.setImageBitmap(bitmap)
+        binding.resultImageView.visibility = View.VISIBLE
+        binding.resultTextScroll.visibility = View.GONE
+        binding.uploadResultCardsScroll.visibility = View.GONE
+        binding.progressBar.visibility = View.GONE
+        binding.stopUploadButton.visibility = View.GONE
+        binding.retakeButton.visibility = View.VISIBLE
+        binding.previewUploadButton.visibility = View.VISIBLE
+        binding.processButton.visibility = View.GONE
+        binding.saveSelectedButton.visibility = View.GONE
+        binding.setLiveWallpaperButton.visibility = View.GONE
+        binding.closeButton.visibility = View.GONE
+        binding.resultContainer.visibility = View.VISIBLE
     }
 
     private fun showResultView() {
@@ -247,6 +364,7 @@ class CameraActivity : AppCompatActivity() {
         binding.resultTextView.visibility = View.VISIBLE
         binding.uploadResultCardsScroll.visibility = View.GONE
         binding.retakeButton.visibility = View.VISIBLE
+        binding.previewUploadButton.visibility = View.GONE
         binding.resultContainer.visibility = View.VISIBLE
     }
 
@@ -295,7 +413,7 @@ class CameraActivity : AppCompatActivity() {
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                     DiagnosticLogger.log(this@CameraActivity, "Camera", "Capture saved (${photoFile.length()} bytes)")
-                    showCapturedPhotoAndUpload(photoFile)
+                    decodeAndShowPreview(photoFile)
                 }
 
                 override fun onError(exception: ImageCaptureException) {
@@ -308,13 +426,13 @@ class CameraActivity : AppCompatActivity() {
         )
     }
 
-    /** Decodes the captured JPEG at an upload-safe size and applies its EXIF rotation. */
-    private fun decodeRotatedBitmap(file: File): Bitmap {
+    /** Decodes a JPEG at (roughly) [maxDimension] and applies its EXIF rotation. */
+    private fun decodeRotatedBitmap(file: File, maxDimension: Int = CAMERA_UPLOAD_MAX_DIMENSION): Bitmap {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(file.absolutePath, bounds)
         require(bounds.outWidth > 0 && bounds.outHeight > 0) { "Captured photo could not be decoded" }
         var sampleSize = 1
-        while (maxOf(bounds.outWidth, bounds.outHeight) / sampleSize > CAMERA_UPLOAD_MAX_DIMENSION) {
+        while (maxOf(bounds.outWidth, bounds.outHeight) / sampleSize > maxDimension) {
             sampleSize *= 2
         }
         val bitmap = requireNotNull(
@@ -391,22 +509,12 @@ class CameraActivity : AppCompatActivity() {
         destination.saveAttributes()
     }
 
-    private fun showCapturedPhotoAndUpload(file: File) {
+    /** Decodes the capture off the main thread and shows it in the retake/upload preview. */
+    private fun decodeAndShowPreview(file: File) {
         cameraExecutor.execute {
             try {
                 val bitmap = decodeRotatedBitmap(file)
-                runOnUiThread {
-                    binding.resultImageView.setImageBitmap(bitmap)
-                    binding.resultTextView.text = getString(R.string.camera_uploading)
-                    binding.progressBar.visibility = View.VISIBLE
-                    showResultView()
-
-                    fetchLocation { location ->
-                        cameraExecutor.execute {
-                            uploadImage(file, bitmap, location)
-                        }
-                    }
-                }
+                runOnUiThread { showCapturePreview(file, bitmap) }
             } catch (e: Exception) {
                 file.delete()
                 runOnUiThread {
@@ -414,6 +522,37 @@ class CameraActivity : AppCompatActivity() {
                     binding.captureButton.isEnabled = true
                     Toast.makeText(this, describeUploadError(e), Toast.LENGTH_LONG).show()
                 }
+            }
+        }
+    }
+
+    /** Starts the actual upload once the user confirms the preview; reports progress step by step. */
+    private fun startUpload(file: File, bitmap: Bitmap) {
+        resetProgressLog()
+        singleUploadCancelled = false
+        galleryUploadCancelled = false
+        currentUploadCancelTag = Any()
+        binding.stopUploadButton.text = getString(R.string.camera_stop_upload)
+        binding.stopUploadButton.isEnabled = true
+        binding.resultImageView.setImageBitmap(bitmap)
+        binding.progressBar.visibility = View.VISIBLE
+        showResultView()
+        // "Stoppen" (not "Herkansing") is the relevant action while the upload is in flight —
+        // retake would leave the upload running unattended in the background.
+        binding.retakeButton.visibility = View.GONE
+        binding.stopUploadButton.visibility = View.VISIBLE
+        appendProgressLog(getString(R.string.camera_step_location))
+
+        fetchLocation { location ->
+            appendProgressLog(
+                if (location != null) {
+                    getString(R.string.camera_gallery_current_location, location.latitude, location.longitude)
+                } else {
+                    getString(R.string.camera_gallery_current_location_unknown)
+                }
+            )
+            cameraExecutor.execute {
+                uploadImage(file, bitmap, location)
             }
         }
     }
@@ -480,6 +619,7 @@ class CameraActivity : AppCompatActivity() {
                 DiagnosticLogger.log(this, "Camera GPS", "latitude=${it.latitude}, longitude=${it.longitude}")
             }
             uploadFile = createUploadWebp(file, bitmap)
+            appendProgressLog(getString(R.string.camera_step_uploading))
             DiagnosticLogger.log(this, "Camera", "Upload started")
 
             val result = runBlocking {
@@ -487,6 +627,10 @@ class CameraActivity : AppCompatActivity() {
                     file = uploadFile,
                     latitude = location?.latitude,
                     longitude = location?.longitude,
+                    // The camera flow activates explicitly via the "Verwerk" button once the
+                    // user has seen the suitability check, not automatically on upload.
+                    activate = false,
+                    cancelTag = currentUploadCancelTag,
                 )
             }
             DiagnosticLogger.log(
@@ -494,6 +638,8 @@ class CameraActivity : AppCompatActivity() {
                 "Camera",
                 "Upload and server processing completed; processedUrl=${result.processedUrl}",
             )
+            appendProgressLog(getString(R.string.camera_step_uploading_done))
+            appendProgressLog(getString(R.string.camera_step_checking))
 
             renderResultCards(
                 listOf(
@@ -503,15 +649,27 @@ class CameraActivity : AppCompatActivity() {
                         locationName = result.location,
                         processedUrl = result.processedUrl,
                         uploadFailureReason = null,
+                        activationResult = result,
                     )
                 )
             )
 
         } catch (e: Exception) {
-            DiagnosticLogger.log(this, "Camera", "Upload failed", e)
+            if (singleUploadCancelled) {
+                // The "Stoppen" click already switched the button to "Sluiten" — nothing more to show.
+                DiagnosticLogger.log(this, "Camera", "Upload cancelled by user")
+                return
+            }
+            DiagnosticLogger.log(
+                this,
+                "Camera",
+                "Upload failed" + ((e as? RemoveSkyHttpException)?.let {
+                    " (HTTP ${it.statusCode}, body=${it.responseBody})"
+                } ?: ""),
+                e,
+            )
             val rejectionCode = extractRejectionReasonCode(e)
             if (rejectionCode != null || e is RemoveSkyHttpException) {
-                binding.closeButton.visibility = View.VISIBLE
                 renderResultCards(
                     listOf(
                         UploadCardData(
@@ -578,14 +736,21 @@ class CameraActivity : AppCompatActivity() {
      * actually taken), so the current location fix is only added when one isn't already there.
      */
     private fun uploadGalleryPhotos(uris: List<Uri>) {
-        binding.resultImageView.visibility = View.GONE
-        binding.retakeButton.visibility = View.GONE // doesn't apply to a gallery batch
-        resetGalleryLog()
+        isGalleryFlow = true
+        galleryUploadCancelled = false
+        singleUploadCancelled = false
+        currentUploadCancelTag = Any()
+        gallerySelection.clear()
+        binding.stopUploadButton.text = getString(R.string.camera_stop_upload)
+        binding.stopUploadButton.isEnabled = true
+        binding.stopUploadButton.visibility = View.VISIBLE
+        resetProgressLog()
         binding.progressBar.visibility = View.VISIBLE
         showResultView()
+        binding.retakeButton.visibility = View.GONE // "Stoppen" is the relevant action while uploading
 
         fetchLocation { location ->
-            appendGalleryLog(
+            appendProgressLog(
                 if (location != null) {
                     getString(R.string.camera_gallery_current_location, location.latitude, location.longitude)
                 } else {
@@ -597,51 +762,72 @@ class CameraActivity : AppCompatActivity() {
                 var failureCount = 0
                 val cardData = mutableListOf<UploadCardData>()
                 val thumbnailSizePx = (THUMBNAIL_SIZE_DIP * resources.displayMetrics.density).toInt()
-                uris.forEachIndexed { index, uri ->
+                for ((index, uri) in uris.withIndex()) {
+                    if (galleryUploadCancelled) {
+                        appendProgressLog(getString(R.string.camera_gallery_stopped))
+                        break
+                    }
                     val label = getString(R.string.camera_gallery_photo_label, index + 1, uris.size)
-                    appendGalleryLog(getString(R.string.camera_gallery_preparing, label))
+                    appendProgressLog(getString(R.string.camera_gallery_preparing, label))
                     val file = copyUriToTempFile(uri)
                     if (file == null) {
                         failureCount++
-                        appendGalleryLog(getString(R.string.camera_gallery_cannot_read, label))
-                        return@forEachIndexed
+                        appendProgressLog(getString(R.string.camera_gallery_cannot_read, label))
+                        continue
                     }
                     val exifLatLong = readGpsExif(file)
                     if (exifLatLong == null) {
                         failureCount++
-                        appendGalleryLog(getString(R.string.camera_gallery_no_exif_gps, label))
+                        appendProgressLog(getString(R.string.camera_gallery_no_exif_gps, label))
                         file.delete()
-                        return@forEachIndexed
+                        continue
                     }
-                    appendGalleryLog(getString(R.string.camera_gallery_exif_gps_found, label, exifLatLong[0], exifLatLong[1]))
+                    appendProgressLog(getString(R.string.camera_gallery_exif_gps_found, label, exifLatLong[0], exifLatLong[1]))
+                    var uploadFile: File? = null
                     try {
-                        appendGalleryLog(getString(R.string.camera_gallery_processing, label))
+                        // Rotated to match its EXIF orientation up front — a gallery photo's raw
+                        // sensor pixels are often portrait-rotated, and unlike the single-capture
+                        // flow this file wasn't already normalised, so without this step some
+                        // photos came out 90/180 degrees off once uploaded.
+                        val bitmap = decodeRotatedBitmap(file)
+                        // Shown large while this photo uploads, just like the single-capture flow.
+                        runOnUiThread {
+                            binding.resultImageView.setImageBitmap(bitmap)
+                            binding.resultImageView.visibility = View.VISIBLE
+                        }
+                        uploadFile = createUploadWebp(file, bitmap)
+                        appendProgressLog(getString(R.string.camera_gallery_processing, label))
                         val result = runBlocking {
                             wallpaperRepository.uploadCameraPhoto(
-                                file = file,
+                                file = uploadFile,
                                 latitude = exifLatLong[0],
                                 longitude = exifLatLong[1],
+                                // Activation is deferred to "Bewaar", after the user sees which
+                                // photos were approved — same as the single-photo camera flow.
+                                activate = false,
+                                cancelTag = currentUploadCancelTag,
                             )
                         }
                         successCount++
                         cardData.add(
                             UploadCardData(
-                                thumbnail = decodeSampledBitmap(uri, thumbnailSizePx),
+                                thumbnail = decodeRotatedBitmap(file, thumbnailSizePx),
                                 source = getString(R.string.camera_source_gallery),
                                 locationName = result.location,
                                 processedUrl = result.processedUrl,
                                 uploadFailureReason = null,
+                                activationResult = result,
                             )
                         )
-                        appendGalleryLog(getString(R.string.camera_gallery_saved, label))
+                        appendProgressLog(getString(R.string.camera_gallery_saved, label))
                     } catch (e: Exception) {
                         failureCount++
-                        appendGalleryLog(getString(R.string.camera_gallery_failed, label, describeUploadError(e)))
+                        appendProgressLog(getString(R.string.camera_gallery_failed, label, describeUploadError(e)))
                         val rejectionCode = extractRejectionReasonCode(e)
                         if (rejectionCode != null) {
                             cardData.add(
                                 UploadCardData(
-                                    thumbnail = decodeSampledBitmap(uri, thumbnailSizePx),
+                                    thumbnail = runCatching { decodeRotatedBitmap(file, thumbnailSizePx) }.getOrNull(),
                                     source = getString(R.string.camera_source_gallery),
                                     locationName = null,
                                     processedUrl = null,
@@ -650,31 +836,29 @@ class CameraActivity : AppCompatActivity() {
                             )
                         }
                     } finally {
+                        uploadFile?.delete()
                         file.delete()
                     }
                 }
-                appendGalleryLog("\n" + getString(R.string.camera_gallery_result, successCount, failureCount))
-                runOnUiThread {
-                    binding.setLiveWallpaperButton.visibility = if (successCount > 0) View.VISIBLE else View.GONE
-                    binding.closeButton.visibility = View.VISIBLE
-                }
+                appendProgressLog("\n" + getString(R.string.camera_gallery_result, successCount, failureCount))
+                runOnUiThread { binding.stopUploadButton.visibility = View.GONE }
                 renderResultCards(cardData)
             }
         }
     }
 
     /** Resets the running upload-progress log shown in [ActivityCameraBinding.resultTextView]. */
-    private fun resetGalleryLog() {
-        galleryLog.setLength(0)
+    private fun resetProgressLog() {
+        progressLog.setLength(0)
         binding.resultTextView.text = ""
     }
 
     /** Appends [line] to the running upload-progress log and scrolls it into view. */
-    private fun appendGalleryLog(line: String) {
+    private fun appendProgressLog(line: String) {
         runOnUiThread {
-            if (galleryLog.isNotEmpty()) galleryLog.append('\n')
-            galleryLog.append(line)
-            binding.resultTextView.text = galleryLog.toString()
+            if (progressLog.isNotEmpty()) progressLog.append('\n')
+            progressLog.append(line)
+            binding.resultTextView.text = progressLog.toString()
             binding.resultTextScroll.post { binding.resultTextScroll.fullScroll(View.FOCUS_DOWN) }
         }
     }
@@ -687,6 +871,12 @@ class CameraActivity : AppCompatActivity() {
         val processedUrl: String?,
         /** Server rejection code (e.g. "no_sky_at_top") when the upload itself was rejected. */
         val uploadFailureReason: String?,
+        /**
+         * Set only for the single-photo camera flow (uploaded with `activate = false`) — lets
+         * the "Verwerk" button activate this exact photo once the user approves it. Null for the
+         * gallery batch flow, which still activates each photo automatically on upload.
+         */
+        val activationResult: CameraUploadResult? = null,
     )
 
     /**
@@ -695,18 +885,45 @@ class CameraActivity : AppCompatActivity() {
      * done. Rejected photos never reached `/check`, so they only show the rejection reason.
      */
     private fun renderResultCards(results: List<UploadCardData>) {
-        binding.progressBar.let { runOnUiThread { it.visibility = View.GONE } }
-        if (results.isEmpty()) return
+        runOnUiThread {
+            binding.progressBar.visibility = View.GONE
+            binding.stopUploadButton.visibility = View.GONE
+        }
+        if (results.isEmpty()) {
+            runOnUiThread {
+                binding.retakeButton.visibility = View.VISIBLE
+                binding.closeButton.visibility = View.VISIBLE
+            }
+            return
+        }
         val checked = results.map { data ->
             data to data.processedUrl?.let { runBlocking { wallpaperRepository.checkUploadedPhoto(it) } }
         }
+        val anyApproved = checked.any { (_, check) -> check?.ok == true }
+        // The single-photo camera flow shows one "Verwerk" button for its one approved photo;
+        // the gallery batch flow instead shows a checkbox per approved photo plus one "Bewaar"
+        // button (wired below, per card) that activates every checked one.
+        val approvedActivation = if (isGalleryFlow) {
+            null
+        } else {
+            checked.firstOrNull { (data, check) -> check?.ok == true && data.activationResult != null }
+                ?.first?.activationResult
+        }
+        pendingActivation = approvedActivation
+        gallerySelection.clear()
         runOnUiThread {
             binding.resultTextScroll.visibility = View.GONE
+            binding.resultImageView.visibility = View.GONE
             binding.uploadResultCardsContainer.removeAllViews()
             checked.forEach { (data, check) ->
                 binding.uploadResultCardsContainer.addView(buildResultCard(data, check))
             }
             binding.uploadResultCardsScroll.visibility = View.VISIBLE
+            binding.retakeButton.visibility = View.VISIBLE
+            binding.processButton.visibility = if (approvedActivation != null) View.VISIBLE else View.GONE
+            binding.saveSelectedButton.visibility = if (isGalleryFlow && gallerySelection.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.setLiveWallpaperButton.visibility = if (anyApproved) View.VISIBLE else View.GONE
+            binding.closeButton.visibility = View.VISIBLE
         }
     }
 
@@ -718,6 +935,18 @@ class CameraActivity : AppCompatActivity() {
         } else {
             thumbnailView.visibility = View.GONE
         }
+
+        // Gallery batch only: a checkbox per approved photo, pre-checked, feeding "Bewaar".
+        // Rejected/failed photos never got an activationResult, so they get no checkbox at all.
+        val selectView = card.findViewById<CheckBox>(R.id.cardSelect)
+        if (isGalleryFlow && data.activationResult != null) {
+            selectView.visibility = View.VISIBLE
+            selectView.isChecked = check?.ok == true
+            gallerySelection.add(selectView to data.activationResult)
+        } else {
+            selectView.visibility = View.GONE
+        }
+
         card.findViewById<TextView>(R.id.cardSource).text = getString(R.string.camera_card_source, data.source)
 
         val locationView = card.findViewById<TextView>(R.id.cardLocation)
@@ -790,7 +1019,11 @@ class CameraActivity : AppCompatActivity() {
         "no_sky_at_top" -> getString(R.string.camera_result_no_sky_at_top)
         "insufficient_sky_in_top_region" -> getString(R.string.camera_result_too_little_sky)
         "clip_not_landscape" -> getString(R.string.camera_result_not_landscape)
-        else -> getString(R.string.camera_result_unknown_reason)
+        // The server can add new rejection codes independently of this app (it's a separate,
+        // self-hosted service) — show the raw code rather than hiding it behind a generic
+        // message, so an unrecognized rejection is still actionable/reportable.
+        null -> getString(R.string.camera_result_unknown_reason)
+        else -> getString(R.string.camera_result_unknown_reason_with_code, reason)
     }
 
     private fun seasonLabel(season: String): String? = when (season) {
@@ -799,23 +1032,6 @@ class CameraActivity : AppCompatActivity() {
         "summer" -> getString(R.string.wallpaper_photo_meta_season_summer)
         "autumn" -> getString(R.string.wallpaper_photo_meta_season_autumn)
         else -> null
-    }
-
-    /** Decodes [uri] downsampled to roughly [targetSizePx], avoiding a full-resolution load for a thumbnail. */
-    private fun decodeSampledBitmap(uri: Uri, targetSizePx: Int): Bitmap? = try {
-        contentResolver.openInputStream(uri)?.use { input ->
-            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            BitmapFactory.decodeStream(input, null, bounds)
-            var sampleSize = 1
-            while (bounds.outWidth / (sampleSize * 2) >= targetSizePx && bounds.outHeight / (sampleSize * 2) >= targetSizePx) {
-                sampleSize *= 2
-            }
-            contentResolver.openInputStream(uri)?.use { secondInput ->
-                BitmapFactory.decodeStream(secondInput, null, BitmapFactory.Options().apply { inSampleSize = sampleSize })
-            }
-        }
-    } catch (e: Exception) {
-        null
     }
 
     /** Copies [uri]'s raw bytes into a private temp file, preserving its EXIF exactly. */

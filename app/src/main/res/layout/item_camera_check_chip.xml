@@ -6,4 +6,5 @@
     android:layout_marginBottom="4dp"
     android:clickable="false"
     android:checkable="false"
+    android:textColor="#212121"
     android:textSize="12sp" />

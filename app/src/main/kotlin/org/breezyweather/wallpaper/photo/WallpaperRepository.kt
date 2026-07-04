@@ -43,6 +43,7 @@ data class CameraUploadResult(
     val file: File,
     val processedUrl: String,
     val location: String?,
+    val depthPath: String? = null,
 )
 
 enum class CheckForNewPhotosResult {
@@ -227,13 +228,22 @@ class WallpaperRepository @Inject constructor(
         return null
     }
 
-    /** Uploads a camera photo, caches the processed result, and activates it immediately. */
+    /**
+     * Uploads a camera photo and caches the processed result. Only activates it immediately as
+     * the live wallpaper background when [activate] is true — the single-photo camera flow
+     * passes false and activates explicitly (via [activateCameraPhoto]) once the user confirms
+     * the suitability check, so a photo the server later rejects never briefly becomes the
+     * background. The gallery batch-import flow keeps the previous auto-activate behavior.
+     */
     suspend fun uploadCameraPhoto(
         file: File,
         latitude: Double?,
         longitude: Double?,
+        activate: Boolean = true,
+        /** Tag so an in-flight upload can be aborted via [cancelCameraUpload]. */
+        cancelTag: Any? = null,
     ): CameraUploadResult {
-        val upload = removeSkyProvider().uploadFile(file, latitude, longitude)
+        val upload = removeSkyProvider().uploadFile(file, latitude, longitude, cancelTag = cancelTag)
         val place = PlaceQuery(city = upload.location)
         val bitmap = downloadSkyBitmap(upload.processedUrl, alreadyProcessed = true)
             ?: throw IllegalStateException("Processed RemoveSky image could not be downloaded")
@@ -266,11 +276,22 @@ class WallpaperRepository @Inject constructor(
         )
         store.recordRecentUrl(place.cacheFileName(), upload.processedUrl)
         val depthPath = upload.depthUrl?.let { downloadAndCacheDepthMap(it, place, upload.processedUrl) }
-        store.activatePhoto(cacheFile.absolutePath, upload.processedUrl, "Camera / RemoveSky", depthPath)
-        photoCatalog.markShown(photoId(upload.processedUrl))
+        if (activate) {
+            store.activatePhoto(cacheFile.absolutePath, upload.processedUrl, "Camera / RemoveSky", depthPath)
+            photoCatalog.markShown(photoId(upload.processedUrl))
+        }
         pruneLocationCache(cacheFile.parentFile, cacheFile)
         prunePhotoCache(cacheFile)
-        return CameraUploadResult(cacheFile, upload.processedUrl, upload.location)
+        return CameraUploadResult(cacheFile, upload.processedUrl, upload.location, depthPath)
+    }
+
+    /** Aborts an in-flight [uploadCameraPhoto] call previously started with the same [cancelTag]. */
+    fun cancelCameraUpload(cancelTag: Any) = removeSkyProvider().cancelTaggedCalls(cancelTag)
+
+    /** Activates a photo previously uploaded with `activate = false` as the live wallpaper background. */
+    suspend fun activateCameraPhoto(result: CameraUploadResult) {
+        store.activatePhoto(result.file.absolutePath, result.processedUrl, "Camera / RemoveSky", result.depthPath)
+        photoCatalog.markShown(photoId(result.processedUrl))
     }
 
     /**

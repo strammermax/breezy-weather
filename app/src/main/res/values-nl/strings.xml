@@ -897,7 +897,7 @@
     <string name="camera_gallery_cannot_read">%1$s: ✗ kon bestand niet lezen</string>
     <string name="camera_gallery_no_exif_gps">%1$s: ✗ geen EXIF-GPS in foto; overgeslagen</string>
     <string name="camera_gallery_exif_gps_found">%1$s: EXIF-GPS gevonden: %2$.5f, %3$.5f</string>
-    <string name="camera_gallery_processing">%1$s: uploaden en verwerken op server…</string>
+    <string name="camera_gallery_processing">%1$s: uploaden en controleren op server…</string>
     <string name="camera_gallery_saved">%1$s: ✓ opgeslagen</string>
     <string name="camera_gallery_failed">%1$s: ✗ %2$s</string>
     <string name="settings_debug_dump_logs_failed">Logs verzamelen mislukt</string>
