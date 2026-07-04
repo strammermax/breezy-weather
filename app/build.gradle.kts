@@ -89,6 +89,11 @@ configure<ApplicationExtension> {
             isDebuggable = false
             isCrunchPngs = false // No need to do that, we already optimized them
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // Bundles native debug symbols into the App Bundle so Play Console can symbolicate
+            // native crashes/ANRs instead of showing raw memory addresses.
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
+            }
             if (keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
             }
