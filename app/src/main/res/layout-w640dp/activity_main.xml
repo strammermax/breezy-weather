@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <org.breezyweather.ui.common.widgets.DrawerLayout
+    <com.livewallpaperweather.ui.common.widgets.DrawerLayout
         android:id="@+id/drawerLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -14,7 +14,7 @@
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/fragment_drawer"
-            android:name="org.breezyweather.ui.main.fragments.ManagementFragment"
+            android:name="com.livewallpaperweather.ui.main.fragments.ManagementFragment"
             android:tag="fragment_management_w600dp_land"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -23,7 +23,7 @@
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/fragment_home"
-            android:name="org.breezyweather.ui.main.fragments.HomeFragment"
+            android:name="com.livewallpaperweather.ui.main.fragments.HomeFragment"
             android:tag="fragment_main_w600dp_land"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -44,6 +44,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-    </org.breezyweather.ui.common.widgets.DrawerLayout>
+    </com.livewallpaperweather.ui.common.widgets.DrawerLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 
 /**
  * Every weatherId [CloudEngineAdapter] (in the LiveWeatherApp app module) can produce for a
- * [org.breezyweather.wallpaper.WallpaperSceneState]. Kept in sync manually — if
+ * [com.livewallpaperweather.wallpaper.WallpaperSceneState]. Kept in sync manually — if
  * `CloudEngineAdapter.weatherId()` starts returning a new id, add it here too, otherwise
  * [every non-clear weatherId has visible coverage configured] silently stops covering it.
  */

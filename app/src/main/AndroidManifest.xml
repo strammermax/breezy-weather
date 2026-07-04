@@ -75,7 +75,7 @@
     <queries>
         <!-- Breezy Weather Icon Packs -->
         <intent>
-            <action android:name="org.breezyweather.ICON_PROVIDER" />
+            <action android:name="com.livewallpaperweather.ICON_PROVIDER" />
         </intent>
         <!-- Geometric Weather Icon Packs -->
         <intent>
@@ -107,19 +107,19 @@
         tools:targetApi="n">
 
         <meta-data
-            android:name="org.breezyweather.PROVIDER_CONFIG"
+            android:name="com.livewallpaperweather.PROVIDER_CONFIG"
             android:resource="@xml/icon_provider_config" />
         <meta-data
-            android:name="org.breezyweather.DRAWABLE_FILTER"
+            android:name="com.livewallpaperweather.DRAWABLE_FILTER"
             android:resource="@xml/icon_provider_drawable_filter" />
         <meta-data
-            android:name="org.breezyweather.ANIMATOR_FILTER"
+            android:name="com.livewallpaperweather.ANIMATOR_FILTER"
             android:resource="@xml/icon_provider_animator_filter" />
         <meta-data
-            android:name="org.breezyweather.SHORTCUT_FILTER"
+            android:name="com.livewallpaperweather.SHORTCUT_FILTER"
             android:resource="@xml/icon_provider_shortcut_filter" />
         <meta-data
-            android:name="org.breezyweather.SUN_MOON_FILTER"
+            android:name="com.livewallpaperweather.SUN_MOON_FILTER"
             android:resource="@xml/icon_provider_sun_moon_filter" />
 
         <activity
@@ -140,7 +140,7 @@
                 <category android:name="android.intent.category.APP_WEATHER" />
             </intent-filter>
             <intent-filter>
-                <!--<action android:name="org.breezyweather.ICON_PROVIDER" />-->
+                <!--<action android:name="com.livewallpaperweather.ICON_PROVIDER" />-->
                 <action android:name="${applicationId}.Main" />
                 <action android:name="${applicationId}.ACTION_SHOW_ALERTS" />
                 <action android:name="${applicationId}.ACTION_SHOW_DAILY_FORECAST" />

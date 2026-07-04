@@ -5,7 +5,7 @@ plugins {
 }
 
 configure<LibraryExtension> {
-    namespace = "org.breezyweather.ui.theme.weatherView"
+    namespace = "com.livewallpaperweather.ui.theme.weatherView"
 
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")

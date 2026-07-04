@@ -32,7 +32,7 @@ dependencyResolutionManagement {
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
-rootProject.name = "BreezyWeather"
+rootProject.name = "LiveWallpaperWeather"
 include(":app")
 include(":cloud-engine")
 include(":data")

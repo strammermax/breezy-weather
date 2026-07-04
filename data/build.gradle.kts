@@ -7,7 +7,7 @@ plugins {
 }
 
 configure<LibraryExtension> {
-    namespace = "breezyweather.data"
+    namespace = "livewallpaperweather.data"
 
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")
@@ -16,7 +16,7 @@ configure<LibraryExtension> {
     sqldelight {
         databases {
             create("Database") {
-                packageName.set("breezyweather.data")
+                packageName.set("livewallpaperweather.data")
                 dialect(libs.sqldelight.dialects.sql)
                 schemaOutputDirectory.set(project.file("./src/main/sqldelight"))
             }

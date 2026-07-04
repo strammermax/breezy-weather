@@ -8,6 +8,6 @@
     android:initialLayout="@layout/widget_text"
     android:previewImage="@drawable/widget_text"
     android:resizeMode="horizontal|vertical"
-    android:configure="org.breezyweather.remoteviews.config.TextWidgetConfigActivity"
+    android:configure="com.livewallpaperweather.remoteviews.config.TextWidgetConfigActivity"
     android:widgetFeatures="reconfigurable"
     android:widgetCategory="home_screen|keyguard" />

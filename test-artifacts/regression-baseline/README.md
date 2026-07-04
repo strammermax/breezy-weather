@@ -8,7 +8,7 @@ Reference images for `WallpaperVisualRegressionTest`
 ```
 export JAVA_HOME="/c/Program Files/Eclipse Adoptium/jdk-17.0.19.10-hotspot"
 ./gradlew :app:connectedBasicDebugAndroidTest \
-  -Pandroid.testInstrumentationRunnerArguments.class=org.breezyweather.wallpaper.WallpaperVisualRegressionTest
+  -Pandroid.testInstrumentationRunnerArguments.class=com.livewallpaperweather.wallpaper.WallpaperVisualRegressionTest
 ```
 
 Requires a running emulator or device (API 21+). AGSL effect passes only run on API 33+

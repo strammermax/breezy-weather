@@ -5,7 +5,7 @@ plugins {
 }
 
 configure<LibraryExtension> {
-    namespace = "org.breezyweather.unit"
+    namespace = "com.livewallpaperweather.unit"
 
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

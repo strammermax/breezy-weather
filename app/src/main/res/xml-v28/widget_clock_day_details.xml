@@ -8,6 +8,6 @@
     android:initialLayout="@layout/widget_clock_day_details"
     android:previewImage="@drawable/widget_clock_day_details"
     android:resizeMode="horizontal|vertical"
-    android:configure="org.breezyweather.remoteviews.config.ClockDayDetailsWidgetConfigActivity"
+    android:configure="com.livewallpaperweather.remoteviews.config.ClockDayDetailsWidgetConfigActivity"
     android:widgetFeatures="reconfigurable"
     android:widgetCategory="home_screen|keyguard" />

@@ -57,7 +57,7 @@
             app:layout_constraintTop_toBottomOf="@+id/hourly_block_subtitle"
             app:layout_constraintStart_toStartOf="@+id/hourly_block_title_icon" />
 
-        <org.breezyweather.ui.common.widgets.trend.TrendRecyclerView
+        <com.livewallpaperweather.ui.common.widgets.trend.TrendRecyclerView
             android:id="@+id/hourly_block_trendRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="@dimen/hourly_trend_item_height"

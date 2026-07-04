@@ -79,7 +79,7 @@
             tools:text="Rain Wednesday evening"
             app:layout_constraintTop_toBottomOf="@+id/daily_block_title" />
 
-        <org.breezyweather.ui.common.widgets.trend.TrendRecyclerView
+        <com.livewallpaperweather.ui.common.widgets.trend.TrendRecyclerView
             android:id="@+id/daily_block_trendRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="@dimen/daily_trend_item_height"

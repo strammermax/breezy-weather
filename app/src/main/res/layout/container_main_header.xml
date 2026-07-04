@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <org.breezyweather.ui.main.widgets.TextRelativeClock
+        <com.livewallpaperweather.ui.main.widgets.TextRelativeClock
             android:id="@+id/refreshTimeText"
             android:textSize="@dimen/content_text_size"
             android:textColor="?attr/colorSurfaceInverse"
@@ -75,7 +75,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <org.breezyweather.ui.common.widgets.NumberAnimTextView
+        <com.livewallpaperweather.ui.common.widgets.NumberAnimTextView
             android:id="@+id/container_main_header_temperature_value"
             android:layout_width="wrap_content"
             android:layout_marginTop="-10dp"

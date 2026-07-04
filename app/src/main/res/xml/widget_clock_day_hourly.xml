@@ -7,5 +7,5 @@
     android:updatePeriodMillis="0"
     android:initialLayout="@layout/widget_clock_day_hourly"
     android:resizeMode="horizontal|vertical"
-    android:configure="org.breezyweather.remoteviews.config.ClockDayHourlyWidgetConfigActivity"
+    android:configure="com.livewallpaperweather.remoteviews.config.ClockDayHourlyWidgetConfigActivity"
     android:widgetCategory="home_screen|keyguard" />
