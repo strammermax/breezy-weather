@@ -30,7 +30,7 @@ internal object RadarWebMapLoader {
 
     @SuppressLint("SetJavaScriptEnabled")
     fun loadMeteoblue(webView: WebView, latitude: Double? = null, longitude: Double? = null) {
-        configure(webView)
+        configureMeteoblue(webView)
         webView.webChromeClient = object : WebChromeClient() {
             override fun onGeolocationPermissionsShowPrompt(
                 origin: String?,
@@ -57,6 +57,35 @@ internal object RadarWebMapLoader {
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
         webView.webViewClient = WebViewClient()
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun configureMeteoblue(webView: WebView) {
+        webView.settings.javaScriptEnabled = true
+        webView.settings.domStorageEnabled = true
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView, url: String) {
+                // The page ignores the map= hash on initial load and defaults to Wind Animation.
+                // Inject JS to programmatically select Weather Radar > EU (+2h Forecast).
+                view.evaluateJavascript("""
+                    (function() {
+                        function clickText(text, root) {
+                            var els = (root || document).querySelectorAll('li, a, div, span');
+                            for (var i = 0; i < els.length; i++) {
+                                if (els[i].childElementCount === 0 && els[i].textContent.trim() === text) {
+                                    els[i].click(); return true;
+                                }
+                            }
+                            return false;
+                        }
+                        if (!clickText('Weerradar')) clickText('Weather Radar');
+                        setTimeout(function() {
+                            if (!clickText('EU (+2u prognose)')) clickText('EU (+2h Forecast)');
+                        }, 400);
+                    })();
+                """.trimIndent(), null)
+            }
+        }
     }
 
     private const val BUIENRADAR_WIDGET_URL = "https://www.buienradar.nl/nederland/neerslag/buienradar"
