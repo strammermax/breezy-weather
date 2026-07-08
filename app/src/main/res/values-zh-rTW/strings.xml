@@ -852,7 +852,7 @@
     <string name="action_add_as_location">新增此位置</string>
     <string name="settings_regional_preference">地區偏好設定</string>
     <string name="widget_live_wallpaper_animations_enable_dangerous">危險</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">已知桌布動畫會導致以下問題：電池高耗電、電池過熱、記憶體使用過高、系統反應遲緩、Android 系統當機等。</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">是否要啟用動畫？請注意，這可能會影響手機的效能。</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">如果決定啟用桌布動畫，你要為任何可能發生的問題負責，開發者將不提供任何支援。</string>
     <string name="settings_appearance_dark_mode_custom">從 %1$s 至 %2$s 啟用深色模式</string>
     <string name="message_source_non_free_network_title">此天氣來源需要本應用程式的 Standard 版本</string>

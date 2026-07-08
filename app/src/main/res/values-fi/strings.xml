@@ -793,7 +793,7 @@
     <string name="message_source_non_free_network_content">Käytät sovelluksen Freenet-versiota, joka tukee vain ilmaisessa verkossa isännöityjä lähteitä. Jos haluat jatkaa tämän lähteen käyttöä, vaihda takaisin perusversioon. Muussa tapauksessa valitse toinen lähde.</string>
     <string name="message_please_wait_refresh">Odota virkistyksen valmistumista</string>
     <string name="widget_live_wallpaper_animations_enable_dangerous">VAARALLINEN</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Taustakuva-animaatioiden tiedetään aiheuttavan muun muassa: korkeaa akun kulutusta; akun ylikuumenemista; korkeaa muistin kulutusta; heikentynyttä järjestelmän reagointikykyä; Android-järjestelmän kaatumista.</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">Haluatko ottaa animaatiot käyttöön? Huomaa, että tämä voi vaikuttaa puhelimesi suorituskykyyn.</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">Jos päätät ottaa ne käyttöön, otat täyden vastuun mahdollisista ongelmista, eikä tukea tarjota.</string>
     <string name="settings_source_api_key_invalid">Arvo ei ole odotetussa muodossa</string>
     <string name="settings_main_background_title">Säähän perustuva tausta</string>

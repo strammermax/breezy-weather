@@ -777,7 +777,7 @@
     <string name="message_source_non_free_network_title">Овај извор захтева Стандардну верзију апликације</string>
     <string name="message_source_non_free_network_content">Користите Freenet верзију апликације, која подржава само изворе хостоване на бесплатној мрежи. Да бисте наставили да користите овај извор, вратите се на Стандардну верзију. У супротном, изаберите други извор.</string>
     <string name="widget_live_wallpaper_animations_enable_dangerous">ОПАСНО</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Познато је да анимације позадина, између осталог, узрокује: велику потрошњу батерије; прегревање батерије; велику потрошњу меморије; смањен одзив система; отказивање система Android.</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">Да ли желите да омогућите анимације? Имајте на уму да то може утицати на перформансе вашег телефона.</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">Ако одлучите да их омогућите, преузимате пуну одговорност за сваки проблем који може настати и неће вам бити пружена никаква подршка.</string>
     <string name="settings_weather_source_non_freenet">%s (неслободна мрежна услуга)</string>
     <string name="settings_appearance_dark_mode_custom">Тамни режим од %1$s до %2$s</string>

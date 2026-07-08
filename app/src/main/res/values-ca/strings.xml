@@ -753,7 +753,7 @@
     <string name="pressure_about_description2">S’utilitzen canvis significatius i ràpids de pressió per predir canvis en el temps. Per exemple, una baixada de pressió pot significar que s’acosta pluja o neu, i una pujada de pressió pot implicar que el temps millorarà. Una pressió atmosfèrica anormal pot ocasionar mals de cap, dolor a les articulacions, fatiga i altres efectes.</string>
     <string name="broadcast_source_breezy_weather_update_notifier">Notificador d’actualitzacions de la ubicació %s</string>
     <string name="widget_live_wallpaper_animations_enable_dangerous">PERILLÓS</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Es coneix que els fons de pantalla animats provoquen, entre altres coses: gran consum de bateria; sobreescalfament de la bateria; gran consum de memòria; capacitat de resposta del sistema degradada; tancament inesperat del sistema Android.</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">Vols activar les animacions? Tingues en compte que això pot afectar el rendiment del telèfon.</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">Si decidiu activar-les assumireu completa responsabilitat dels problemes que puguen sorgir i no rebreu cap suport.</string>
     <string name="settings_weather_source_non_freenet">%s (servei de xarxa tancat)</string>
     <string name="settings_weather_source_not_configured">%s (no configurat)</string>

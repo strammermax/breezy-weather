@@ -63,17 +63,7 @@ class SettingsManager private constructor(
         const val DEFAULT_CARD_DISPLAY = "nowcast" +
             "&daily_forecast" +
             "&hourly_forecast" +
-            "&precipitation" +
-            "&wind" +
-            "&air_quality" +
-            "&pollen" +
-            "&humidity" +
-            "&uv" +
-            "&visibility" +
-            "&pressure" +
-            "&details_overview" +
-            "&sun" +
-            "&moon"
+            "&details_overview"
         const val DEFAULT_DAILY_TREND_DISPLAY = "temperature" +
             "&air_quality" +
             "&wind" +
@@ -104,24 +94,6 @@ class SettingsManager private constructor(
             config.edit().putInt("last_version_code", value).apply()
         }
         get() = config.getInt("last_version_code", 0)
-
-    var isAppUpdateCheckEnabled: Boolean
-        set(value) {
-            config.edit().putBoolean("app_update_check_switch", value).apply()
-        }
-        get() = config.getBoolean("app_update_check_switch", false)
-
-    var isAppUpdateCheckPromptAlreadyAsked: Boolean
-        set(value) {
-            config.edit().putBoolean("app_update_check_prompt", value).apply()
-        }
-        get() = config.getBoolean("app_update_check_prompt", false)
-
-    var appUpdateCheckLastTimestamp: Long
-        set(value) {
-            config.edit().putLong("app_update_check_last_timestamp", value).apply()
-        }
-        get() = config.getLong("app_update_check_last_timestamp", 0)
 
     // Weather updates
     var weatherUpdateLastTimestamp: Long
@@ -163,8 +135,7 @@ class SettingsManager private constructor(
             notifySettingsChanged()
         }
         get() = UpdateInterval.getInstance(
-            config.getString("refresh_rate", null)
-                ?: (if (BreezyWeather.instance.debugMode) "never" else "auto")
+            config.getString("refresh_rate", null) ?: "auto"
         )
 
     var ignoreUpdatesWhenBatteryLow: Boolean
@@ -371,7 +342,7 @@ class SettingsManager private constructor(
             config.edit().putString("tile_card_style", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getString("tile_card_style", null) ?: "none"
+        get() = config.getString("tile_card_style", null) ?: "auto"
 
     var tileCardAlpha: Int
         set(value) {

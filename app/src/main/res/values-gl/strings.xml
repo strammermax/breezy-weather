@@ -597,7 +597,7 @@
     <string name="widget_live_wallpaper_weather_kind">Tempo</string>
     <string name="widget_live_wallpaper_day_night_type">Hora</string>
     <string name="widget_live_wallpaper_animations_enable_dangerous">PERIGOSO</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Sábese cas animacións do fondo de pantalla provocan, entre outras cousas: alto consumo de batería; sobrequecemento da batería; alto consumo de memoria; peor capacidade de resposta do sistema; fallo do sistema Android.</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">Queres activar as animacións? Ten en conta que isto pode afectar ao rendemento do teu teléfono.</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">Se decides activalas, asumes toda a responsabilidade por calquera problema que poida xurdir, e non se proporcionará ningún tipo de asistencia.</string>
     <string name="settings_section_general">Xeral</string>
     <string name="settings_background_updates">Actualizacións en segundo plano</string>

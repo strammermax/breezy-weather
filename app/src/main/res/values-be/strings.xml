@@ -768,7 +768,7 @@
     <string name="action_toggle_data_type_menu">Паказаць або схаваць меню выбару тыпу даных</string>
     <string name="message_source_non_free_network_title">Для гэтай крыніцы патрабуецца стандартная версія праграмы</string>
     <string name="message_source_non_free_network_content">Выкарыстоўваецца версія праграмы Freenet, якая падтрымлівае толькі крыніцы, размешчаныя ў «свабодных» сетках. Каб выкарыстоўваць гэту крыніцу надалей, перайдзіце на стандартную версію. У адваротным выпадку выберыце іншую крыніцу.</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Вядома, што анімаваныя шпалеры могуць прыводзіць да высокага расходу зараду, перагрэву батарэі, высокага спажывання памяці, зніжэння хуткасці рэакцыі сістэмы, сістэмных збояў Android.</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">Хочаце ўключыць анімацыю? Звярніце ўвагу, што гэта можа паўплываць на прадукцыйнасць вашага тэлефона.</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">Калі вы прымаеце рашэнне ўключыць іх, то бераце на сябе поўную адказнасць за любыя магчымыя праблемы, а таксама вам не будуць аказваць падтрымку.</string>
     <string name="settings_weather_source_non_freenet">%s (несвабодны сеткавы сэрвіс)</string>
     <string name="settings_appearance_dark_mode_custom">Цёмны рэжым з %1$s да %2$s</string>

@@ -762,7 +762,7 @@
     <string name="message_source_non_free_network_content">Sa kasutad rakenduse Freeneti versiooni, mis toetab ainult tasuta võrgus majutatud allikaid. Selle allika kasutamise jätkamiseks lülitu tagasi standardversioonile. Vastasel juhul vali mõni teine allikas.</string>
     <string name="widget_custom_subtitle_help_content_description">Kuva kohandatud pealdise märksõnade abi</string>
     <string name="widget_live_wallpaper_animations_enable_dangerous">OHTLIK</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Taustapildi animatsioonid võivad muuhulgas põhjustada: suurt aku tarbimist; aku ülekuumenemist; suurt mälu tarbimist; süsteemi reageerimisvõime halvenemist; Androidi süsteemi krahhi.</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">Kas soovid animatsioonid lubada? Pane tähele, et see võib mõjutada telefoni jõudlust.</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">Kui otsustad need lubada, võtad täieliku vastutuse kõigi tekkida võivate probleemide eest ja tuge ei pakuta.</string>
     <string name="settings_weather_source_non_freenet">%s (mittevaba võrguteenus)</string>
     <string name="settings_appearance_section_regional">Keel ja piirkond</string>

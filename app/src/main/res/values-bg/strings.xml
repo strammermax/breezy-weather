@@ -768,7 +768,7 @@
     <string name="message_source_non_free_network_title">Този източник изисква стандартната версия на приложението</string>
     <string name="message_source_non_free_network_content">Използвате Freenet версията на приложението, която поддържа само източници, хоствани в безплатна мрежа. За да продължите да използвате този източник, върнете се към стандартната версия. В противен случай изберете друг източник.</string>
     <string name="widget_live_wallpaper_animations_enable_dangerous">ОПАСНО</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Известно е, че анимациите на тапетите причиняват, наред с други неща: висока консумация на батерия; прегряване на батерията; висока консумация на памет; влошена системна реакция; срив на Android системата.</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">Искате ли да активирате анимациите? Имайте предвид, че това може да повлияе на производителността на телефона ви.</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">Ако решите да ги активирате, вие поемате пълна отговорност за всеки проблем, който може да възникне, и няма да Ви бъде предоставена поддръжка.</string>
     <string name="settings_weather_source_non_freenet">%s (мрежова услуга със затворен код)</string>
     <string name="settings_appearance_dark_mode_custom">Тъмен режим от %1$s до %2$s</string>

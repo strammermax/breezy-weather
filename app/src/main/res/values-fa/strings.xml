@@ -763,7 +763,7 @@
     <string name="widget_custom_subtitle_help_content_description">نمایش راهنمای کلمات کلیدی زیرنویس سفارشی</string>
     <string name="widget_custom_subtitle_alert_box_title">راهنمای زیرنویس سفارشی</string>
     <string name="widget_live_wallpaper_animations_enable_dangerous">خطرناک</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">انیمیشن‌های پس‌زمینه باعث موارد این‌چنین می شود: مصرف بالای باتری. گرم شدن بیش از حد باتری؛ مصرف بالای حافظه؛ تخریب سیستم پاسخگویی؛ خراب شدن سیستم اندروید.</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">آیا می‌خواهید انیمیشن‌ها را فعال کنید؟ لطفاً توجه داشته باشید که این ممکن است بر عملکرد تلفن شما تأثیر بگذارد.</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">اگر تصمیم دارید آنها را فعال کنید، مسئولیت کامل هر مشکلی را که ممکن است پیش بیاید بر عهده می‌گیرید و هیچ حمایتی از ما ارائه نخواهد شد.</string>
     <string name="settings_weather_source_non_freenet">%s (سرویس شبکه غیر رایگان)</string>
     <string name="settings_appearance_dark_mode_custom">حالت تیره از %1$s تا %2$s</string>

@@ -769,7 +769,7 @@
     <string name="widget_custom_subtitle_help_content_description">Özel altyazı anahtar kelime yardımını göster</string>
     <string name="widget_custom_subtitle_alert_box_title">Özel altyazı yardımı</string>
     <string name="widget_live_wallpaper_animations_enable_dangerous">TEHLİKELİ</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Duvar kağıdı animasyonlarının, diğer şeylerin yanı sıra şunlara neden olduğu bilinmektedir: yüksek pil tüketimi; pilin aşırı ısınması; yüksek bellek tüketimi; düşük sistem tepkisi; Android sisteminin çökmesi.</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">Animasyonları etkinleştirmek ister misiniz? Bunun telefonunuzun performansını etkileyebileceğini unutmayın.</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">Bunları etkinleştirmeye karar verdiğiniz takdirde, ortaya çıkabilecek herhangi bir sorundan tamamen siz sorumlu olursunuz ve hiçbir destek sağlanmaz.</string>
     <string name="settings_weather_source_non_freenet">%s (özgür olmayan ağ hizmeti)</string>
     <string name="settings_appearance_section_regional">Dil ve bölge</string>

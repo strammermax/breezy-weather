@@ -561,7 +561,6 @@
     <string name="action_share_no_app">No app to share with found</string>
     <string name="action_translate">Translate</string>
     <string name="action_translate_no_app">No translation app found</string>
-    <string name="action_download">Download</string>
     <string name="action_show_errors">Tap to see details</string>
     <string name="action_show">Show</string>
     <string name="action_enable">Enable</string>
@@ -573,8 +572,6 @@
     <string name="label_expanded">Expanded</string>
     <string name="label_collapsed">Collapsed</string>
     <!-- Dialogs -->
-    <string name="dialog_app_update_check_title">Stay up-to-date</string>
-    <string name="dialog_app_update_check_content">Tap here to enable notifications about app updates.</string>
     <string name="dialog_permissions_notification_title">Stay informed</string>
     <string name="dialog_permissions_notification_content">Tap here to enable notifications about weather alerts, or decide later in Settings.</string>
     <string name="dialog_permissions_location_title">Access location information</string>
@@ -709,7 +706,7 @@
     <!-- Time as in “daytime” / “nighttime” -->
     <string name="widget_live_wallpaper_day_night_type">Time</string>
     <string name="widget_live_wallpaper_animations_enable_dangerous">DANGEROUS</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Wallpaper animations are known to cause, among other things: high battery consumption; battery overheating; high memory consumption; degraded system responsiveness; Android system crash.</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">Would you like to enable animations? Please note that this may affect your phone\'s performance.</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">If you decide to enable them, you assume full responsibility for any problem that may arise, and no support will be provided.</string>
     <!-- Location photo background -->
     <string name="widget_live_wallpaper_photo_background">Location photo background</string>
@@ -989,10 +986,9 @@
     <string name="settings_main_cards_other_element_animations_switch">Other element animations</string>
     <string name="settings_notifications">Notifications</string>
     <string name="settings_notifications_summary">Notifications of weather alerts, precipitations or forecast for the first location</string>
-    <string name="settings_notifications_app_updates_check">Notifications of app updates</string>
     <string name="settings_notifications_permission">Notification permission required</string>
     <!-- %s is the string with the key action_grant_permission -->
-    <string name="settings_notifications_permission_summary">Needed to notify about alerts, forecasts and app updates. %s</string>
+    <string name="settings_notifications_permission_summary">Needed to notify about alerts and forecasts. %s</string>
     <string name="settings_notifications_section_general" translatable="false">@string/settings_section_general</string>
     <!-- “important” means we won’t send notifications for minor severity alerts -->
     <string name="settings_notifications_alerts_title">Notifications of severe weather alerts</string>
@@ -1076,7 +1072,6 @@
     <string name="notification_channel_widget">Widget</string>
     <string name="notification_channel_background_services">Background services</string>
     <string name="notification_channel_crash_logs">Crash logs</string>
-    <string name="notification_channel_app_updates">App updates</string>
     <string name="notification_running_in_background">Running in background to keep updating</string>
     <string name="notification_updating_weather_data">Updating weather data (%1$d/%2$d)</string>
     <string name="notification_precipitation_starting">Precipitation soon</string>
@@ -1090,12 +1085,8 @@
     <string name="notification_precipitation_stopping_desc">Expected to stop at %s</string>
     <string name="notification_style_native">Native</string>
     <string name="notification_style_cities">Cities</string>
-    <string name="notification_app_update_available">New version available!</string>
     <!-- About -->
     <string name="about_app">About app</string>
-    <string name="about_check_for_app_updates">Check for app updates</string>
-    <string name="about_no_new_updates">No new updates available</string>
-    <string name="about_update_check_eol">This Android version is no longer supported</string>
     <string name="about_contact">Contact</string>
     <string name="about_matrix">Matrix room</string>
     <string name="about_source_code">Source code</string>

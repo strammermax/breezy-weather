@@ -832,26 +832,10 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         }
                     },
                     title = {
-                        Text(
-                            stringResource(
-                                R.string.parenthesis,
-                                stringResource(R.string.settings_main_section_animations),
-                                stringResource(R.string.widget_live_wallpaper_animations_enable_dangerous)
-                            )
-                        )
+                        Text(stringResource(R.string.settings_main_section_animations))
                     },
                     text = {
-                        Column {
-                            Text(
-                                stringResource(R.string.widget_live_wallpaper_animations_enable_warning1)
-                            )
-                            Spacer(
-                                modifier = Modifier.height(dimensionResource(R.dimen.normal_margin))
-                            )
-                            Text(
-                                stringResource(R.string.widget_live_wallpaper_animations_enable_warning2)
-                            )
-                        }
+                        Text(stringResource(R.string.widget_live_wallpaper_animations_enable_warning1))
                     },
                     textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     iconContentColor = MaterialTheme.colorScheme.onSurface

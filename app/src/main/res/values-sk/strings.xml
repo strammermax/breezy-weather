@@ -685,7 +685,7 @@
     <string name="settings_appearance_section_theme">Téma</string>
     <string name="settings_weather_source_non_freenet">%s (sieťová služba nie je voľne dostupná)</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">Ak sa rozhodnete ich aktivovať, preberáte plnú zodpovednosť za prípadné problémy a nebude vám poskytnutá žiadna pomoc.</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Animácie pozadia obrazovky sú známe tým, že spôsobujú okrem iného: vysokú spotrebu batérie; prehriatie batérie; vysokú spotrebu pamäte; zhoršenie odozvy systému; zlyhanie systému Android.</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">Chcete povoliť animácie? Upozorňujeme, že to môže ovplyvniť výkon vášho telefónu.</string>
     <string name="widget_live_wallpaper_animations_enable_dangerous">NEBEZPEČNÉ</string>
     <string name="message_incompatible_times_content">Zmeňte zdroj predpovede alebo kvality ovzdušia tak, aby sa ich čas zhodoval.</string>
     <string name="message_incompatible_times_title">Nekompatibilný čas predpovedí</string>

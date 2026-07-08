@@ -840,7 +840,7 @@
     <string name="widget_custom_subtitle_help_content_description">Tampilkan bantuan kata kunci subjudul khusus</string>
     <string name="widget_custom_subtitle_alert_box_title">Bantuan subjudul khusus</string>
     <string name="widget_live_wallpaper_animations_enable_dangerous">BERBAHAYA</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Animasi wallpaper diketahui dapat menyebabkan, antara lain: konsumsi baterai yang tinggi; baterai terlalu panas; konsumsi memori yang tinggi; penurunan responsivitas sistem; sistem Android mogok.</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">Apakah Anda ingin mengaktifkan animasi? Perlu diketahui bahwa ini dapat memengaruhi performa ponsel Anda.</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">Jika Anda memutuskan untuk mengaktifkannya, Anda bertanggung jawab penuh atas segala masalah yang mungkin timbul, dan dukungan tidak akan diberikan.</string>
     <string name="settings_weather_source_non_freenet">%s (layanan jaringan tidak bebas)</string>
     <string name="settings_appearance_section_regional">Bahasa dan wilayah</string>

@@ -470,7 +470,7 @@
     <string name="widget_live_wallpaper_weather_kind">Hava durumu</string>
     <string name="widget_live_wallpaper_day_night_type">Vaxt</string>
     <string name="widget_live_wallpaper_animations_enable_dangerous">TƏHLÜKƏLİ</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Divar kağızı animasiyaları bunlara səbəb ola bilər: yüksək batareya istifadəsi; batareyanın həddindən artıq isinməsi; yüksək yaddaş istifadəsi; zəifləmiş sistem reaksiyası; Android sisteminin sıradan çıxması.</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">Animasiyaları aktiv etmək istəyirsiniz? Nəzərə alın ki, bu telefonunuzun performansına təsir edə bilər.</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">Əgər onları aktivləşdirmək qərarına gəlsəniz, yarana biləcək hər hansı bir problem üçün tam məsuliyyəti öz üzərinizə götürürsünüz və sizə heç bir dəstək göstərilməyəcək.</string>
     <string name="settings_section_general">Ümumi</string>
     <string name="settings_background_updates">Fon yenilənmələri</string>

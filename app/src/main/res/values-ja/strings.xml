@@ -804,7 +804,7 @@
     <string name="message_source_non_free_network_content">Freenetバージョンのアプリを使用しています。このアプリは、自由なネットワークで管理されている情報源のみをサポートしています。この情報源を使い続ける場合は、標準バージョンのアプリに戻ってください。それ以外の場合は、別の情報源を選択してください。</string>
     <string name="widget_custom_subtitle_help_content_description">下段に表示するカスタムテキストのキーワードに関するヘルプを表示</string>
     <string name="widget_custom_subtitle_alert_box_title">下段に表示するカスタムテキストのヘルプ</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">壁紙のアプリケーションは、バッテリーの使用量の増加、過放電、メモリー使用量の増加、システムの反応速度の低下、Androidのクラッシュなどを起こすことが知られています。</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">アニメーションを有効にしますか？ これによりスマートフォンのパフォーマンスに影響する場合があることにご注意ください。</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">有効にする場合は、自己責任にてお願いします。サポートの提供は行いません。</string>
     <string name="settings_weather_source_non_freenet">%s（不自由なネットワークサービス）</string>
     <string name="settings_appearance_dark_mode_custom">%1$sから%2$sまでダークモードに設定</string>

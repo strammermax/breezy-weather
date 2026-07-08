@@ -770,7 +770,7 @@
     <string name="widget_custom_subtitle_help_content_description">أظهر تعليمات الكلمات المفتاحية المخصّصة للترجمة المصاحبة</string>
     <string name="widget_custom_subtitle_alert_box_title">مساعدة في الترجمة المخصّصة</string>
     <string name="widget_live_wallpaper_animations_enable_dangerous">خطر</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">من المعروف أن الرسوم المتحركة للخلفية تتسبب، من بين أمور أخرى، في: استهلاك عالٍ للبطارية؛ وارتفاع درجة حرارة البطارية؛ واستهلاك عالٍ للذاكرة؛ وتدهور استجابة النظام؛ وتعطل نظام أندرويد.</string>
+    <string name="widget_live_wallpaper_animations_enable_warning1">هل تريد تفعيل الرسوم المتحركة؟ يُرجى ملاحظة أن هذا قد يؤثر على أداء هاتفك.</string>
     <string name="widget_live_wallpaper_animations_enable_warning2">إذا قررت تفعيلها، فإنك تتحمل المسؤولية الكاملة عن أي مشكلة قد تنشأ، ولن يتم تقديم أي دعم.</string>
     <string name="settings_weather_source_non_freenet">%s (خدمة شبكة غير حرة)</string>
     <string name="settings_weather_source_no_longer_exists">%s (لم يعد موجودًا)</string>
