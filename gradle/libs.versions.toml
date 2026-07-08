@@ -10,7 +10,7 @@ androidx-test-runner = "1.7.0"
 appcompat = "1.7.1"
 annotationJvm = "1.10.0"
 breezy-datasharing-lib = "09c0e4dd062601239c3f6062266d4b963577cefc"
-camerax = "1.4.2"
+camerax = "1.5.1"
 cardview = "1.0.0"
 compose-bom = "2026.05.01"
 compose-material3 = "1.5.0-alpha21"
@@ -59,7 +59,7 @@ work-runtime = "2.11.2"
 
 [libraries]
 aboutLibraries = { group = "com.mikepenz", name = "aboutlibraries-compose-m3", version.ref = "aboutlib" }
-tensorflow-lite = { group = "org.tensorflow", name = "tensorflow-lite", version = "2.16.1" }
+tensorflow-lite = { group = "org.tensorflow", name = "tensorflow-lite", version = "2.17.0" }
 aboutLibraries-gradle = { group = "com.mikepenz.aboutlibraries.plugin", name = "aboutlibraries-plugin", version.ref = "aboutlib" }
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
