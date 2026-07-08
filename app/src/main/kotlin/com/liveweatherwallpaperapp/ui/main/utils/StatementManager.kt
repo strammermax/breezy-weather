@@ -44,12 +44,6 @@ class StatementManager @Inject constructor(
             config.edit().putBoolean(KEY_POST_NOTIFICATION_REQUIRED, value).apply()
         }
 
-    var isAppUpdateCheckDialogAlreadyShown: Boolean
-        get() = config.getBoolean(KEY_APP_UPDATE_CHECK_ASKED, false)
-        private set(value) {
-            config.edit().putBoolean(KEY_APP_UPDATE_CHECK_ASKED, value).apply()
-        }
-
     private fun getPermissionDeniedKey(permission: String): String =
         permission.replace(".", "_").lowercase() + "_denied"
 
@@ -65,10 +59,6 @@ class StatementManager @Inject constructor(
         isPostNotificationDialogAlreadyShown = true
     }
 
-    fun setAppUpdateCheckDialogAlreadyShown() {
-        isAppUpdateCheckDialogAlreadyShown = true
-    }
-
     fun isPermissionDenied(permission: String): Boolean =
         config.getBoolean(getPermissionDeniedKey(permission), false)
 
@@ -81,6 +71,5 @@ class StatementManager @Inject constructor(
         private const val KEY_LOCATION_PERMISSION_DECLARED = "location_permission_declared"
         private const val KEY_BACKGROUND_LOCATION_DECLARED = "background_location_declared"
         private const val KEY_POST_NOTIFICATION_REQUIRED = "post_notification_required"
-        private const val KEY_APP_UPDATE_CHECK_ASKED = "app_update_check_asked"
     }
 }

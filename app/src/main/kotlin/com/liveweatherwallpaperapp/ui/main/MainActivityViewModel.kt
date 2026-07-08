@@ -27,7 +27,6 @@ import com.google.maps.android.SphericalUtil
 import com.google.maps.android.model.LatLng
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
-import com.liveweatherwallpaperapp.background.updater.AppUpdateChecker
 import com.liveweatherwallpaperapp.common.activities.BreezyViewModel
 import com.liveweatherwallpaperapp.common.activities.livedata.BusLiveData
 import com.liveweatherwallpaperapp.common.extensions.hasPermission
@@ -71,7 +70,6 @@ class MainActivityViewModel @Inject constructor(
     private val locationRepository: LocationRepository,
     private val weatherRepository: WeatherRepository,
     private val currentLocationStore: CurrentLocationStore,
-    private val updateChecker: AppUpdateChecker,
 ) : BreezyViewModel(application), WeatherRequestCallback {
 
     // flow
@@ -345,16 +343,6 @@ class MainActivityViewModel @Inject constructor(
             return
         }
         _loading.value = true
-
-        if (BuildConfig.FLAVOR != "freenet" && SettingsManager.getInstance(getApplication()).isAppUpdateCheckEnabled) {
-            viewModelScope.launchIO {
-                try {
-                    updateChecker.checkForUpdate(getApplication(), forceCheck = false)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
 
         if (!checkPermissions) {
             updating = true

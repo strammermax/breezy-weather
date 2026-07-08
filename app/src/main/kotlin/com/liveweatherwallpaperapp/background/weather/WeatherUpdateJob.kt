@@ -35,8 +35,6 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.google.maps.android.SphericalUtil
 import com.google.maps.android.model.LatLng
-import com.liveweatherwallpaperapp.BreezyWeather
-import com.liveweatherwallpaperapp.background.updater.AppUpdateChecker
 import com.liveweatherwallpaperapp.common.bus.EventBus
 import com.liveweatherwallpaperapp.common.extensions.createFileInCacheDir
 import com.liveweatherwallpaperapp.common.extensions.getFormattedDate
@@ -86,7 +84,6 @@ class WeatherUpdateJob @AssistedInject constructor(
     private val sourceManager: SourceManager,
     private val locationRepository: LocationRepository,
     private val weatherRepository: WeatherRepository,
-    private val updateChecker: AppUpdateChecker,
 ) : CoroutineWorker(context, workerParams) {
 
     private val notifier = WeatherUpdateNotifier(context)
@@ -128,18 +125,6 @@ class WeatherUpdateJob @AssistedInject constructor(
                 }
             } finally {
                 notifier.cancelProgressNotification()
-                /*if ((BuildConfig.FLAVOR != "freenet" && SettingsManager.getInstance(context).isAppUpdateCheckEnabled) ||
-                    Build.VERSION.SDK_INT < Build.VERSION_CODES.M
-                ) {*/
-                if (BreezyWeather.instance.isGitHubUpdateCheckerEnabled &&
-                    SettingsManager.getInstance(context).isAppUpdateCheckEnabled
-                ) {
-                    try {
-                        updateChecker.checkForUpdate(context, forceCheck = false)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
             }
         }
     }

@@ -81,6 +81,10 @@
         <intent>
             <action android:name="wangdaye.com.geometricweather.ICON_PROVIDER" />
         </intent>
+        <!-- Upstream Breezy Weather Icon Packs -->
+        <intent>
+            <action android:name="org.breezyweather.ICON_PROVIDER" />
+        </intent>
         <!-- Chronus Icon Packs -->
         <intent>
             <action android:name="android.intent.action.MAIN" />

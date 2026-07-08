@@ -19,7 +19,6 @@ package com.liveweatherwallpaperapp.ui.about
 import androidx.activity.compose.LocalActivity
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -35,20 +34,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,11 +53,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
-import com.liveweatherwallpaperapp.background.updater.interactor.GetApplicationRelease
 import com.liveweatherwallpaperapp.common.extensions.plus
-import com.liveweatherwallpaperapp.common.extensions.withIOContext
-import com.liveweatherwallpaperapp.common.extensions.withUIContext
-import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
 import com.liveweatherwallpaperapp.ui.common.composables.AlertDialogLink
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3ExpressiveCardListItem
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3Scaffold
@@ -72,7 +64,6 @@ import com.liveweatherwallpaperapp.ui.common.widgets.insets.bottomInsetItem
 import com.liveweatherwallpaperapp.ui.settings.preference.SmallSeparatorItem
 import com.liveweatherwallpaperapp.ui.settings.preference.largeSeparatorItem
 import com.liveweatherwallpaperapp.ui.theme.compose.themeRipple
-import kotlinx.coroutines.launch
 
 internal class AboutAppLinkItem(
     @DrawableRes val iconId: Int,
@@ -87,13 +78,9 @@ internal fun AboutScreen(
 ) {
     val scrollBehavior = generateCollapsedScrollBehavior()
 
-    val scope = rememberCoroutineScope()
-    val isCheckingUpdates = remember { mutableStateOf(false) }
-
     val context = LocalContext.current
     val activity = LocalActivity.current
 
-    val uriHandler = LocalUriHandler.current
     val linkToOpen = rememberSaveable { mutableStateOf("") }
     val dialogLinkOpenState = rememberSaveable { mutableStateOf(false) }
 
@@ -136,18 +123,6 @@ internal fun AboutScreen(
         }
     }
 
-    val isUpdateCheckerEnabled = remember {
-        BreezyWeather.instance.isGitHubUpdateCheckerEnabled ||
-            (
-                BuildConfig.RELEASES_LINK.isNotEmpty() &&
-                    (
-                        !BuildConfig.RELEASES_LINK.contains("breezy", ignoreCase = true) ||
-                            BreezyWeather.instance.isSignedByBreezy ||
-                            BreezyWeather.instance.debugMode
-                        )
-                )
-    }
-
     Material3Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -166,102 +141,6 @@ internal fun AboutScreen(
         ) {
             item {
                 Header()
-            }
-            if (isUpdateCheckerEnabled) {
-                item {
-                    AboutAppLink(
-                        isFirst = true,
-                        isLast = true,
-                        icon = {
-                            // Use crossfade animation to prevent the progress indicator from flickering when repeatedly
-                            // pressing the update card as this causes the loading state to change back and forth almost
-                            // instantly.
-                            Crossfade(
-                                targetState = isCheckingUpdates.value,
-                                label = ""
-                            ) { loading ->
-                                when (loading) {
-                                    false -> {
-                                        Icon(
-                                            painter = painterResource(R.drawable.ic_sync),
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-
-                                    true -> {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier.size(24.dp),
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                }
-                            }
-                        },
-                        title = stringResource(R.string.about_check_for_app_updates),
-                        onClick = {
-                            if (BreezyWeather.instance.isGitHubUpdateCheckerEnabled) {
-                                if (!isCheckingUpdates.value) {
-                                    scope.launch {
-                                        isCheckingUpdates.value = true
-
-                                        withUIContext {
-                                            try {
-                                                when (
-                                                    val result = withIOContext {
-                                                        aboutViewModel.checkForUpdate(
-                                                            context,
-                                                            forceCheck = true
-                                                        )
-                                                    }
-                                                ) {
-                                                    is GetApplicationRelease.Result.NewUpdate -> {
-                                                        SnackbarHelper.showSnackbar(
-                                                            context.getString(
-                                                                R.string.notification_app_update_available
-                                                            ),
-                                                            context.getString(R.string.action_download)
-                                                        ) {
-                                                            uriHandler.openUri(result.release.releaseLink)
-                                                        }
-                                                    }
-
-                                                    is GetApplicationRelease.Result.NoNewUpdate -> {
-                                                        SnackbarHelper.showSnackbar(
-                                                            context.getString(R.string.about_no_new_updates)
-                                                        )
-                                                    }
-
-                                                    is GetApplicationRelease.Result.OsTooOld -> {
-                                                        SnackbarHelper.showSnackbar(
-                                                            context.getString(
-                                                                R.string.about_update_check_eol
-                                                            )
-                                                        )
-                                                    }
-
-                                                    else -> {}
-                                                }
-                                            } catch (e: Exception) {
-                                                e.message?.let { msg ->
-                                                    SnackbarHelper.showSnackbar(
-                                                        msg
-                                                    )
-                                                }
-                                                e.printStackTrace()
-                                            } finally {
-                                                isCheckingUpdates.value = false
-                                            }
-                                        }
-                                    }
-                                }
-                            } else {
-                                linkToOpen.value = BuildConfig.RELEASES_LINK
-                                dialogLinkOpenState.value = true
-                            }
-                        }
-                    )
-                }
             }
             largeSeparatorItem()
 

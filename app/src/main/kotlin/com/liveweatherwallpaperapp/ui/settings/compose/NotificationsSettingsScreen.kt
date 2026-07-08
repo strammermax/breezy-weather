@@ -28,7 +28,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.background.forecast.TodayForecastNotificationJob
 import com.liveweatherwallpaperapp.background.forecast.TomorrowForecastNotificationJob
@@ -104,25 +103,6 @@ fun NotificationsSettingsScreen(
                         )
                     }
                 }
-            }
-
-            if (BreezyWeather.instance.isGitHubUpdateCheckerEnabled) {
-                sectionHeaderItem(R.string.notification_channel_app_updates)
-                switchPreferenceItem(R.string.settings_notifications_app_updates_check) { id ->
-                    SwitchPreferenceView(
-                        titleId = id,
-                        summaryOnId = R.string.settings_enabled,
-                        summaryOffId = R.string.settings_disabled,
-                        checked = SettingsManager.getInstance(context).isAppUpdateCheckEnabled,
-                        enabled = hasNotificationPermission,
-                        isFirst = true,
-                        isLast = true,
-                        onValueChanged = {
-                            SettingsManager.getInstance(context).isAppUpdateCheckEnabled = it
-                        }
-                    )
-                }
-                sectionFooterItem(R.string.notification_channel_app_updates)
             }
 
             largeSeparatorItem()

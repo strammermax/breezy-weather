@@ -150,24 +150,6 @@ class BreezyWeather : Application(), Configuration.Provider {
         }
     }
 
-    // GitHub is a non-free network, so we cannot automatically check for updates in the
-    // "freenet" flavor
-    // We ask for permission to manually check updates in the browser instead
-    val isGitHubUpdateCheckerEnabled: Boolean
-        get() = BuildConfig.FLAVOR != "freenet" &&
-            BuildConfig.GITHUB_REPO.isNotEmpty() &&
-            BuildConfig.GITHUB_ORG.isNotEmpty() &&
-            BuildConfig.GITHUB_RELEASE_PREFIX.isNotEmpty() &&
-            (
-                (
-                    !BuildConfig.GITHUB_ORG.contains("breezy", ignoreCase = true) &&
-                        !BuildConfig.GITHUB_RELEASE_PREFIX.contains("breezy", ignoreCase = true) &&
-                        !BuildConfig.GITHUB_REPO.contains("breezy", ignoreCase = true)
-                    ) ||
-                    isSignedByBreezy ||
-                    debugMode
-                )
-
     /*
      * /!\ Changing the below logic to impersonate Breezy Weather is a violation of the LGPL license that was granted
      * to you.

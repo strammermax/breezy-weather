@@ -33,6 +33,16 @@ object Constants {
     const val GEOMETRIC_META_DATA_SHORTCUT_FILTER = "com.wangdaye.geometricweather.SHORTCUT_FILTER"
     const val GEOMETRIC_META_DATA_SUN_MOON_FILTER = "com.wangdaye.geometricweather.SUN_MOON_FILTER"
 
+    // Upstream Breezy Weather icon-pack namespace. This app is a Breezy Weather fork, so icon
+    // packs built against upstream (e.g. community packs on GitHub) should keep working here too,
+    // the same way upstream itself stays compatible with the older GeometricWeather namespace.
+    const val BREEZY_ACTION_ICON_PROVIDER = "org.breezyweather.ICON_PROVIDER"
+    const val BREEZY_META_DATA_PROVIDER_CONFIG = "org.breezyweather.PROVIDER_CONFIG"
+    const val BREEZY_META_DATA_DRAWABLE_FILTER = "org.breezyweather.DRAWABLE_FILTER"
+    const val BREEZY_META_DATA_ANIMATOR_FILTER = "org.breezyweather.ANIMATOR_FILTER"
+    const val BREEZY_META_DATA_SHORTCUT_FILTER = "org.breezyweather.SHORTCUT_FILTER"
+    const val BREEZY_META_DATA_SUN_MOON_FILTER = "org.breezyweather.SUN_MOON_FILTER"
+
     const val CATEGORY_CHRONUS_ICON_PACK = "com.dvtonder.chronus.ICON_PACK"
 
     private const val RESOURCES_CLEAR = "weather_clear"

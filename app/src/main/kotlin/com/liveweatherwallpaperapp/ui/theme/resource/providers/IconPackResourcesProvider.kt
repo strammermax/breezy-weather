@@ -59,10 +59,11 @@ open class IconPackResourcesProvider(
             mConfig = if (resId != 0) {
                 XmlHelper.getConfig(res.getXml(resId))
             } else {
-                val geometricResId =
-                    getMetaDataResource(Constants.GEOMETRIC_META_DATA_PROVIDER_CONFIG)
-                if (geometricResId != 0) {
-                    XmlHelper.getConfig(res.getXml(geometricResId))
+                val fallbackResId = getMetaDataResource(Constants.GEOMETRIC_META_DATA_PROVIDER_CONFIG)
+                    .takeIf { it != 0 }
+                    ?: getMetaDataResource(Constants.BREEZY_META_DATA_PROVIDER_CONFIG)
+                if (fallbackResId != null && fallbackResId != 0) {
+                    XmlHelper.getConfig(res.getXml(fallbackResId))
                 } else {
                     Config()
                 }
@@ -71,10 +72,11 @@ open class IconPackResourcesProvider(
             mDrawableFilter = if (resId != 0) {
                 XmlHelper.getFilterMap(res.getXml(resId))
             } else {
-                val geometricResId =
-                    getMetaDataResource(Constants.GEOMETRIC_META_DATA_DRAWABLE_FILTER)
-                if (geometricResId != 0) {
-                    XmlHelper.getFilterMap(res.getXml(geometricResId))
+                val fallbackResId = getMetaDataResource(Constants.GEOMETRIC_META_DATA_DRAWABLE_FILTER)
+                    .takeIf { it != 0 }
+                    ?: getMetaDataResource(Constants.BREEZY_META_DATA_DRAWABLE_FILTER)
+                if (fallbackResId != null && fallbackResId != 0) {
+                    XmlHelper.getFilterMap(res.getXml(fallbackResId))
                 } else {
                     HashMap()
                 }
@@ -83,10 +85,11 @@ open class IconPackResourcesProvider(
             mAnimatorFilter = if (resId != 0) {
                 XmlHelper.getFilterMap(res.getXml(resId))
             } else {
-                val geometricResId =
-                    getMetaDataResource(Constants.GEOMETRIC_META_DATA_ANIMATOR_FILTER)
-                if (geometricResId != 0) {
-                    XmlHelper.getFilterMap(res.getXml(geometricResId))
+                val fallbackResId = getMetaDataResource(Constants.GEOMETRIC_META_DATA_ANIMATOR_FILTER)
+                    .takeIf { it != 0 }
+                    ?: getMetaDataResource(Constants.BREEZY_META_DATA_ANIMATOR_FILTER)
+                if (fallbackResId != null && fallbackResId != 0) {
+                    XmlHelper.getFilterMap(res.getXml(fallbackResId))
                 } else {
                     HashMap()
                 }
@@ -95,10 +98,11 @@ open class IconPackResourcesProvider(
             mShortcutFilter = if (resId != 0) {
                 XmlHelper.getFilterMap(res.getXml(resId))
             } else {
-                val geometricResId =
-                    getMetaDataResource(Constants.GEOMETRIC_META_DATA_SHORTCUT_FILTER)
-                if (geometricResId != 0) {
-                    XmlHelper.getFilterMap(res.getXml(geometricResId))
+                val fallbackResId = getMetaDataResource(Constants.GEOMETRIC_META_DATA_SHORTCUT_FILTER)
+                    .takeIf { it != 0 }
+                    ?: getMetaDataResource(Constants.BREEZY_META_DATA_SHORTCUT_FILTER)
+                if (fallbackResId != null && fallbackResId != 0) {
+                    XmlHelper.getFilterMap(res.getXml(fallbackResId))
                 } else {
                     HashMap()
                 }
@@ -107,10 +111,11 @@ open class IconPackResourcesProvider(
             mSunMoonFilter = if (resId != 0) {
                 XmlHelper.getFilterMap(res.getXml(resId))
             } else {
-                val geometricResId =
-                    getMetaDataResource(Constants.GEOMETRIC_META_DATA_SUN_MOON_FILTER)
-                if (geometricResId != 0) {
-                    XmlHelper.getFilterMap(res.getXml(geometricResId))
+                val fallbackResId = getMetaDataResource(Constants.GEOMETRIC_META_DATA_SUN_MOON_FILTER)
+                    .takeIf { it != 0 }
+                    ?: getMetaDataResource(Constants.BREEZY_META_DATA_SUN_MOON_FILTER)
+                if (fallbackResId != null && fallbackResId != 0) {
+                    XmlHelper.getFilterMap(res.getXml(fallbackResId))
                 } else {
                     HashMap()
                 }
@@ -454,56 +459,40 @@ open class IconPackResourcesProvider(
         get() = mSunMoonFilter?.getOrElse(Constants.RESOURCES_MOON) { null }
 
     companion object {
+        /** Every icon-provider intent action this app recognizes, own namespace first. */
+        private fun recognizedActions(): List<String> = listOf(
+            Constants.ACTION_ICON_PROVIDER,
+            Constants.GEOMETRIC_ACTION_ICON_PROVIDER,
+            Constants.BREEZY_ACTION_ICON_PROVIDER
+        )
+
         fun getProviderList(
             context: Context,
             defaultProvider: ResourceProvider,
         ): List<IconPackResourcesProvider> {
             val providerList = mutableListOf<IconPackResourcesProvider>()
-            val infoList = context.packageManager.queryIntentActivities(
-                Intent(Constants.ACTION_ICON_PROVIDER),
-                PackageManager.GET_RESOLVED_FILTER
-            )
-            for (info in infoList) {
-                providerList.add(
-                    IconPackResourcesProvider(
-                        context,
-                        info.activityInfo.applicationInfo.packageName,
-                        defaultProvider
-                    )
+            val seenPackages = mutableSetOf<String>()
+            for (action in recognizedActions()) {
+                val infoList = context.packageManager.queryIntentActivities(
+                    Intent(action),
+                    PackageManager.GET_RESOLVED_FILTER
                 )
-            }
-            val geometricInfoList = context.packageManager.queryIntentActivities(
-                Intent(Constants.GEOMETRIC_ACTION_ICON_PROVIDER),
-                PackageManager.GET_RESOLVED_FILTER
-            )
-            for (info in geometricInfoList) {
-                providerList.add(
-                    IconPackResourcesProvider(
-                        context,
-                        info.activityInfo.applicationInfo.packageName,
-                        defaultProvider
-                    )
-                )
+                for (info in infoList) {
+                    val packageName = info.activityInfo.applicationInfo.packageName
+                    if (!seenPackages.add(packageName)) continue
+                    providerList.add(IconPackResourcesProvider(context, packageName, defaultProvider))
+                }
             }
             return providerList
         }
 
         fun isIconPackIconProvider(context: Context, packageName: String): Boolean {
-            val infoList = context.packageManager.queryIntentActivities(
-                Intent(Constants.ACTION_ICON_PROVIDER),
-                PackageManager.GET_RESOLVED_FILTER
-            )
-            for (info in infoList) {
-                if (packageName == info.activityInfo.applicationInfo.packageName) {
-                    return true
-                }
-            }
-            val geometricInfoList = context.packageManager.queryIntentActivities(
-                Intent(Constants.GEOMETRIC_ACTION_ICON_PROVIDER),
-                PackageManager.GET_RESOLVED_FILTER
-            )
-            for (info in geometricInfoList) {
-                if (packageName == info.activityInfo.applicationInfo.packageName) {
+            for (action in recognizedActions()) {
+                val infoList = context.packageManager.queryIntentActivities(
+                    Intent(action),
+                    PackageManager.GET_RESOLVED_FILTER
+                )
+                if (infoList.any { it.activityInfo.applicationInfo.packageName == packageName }) {
                     return true
                 }
             }
