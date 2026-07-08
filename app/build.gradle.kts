@@ -16,6 +16,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization")
     id("com.mikepenz.aboutlibraries.plugin.android")
+    id("com.github.triplet.play")
 }
 
 val supportedAbi = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
@@ -488,6 +489,18 @@ kotlin {
             "-Xannotation-default-target=param-property"
         )
     }
+}
+
+// Play Store publishing (Gradle Play Publisher). Only used by CI (see
+// .github/workflows/publish-play-store.yml) via the "publishBasicReleaseBundle" task - never
+// needed for local builds. Requires a Play Console service-account JSON key: locally that's
+// play-service-account.json (gitignored), in CI it's written from a repo secret to the same path.
+// Only the "basic" flavor is ever published; "freenet" is GitHub-release-only and has no play
+// task invoked against it.
+play {
+    serviceAccountCredentials.set(rootProject.file("play-service-account.json"))
+    track.set("internal")
+    defaultToAppBundles.set(true)
 }
 
 aboutLibraries {

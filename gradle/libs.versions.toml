@@ -34,6 +34,7 @@ kotlinx-serialization-csv = "3.2.1"
 kotlinx-serialization-json = "1.11.0"
 kotlinx-serialization-xml = "0.91.3"
 ktlint = "1.8.0"
+playPublisher = "4.0.0"
 #leakcanary = "2.14"
 lifecycle = "2.10.0"
 lifecycle-extensions = "2.2.0"
@@ -156,6 +157,7 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 kotlinKsp = { id = "com.google.devtools.ksp", version.ref = "kotlin-ksp" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+playPublisher = { id = "com.github.triplet.play", version.ref = "playPublisher" }
 
 [bundles]
 camerax = ["camera-core", "camera-camera2", "camera-lifecycle", "camera-view"]

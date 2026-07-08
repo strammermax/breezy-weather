@@ -57,4 +57,5 @@ docs/testfotos/
 *.jks
 *.keystore
 keystore.properties
+play-service-account.json
 docs/~$*.xlsx

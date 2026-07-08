@@ -1,0 +1,55 @@
+name: Publish to Play Store (internal track)
+
+# Triggered by scripts/release.ps1, which tags+pushes "vX.Y.Z" (basic flavor) or
+# "vX.Y.Z-freenet" (GitHub-release-only, never published to Play). Also runnable by hand.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: {}
+
+jobs:
+  publish:
+    if: ${{ !endsWith(github.ref_name, '-freenet') }}
+    runs-on: 'ubuntu-24.04'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version-file: .github/.java-version
+          distribution: temurin
+
+      - name: Set up gradle
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
+
+      - name: Write release keystore
+        run: |
+          set -e
+          echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > release.jks
+          cat > keystore.properties <<EOF
+          storeFile=release.jks
+          storePassword=$SIGNING_STORE_PASSWORD
+          keyAlias=$SIGNING_KEY_ALIAS
+          keyPassword=$SIGNING_KEY_PASSWORD
+          EOF
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.PLAY_SIGNING_KEYSTORE_BASE64 }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.PLAY_SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.PLAY_SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.PLAY_SIGNING_KEY_PASSWORD }}
+
+      - name: Write Play Console service account key
+        run: echo "$PLAY_SERVICE_ACCOUNT_JSON" > play-service-account.json
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+
+      - name: Publish basic flavor to Play Store internal track
+        run: ./gradlew publishBasicReleaseBundle
+
+      - name: Remove secrets from workspace
+        if: always()
+        run: rm -f release.jks keystore.properties play-service-account.json
