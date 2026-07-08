@@ -843,7 +843,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Дозвольте постійний доступ до місцезнаходження, щоб фон також змінювався, коли ви рухаєтеся, коли програма закрита. Без цього дозволу використовується останнє відоме розташування.</string>
     <string name="widget_live_wallpaper_background_location_action">Налаштувати доступ до місцезнаходження</string>
     <string name="widget_live_wallpaper_experimental">Експериментальний</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Сезонне бонітування (дослідне)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Градація</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Тонкий сезонний колір і світло зміщуються у верхній частині сцени. Не змінює фонове фото.</string>
     <string name="widget_live_wallpaper_grading_strength">Міцність класу: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Кеш фотографій: %1$d MB</string>

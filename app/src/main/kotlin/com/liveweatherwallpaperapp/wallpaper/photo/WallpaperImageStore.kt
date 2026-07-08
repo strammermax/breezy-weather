@@ -33,7 +33,7 @@ class WallpaperImageStore(context: Context) {
 
     /** Master switch: when off, the wallpaper uses the original gradient backgrounds. */
     var photoBackgroundEnabled: Boolean
-        get() = config.getBoolean(KEY_ENABLED, false)
+        get() = config.getBoolean(KEY_ENABLED, true)
         set(value) {
             config.edit().putBoolean(KEY_ENABLED, value).apply()
         }

@@ -889,7 +889,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Permesu lokan aliron la tutan tempon, por ke la fono ankaŭ ŝanĝiĝu kiam vi moviĝas dum la programo estas fermita. Sen ĉi tiu permeso, la lasta konata loko estas uzata.</string>
     <string name="widget_live_wallpaper_background_location_action">Agordi lokan aliron</string>
     <string name="widget_live_wallpaper_experimental">Eksperimenta</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Laŭsezona klasado (eksperimenta)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Klasado</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Subtila, sezon-bazita koloro kaj lumŝanĝo supre de la sceno. Ne ŝanĝas la fonan foton.</string>
     <string name="widget_live_wallpaper_grading_strength">Grada forto: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Fotokaŝmemoro: %1$d MB</string>

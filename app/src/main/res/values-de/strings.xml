@@ -856,7 +856,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Erlauben Sie jederzeit den Standortzugriff, damit sich der Hintergrund auch ändert, wenn Sie sich bewegen, während die App geschlossen ist. Ohne diese Berechtigung wird der letzte bekannte Standort verwendet.</string>
     <string name="widget_live_wallpaper_background_location_action">Standortzugriff konfigurieren</string>
     <string name="widget_live_wallpaper_experimental">Experimentell</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Saisonale Einstufung (experimentell)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Einstufung</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Dezente, saisonabhängige Farb- und Lichtverschiebung über der Szene. Das Hintergrundfoto wird nicht geändert.</string>
     <string name="widget_live_wallpaper_grading_strength">Sortierstärke: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Foto-Cache: %1$d MB</string>

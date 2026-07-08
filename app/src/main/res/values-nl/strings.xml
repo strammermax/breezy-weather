@@ -869,7 +869,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Sta locatie altijd toe zodat de achtergrond ook verandert wanneer je verhuist terwijl de app gesloten is. Zonder deze toestemming wordt de laatst bekende locatie gebruikt.</string>
     <string name="widget_live_wallpaper_background_location_action">Locatietoegang instellen</string>
     <string name="widget_live_wallpaper_experimental">Experimenteel</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Seizoenskleuring (experimenteel)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Kleuring</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Een subtiele, seizoensgebonden verschuiving van kleur en licht over de scène. De achtergrondfoto zelf verandert niet.</string>
     <string name="widget_live_wallpaper_grading_strength">Kleursterkte: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Fotocache: %1$d MB</string>

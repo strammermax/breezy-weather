@@ -36,16 +36,15 @@ class LiveWallpaperConfigManager(context: Context) {
     val parallaxEnabled: Boolean
     val qualityProfile: WallpaperQualityProfile
 
-    /** ACT-012: experimental seasonal colour/light grading, off by default. */
+    /** ACT-012: seasonal colour/light grading, on by default. */
     val seasonGradingEnabled: Boolean
 
     /** ACT-012: user-chosen strength in 0f..1f, scaled down by [WallpaperSeasonGrading.MAX_SEASON_GRADING_STRENGTH]. */
     val seasonGradingStrength: Float
 
     /**
-     * Experimental: render clouds via the `:cloud-engine` module (the wolkentypes prototype's
-     * PNG-sprite clouds) instead of the built-in AGSL/Canvas cloud renderer. Off by default;
-     * the built-in renderer is unaffected either way.
+     * Renders clouds via the `:cloud-engine` module ("Real Clouds": the wolkentypes prototype's
+     * PNG-sprite clouds) instead of the built-in AGSL/Canvas cloud renderer. On by default.
      */
     val newCloudsEnabled: Boolean
 
@@ -56,10 +55,10 @@ class LiveWallpaperConfigManager(context: Context) {
         animationsEnabled = config.getBoolean(KEY_ANIMATIONS_ENABLED, false)
         parallaxEnabled = config.getBoolean(KEY_PARALLAX_ENABLED, false)
         qualityProfile = WallpaperQualityProfileFactory.fromName(config.getString(KEY_QUALITY_PROFILE, null))
-        seasonGradingEnabled = config.getBoolean(KEY_SEASON_GRADING_ENABLED, false)
+        seasonGradingEnabled = config.getBoolean(KEY_SEASON_GRADING_ENABLED, true)
         seasonGradingStrength = config.getFloat(KEY_SEASON_GRADING_STRENGTH, DEFAULT_SEASON_GRADING_STRENGTH)
             .coerceIn(0f, 1f)
-        newCloudsEnabled = config.getBoolean(KEY_NEW_CLOUDS_ENABLED, false)
+        newCloudsEnabled = config.getBoolean(KEY_NEW_CLOUDS_ENABLED, true)
     }
 
     companion object {

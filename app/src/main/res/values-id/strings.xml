@@ -919,7 +919,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Izinkan akses lokasi sepanjang waktu sehingga latar belakang juga berubah saat Anda bergerak saat aplikasi ditutup. Tanpa izin ini, lokasi terakhir yang diketahui akan digunakan.</string>
     <string name="widget_live_wallpaper_background_location_action">Konfigurasikan akses lokasi</string>
     <string name="widget_live_wallpaper_experimental">Eksperimental</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Penilaian musiman (eksperimental)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Penilaian</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Peralihan warna dan cahaya yang halus berdasarkan musim di bagian atas pemandangan. Tidak mengubah latar belakang foto.</string>
     <string name="widget_live_wallpaper_grading_strength">Kekuatan penilaian: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Cache foto: %1$d MB</string>

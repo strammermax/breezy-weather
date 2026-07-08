@@ -850,7 +850,7 @@
     <string name="widget_live_wallpaper_background_location_summary">السماح بالوصول إلى الموقع طوال الوقت بحيث تتغير الخلفية أيضًا عندما تتحرك أثناء إغلاق التطبيق. وبدون هذا الإذن، يتم استخدام آخر موقع معروف.</string>
     <string name="widget_live_wallpaper_background_location_action">تكوين الوصول إلى الموقع</string>
     <string name="widget_live_wallpaper_experimental">تجريبي</string>
-    <string name="widget_live_wallpaper_seasonal_grading">التدرج الموسمي (تجريبي)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">التدرج</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">لون دقيق يعتمد على الموسم وتحول الضوء في أعلى المشهد. لا يغير صورة الخلفية.</string>
     <string name="widget_live_wallpaper_grading_strength">قوة التصنيف: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">ذاكرة التخزين المؤقت للصور: %1$d ميجابايت</string>

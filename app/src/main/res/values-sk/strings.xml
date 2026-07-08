@@ -843,7 +843,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Povoľte neustále prístup k polohe, aby sa pozadie zmenilo aj pri pohybe, keď je aplikácia zatvorená. Bez tohto povolenia sa použije posledná známa poloha.</string>
     <string name="widget_live_wallpaper_background_location_action">Konfigurácia prístupu k polohe</string>
     <string name="widget_live_wallpaper_experimental">Experimentálne</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Sezónne hodnotenie (experimentálne)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Hodnotenie</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Jemný posun farieb a svetla v závislosti od ročného obdobia v hornej časti scény. Nezmení fotografiu na pozadí.</string>
     <string name="widget_live_wallpaper_grading_strength">Sila triedenia: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Vyrovnávacia pamäť fotografií: %1$d MB</string>

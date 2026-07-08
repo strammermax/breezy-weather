@@ -732,11 +732,11 @@
     <string name="widget_live_wallpaper_background_location_summary">Allow location access all the time so the background also changes when you move while the app is closed. Without this permission, the last known location is used.</string>
     <string name="widget_live_wallpaper_background_location_action">Configure location access</string>
     <string name="widget_live_wallpaper_experimental">Experimental</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Seasonal grading (experimental)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Grading</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Subtle, season-based colour and light shift on top of the scene. Does not change the background photo.</string>
     <string name="widget_live_wallpaper_grading_strength">Grading strength: %1$d%%</string>
-    <string name="widget_live_wallpaper_new_clouds">New clouds (experimental)</string>
-    <string name="widget_live_wallpaper_new_clouds_summary">Renders clouds using the wolkentypes prototype instead of the built-in cloud renderer.</string>
+    <string name="widget_live_wallpaper_new_clouds">Real Clouds</string>
+    <string name="widget_live_wallpaper_new_clouds_summary">Renders clouds using Real Clouds instead of the built-in cloud renderer.</string>
     <string name="widget_live_wallpaper_new_clouds_tuning">New clouds tuning (debug build only)</string>
     <string name="widget_live_wallpaper_photo_cache">Photo cache: %1$d MB</string>
     <string name="widget_live_wallpaper_recent_photos_skipped">The last %1$d photos per location are skipped when choosing a new background.</string>

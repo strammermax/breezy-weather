@@ -854,7 +854,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Permiteți accesul la locație tot timpul, astfel încât fundalul să se schimbe și atunci când vă mutați în timp ce aplicația este închisă. Fără această permisiune, se utilizează ultima locație cunoscută.</string>
     <string name="widget_live_wallpaper_background_location_action">Configurați accesul la locație</string>
     <string name="widget_live_wallpaper_experimental">Experimental</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Clasificare sezonieră (experimentală)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Clasificare</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Culoarea subtilă, bazată pe sezon și schimbarea luminii deasupra scenei. Nu schimbă fotografia de fundal.</string>
     <string name="widget_live_wallpaper_grading_strength">Rezistența gradării: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Cache foto: %1$d MB</string>

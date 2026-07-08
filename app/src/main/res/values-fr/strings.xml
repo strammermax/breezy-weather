@@ -898,7 +898,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Autorisez l\'accès à la localisation à tout moment afin que l\'arrière-plan change également lorsque vous vous déplacez pendant que l\'application est fermée. Sans cette autorisation, le dernier emplacement connu est utilisé.</string>
     <string name="widget_live_wallpaper_background_location_action">Configurer l\'accès à la localisation</string>
     <string name="widget_live_wallpaper_experimental">Expérimental</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Classement saisonnier (expérimental)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Classement</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Des couleurs et des changements de lumière subtils, basés sur la saison, au-dessus de la scène. Ne change pas la photo d\'arrière-plan.</string>
     <string name="widget_live_wallpaper_grading_strength">Résistance de classement : %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Cache photos : %1$d Mo</string>

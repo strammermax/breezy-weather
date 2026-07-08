@@ -843,7 +843,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Dopustite pristup lokaciji cijelo vrijeme kako bi se pozadina također promijenila kada se pomičete dok je aplikacija zatvorena. Bez ovog dopuštenja koristi se zadnja poznata lokacija.</string>
     <string name="widget_live_wallpaper_background_location_action">Konfigurirajte pristup lokaciji</string>
     <string name="widget_live_wallpaper_experimental">Eksperimentalno</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Sezonsko ocjenjivanje (pokusno)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Ocjenjivanje</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Suptilna, sezonska boja i svjetlo pomiču se na vrhu scene. Ne mijenja pozadinsku fotografiju.</string>
     <string name="widget_live_wallpaper_grading_strength">Snaga gradacije: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Foto cache: %1$d MB</string>

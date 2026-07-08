@@ -838,7 +838,7 @@
     <string name="widget_live_wallpaper_background_location_summary">همیشه اجازه دسترسی به موقعیت مکانی را بدهید تا وقتی برنامه بسته است، پس‌زمینه نیز تغییر کند. بدون این مجوز، آخرین مکان شناخته شده استفاده می شود.</string>
     <string name="widget_live_wallpaper_background_location_action">پیکربندی دسترسی به مکان</string>
     <string name="widget_live_wallpaper_experimental">تجربی</string>
-    <string name="widget_live_wallpaper_seasonal_grading">درجه بندی فصلی (تجربی)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">درجه‌بندی</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">تغییر رنگ ظریف و مبتنی بر فصل و تغییر نور در بالای صحنه. عکس پس زمینه را تغییر نمی دهد.</string>
     <string name="widget_live_wallpaper_grading_strength">قدرت درجه بندی: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">حافظه پنهان عکس: %1$d MB</string>

@@ -845,7 +845,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Lubage alati juurdepääs asukohale, et taust muutuks ka siis, kui liigute, kui rakendus on suletud. Ilma selle loata kasutatakse viimast teadaolevat asukohta.</string>
     <string name="widget_live_wallpaper_background_location_action">Asukohajuurdepääsu seadistamine</string>
     <string name="widget_live_wallpaper_experimental">Eksperimentaalne</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Hooajaline hindamine (katseline)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Hindamine</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Peen, hooajapõhine värv ja valguse nihe stseeni peal. Taustafotot ei muuda.</string>
     <string name="widget_live_wallpaper_grading_strength">Liigitustugevus: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Foto vahemälu: %1$d MB</string>

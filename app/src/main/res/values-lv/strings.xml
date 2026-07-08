@@ -845,7 +845,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Atļaujiet piekļuvi atrašanās vietai visu laiku, lai arī fons mainītos, pārvietojoties, kamēr lietotne ir aizvērta. Bez šīs atļaujas tiek izmantota pēdējā zināmā atrašanās vieta.</string>
     <string name="widget_live_wallpaper_background_location_action">Konfigurēt piekļuvi atrašanās vietai</string>
     <string name="widget_live_wallpaper_experimental">Eksperimentāls</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Sezonas klasifikācija (eksperimentāla)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Klasifikācija</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Smalkas, uz sezonu balstītas krāsas un gaismas maiņa ainas augšdaļā. Nemaina fona fotoattēlu.</string>
     <string name="widget_live_wallpaper_grading_strength">Klasifikācijas stiprība: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Fotoattēlu kešatmiņa: %1$d MB</string>

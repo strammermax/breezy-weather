@@ -877,7 +877,7 @@
     <string name="widget_live_wallpaper_background_location_summary">位置情報へのアクセスを常に許可すると、アプリが閉じている間に移動すると背景も変わります。この許可がなければ、最後に知られた場所が使用されます。</string>
     <string name="widget_live_wallpaper_background_location_action">位置情報アクセスを構成する</string>
     <string name="widget_live_wallpaper_experimental">実験的</string>
-    <string name="widget_live_wallpaper_seasonal_grading">季節によるグレーディング (実験的)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">グレーディング</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">シーンに合わせた微妙な季節ベースのカラーと光の変化。背景写真は変更しません。</string>
     <string name="widget_live_wallpaper_grading_strength">等級の強度: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">写真キャッシュ: %1$d MB</string>

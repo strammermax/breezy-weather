@@ -908,7 +908,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Permita acesso à localização o tempo todo para que o plano de fundo também mude quando você se move enquanto o aplicativo está fechado. Sem esta permissão, o último local conhecido é usado.</string>
     <string name="widget_live_wallpaper_background_location_action">Configurar o acesso à localização</string>
     <string name="widget_live_wallpaper_experimental">Experimental</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Classificação sazonal (experimental)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Classificação</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Cores sutis baseadas na estação e mudança de luz no topo da cena. Não altera a foto de fundo.</string>
     <string name="widget_live_wallpaper_grading_strength">Força de classificação: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Cache de fotos: %1$d MB</string>

@@ -853,7 +853,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Consenti sempre l\'accesso alla posizione in modo che lo sfondo cambi anche quando ti sposti mentre l\'app è chiusa. Senza questa autorizzazione, viene utilizzata l\'ultima posizione nota.</string>
     <string name="widget_live_wallpaper_background_location_action">Configura l\'accesso alla posizione</string>
     <string name="widget_live_wallpaper_experimental">Sperimentale</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Classificazione stagionale (sperimentale)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Classificazione</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Colori delicati e cambiamenti di luce basati sulla stagione sulla parte superiore della scena. Non cambia la foto di sfondo.</string>
     <string name="widget_live_wallpaper_grading_strength">Forza di classificazione: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Cache foto: %1$d MB</string>

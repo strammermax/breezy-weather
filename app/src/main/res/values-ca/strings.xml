@@ -851,7 +851,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Permet l\'accés a la ubicació tot el temps perquè el fons també canviï quan et mous mentre l\'aplicació està tancada. Sense aquest permís, s\'utilitza l\'última ubicació coneguda.</string>
     <string name="widget_live_wallpaper_background_location_action">Configura l\'accés a la ubicació</string>
     <string name="widget_live_wallpaper_experimental">Experimental</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Classificació estacional (experimental)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Classificació</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Color subtil, basat en la temporada i canvi de llum a la part superior de l\'escena. No canvia la foto de fons.</string>
     <string name="widget_live_wallpaper_grading_strength">Força de classificació: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Memòria cau de fotos: %1$d MB</string>

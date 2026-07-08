@@ -843,7 +843,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Дазвольце ўвесь час мець доступ да месцазнаходжання, каб фон таксама змяніўся, калі вы рухаецеся, калі праграма закрыта. Без гэтага дазволу выкарыстоўваецца апошняе вядомае месцазнаходжанне.</string>
     <string name="widget_live_wallpaper_background_location_action">Наладзіць доступ да месцазнаходжання</string>
     <string name="widget_live_wallpaper_experimental">Эксперыментальны</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Сезоннае баніраванне (вопытнае)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Градацыя</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Тонкае змяненне колеру і святла ў верхняй частцы сцэны ў залежнасці ад сезону. Не мяняе фон фота.</string>
     <string name="widget_live_wallpaper_grading_strength">Класіфікацыя трываласці: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Кэш фатаграфій: %1$d MB</string>

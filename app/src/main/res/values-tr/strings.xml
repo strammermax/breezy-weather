@@ -850,7 +850,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Uygulama kapalıyken hareket ettiğinizde arka planın da değişmesi için konum erişimine her zaman izin verin. Bu izin olmadan bilinen son konum kullanılır.</string>
     <string name="widget_live_wallpaper_background_location_action">Konum erişimini yapılandırma</string>
     <string name="widget_live_wallpaper_experimental">Deneysel</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Sezonluk derecelendirme (deneysel)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Derecelendirme</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Sahnenin üst kısmında hafif, mevsime dayalı renk ve ışık değişimi. Arka plan fotoğrafını değiştirmez.</string>
     <string name="widget_live_wallpaper_grading_strength">Tesviye gücü: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Fotoğraf önbelleği: %1$d MB</string>

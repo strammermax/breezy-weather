@@ -864,7 +864,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Salli sijainnin käyttö koko ajan, jotta tausta muuttuu myös liikuttaessa sovelluksen ollessa suljettuna. Ilman tätä lupaa käytetään viimeistä tunnettua sijaintia.</string>
     <string name="widget_live_wallpaper_background_location_action">Määritä sijainnin käyttöoikeus</string>
     <string name="widget_live_wallpaper_experimental">Kokeellinen</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Kausiluokitus (kokeellinen)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Luokitus</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Hienovarainen, vuodenaikaan perustuva väri ja valon siirtyminen näyttämön päällä. Ei muuta taustakuvaa.</string>
     <string name="widget_live_wallpaper_grading_strength">Luokittelulujuus: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Valokuvavälimuisti: %1$d MB</string>

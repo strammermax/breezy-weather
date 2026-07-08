@@ -843,7 +843,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Ceadaigh rochtain ar shuíomh an t-am ar fad agus mar sin athraíonn an cúlra freisin nuair a bhogann tú agus an aip dúnta. Gan an cead seo, baintear úsáid as an suíomh deireanach atá ar eolas.</string>
     <string name="widget_live_wallpaper_background_location_action">Cumraigh rochtain suímh</string>
     <string name="widget_live_wallpaper_experimental">Turgnamhach</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Grádú séasúrach (turgnamhach)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Grádú</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Athrú datha agus solais bunaithe ar an séasúr ar bharr an radhairc. Ní athraíonn an grianghraf cúlra.</string>
     <string name="widget_live_wallpaper_grading_strength">Neart grádaithe: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Taisce grianghraf: %1$d MB</string>

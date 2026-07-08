@@ -750,7 +750,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Məkan girişinə hər zaman icazə verin ki, proqram bağlı olarkən hərəkət etdiyiniz zaman fon da dəyişir. Bu icazə olmadan son məlum yer istifadə olunur.</string>
     <string name="widget_live_wallpaper_background_location_action">Məkan girişini konfiqurasiya edin</string>
     <string name="widget_live_wallpaper_experimental">Eksperimental</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Mövsümi qiymətləndirmə (eksperimental)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Dərəcələndirmə</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Səhnənin üstündə incə, mövsümə əsaslanan rəng və işıq dəyişikliyi. Fon şəklini dəyişmir.</string>
     <string name="widget_live_wallpaper_grading_strength">Qiymətləndirmə gücü: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Foto yaddaşı: %1$d MB</string>

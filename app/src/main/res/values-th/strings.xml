@@ -893,7 +893,7 @@
     <string name="widget_live_wallpaper_background_location_summary">อนุญาตให้เข้าถึงตำแหน่งตลอดเวลาเพื่อให้พื้นหลังเปลี่ยนเมื่อคุณเคลื่อนไหวในขณะที่แอปปิดอยู่ หากไม่ได้รับอนุญาตนี้ ระบบจะใช้ตำแหน่งสุดท้ายที่ทราบ</string>
     <string name="widget_live_wallpaper_background_location_action">กำหนดค่าการเข้าถึงตำแหน่ง</string>
     <string name="widget_live_wallpaper_experimental">ทดลอง</string>
-    <string name="widget_live_wallpaper_seasonal_grading">การให้คะแนนตามฤดูกาล (ทดลอง)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">การไล่โทนสี</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">การเปลี่ยนแปลงสีและแสงตามฤดูกาลที่ละเอียดอ่อนที่ด้านบนของฉาก ไม่เปลี่ยนภาพพื้นหลัง</string>
     <string name="widget_live_wallpaper_grading_strength">ความแข็งแรงในการคัดเกรด: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">แคชรูปภาพ: %1$d MB</string>

@@ -851,7 +851,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Разрешите доступ к местоположению постоянно, чтобы фон также менялся при перемещении, когда приложение закрыто. Без этого разрешения используется последнее известное местоположение.</string>
     <string name="widget_live_wallpaper_background_location_action">Настроить доступ к местоположению</string>
     <string name="widget_live_wallpaper_experimental">Экспериментальный</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Сезонная сортировка (экспериментальная)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Градация</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Тонкие сезонные цвета и световые эффекты меняются в верхней части сцены. Не меняет фоновое фото.</string>
     <string name="widget_live_wallpaper_grading_strength">Класс прочности: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Кэш фотографий: %1$d МБ</string>

@@ -845,7 +845,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Tillåt platsåtkomst hela tiden så att bakgrunden också ändras när du flyttar medan appen är stängd. Utan detta tillstånd används den senast kända platsen.</string>
     <string name="widget_live_wallpaper_background_location_action">Konfigurera platsåtkomst</string>
     <string name="widget_live_wallpaper_experimental">Experimentell</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Säsongsgradering (experimentell)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Gradering</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Subtila, säsongsbaserade färg- och ljusskiftningar ovanpå scenen. Ändrar inte bakgrundsfotot.</string>
     <string name="widget_live_wallpaper_grading_strength">Betygsstyrka: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Fotocache: %1$d MB</string>

@@ -881,7 +881,7 @@
     <string name="widget_live_wallpaper_background_location_summary">앱이 닫혀 있는 동안 이동할 때 배경도 변경되도록 항상 위치 액세스를 허용하세요. 이 권한이 없으면 마지막으로 알려진 위치가 사용됩니다.</string>
     <string name="widget_live_wallpaper_background_location_action">위치 액세스 구성</string>
     <string name="widget_live_wallpaper_experimental">실험적</string>
-    <string name="widget_live_wallpaper_seasonal_grading">계절별 평가(실험)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">그레이딩</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">계절에 따른 미묘한 색상과 빛의 변화가 장면 위에 나타납니다. 배경 사진은 변경되지 않습니다.</string>
     <string name="widget_live_wallpaper_grading_strength">정지 강도: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">포토 캐시: %1$d MB</string>

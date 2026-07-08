@@ -848,7 +848,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Να επιτρέπεται η πρόσβαση στην τοποθεσία συνεχώς, ώστε το φόντο να αλλάζει όταν μετακινείστε ενώ η εφαρμογή είναι κλειστή. Χωρίς αυτήν την άδεια, χρησιμοποιείται η τελευταία γνωστή τοποθεσία.</string>
     <string name="widget_live_wallpaper_background_location_action">Διαμόρφωση πρόσβασης τοποθεσίας</string>
     <string name="widget_live_wallpaper_experimental">Πειραματικό</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Εποχιακή βαθμολόγηση (πειραματική)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Βαθμολόγηση</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Λεπτό χρώμα με βάση την εποχή και μετατόπιση φωτός στην κορυφή της σκηνής. Δεν αλλάζει τη φωτογραφία φόντου.</string>
     <string name="widget_live_wallpaper_grading_strength">Ισχύς ταξινόμησης: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Προσωρινή μνήμη φωτογραφιών: %1$d MB</string>

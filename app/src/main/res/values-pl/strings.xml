@@ -855,7 +855,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Zezwalaj na ciągły dostęp do lokalizacji, aby tło zmieniało się również podczas ruchu, gdy aplikacja jest zamknięta. Bez tego pozwolenia używana jest ostatnia znana lokalizacja.</string>
     <string name="widget_live_wallpaper_background_location_action">Skonfiguruj dostęp do lokalizacji</string>
     <string name="widget_live_wallpaper_experimental">Eksperymentalne</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Klasyfikacja sezonowa (eksperymentalna)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Klasyfikacja</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Subtelne, zależne od pory roku zmiany koloru i światła w górnej części sceny. Nie zmienia zdjęcia tła.</string>
     <string name="widget_live_wallpaper_grading_strength">Siła klasyfikacji: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Pamięć podręczna zdjęć: %1$d MB</string>

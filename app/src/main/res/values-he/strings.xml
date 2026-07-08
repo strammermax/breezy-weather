@@ -844,7 +844,7 @@
     <string name="widget_live_wallpaper_background_location_summary">אפשר גישה למיקום כל הזמן כך שהרקע משתנה גם כשאתה זז בזמן שהאפליקציה סגורה. ללא הרשאה זו, נעשה שימוש במיקום האחרון הידוע.</string>
     <string name="widget_live_wallpaper_background_location_action">הגדר גישה למיקום</string>
     <string name="widget_live_wallpaper_experimental">ניסיוני</string>
-    <string name="widget_live_wallpaper_seasonal_grading">דירוג עונתי (ניסיוני)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">דירוג</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">צבע עדין, מבוסס-עונה ושינוי אור על גבי הסצנה. לא משנה את תמונת הרקע.</string>
     <string name="widget_live_wallpaper_grading_strength">חוזק דירוג: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">מטמון תמונה: %1$d MB</string>

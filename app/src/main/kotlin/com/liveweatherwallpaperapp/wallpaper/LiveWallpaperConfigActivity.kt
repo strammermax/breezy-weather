@@ -788,7 +788,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 }
             }
             if (dialogOpenState.value) {
-                var timeLeft by remember { mutableIntStateOf(10) }
+                var timeLeft by remember { mutableIntStateOf(3) }
                 LaunchedEffect(key1 = timeLeft) {
                     while (timeLeft > 0) {
                         delay(1000L)

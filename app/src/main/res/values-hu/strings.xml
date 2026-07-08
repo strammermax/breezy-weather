@@ -849,7 +849,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Mindig engedélyezze a helyhozzáférést, hogy a háttér is megváltozzon, amikor az alkalmazás bezárt állapotában mozog. Ezen engedély nélkül az utolsó ismert hely kerül felhasználásra.</string>
     <string name="widget_live_wallpaper_background_location_action">Helyhozzáférés konfigurálása</string>
     <string name="widget_live_wallpaper_experimental">Kísérleti</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Szezonális osztályozás (kísérleti)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Osztályozás</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Finom, évszakfüggő szín- és fényeltolódás a jelenet tetején. Nem változtatja meg a háttérképet.</string>
     <string name="widget_live_wallpaper_grading_strength">Osztályozási szilárdság: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Fotógyorsítótár: %1$d MB</string>

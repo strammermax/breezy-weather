@@ -880,7 +880,7 @@
     <string name="widget_live_wallpaper_background_location_summary">Permita el acceso a la ubicación todo el tiempo para que el fondo también cambie cuando se mueva mientras la aplicación está cerrada. Sin este permiso, se utiliza la última ubicación conocida.</string>
     <string name="widget_live_wallpaper_background_location_action">Configurar el acceso a la ubicación</string>
     <string name="widget_live_wallpaper_experimental">Experimentales</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Clasificación estacional (experimental)</string>
+    <string name="widget_live_wallpaper_seasonal_grading">Clasificación</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">El color y la luz sutiles, basados ​​en la estación, cambian sobre la escena. No cambia la foto de fondo.</string>
     <string name="widget_live_wallpaper_grading_strength">Fuerza de clasificación: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Caché de fotos: %1$d MB</string>
