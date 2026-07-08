@@ -16,6 +16,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          # Full history: app/build.gradle.kts shells out to git (getLwwPatch/getCommitCount)
+          # to compute versionCode/versionName from commit counts since the fork base - a
+          # shallow clone doesn't have that history and makes those git calls fail.
+          fetch-depth: 0
 
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
