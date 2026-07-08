@@ -17,6 +17,14 @@
 package com.liveweatherwallpaperapp.sources.imd
 
 import android.content.Context
+import com.liveweatherwallpaperapp.common.extensions.getIsoFormattedDate
+import com.liveweatherwallpaperapp.sources.imd.json.ImdWeatherResult
+import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.millimeters
+import com.liveweatherwallpaperapp.unit.ratio.Ratio.Companion.percent
+import com.liveweatherwallpaperapp.unit.speed.Speed.Companion.metersPerSecond
+import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.source.SourceFeature
 import livewallpaperweather.domain.weather.model.Precipitation
@@ -25,16 +33,8 @@ import livewallpaperweather.domain.weather.wrappers.DailyWrapper
 import livewallpaperweather.domain.weather.wrappers.HourlyWrapper
 import livewallpaperweather.domain.weather.wrappers.TemperatureWrapper
 import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.core.Observable
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import com.liveweatherwallpaperapp.common.extensions.getIsoFormattedDate
-import com.liveweatherwallpaperapp.sources.imd.json.ImdWeatherResult
-import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.millimeters
-import com.liveweatherwallpaperapp.unit.ratio.Ratio.Companion.percent
-import com.liveweatherwallpaperapp.unit.speed.Speed.Companion.metersPerSecond
-import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
 import retrofit2.Retrofit
 import java.text.SimpleDateFormat
 import java.util.Calendar

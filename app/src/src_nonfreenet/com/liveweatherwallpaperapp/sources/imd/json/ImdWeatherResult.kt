@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.imd.json
 
-import kotlinx.serialization.Serializable
 import com.liveweatherwallpaperapp.sources.imd.serializers.ImdAnySerializer
+import kotlinx.serialization.Serializable
 
 @Serializable
 @Suppress("ktlint")

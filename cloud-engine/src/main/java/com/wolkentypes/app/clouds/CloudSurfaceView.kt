@@ -16,7 +16,7 @@ import android.view.View
  */
 class CloudSurfaceView @JvmOverloads constructor(
     context: Context,
-    attrs: AttributeSet? = null
+    attrs: AttributeSet? = null,
 ) : View(context, attrs) {
 
     private val renderer = CloudEngineRenderer(context)

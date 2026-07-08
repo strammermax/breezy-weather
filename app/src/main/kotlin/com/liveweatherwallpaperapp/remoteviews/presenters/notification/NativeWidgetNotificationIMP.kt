@@ -20,7 +20,6 @@ import android.content.Context
 import android.graphics.drawable.Icon
 import androidx.core.app.NotificationCompat
 import androidx.core.graphics.drawable.IconCompat
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
 import com.liveweatherwallpaperapp.common.extensions.getFormattedMediumDayAndMonthInAdditionalCalendar
@@ -38,6 +37,7 @@ import com.liveweatherwallpaperapp.remoteviews.Notifications
 import com.liveweatherwallpaperapp.remoteviews.presenters.AbstractRemoteViewsPresenter
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
+import livewallpaperweather.domain.location.model.Location
 import java.util.Date
 
 object NativeWidgetNotificationIMP : AbstractRemoteViewsPresenter() {

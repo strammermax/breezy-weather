@@ -19,7 +19,6 @@ package com.liveweatherwallpaperapp.ui.main.adapters.trend
 import android.annotation.SuppressLint
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.options.appearance.DailyTrendDisplay
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
@@ -33,6 +32,7 @@ import com.liveweatherwallpaperapp.ui.main.adapters.trend.daily.DailyTemperature
 import com.liveweatherwallpaperapp.ui.main.adapters.trend.daily.DailyUVAdapter
 import com.liveweatherwallpaperapp.ui.main.adapters.trend.daily.DailyWindAdapter
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
+import livewallpaperweather.domain.location.model.Location
 
 @SuppressLint("NotifyDataSetChanged")
 class DailyTrendAdapter(

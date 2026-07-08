@@ -16,7 +16,6 @@
 
 package com.liveweatherwallpaperapp.sources.jma
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.jma.json.JmaAlertResult
 import com.liveweatherwallpaperapp.sources.jma.json.JmaAmedasResult
 import com.liveweatherwallpaperapp.sources.jma.json.JmaAreasResult
@@ -28,6 +27,7 @@ import com.liveweatherwallpaperapp.sources.jma.json.JmaForecastAreaResult
 import com.liveweatherwallpaperapp.sources.jma.json.JmaHourlyResult
 import com.liveweatherwallpaperapp.sources.jma.json.JmaRelmResult
 import com.liveweatherwallpaperapp.sources.jma.json.JmaWeekAreaResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Path
 

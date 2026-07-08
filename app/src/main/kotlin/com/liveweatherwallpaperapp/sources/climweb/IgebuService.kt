@@ -17,10 +17,10 @@
 package com.liveweatherwallpaperapp.sources.climweb
 
 import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import com.liveweatherwallpaperapp.common.extensions.getCountryName
+import dagger.hilt.android.qualifiers.ApplicationContext
 import retrofit2.Retrofit
 import javax.inject.Inject
 import javax.inject.Named

@@ -17,19 +17,19 @@
 package com.liveweatherwallpaperapp.sources.ncei
 
 import android.content.Context
+import com.google.maps.android.SphericalUtil
+import com.google.maps.android.model.LatLng
+import com.liveweatherwallpaperapp.common.extensions.roundDownToNearestMultiplier
+import com.liveweatherwallpaperapp.common.extensions.toCalendarWithTimeZone
+import com.liveweatherwallpaperapp.sources.ncei.json.NceiDataResult
+import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
+import io.reactivex.rxjava3.core.Observable
+import kotlinx.serialization.json.Json
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.source.SourceFeature
 import livewallpaperweather.domain.weather.model.Normals
 import livewallpaperweather.domain.weather.reference.Month
 import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import com.google.maps.android.SphericalUtil
-import com.google.maps.android.model.LatLng
-import io.reactivex.rxjava3.core.Observable
-import kotlinx.serialization.json.Json
-import com.liveweatherwallpaperapp.common.extensions.roundDownToNearestMultiplier
-import com.liveweatherwallpaperapp.common.extensions.toCalendarWithTimeZone
-import com.liveweatherwallpaperapp.sources.ncei.json.NceiDataResult
-import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
 import retrofit2.Retrofit
 import java.util.Calendar
 import java.util.Date

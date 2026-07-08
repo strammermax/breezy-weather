@@ -18,11 +18,6 @@ package com.liveweatherwallpaperapp.sources.nominatim
 
 import android.content.Context
 import androidx.compose.ui.text.input.KeyboardType
-import livewallpaperweather.domain.location.model.LocationAddressInfo
-import livewallpaperweather.domain.source.SourceContinent
-import livewallpaperweather.domain.source.SourceFeature
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
@@ -37,6 +32,11 @@ import com.liveweatherwallpaperapp.common.source.ReverseGeocodingSource
 import com.liveweatherwallpaperapp.domain.settings.SourceConfigStore
 import com.liveweatherwallpaperapp.sources.nominatim.json.NominatimAddress
 import com.liveweatherwallpaperapp.sources.nominatim.json.NominatimLocationResult
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
+import livewallpaperweather.domain.location.model.LocationAddressInfo
+import livewallpaperweather.domain.source.SourceContinent
+import livewallpaperweather.domain.source.SourceFeature
 import retrofit2.Retrofit
 import javax.inject.Inject
 import javax.inject.Named

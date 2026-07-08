@@ -86,13 +86,13 @@ object CloudFieldFactory {
                 // depth/colour shading visible even for light cloud cover, where the
                 // offset would otherwise push the lightest layer flat to zero.
                 darkness = (darkness + DARKNESS_OFFSET[i]).coerceIn(MIN_LAYER_DARKNESS, 1f),
-                verticalOffset = VERTICAL_OFFSET[i],
+                verticalOffset = VERTICAL_OFFSET[i]
             )
         }
 
         return CloudFieldParams(
             layers = layers,
-            directionDegrees = normalizeDegrees(windDirectionDegrees),
+            directionDegrees = normalizeDegrees(windDirectionDegrees)
         )
     }
 

@@ -17,8 +17,6 @@
 package com.liveweatherwallpaperapp.sources.baiduip
 
 import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.exceptions.ApiLimitReachedException
@@ -30,6 +28,8 @@ import com.liveweatherwallpaperapp.common.preference.Preference
 import com.liveweatherwallpaperapp.common.rxjava.SchedulerTransformer
 import com.liveweatherwallpaperapp.common.source.LocationPositionWrapper
 import com.liveweatherwallpaperapp.domain.settings.SourceConfigStore
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.Retrofit
 import javax.inject.Inject
 import javax.inject.Named

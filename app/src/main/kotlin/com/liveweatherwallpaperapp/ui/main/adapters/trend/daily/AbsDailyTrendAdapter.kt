@@ -20,7 +20,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.getFormattedFullDayAndMonth
@@ -33,6 +32,7 @@ import com.liveweatherwallpaperapp.domain.weather.model.isToday
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendRecyclerView
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendRecyclerViewAdapter
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.item.DailyTrendItemView
+import livewallpaperweather.domain.location.model.Location
 import java.util.Date
 
 abstract class AbsDailyTrendAdapter(

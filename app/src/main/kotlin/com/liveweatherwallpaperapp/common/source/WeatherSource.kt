@@ -17,10 +17,10 @@
 package com.liveweatherwallpaperapp.common.source
 
 import android.content.Context
+import io.reactivex.rxjava3.core.Observable
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.source.SourceFeature
 import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import io.reactivex.rxjava3.core.Observable
 
 /**
  * Weather service.

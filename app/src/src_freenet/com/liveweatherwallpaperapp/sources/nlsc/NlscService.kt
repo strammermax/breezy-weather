@@ -17,10 +17,10 @@
 package com.liveweatherwallpaperapp.sources.nlsc
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.LocationAddressInfo
+import com.liveweatherwallpaperapp.common.exceptions.NonFreeNetSourceException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.reactivex.rxjava3.core.Observable
-import com.liveweatherwallpaperapp.common.exceptions.NonFreeNetSourceException
+import livewallpaperweather.domain.location.model.LocationAddressInfo
 import javax.inject.Inject
 
 class NlscService @Inject constructor(

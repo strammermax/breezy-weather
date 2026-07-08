@@ -296,7 +296,8 @@ class SettingsManager private constructor(
             config.edit().putString("widget_tile_type", value.id).apply()
         }
         get() = WidgetTileType.fromId(
-            config.getString("widget_tile_type", WidgetTileType.CLOCK_DAY_VERTICAL.id) ?: WidgetTileType.CLOCK_DAY_VERTICAL.id
+            config.getString("widget_tile_type", WidgetTileType.CLOCK_DAY_VERTICAL.id)
+                ?: WidgetTileType.CLOCK_DAY_VERTICAL.id
         )
 
     var dailyTrendDisplayList: List<DailyTrendDisplay>

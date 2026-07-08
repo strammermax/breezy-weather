@@ -59,7 +59,7 @@ data class DataFreshness(
             weatherRefreshedAtMillis = weatherRefreshedAtMillis,
             photoRefreshedAtMillis = photoRefreshedAtMillis,
             isWeatherStale = isStale(weatherRefreshedAtMillis, nowMillis, maxWeatherAgeMillis),
-            isPhotoStale = isStale(photoRefreshedAtMillis, nowMillis, maxPhotoAgeMillis),
+            isPhotoStale = isStale(photoRefreshedAtMillis, nowMillis, maxPhotoAgeMillis)
         )
     }
 }

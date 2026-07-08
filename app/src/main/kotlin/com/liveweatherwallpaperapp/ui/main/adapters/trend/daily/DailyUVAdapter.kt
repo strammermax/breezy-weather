@@ -22,8 +22,6 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.UV
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -36,6 +34,8 @@ import com.liveweatherwallpaperapp.ui.common.widgets.trend.chart.PolylineAndHist
 import com.liveweatherwallpaperapp.ui.theme.ThemeManager
 import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherViewController
 import com.liveweatherwallpaperapp.unit.formatting.format
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.UV
 import kotlin.math.roundToInt
 
 /**

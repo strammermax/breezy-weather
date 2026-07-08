@@ -24,18 +24,18 @@ import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import androidx.annotation.RequiresApi
-import livewallpaperweather.data.location.LocationRepository
-import livewallpaperweather.data.weather.WeatherRepository
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
 import com.liveweatherwallpaperapp.domain.location.model.isDaylight
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.ui.main.MainActivity
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import livewallpaperweather.data.location.LocationRepository
+import livewallpaperweather.data.weather.WeatherRepository
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 

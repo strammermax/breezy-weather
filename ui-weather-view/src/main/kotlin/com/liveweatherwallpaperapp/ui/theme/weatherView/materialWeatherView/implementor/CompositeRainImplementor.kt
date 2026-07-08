@@ -38,7 +38,7 @@ class CompositeRainImplementor(
     @RainImplementor.TypeRule type: Int,
     daylight: Boolean,
 ) : WeatherAnimationImplementor() {
-    
+
     // Base rain implementation (falling streaks)
     private val rainImplementor: RainImplementor = RainImplementor(
         canvasSizes,
@@ -46,19 +46,19 @@ class CompositeRainImplementor(
         type,
         daylight
     )
-    
+
     // Glass effect shader (Android 13+)
     private var shader: RuntimeShader? = null
     private val shaderPaint = Paint()
     private val startTime = System.currentTimeMillis()
     private val supportsShader = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-    
+
     init {
         if (supportsShader && animate) {
             initShader()
         }
     }
-    
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun initShader() {
         try {
@@ -66,7 +66,7 @@ class CompositeRainImplementor(
                 .openRawResource(R.raw.rain_glass_shader)
                 .bufferedReader()
                 .use { it.readText() }
-            
+
             shader = RuntimeShader(shaderCode)
             shaderPaint.shader = shader
         } catch (e: Exception) {
@@ -74,23 +74,23 @@ class CompositeRainImplementor(
             shader = null
         }
     }
-    
+
     override fun updateData(
         @Size(2) canvasSizes: IntArray,
         interval: Long,
         rotation2D: Float,
-        rotation3D: Float
+        rotation3D: Float,
     ) {
         // Update base rain animation
         rainImplementor.updateData(canvasSizes, interval, rotation2D, rotation3D)
     }
-    
+
     override fun draw(
         @Size(2) canvasSizes: IntArray,
         canvas: Canvas,
         scrollRate: Float,
         rotation2D: Float,
-        rotation3D: Float
+        rotation3D: Float,
     ) {
         // Keep the established rain/sleet/thunderstorm animation and add the glass
         // droplets as a translucent top layer when RuntimeShader is available.
@@ -99,12 +99,12 @@ class CompositeRainImplementor(
             drawGlassEffect(canvasSizes, canvas, scrollRate)
         }
     }
-    
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun drawGlassEffect(
         @Size(2) canvasSizes: IntArray,
         canvas: Canvas,
-        scrollRate: Float
+        scrollRate: Float,
     ) {
         shader?.let { s ->
             if (scrollRate < 1) {
@@ -113,10 +113,10 @@ class CompositeRainImplementor(
                 s.setFloatUniform("resolution", canvasSizes[0].toFloat(), canvasSizes[1].toFloat())
                 s.setFloatUniform("time", currentTime)
                 s.setFloatUniform("rainAmount", 0.7f) // Medium intensity
-                
+
                 // Apply scroll fade
                 shaderPaint.alpha = ((1 - scrollRate) * 255).toInt()
-                
+
                 // Draw glass effect overlay
                 canvas.drawRect(
                     0f,

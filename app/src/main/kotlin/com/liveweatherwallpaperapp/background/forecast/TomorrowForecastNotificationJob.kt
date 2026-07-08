@@ -25,10 +25,6 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.ForegroundInfo
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkerParameters
-import livewallpaperweather.data.location.LocationRepository
-import livewallpaperweather.data.weather.WeatherRepository
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import com.liveweatherwallpaperapp.common.extensions.cancelNotification
 import com.liveweatherwallpaperapp.common.extensions.hasNotificationPermission
 import com.liveweatherwallpaperapp.common.extensions.isRunning
@@ -37,6 +33,10 @@ import com.liveweatherwallpaperapp.common.extensions.workManager
 import com.liveweatherwallpaperapp.common.utils.helpers.LogHelper
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.remoteviews.Notifications
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import livewallpaperweather.data.location.LocationRepository
+import livewallpaperweather.data.weather.WeatherRepository
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.days

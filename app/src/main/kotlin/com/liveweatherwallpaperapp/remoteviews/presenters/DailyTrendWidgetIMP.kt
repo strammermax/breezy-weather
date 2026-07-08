@@ -30,7 +30,6 @@ import androidx.annotation.WorkerThread
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.createBitmap
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.background.receiver.widget.WidgetTrendDailyProvider
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
@@ -51,6 +50,7 @@ import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
 import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherViewController
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
+import livewallpaperweather.domain.location.model.Location
 import java.util.Date
 import kotlin.math.max
 import kotlin.math.min

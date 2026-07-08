@@ -24,7 +24,6 @@ import android.os.Build
 import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.background.receiver.widget.WidgetClockDayStatsProvider
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
@@ -40,6 +39,7 @@ import com.liveweatherwallpaperapp.remoteviews.Widgets
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
+import livewallpaperweather.domain.location.model.Location
 import java.util.Date
 import kotlin.math.roundToInt
 
@@ -100,7 +100,7 @@ object ClockDayStatsWidgetIMP : AbstractRemoteViewsPresenter() {
             R.id.widget_clock_day_clock_black,
             R.id.widget_clock_day_clock_aa_light,
             R.id.widget_clock_day_clock_aa_normal,
-            R.id.widget_clock_day_clock_aa_black,
+            R.id.widget_clock_day_clock_aa_black
         ).forEach {
             views.setString(it, "setTimeZone", location.timeZone.id)
         }

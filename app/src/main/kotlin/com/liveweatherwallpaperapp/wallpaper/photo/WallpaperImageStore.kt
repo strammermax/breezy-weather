@@ -132,8 +132,11 @@ class WallpaperImageStore(context: Context) {
             .putString(KEY_CACHED_URL, url)
             .putString(KEY_CACHED_ATTRIBUTION, attribution)
             .apply {
-                if (depthPath != null) putString(KEY_CACHED_DEPTH_PATH, depthPath)
-                else remove(KEY_CACHED_DEPTH_PATH)
+                if (depthPath != null) {
+                    putString(KEY_CACHED_DEPTH_PATH, depthPath)
+                } else {
+                    remove(KEY_CACHED_DEPTH_PATH)
+                }
             }
             .apply()
     }

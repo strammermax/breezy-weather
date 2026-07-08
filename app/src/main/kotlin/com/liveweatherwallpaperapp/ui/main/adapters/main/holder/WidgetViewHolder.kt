@@ -15,17 +15,16 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextClock
 import android.widget.TextView
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
 import com.liveweatherwallpaperapp.common.extensions.getFormattedTime
+import com.liveweatherwallpaperapp.common.extensions.getWeek
 import com.liveweatherwallpaperapp.common.extensions.is12Hour
 import com.liveweatherwallpaperapp.common.options.appearance.WidgetTileType
 import com.liveweatherwallpaperapp.domain.location.model.getPlace
 import com.liveweatherwallpaperapp.domain.location.model.isDaylight
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
-import com.liveweatherwallpaperapp.common.extensions.getWeek
 import com.liveweatherwallpaperapp.domain.weather.model.getTrendTemperature
 import com.liveweatherwallpaperapp.domain.weather.model.getWeek
 import com.liveweatherwallpaperapp.domain.weather.model.isToday
@@ -33,6 +32,7 @@ import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
+import livewallpaperweather.domain.location.model.Location
 import java.util.Date
 
 class WidgetViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
@@ -55,7 +55,7 @@ class WidgetViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
         val widgetView = LayoutInflater.from(activity).inflate(layoutRes, container, false)
         widgetView.layoutParams = FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
         )
         populateWidgetView(widgetView, widgetType, location, provider, activity)
         container.addView(widgetView)
@@ -236,21 +236,21 @@ private fun populateClockDayWeek(
         R.id.widget_clock_day_week_week_2,
         R.id.widget_clock_day_week_week_3,
         R.id.widget_clock_day_week_week_4,
-        R.id.widget_clock_day_week_week_5,
+        R.id.widget_clock_day_week_week_5
     )
     val iconIds = listOf(
         R.id.widget_clock_day_week_icon_1,
         R.id.widget_clock_day_week_icon_2,
         R.id.widget_clock_day_week_icon_3,
         R.id.widget_clock_day_week_icon_4,
-        R.id.widget_clock_day_week_icon_5,
+        R.id.widget_clock_day_week_icon_5
     )
     val tempIds = listOf(
         R.id.widget_clock_day_week_temp_1,
         R.id.widget_clock_day_week_temp_2,
         R.id.widget_clock_day_week_temp_3,
         R.id.widget_clock_day_week_temp_4,
-        R.id.widget_clock_day_week_temp_5,
+        R.id.widget_clock_day_week_temp_5
     )
     for (i in 0 until 5) {
         val daily = days.getOrNull(i)
@@ -294,21 +294,21 @@ private fun populateWeek(
         R.id.widget_week_week_2,
         R.id.widget_week_week_3,
         R.id.widget_week_week_4,
-        R.id.widget_week_week_5,
+        R.id.widget_week_week_5
     )
     val iconIds = listOf(
         R.id.widget_week_icon_1,
         R.id.widget_week_icon_2,
         R.id.widget_week_icon_3,
         R.id.widget_week_icon_4,
-        R.id.widget_week_icon_5,
+        R.id.widget_week_icon_5
     )
     val tempIds = listOf(
         R.id.widget_week_temp_1,
         R.id.widget_week_temp_2,
         R.id.widget_week_temp_3,
         R.id.widget_week_temp_4,
-        R.id.widget_week_temp_5,
+        R.id.widget_week_temp_5
     )
     for (i in 0 until 5) {
         val daily = days.getOrNull(i)

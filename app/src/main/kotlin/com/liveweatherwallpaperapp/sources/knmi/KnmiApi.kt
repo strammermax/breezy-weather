@@ -16,11 +16,11 @@
 
 package com.liveweatherwallpaperapp.sources.knmi
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.knmi.json.KnmiWeather
 import com.liveweatherwallpaperapp.sources.knmi.json.KnmiWeatherAlerts
 import com.liveweatherwallpaperapp.sources.knmi.json.KnmiWeatherDetail
 import com.liveweatherwallpaperapp.sources.knmi.json.KnmiWeatherSnapshot
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Query
 

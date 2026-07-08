@@ -100,7 +100,7 @@ internal object WallpaperSceneSnapshot {
             if (sceneState.usesGreyscalePhoto) {
                 val greyscalePaint = Paint().apply {
                     colorFilter = ColorMatrixColorFilter(
-                        ColorMatrix().apply { setSaturation(1f - sceneState.photoGreyscaleAmount) },
+                        ColorMatrix().apply { setSaturation(1f - sceneState.photoGreyscaleAmount) }
                     )
                 }
                 canvas.saveLayer(null, greyscalePaint)
@@ -123,7 +123,7 @@ internal object WallpaperSceneSnapshot {
                 height.toFloat(),
                 colors[0],
                 colors[1],
-                Shader.TileMode.CLAMP,
+                Shader.TileMode.CLAMP
             )
         }
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
@@ -146,10 +146,26 @@ internal object WallpaperSceneSnapshot {
             when {
                 now < sunrise - transition -> night
                 now < sunrise -> SkyColors.blendSky(night, dawn, SkyColors.fraction(now, sunrise - transition, sunrise))
-                now < sunrise + transition -> SkyColors.blendSky(dawn, day, SkyColors.fraction(now, sunrise, sunrise + transition))
+                now < sunrise + transition -> SkyColors.blendSky(
+                    dawn,
+                    day,
+                    SkyColors.fraction(
+                        now,
+                        sunrise,
+                        sunrise + transition
+                    )
+                )
                 now < sunset - transition -> day
                 now < sunset -> SkyColors.blendSky(day, dusk, SkyColors.fraction(now, sunset - transition, sunset))
-                now < sunset + transition -> SkyColors.blendSky(dusk, night, SkyColors.fraction(now, sunset, sunset + transition))
+                now < sunset + transition -> SkyColors.blendSky(
+                    dusk,
+                    night,
+                    SkyColors.fraction(
+                        now,
+                        sunset,
+                        sunset + transition
+                    )
+                )
                 else -> night
             }
         }
@@ -162,7 +178,7 @@ internal object WallpaperSceneSnapshot {
         val overcastColors = SkyColors.applyOvercastTint(
             profiledColors,
             sceneState.cloudDarkness,
-            sceneState.daytime,
+            sceneState.daytime
         )
         return SkyColors.applyFogSkyTint(overcastColors, sceneState.fogIntensity, sceneState.daytime)
     }
@@ -181,19 +197,27 @@ internal object WallpaperSceneSnapshot {
             now,
             sceneState.sunriseMillis,
             sceneState.sunsetMillis,
-            sceneState.daytime,
+            sceneState.daytime
         ) * fogVisibility
         val moonAlpha = 1f - sunAlpha
         val positionTime = now / 60_000L * 60_000L
 
         if (sunAlpha > 0.01f) {
-            val sunProgress = CelestialTiming.celestialProgress(positionTime, sceneState.sunriseMillis, sceneState.sunsetMillis)
+            val sunProgress = CelestialTiming.celestialProgress(
+                positionTime,
+                sceneState.sunriseMillis,
+                sceneState.sunsetMillis
+            )
             val sunX = CelestialTiming.celestialX(width, sunProgress)
             val sunY = CelestialTiming.celestialY(height, sunProgress)
             drawSun(canvas, sunX, sunY, shortestSide, sunAlpha)
         }
         if (moonAlpha > 0.01f) {
-            val moonProgress = CelestialTiming.celestialProgress(positionTime, sceneState.moonriseMillis, sceneState.moonsetMillis)
+            val moonProgress = CelestialTiming.celestialProgress(
+                positionTime,
+                sceneState.moonriseMillis,
+                sceneState.moonsetMillis
+            )
             val moonX = CelestialTiming.celestialX(width, moonProgress)
             val moonY = CelestialTiming.celestialY(height, moonProgress)
             val size = (shortestSide * CelestialTiming.CELESTIAL_SIZE_FRACTION).toInt()
@@ -207,7 +231,7 @@ internal object WallpaperSceneSnapshot {
                 (moonX - halfSize).toInt(),
                 (moonY - halfSize).toInt(),
                 (moonX + halfSize).toInt(),
-                (moonY + halfSize).toInt(),
+                (moonY + halfSize).toInt()
             )
             moonDrawable.draw(canvas)
         }

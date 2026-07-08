@@ -30,10 +30,6 @@ import androidx.core.app.NotificationManagerCompat.IMPORTANCE_HIGH
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_MIN
 import androidx.core.content.ContextCompat
 import androidx.core.text.parseAsHtml
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Alert
-import livewallpaperweather.domain.weather.model.Weather
-import livewallpaperweather.domain.weather.reference.AlertSeverity
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.buildNotificationChannel
 import com.liveweatherwallpaperapp.common.extensions.buildNotificationChannelGroup
@@ -47,6 +43,10 @@ import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.domain.weather.model.getMinutelyDescription
 import com.liveweatherwallpaperapp.domain.weather.model.getMinutelyTitle
 import com.liveweatherwallpaperapp.domain.weather.model.hasMinutelyPrecipitation
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Alert
+import livewallpaperweather.domain.weather.model.Weather
+import livewallpaperweather.domain.weather.reference.AlertSeverity
 import java.text.DateFormat
 
 object Notifications {

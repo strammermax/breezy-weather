@@ -79,7 +79,7 @@ data class LocationData(
             maxLatitude = json.optDouble(KEY_MAX_LAT),
             minLongitude = json.optDouble(KEY_MIN_LON),
             maxLongitude = json.optDouble(KEY_MAX_LON),
-            imageUrl = json.optString(KEY_IMAGE_URL),
+            imageUrl = json.optString(KEY_IMAGE_URL)
         )
 
         fun listToJson(items: List<LocationData>): String {

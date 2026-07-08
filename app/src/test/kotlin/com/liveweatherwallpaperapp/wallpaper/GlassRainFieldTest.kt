@@ -23,11 +23,15 @@ class GlassRainFieldTest {
         GlassRainFieldFactory.LOW.trailLength shouldBeLessThanOrEqual GlassRainFieldFactory.BALANCED.trailLength
         GlassRainFieldFactory.BALANCED.trailLength shouldBeLessThanOrEqual GlassRainFieldFactory.HIGH.trailLength
 
-        GlassRainFieldFactory.LOW.highlightStrength shouldBeLessThanOrEqual GlassRainFieldFactory.BALANCED.highlightStrength
-        GlassRainFieldFactory.BALANCED.highlightStrength shouldBeLessThanOrEqual GlassRainFieldFactory.HIGH.highlightStrength
+        GlassRainFieldFactory.LOW.highlightStrength shouldBeLessThanOrEqual
+            GlassRainFieldFactory.BALANCED.highlightStrength
+        GlassRainFieldFactory.BALANCED.highlightStrength shouldBeLessThanOrEqual
+            GlassRainFieldFactory.HIGH.highlightStrength
 
-        GlassRainFieldFactory.LOW.refractionStrength shouldBeLessThanOrEqual GlassRainFieldFactory.BALANCED.refractionStrength
-        GlassRainFieldFactory.BALANCED.refractionStrength shouldBeLessThanOrEqual GlassRainFieldFactory.HIGH.refractionStrength
+        GlassRainFieldFactory.LOW.refractionStrength shouldBeLessThanOrEqual
+            GlassRainFieldFactory.BALANCED.refractionStrength
+        GlassRainFieldFactory.BALANCED.refractionStrength shouldBeLessThanOrEqual
+            GlassRainFieldFactory.HIGH.refractionStrength
     }
 
     @Test

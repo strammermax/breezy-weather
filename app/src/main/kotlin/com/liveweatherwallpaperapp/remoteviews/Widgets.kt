@@ -18,10 +18,10 @@ package com.liveweatherwallpaperapp.remoteviews
 
 import android.content.Context
 import android.text.TextPaint
-import livewallpaperweather.domain.weather.model.Weather
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.temperature.TemperatureUnit
+import livewallpaperweather.domain.weather.model.Weather
 
 object Widgets {
 

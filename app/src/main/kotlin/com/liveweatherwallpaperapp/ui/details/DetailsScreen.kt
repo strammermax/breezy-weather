@@ -76,13 +76,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
-import livewallpaperweather.domain.location.model.Location
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.getCalendarMonth
 import com.liveweatherwallpaperapp.common.extensions.getFormattedDate
@@ -97,7 +90,6 @@ import com.liveweatherwallpaperapp.common.options.appearance.CalendarHelper
 import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.common.source.PollenIndexSource
 import com.liveweatherwallpaperapp.domain.weather.index.PollutantIndex
-import com.liveweatherwallpaperapp.domain.location.model.isDaylight as locationIsDaylight
 import com.liveweatherwallpaperapp.domain.weather.model.getConcentration
 import com.liveweatherwallpaperapp.domain.weather.model.isToday
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3Scaffold
@@ -119,8 +111,16 @@ import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherViewController
 import com.liveweatherwallpaperapp.wallpaper.CelestialTiming
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSceneSnapshot
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSceneStateFactory
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import livewallpaperweather.domain.location.model.Location
 import java.util.Calendar
 import java.util.Date
+import com.liveweatherwallpaperapp.domain.location.model.isDaylight as locationIsDaylight
 
 @Composable
 internal fun DailyWeatherScreen(
@@ -196,7 +196,11 @@ internal fun DailyWeatherScreen(
                 // Drives WeatherView animation immediately when the user swipes to a new day.
                 val selectedDaily = loc.weather!!.dailyForecast.getOrNull(pagerPage)
                 val isToday = pagerPage == loc.weather!!.todayIndex
-                val daylight = if (isToday) { if (loc.locationIsDaylight) 1f else 0f } else 1f
+                val daylight = if (isToday) {
+                    if (loc.locationIsDaylight) 1f else 0f
+                } else {
+                    1f
+                }
                 val halfDay = if (isToday && !loc.locationIsDaylight) {
                     selectedDaily?.night ?: selectedDaily?.day
                 } else {
@@ -227,7 +231,10 @@ internal fun DailyWeatherScreen(
                     val now = System.currentTimeMillis()
                     val sunInterval = CelestialTiming.closestAstroInterval(CelestialTiming.sunIntervals(loc, now), now)
                         ?: CelestialTiming.approximateSunInterval(loc, now)
-                    val moonInterval = CelestialTiming.closestAstroInterval(CelestialTiming.moonIntervals(loc, now), now)
+                    val moonInterval = CelestialTiming.closestAstroInterval(
+                        CelestialTiming.moonIntervals(loc, now),
+                        now
+                    )
 
                     val sceneState = WallpaperSceneStateFactory.create(
                         weatherKind = weatherKind,
@@ -255,13 +262,13 @@ internal fun DailyWeatherScreen(
                                 photo,
                                 sceneState,
                                 context.resources,
-                                depth,
+                                depth
                             )
                         }
                     }
                     (activity as? DetailsActivity)?.setForegroundPhoto(
                         nearPhoto,
-                        if (sceneState.usesGreyscalePhoto) sceneState.photoGreyscaleAmount else 0f,
+                        if (sceneState.usesGreyscalePhoto) sceneState.photoGreyscaleAmount else 0f
                     )
                     activity.window.setBackgroundDrawable(BitmapDrawable(context.resources, bitmap))
                 }

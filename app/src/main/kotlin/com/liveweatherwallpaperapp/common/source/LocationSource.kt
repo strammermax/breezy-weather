@@ -18,8 +18,8 @@ package com.liveweatherwallpaperapp.common.source
 
 import android.Manifest
 import android.content.Context
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.common.extensions.hasPermission
+import io.reactivex.rxjava3.core.Observable
 
 interface LocationSource : Source {
 

@@ -16,9 +16,9 @@
 
 package com.liveweatherwallpaperapp.sources.meteoam.json
 
+import com.liveweatherwallpaperapp.sources.meteoam.serializers.MeteoAmAnySerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import com.liveweatherwallpaperapp.sources.meteoam.serializers.MeteoAmAnySerializer
 
 @Suppress("ktlint")
 @Serializable

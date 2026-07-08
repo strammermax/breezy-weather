@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.jma
 
-import livewallpaperweather.domain.weather.reference.WeatherCode
 import com.liveweatherwallpaperapp.R
+import livewallpaperweather.domain.weather.reference.WeatherCode
 
 val JMA_DAILY_WEATHER_CODES = mapOf<String, List<WeatherCode>>(
     "100" to listOf( // 晴 CLEAR

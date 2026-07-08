@@ -17,9 +17,6 @@
 package com.liveweatherwallpaperapp.sources.ncdr
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceContinent
-import livewallpaperweather.domain.source.SourceFeature
 import com.google.maps.android.model.LatLng
 import com.liveweatherwallpaperapp.common.extensions.code
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -35,6 +32,9 @@ import com.liveweatherwallpaperapp.sources.nlsc.NlscServiceStub.Companion.MATSU_
 import com.liveweatherwallpaperapp.sources.nlsc.NlscServiceStub.Companion.PENGHU_BBOX
 import com.liveweatherwallpaperapp.sources.nlsc.NlscServiceStub.Companion.TAIWAN_BBOX
 import com.liveweatherwallpaperapp.sources.nlsc.NlscServiceStub.Companion.WUQIU_BBOX
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceContinent
+import livewallpaperweather.domain.source.SourceFeature
 
 /**
  * The actual implementation is in the src_freenet and src_nonfreenet folders

@@ -18,16 +18,16 @@ package com.liveweatherwallpaperapp.unit.temperature
 
 import android.content.Context
 import androidx.core.text.util.LocalePreferences
+import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
+import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
+import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.deciCelsius
+import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.fahrenheit
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.slot
 import kotlinx.coroutines.test.runTest
-import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
-import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
-import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.deciCelsius
-import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.fahrenheit
 import org.junit.jupiter.api.Test
 import java.util.Locale
 

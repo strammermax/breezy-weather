@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.epdhk
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.epdhk.xml.EpdHkConcentrationsResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 
 interface EpdHkApi {

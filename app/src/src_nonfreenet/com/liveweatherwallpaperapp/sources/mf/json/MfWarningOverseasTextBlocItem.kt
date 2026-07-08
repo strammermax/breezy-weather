@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.mf.json
 
-import kotlinx.serialization.Serializable
 import com.liveweatherwallpaperapp.common.serializer.StringOrStringListSerializer
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class MfWarningOverseasTextBlocItem(

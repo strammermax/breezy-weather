@@ -23,9 +23,9 @@ import android.graphics.drawable.Icon
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.createBitmap
-import livewallpaperweather.domain.weather.reference.WeatherCode
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import livewallpaperweather.domain.weather.reference.WeatherCode
 
 /**
  * Shortcuts manager.

@@ -16,9 +16,9 @@
 
 package com.liveweatherwallpaperapp.sources.ncdr
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.common.xml.CapAlert
 import com.liveweatherwallpaperapp.sources.ncdr.xml.NcdrAlertsResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Url

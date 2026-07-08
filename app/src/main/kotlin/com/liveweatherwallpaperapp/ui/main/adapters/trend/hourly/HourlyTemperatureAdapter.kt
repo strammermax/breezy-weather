@@ -25,7 +25,6 @@ import android.view.ViewGroup
 import androidx.annotation.Size
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -46,6 +45,7 @@ import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.formatting.format
 import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.millimeters
 import com.liveweatherwallpaperapp.unit.temperature.TemperatureUnit
+import livewallpaperweather.domain.location.model.Location
 import java.util.Date
 import kotlin.math.max
 
@@ -64,6 +64,7 @@ class HourlyTemperatureAdapter(
     private val mHourlyPrecipitation: Array<Float?>
     private var mHighestTemperature: Float? = null
     private var mLowestTemperature: Float? = null
+
     // Scaled to the highest *actual* hourly amount below (init block), not a fixed threshold —
     // otherwise routine light rain would render as a barely-visible sliver.
     private var mHighestHourlyPrecipitation = 1.0.millimeters.inMicrometers.toFloat()

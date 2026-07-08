@@ -16,9 +16,9 @@
 
 package com.liveweatherwallpaperapp.unit.computing
 
+import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.test.runTest
-import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
 import org.junit.jupiter.api.Test
 
 /**

@@ -16,12 +16,12 @@
 
 package com.liveweatherwallpaperapp.sources.infoplaza
 
-import livewallpaperweather.domain.source.SourceContinent
-import livewallpaperweather.domain.source.SourceFeature
 import com.liveweatherwallpaperapp.common.source.ConfigurableSource
 import com.liveweatherwallpaperapp.common.source.HttpSource
 import com.liveweatherwallpaperapp.common.source.NonFreeNetSource
 import com.liveweatherwallpaperapp.common.source.WeatherSource
+import livewallpaperweather.domain.source.SourceContinent
+import livewallpaperweather.domain.source.SourceFeature
 
 abstract class InfoplazaServiceStub :
     HttpSource(),

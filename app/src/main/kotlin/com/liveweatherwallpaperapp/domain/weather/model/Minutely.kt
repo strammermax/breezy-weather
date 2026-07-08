@@ -17,13 +17,13 @@
 package com.liveweatherwallpaperapp.domain.weather.model
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Minutely
-import livewallpaperweather.domain.weather.model.Precipitation
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.getFormattedTime
 import com.liveweatherwallpaperapp.common.extensions.is12Hour
 import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.millimeters
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Minutely
+import livewallpaperweather.domain.weather.model.Precipitation
 
 fun Minutely.getLevel(context: Context): String {
     return context.getString(
@@ -62,7 +62,9 @@ fun List<Minutely>.getContentDescription(context: Context, location: Location): 
         } else {
             if (startingIndex != null) {
                 if (contentDescription.toString().isNotEmpty()) {
-                    contentDescription.append(context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
+                    contentDescription.append(
+                        context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
+                    )
                 }
 
                 val slice = subList(startingIndex, index)

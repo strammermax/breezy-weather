@@ -73,7 +73,7 @@ object StarFieldFactory {
                 size = 0.6f + random.nextFloat() * 1.6f,
                 brightness = 0.35f + random.nextFloat() * 0.65f,
                 twinkleSpeed = 0.5f + random.nextFloat() * 1.5f,
-                twinklePhase = random.nextFloat() * (2f * PI.toFloat()),
+                twinklePhase = random.nextFloat() * (2f * PI.toFloat())
             )
         }
     }

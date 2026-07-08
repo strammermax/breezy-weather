@@ -16,15 +16,15 @@
 
 package com.liveweatherwallpaperapp.sources.ncei
 
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceContinent
-import livewallpaperweather.domain.source.SourceFeature
 import com.liveweatherwallpaperapp.common.source.HttpSource
 import com.liveweatherwallpaperapp.common.source.LocationParametersSource
 import com.liveweatherwallpaperapp.common.source.NonFreeNetSource
 import com.liveweatherwallpaperapp.common.source.WeatherSource
 import com.liveweatherwallpaperapp.common.source.WeatherSource.Companion.PRIORITY_HIGHEST
 import com.liveweatherwallpaperapp.common.source.WeatherSource.Companion.PRIORITY_NONE
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceContinent
+import livewallpaperweather.domain.source.SourceFeature
 
 /**
  * The actual implementation is in the src_freenet and src_nonfreenet folders

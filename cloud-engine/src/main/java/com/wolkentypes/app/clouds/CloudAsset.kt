@@ -13,7 +13,7 @@ internal data class CloudAsset(
     val contentOffsetX: Int,
     val contentOffsetY: Int,
     val contentWidth: Int,
-    val contentHeight: Int
+    val contentHeight: Int,
 )
 
 private const val SHARED_FOLDER = "clouds/generated"

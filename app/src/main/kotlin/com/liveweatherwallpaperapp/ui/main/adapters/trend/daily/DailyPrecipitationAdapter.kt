@@ -22,8 +22,6 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Precipitation
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
@@ -37,6 +35,8 @@ import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.millimeters
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Precipitation
 
 /**
  * Daily precipitation adapter.

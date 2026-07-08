@@ -19,7 +19,6 @@ package com.liveweatherwallpaperapp.background.weather
 import android.content.Context
 import android.net.Uri
 import androidx.core.app.NotificationCompat
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.background.receiver.NotificationReceiver
 import com.liveweatherwallpaperapp.common.extensions.cancelNotification
@@ -27,6 +26,7 @@ import com.liveweatherwallpaperapp.common.extensions.chop
 import com.liveweatherwallpaperapp.common.extensions.notificationBuilder
 import com.liveweatherwallpaperapp.common.extensions.notify
 import com.liveweatherwallpaperapp.remoteviews.Notifications
+import livewallpaperweather.domain.location.model.Location
 
 /**
  * Based on Mihon

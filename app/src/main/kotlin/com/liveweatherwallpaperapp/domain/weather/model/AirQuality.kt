@@ -18,8 +18,8 @@ package com.liveweatherwallpaperapp.domain.weather.model
 
 import android.content.Context
 import androidx.annotation.ColorInt
-import livewallpaperweather.domain.weather.model.AirQuality
 import com.liveweatherwallpaperapp.domain.weather.index.PollutantIndex
+import livewallpaperweather.domain.weather.model.AirQuality
 
 val AirQuality.validPollutants: List<PollutantIndex>
     get() {

@@ -23,9 +23,9 @@ package com.liveweatherwallpaperapp.background.updater.data
  * https://github.com/mihonapp/mihon/blob/d29b7c4e5735dc137d578d3bcb3da1f0a02573e8/data/src/main/java/tachiyomi/data/release/GithubRelease.kt
  */
 
+import com.liveweatherwallpaperapp.background.updater.model.Release
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import com.liveweatherwallpaperapp.background.updater.model.Release
 
 /**
  * Contains information about the latest release from GitHub.

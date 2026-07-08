@@ -25,11 +25,11 @@ import android.graphics.RuntimeShader
 import android.graphics.Shader
 import android.os.Build
 import android.util.Log
+import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView
 import com.wolkentypes.app.clouds.CloudEngineRenderer
 import com.wolkentypes.app.clouds.cloudProfileFor
 import com.wolkentypes.app.clouds.loadPreset
-import com.liveweatherwallpaperapp.R
-import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView
 import java.util.Random
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -70,13 +70,13 @@ internal class WallpaperWeatherEffectRenderer(
         cloudDensity = 0f,
         cloudDarkness = 0f,
         windFactor = cloudSpeedFactor,
-        windDirectionDegrees = null,
+        windDirectionDegrees = null
     ),
     private val fogField: FogFieldParams = FogFieldFactory.fogFieldParams(
         fogIntensity = 0f,
         hazeIntensity = 0f,
         windFactor = cloudSpeedFactor,
-        windDirectionDegrees = null,
+        windDirectionDegrees = null
     ),
     private val starField: StarFieldParams = StarFieldFactory.starFieldParams(locationSeed = 0L),
     private val glassRainIntensity: Float = 0f,
@@ -111,6 +111,7 @@ internal class WallpaperWeatherEffectRenderer(
     private var shaderPaint: Paint? = null
     private var glassShader: RuntimeShader? = null
     private var glassShaderPaint: Paint? = null
+
     // Stars are normally baked into the same background pass as the legacy clouds (in the AGSL
     // uber-shader, or CanvasRenderer.drawClouds); cloud-engine only draws clouds, so enabling it
     // trades away the night starfield for as long as it's active. Acceptable for an
@@ -143,12 +144,12 @@ internal class WallpaperWeatherEffectRenderer(
     private val cloudAtlasShader = filteredBitmapShader(
         cloudAtlasBitmap,
         Shader.TileMode.CLAMP,
-        Shader.TileMode.CLAMP,
+        Shader.TileMode.CLAMP
     )
     private val overcastMaskShader = filteredBitmapShader(
         overcastMaskBitmap,
         Shader.TileMode.REPEAT,
-        Shader.TileMode.REPEAT,
+        Shader.TileMode.REPEAT
     )
 
     init {
@@ -171,14 +172,14 @@ internal class WallpaperWeatherEffectRenderer(
                 canvasRenderer = CanvasRenderer(
                     weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField,
                     glassRainIntensity, precipitationTiltSlope, randomSeed, cloudAtlasBitmap,
-                    overcastMaskBitmap, fairSky,
+                    overcastMaskBitmap, fairSky
                 )
             }
         } else {
             canvasRenderer = CanvasRenderer(
                 weatherKind, this.daylight, cloudSpeedFactor, cloudField, fogField, starField,
                 glassRainIntensity, precipitationTiltSlope, randomSeed, cloudAtlasBitmap,
-                overcastMaskBitmap, fairSky,
+                overcastMaskBitmap, fairSky
             )
         }
     }
@@ -193,7 +194,10 @@ internal class WallpaperWeatherEffectRenderer(
     private val precipitationLayerCap: Float
         get() = when (qualityBudget.maxSnowParticles) {
             WallpaperQualityProfileFactory.budgetFor(WallpaperQualityProfile.BATTERY_SAVER).maxSnowParticles -> 14f
-            WallpaperQualityProfileFactory.budgetFor(WallpaperQualityProfile.HIGH).maxSnowParticles -> MAX_PRECIPITATION_LAYERS
+            WallpaperQualityProfileFactory.budgetFor(
+                WallpaperQualityProfile.HIGH
+            ).maxSnowParticles,
+            -> MAX_PRECIPITATION_LAYERS
             else -> 17f
         }
     private val glassRainProfile: GlassRainProfile
@@ -340,20 +344,39 @@ internal class WallpaperWeatherEffectRenderer(
             }
             s.setFloatUniform(
                 "layerCount",
-                activeCloudLayerCount.toFloat(),
+                activeCloudLayerCount.toFloat()
             )
             s.setFloatUniform("layerScale", FloatArray(5) { cloudField.layers[it].scale })
             s.setFloatUniform("layerSpeed", FloatArray(5) { cloudField.layers[it].speedFactor })
-            s.setFloatUniform("layerAlpha", FloatArray(5) {
-                if (isCloudLayerEnabled(it, qualityBudget.cloudLayers)) cloudField.layers[it].alpha else 0f
-            })
+            s.setFloatUniform(
+                "layerAlpha",
+                FloatArray(5) {
+                    if (isCloudLayerEnabled(it, qualityBudget.cloudLayers)) cloudField.layers[it].alpha else 0f
+                }
+            )
             s.setFloatUniform("layerDarkness", FloatArray(5) { cloudField.layers[it].darkness })
             s.setFloatUniform("layerVerticalOffset", FloatArray(5) { cloudField.layers[it].verticalOffset })
             s.setFloatUniform("windDirection", cloudField.directionDegrees)
-            s.setFloatUniform("fogBandCount", fogField.bands.count { it.baseAlpha > 0f }.toFloat().coerceAtMost(qualityBudget.fogBands.toFloat()))
+            s.setFloatUniform(
+                "fogBandCount",
+                fogField.bands.count {
+                    it.baseAlpha > 0f
+                }.toFloat().coerceAtMost(qualityBudget.fogBands.toFloat())
+            )
             s.setFloatUniform("fogVerticalCenter", FloatArray(4) { fogField.bands[it].verticalCenter })
             s.setFloatUniform("fogHeight", FloatArray(4) { fogField.bands[it].height })
-            s.setFloatUniform("fogBandAlpha", FloatArray(4) { if (it < qualityBudget.fogBands) fogField.bands[it].baseAlpha * qualityBudget.blurStrength else 0f })
+            s.setFloatUniform(
+                "fogBandAlpha",
+                FloatArray(4) {
+                    if (it <
+                        qualityBudget.fogBands
+                    ) {
+                        fogField.bands[it].baseAlpha * qualityBudget.blurStrength
+                    } else {
+                        0f
+                    }
+                }
+            )
             s.setFloatUniform("fogSpeed", FloatArray(4) { fogField.bands[it].speedFactor })
             s.setFloatUniform("fogIsHaze", if (fogField.isHaze) 1f else 0f)
             s.setFloatUniform(
@@ -361,8 +384,8 @@ internal class WallpaperWeatherEffectRenderer(
                 FogFieldFactory.fogColor(
                     fogField.isHaze,
                     daylight,
-                    neutralAmount = if (fogField.isHaze) 0f else fogField.foregroundGradientStrength,
-                ),
+                    neutralAmount = if (fogField.isHaze) 0f else fogField.foregroundGradientStrength
+                )
             )
             s.setFloatUniform("fogGlobalAlpha", fogField.globalAlpha * qualityBudget.blurStrength)
             s.setFloatUniform("fogForegroundGradient", fogField.foregroundGradientStrength)
@@ -454,7 +477,7 @@ internal class WallpaperWeatherEffectRenderer(
                     cloudField.directionDegrees,
                     cloudSpeedFactor,
                     effectiveLayers,
-                    precipitationTiltSlope,
+                    precipitationTiltSlope
                 )
                 pool.update(deltaSec)
             } else {
@@ -491,7 +514,9 @@ internal class WallpaperWeatherEffectRenderer(
             }
 
             // Update lightning
-            if (weatherKind == WeatherView.WEATHER_KIND_THUNDER || weatherKind == WeatherView.WEATHER_KIND_THUNDERSTORM) {
+            if (weatherKind == WeatherView.WEATHER_KIND_THUNDER ||
+                weatherKind == WeatherView.WEATHER_KIND_THUNDERSTORM
+            ) {
                 if (lightningAlpha > 0) {
                     lightningAlpha -= deltaSec * 2f
                 } else if (random.nextFloat() < 0.005f) {
@@ -571,12 +596,17 @@ internal class WallpaperWeatherEffectRenderer(
             if (coverageFloor > 0f) {
                 val floorDarkness = cloudField.layers.map { it.darkness }.average().toFloat()
                 val light = if (daytime) Triple(255, 255, 255) else Triple(196, 202, 214)
-                val dark = if (fairSky && daytime) Triple(210, 218, 228)
-                else if (daytime) Triple(110, 128, 150) else Triple(58, 70, 92)
+                val dark = if (fairSky && daytime) {
+                    Triple(210, 218, 228)
+                } else if (daytime) {
+                    Triple(110, 128, 150)
+                } else {
+                    Triple(58, 70, 92)
+                }
                 paint.color = Color.rgb(
                     lerpInt(light.first, dark.first, floorDarkness),
                     lerpInt(light.second, dark.second, floorDarkness),
-                    lerpInt(light.third, dark.third, floorDarkness),
+                    lerpInt(light.third, dark.third, floorDarkness)
                 )
                 paint.alpha = (coverageFloor * 255 * contribution).toInt().coerceIn(0, 255)
                 canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), paint)
@@ -594,7 +624,7 @@ internal class WallpaperWeatherEffectRenderer(
                 val topColor = Color.rgb(
                     lerpInt(light.first, dark.first, darkness),
                     lerpInt(light.second, dark.second, darkness),
-                    lerpInt(light.third, dark.third, darkness),
+                    lerpInt(light.third, dark.third, darkness)
                 )
                 // Volumetric look: shade the lower body/base of the cloud darker than the
                 // puffy top, mirroring the AGSL shader's vertical shade gradient.
@@ -602,7 +632,7 @@ internal class WallpaperWeatherEffectRenderer(
                 val baseColor = Color.rgb(
                     (Color.red(topColor) * baseShade).toInt().coerceIn(0, 255),
                     (Color.green(topColor) * baseShade).toInt().coerceIn(0, 255),
-                    (Color.blue(topColor) * baseShade).toInt().coerceIn(0, 255),
+                    (Color.blue(topColor) * baseShade).toInt().coerceIn(0, 255)
                 )
                 val opticalAlpha = if (fairSky) (layer.alpha * 4.5f).coerceAtMost(0.92f) else layer.alpha
                 val alpha = (opticalAlpha * 255 * contribution).toInt().coerceIn(0, 255)
@@ -620,7 +650,7 @@ internal class WallpaperWeatherEffectRenderer(
                     c.y,
                     c.x + c.radius,
                     c.y + c.radius * 0.58f,
-                    paint,
+                    paint
                 )
             }
         }
@@ -629,7 +659,8 @@ internal class WallpaperWeatherEffectRenderer(
             val visibility = StarFieldFactory.starVisibility(daylight)
             if (visibility <= 0f) return
             for (star in starField.stars) {
-                val twinkle = 0.65f + 0.35f * kotlin.math.sin(starElapsedSeconds * star.twinkleSpeed + star.twinklePhase)
+                val twinkle =
+                    0.65f + 0.35f * kotlin.math.sin(starElapsedSeconds * star.twinkleSpeed + star.twinklePhase)
                 val alpha = star.brightness * twinkle * visibility * contribution
                 if (alpha <= 0f) continue
                 paint.color = Color.WHITE
@@ -647,7 +678,7 @@ internal class WallpaperWeatherEffectRenderer(
             val rgb = FogFieldFactory.fogColor(
                 fogField.isHaze,
                 daylight,
-                neutralAmount = if (fogField.isHaze) 0f else fogField.foregroundGradientStrength,
+                neutralAmount = if (fogField.isHaze) 0f else fogField.foregroundGradientStrength
             )
             val red = (rgb[0] * 255f).toInt().coerceIn(0, 255)
             val green = (rgb[1] * 255f).toInt().coerceIn(0, 255)
@@ -665,7 +696,7 @@ internal class WallpaperWeatherEffectRenderer(
                         Color.argb((26f * alphaScale).toInt().coerceIn(0, 255), red, green, blue),
                         Color.argb((26f * alphaScale).toInt().coerceIn(0, 255), red, green, blue),
                         Color.argb((166f * alphaScale).toInt().coerceIn(0, 255), red, green, blue),
-                        Color.argb((117f * alphaScale).toInt().coerceIn(0, 255), red, green, blue),
+                        Color.argb((117f * alphaScale).toInt().coerceIn(0, 255), red, green, blue)
                     )
                     gradientPositions = floatArrayOf(0f, 0.45f, 0.72f, 1f)
                 } else {
@@ -676,7 +707,7 @@ internal class WallpaperWeatherEffectRenderer(
                         Color.argb(topAlpha, red, green, blue),
                         Color.argb(topAlpha, red, green, blue),
                         Color.argb(middleAlpha, red, green, blue),
-                        Color.argb(bottomAlpha, red, green, blue),
+                        Color.argb(bottomAlpha, red, green, blue)
                     )
                     gradientPositions = floatArrayOf(0f, 0.30f, 0.70f, 1f)
                 }
@@ -687,7 +718,7 @@ internal class WallpaperWeatherEffectRenderer(
                     lastHeight.toFloat(),
                     gradientColors,
                     gradientPositions,
-                    Shader.TileMode.CLAMP,
+                    Shader.TileMode.CLAMP
                 )
                 paint.alpha = 255
                 canvas.drawRect(0f, 0f, lastWidth.toFloat(), lastHeight.toFloat(), paint)
@@ -718,7 +749,7 @@ internal class WallpaperWeatherEffectRenderer(
                     centerY - halfHeight,
                     lastWidth * 1.18f + driftX,
                     centerY + halfHeight,
-                    paint,
+                    paint
                 )
             }
         }
@@ -773,7 +804,6 @@ internal class WallpaperWeatherEffectRenderer(
                     canvas.drawLine(p.x, p.y, p.x + p.speedX * 0.02f, p.y + p.speedY * 0.02f, paint)
                 }
             }
-
         }
 
         fun drawGlassRainDrops(canvas: Canvas, contribution: Float = 1f) {
@@ -803,7 +833,13 @@ internal class WallpaperWeatherEffectRenderer(
                         paint.style = Paint.Style.STROKE
                         paint.color = Color.rgb(220, 236, 255)
                         paint.alpha = (70 * highlightStrength * effectiveAlpha).toInt().coerceIn(0, 255)
-                        canvas.drawLine(drop.x, drop.y - drop.radius, drop.x, drop.y - drop.radius - drop.trailLength, paint)
+                        canvas.drawLine(
+                            drop.x,
+                            drop.y - drop.radius,
+                            drop.x,
+                            drop.y - drop.radius - drop.trailLength,
+                            paint
+                        )
                     }
                     paint.style = Paint.Style.STROKE
                     paint.color = Color.rgb(24, 38, 58)
@@ -935,7 +971,7 @@ internal class WallpaperWeatherEffectRenderer(
             WeatherView.WEATHER_KIND_HAIL,
             WeatherView.WEATHER_KIND_CLOUD,
             WeatherView.WEATHER_KIND_CLOUDY,
-            WeatherView.WEATHER_KIND_WIND,
+            WeatherView.WEATHER_KIND_WIND
         )
 
         private fun shaderMode(weatherKind: Int): Float = when (weatherKind) {

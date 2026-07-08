@@ -54,7 +54,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.launch
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
@@ -73,6 +72,7 @@ import com.liveweatherwallpaperapp.ui.common.widgets.insets.bottomInsetItem
 import com.liveweatherwallpaperapp.ui.settings.preference.SmallSeparatorItem
 import com.liveweatherwallpaperapp.ui.settings.preference.largeSeparatorItem
 import com.liveweatherwallpaperapp.ui.theme.compose.themeRipple
+import kotlinx.coroutines.launch
 
 internal class AboutAppLinkItem(
     @DrawableRes val iconId: Int,
@@ -435,4 +435,3 @@ private fun AboutAppLink(
         onClick = onClick
     )
 }
-

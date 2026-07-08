@@ -41,6 +41,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -67,15 +68,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.lifecycle.lifecycleScope
-import livewallpaperweather.data.location.LocationRepository
-import livewallpaperweather.data.weather.WeatherRepository
-import livewallpaperweather.domain.location.model.Location
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.isBackgroundAnimationEnabled
@@ -90,6 +83,13 @@ import com.liveweatherwallpaperapp.wallpaper.WallpaperEffectView
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSceneSnapshot
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSceneStateFactory
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import livewallpaperweather.data.location.LocationRepository
+import livewallpaperweather.data.weather.WeatherRepository
+import livewallpaperweather.domain.location.model.Location
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
@@ -233,7 +233,7 @@ class RadarActivity : BreezyActivity() {
             sunriseMillis = sunInterval?.first,
             sunsetMillis = sunInterval?.second,
             moonriseMillis = moonInterval?.first,
-            moonsetMillis = moonInterval?.second,
+            moonsetMillis = moonInterval?.second
         )
         val photo = withContext(Dispatchers.IO) { wallpaperRepository.loadCachedBitmap() }
         // Same depth map the live wallpaper uses to keep clouds behind near/foreground photo
@@ -242,12 +242,13 @@ class RadarActivity : BreezyActivity() {
         var nearPhoto: Bitmap? = null
         val bitmap = withContext(Dispatchers.Default) {
             Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
-                nearPhoto = WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState, resources, depth)
+                nearPhoto =
+                    WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState, resources, depth)
             }
         }
         effectView.setForegroundPhoto(
             nearPhoto,
-            if (sceneState.usesGreyscalePhoto) sceneState.photoGreyscaleAmount else 0f,
+            if (sceneState.usesGreyscalePhoto) sceneState.photoGreyscaleAmount else 0f
         )
         window.setBackgroundDrawable(BitmapDrawable(resources, bitmap))
     }
@@ -292,7 +293,9 @@ class RadarActivity : BreezyActivity() {
                                 }
                             }
                         },
-                        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                        windowInsets = WindowInsets.safeDrawing.only(
+                            WindowInsetsSides.Horizontal + WindowInsetsSides.Top
+                        ),
                         colors = TopAppBarDefaults.topAppBarColors(
                             containerColor = Color.Transparent,
                             scrolledContainerColor = Color.Transparent,
@@ -305,107 +308,107 @@ class RadarActivity : BreezyActivity() {
                 containerColor = Color.Transparent,
                 contentColor = glassContentColor
             ) { paddings ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(paddings)
-            ) {
-                if (loading) {
-                    CircularProgressIndicator(modifier = Modifier.padding(16.dp).padding(top = 24.dp))
-                    return@Column
-                }
-
-                // The Meteoblue and Buienradar widgets render their maps via WebGL/canvas, which
-                // appears to fight the animated background's hardware layer for the window's
-                // surface and blanks the whole screen. Pausing that layer while either tab is
-                // visible avoids it — RainViewer's Leaflet map doesn't have this conflict.
-                LaunchedEffect(radarSource) {
-                    if (::effectView.isInitialized) {
-                        effectView.setDrawable(radarSource == "rainviewer" && isBackgroundAnimationEnabled)
-                    }
-                }
-
-                // Source selector
-                val radarTabs = listOf(
-                    "rainviewer" to R.string.radar_source_world,
-                    "buienradar" to R.string.radar_source_nl,
-                    "meteoblue" to R.string.radar_source_meteoblue
-                )
-                TabRow(
-                    selectedTabIndex = radarTabs.indexOfFirst { it.first == radarSource }.coerceAtLeast(0),
-                    modifier = Modifier.fillMaxWidth(),
-                    contentColor = glassContentColor
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(paddings)
                 ) {
-                    radarTabs.forEach { (source, labelRes) ->
-                        Tab(
-                            selected = radarSource == source,
-                            onClick = { radarSource = source },
-                            text = { Text(stringResource(labelRes)) },
-                            selectedContentColor = glassContentColor,
-                            unselectedContentColor = glassContentColor.copy(alpha = 0.7f)
-                        )
+                    if (loading) {
+                        CircularProgressIndicator(modifier = Modifier.padding(16.dp).padding(top = 24.dp))
+                        return@Column
                     }
-                }
 
-                // Map — RainViewer (worldwide), Buienradar gadget (NL, 5 days) or Windy (wind/pressure)
-                when (radarSource) {
-                    "rainviewer" -> {
-                        val lat = latitude
-                        val lon = longitude
-                        if (lat != null && lon != null) {
-                            RadarMap(lat, lon, modifier = Modifier.fillMaxWidth().height(480.dp))
-                        } else {
-                            Text(
-                                text = stringResource(R.string.radar_frames_unavailable),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(16.dp)
+                    // The Meteoblue and Buienradar widgets render their maps via WebGL/canvas, which
+                    // appears to fight the animated background's hardware layer for the window's
+                    // surface and blanks the whole screen. Pausing that layer while either tab is
+                    // visible avoids it — RainViewer's Leaflet map doesn't have this conflict.
+                    LaunchedEffect(radarSource) {
+                        if (::effectView.isInitialized) {
+                            effectView.setDrawable(radarSource == "rainviewer" && isBackgroundAnimationEnabled)
+                        }
+                    }
+
+                    // Source selector
+                    val radarTabs = listOf(
+                        "rainviewer" to R.string.radar_source_world,
+                        "buienradar" to R.string.radar_source_nl,
+                        "meteoblue" to R.string.radar_source_meteoblue
+                    )
+                    TabRow(
+                        selectedTabIndex = radarTabs.indexOfFirst { it.first == radarSource }.coerceAtLeast(0),
+                        modifier = Modifier.fillMaxWidth(),
+                        contentColor = glassContentColor
+                    ) {
+                        radarTabs.forEach { (source, labelRes) ->
+                            Tab(
+                                selected = radarSource == source,
+                                onClick = { radarSource = source },
+                                text = { Text(stringResource(labelRes)) },
+                                selectedContentColor = glassContentColor,
+                                unselectedContentColor = glassContentColor.copy(alpha = 0.7f)
                             )
                         }
                     }
-                    "meteoblue" -> {
-                        MeteoblueMap(latitude, longitude, modifier = Modifier.fillMaxWidth().height(480.dp))
-                    }
-                    else -> BuienradarMap(latitude, longitude, modifier = Modifier.fillMaxWidth().height(480.dp))
-                }
 
-                // Rain trend chart — only shown for the RainViewer tab
-                if (radarSource == "rainviewer") {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        SectionTitle(stringResource(R.string.radar_section_rain_trend))
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            listOf(2, 3, 6, 12, 24).forEach { hours ->
-                                FilterChip(
-                                    selected = trendRange == hours,
-                                    onClick = { trendRange = hours },
-                                    label = { Text("${hours}u") }
+                    // Map — RainViewer (worldwide), Buienradar gadget (NL, 5 days) or Windy (wind/pressure)
+                    when (radarSource) {
+                        "rainviewer" -> {
+                            val lat = latitude
+                            val lon = longitude
+                            if (lat != null && lon != null) {
+                                RadarMap(lat, lon, modifier = Modifier.fillMaxWidth().height(480.dp))
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.radar_frames_unavailable),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(16.dp)
                                 )
                             }
                         }
-                        RainTrendChart(
-                            points = if (trendRange <= 2) rainTrend else hourlyTrend.take(trendRange),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-
-                Text(
-                    text = stringResource(
-                        when (radarSource) {
-                            "buienradar" -> R.string.radar_attribution_buienradar
-                            "meteoblue" -> R.string.radar_attribution_meteoblue
-                            else -> R.string.radar_attribution
+                        "meteoblue" -> {
+                            MeteoblueMap(latitude, longitude, modifier = Modifier.fillMaxWidth().height(480.dp))
                         }
-                    ),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp).padding(top = 16.dp, bottom = 16.dp)
-                )
-            }
+                        else -> BuienradarMap(latitude, longitude, modifier = Modifier.fillMaxWidth().height(480.dp))
+                    }
+
+                    // Rain trend chart — only shown for the RainViewer tab
+                    if (radarSource == "rainviewer") {
+                        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            SectionTitle(stringResource(R.string.radar_section_rain_trend))
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                listOf(2, 3, 6, 12, 24).forEach { hours ->
+                                    FilterChip(
+                                        selected = trendRange == hours,
+                                        onClick = { trendRange = hours },
+                                        label = { Text("${hours}u") }
+                                    )
+                                }
+                            }
+                            RainTrendChart(
+                                points = if (trendRange <= 2) rainTrend else hourlyTrend.take(trendRange),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = stringResource(
+                            when (radarSource) {
+                                "buienradar" -> R.string.radar_attribution_buienradar
+                                "meteoblue" -> R.string.radar_attribution_meteoblue
+                                else -> R.string.radar_attribution
+                            }
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp).padding(top = 16.dp, bottom = 16.dp)
+                    )
+                }
             }
         }
     }
@@ -426,8 +429,9 @@ class RadarActivity : BreezyActivity() {
         val dark = when (SettingsManager.getInstance(this).radarTileMapStyle) {
             "dark" -> true
             "light" -> false
-            else -> resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK ==
-                android.content.res.Configuration.UI_MODE_NIGHT_YES
+            else ->
+                resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK ==
+                    android.content.res.Configuration.UI_MODE_NIGHT_YES
         }
         AndroidView(
             modifier = modifier,

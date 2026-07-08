@@ -30,13 +30,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceFeature
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.launch
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.bus.EventBus
 import com.liveweatherwallpaperapp.common.extensions.hasPermission
@@ -58,6 +53,11 @@ import com.liveweatherwallpaperapp.ui.settings.compose.SettingsScreenRouter
 import com.liveweatherwallpaperapp.ui.settings.compose.UnitSettingsScreen
 import com.liveweatherwallpaperapp.ui.settings.compose.WeatherSourcesSettingsScreen
 import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.launch
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceFeature
 import javax.inject.Inject
 
 private const val PERMISSION_CODE_POST_NOTIFICATION = 0

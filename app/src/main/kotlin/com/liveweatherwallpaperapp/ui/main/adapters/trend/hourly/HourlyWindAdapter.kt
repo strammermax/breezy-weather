@@ -25,7 +25,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.formatValue
@@ -37,6 +36,7 @@ import com.liveweatherwallpaperapp.domain.weather.model.getContentDescription
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendRecyclerView
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.chart.PolylineAndHistogramView
 import com.liveweatherwallpaperapp.unit.speed.Speed.Companion.metersPerSecond
+import livewallpaperweather.domain.location.model.Location
 
 /**
  * Hourly wind adapter.

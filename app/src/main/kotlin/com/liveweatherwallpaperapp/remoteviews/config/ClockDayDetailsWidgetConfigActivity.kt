@@ -18,12 +18,12 @@ package com.liveweatherwallpaperapp.remoteviews.config
 
 import android.view.View
 import android.widget.RemoteViews
+import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.remoteviews.presenters.ClockDayDetailsWidgetIMP
+import dagger.hilt.android.AndroidEntryPoint
 import livewallpaperweather.data.location.LocationRepository
 import livewallpaperweather.data.weather.WeatherRepository
 import livewallpaperweather.domain.location.model.Location
-import dagger.hilt.android.AndroidEntryPoint
-import com.liveweatherwallpaperapp.R
-import com.liveweatherwallpaperapp.remoteviews.presenters.ClockDayDetailsWidgetIMP
 import javax.inject.Inject
 
 /**

@@ -17,10 +17,10 @@
 package com.liveweatherwallpaperapp.sources.android
 
 import android.location.Geocoder
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceFeature
 import com.liveweatherwallpaperapp.common.source.NonFreeNetSource
 import com.liveweatherwallpaperapp.common.source.ReverseGeocodingSource
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceFeature
 
 /**
  * The actual implementation is in the src_freenet and src_nonfreenet folders

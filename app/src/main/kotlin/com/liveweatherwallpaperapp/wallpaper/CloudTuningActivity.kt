@@ -22,9 +22,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -59,6 +59,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.liveweatherwallpaperapp.common.activities.BreezyActivity
+import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
+import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
 import com.wolkentypes.app.clouds.CloudAmount
 import com.wolkentypes.app.clouds.CloudLayer
 import com.wolkentypes.app.clouds.CloudSurfaceView
@@ -70,9 +73,6 @@ import com.wolkentypes.app.clouds.savePreset
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import com.liveweatherwallpaperapp.common.activities.BreezyActivity
-import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
-import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -132,7 +132,7 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
     Column(Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -141,7 +141,7 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
             ExposedDropdownMenuBox(
                 expanded = weatherMenuExpanded,
                 onExpandedChange = { weatherMenuExpanded = it },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 TextField(
                     readOnly = true,
@@ -149,13 +149,16 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
                     onValueChange = {},
                     label = { Text("Weather type") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(weatherMenuExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
                 ExposedDropdownMenu(weatherMenuExpanded, { weatherMenuExpanded = false }) {
                     CLOUD_TUNING_WEATHER_TYPES.forEach { type ->
                         DropdownMenuItem(
                             text = { Text(type.label) },
-                            onClick = { selected = type; weatherMenuExpanded = false },
+                            onClick = {
+                                selected = type
+                                weatherMenuExpanded = false
+                            }
                         )
                     }
                 }
@@ -165,7 +168,7 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
         Box(Modifier.fillMaxSize()) {
             Box(
                 Modifier.fillMaxSize()
-                    .background(Brush.verticalGradient(listOf(selected.skyTop, selected.skyBottom))),
+                    .background(Brush.verticalGradient(listOf(selected.skyTop, selected.skyBottom)))
             )
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
@@ -176,7 +179,7 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
                     view.windSpeedMultiplier = wind
                     view.densityMultiplier = 1f
                     view.layerDepthMultiplier = depth
-                },
+                }
             )
             // Same composition as the real live wallpaper: sky+clouds fill the screen, the
             // cached location photo (if any) sits in the foreground third so the tuning preview
@@ -186,12 +189,12 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
                     bitmap = backgroundBitmap.asImageBitmap(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().fillMaxHeight(.35f),
+                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().fillMaxHeight(.35f)
                 )
             }
             Column(
                 Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 if (controlsExpanded) {
                     CloudLayerControlPanel(
@@ -203,7 +206,7 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
                         onDepthChange = { depth = it },
                         wind = wind,
                         onWindChange = { wind = it },
-                        modifier = Modifier.padding(bottom = 8.dp),
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
                 Button(onClick = { controlsExpanded = !controlsExpanded }) {
@@ -231,17 +234,17 @@ private fun CloudLayerControlPanel(
         modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         color = Color(0x66F8FAFF),
-        shadowElevation = 10.dp,
+        shadowElevation = 10.dp
     ) {
         Column(
             Modifier.verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text("Cloud layers", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Text(
                 "Pick type, amount, position and movement per layer",
                 color = Color(0xFF53627A),
-                fontSize = 13.sp,
+                fontSize = 13.sp
             )
             CloudLayer.entries.reversed().forEach { layer ->
                 val isExpanded = layer in expandedLayers
@@ -250,7 +253,7 @@ private fun CloudLayerControlPanel(
                         expandedLayers = if (isExpanded) expandedLayers - layer else expandedLayers + layer
                     }.padding(vertical = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(layer.label, fontWeight = FontWeight.Bold, color = Color(0xFF23324A))
                     Text(if (isExpanded) "⌄" else "›", fontSize = 24.sp, color = Color(0xFF6C4EB4))
@@ -259,7 +262,7 @@ private fun CloudLayerControlPanel(
                     CloudLayerSection(
                         layer,
                         configs[layer] ?: LayerCloudConfig(),
-                        onChange = { onConfigChange(layer, it) },
+                        onChange = { onConfigChange(layer, it) }
                     )
                 }
                 HorizontalDivider(color = Color(0xFFD8DEEA))
@@ -283,12 +286,29 @@ private fun CloudLayerSection(layer: CloudLayer, config: LayerCloudConfig, onCha
                 CloudTextureType.SMOKE,
                 config,
                 onChange,
-                Modifier.weight(1f),
+                Modifier.weight(1f)
             )
         }
         if (layer == CloudLayer.HORIZON || layer == CloudLayer.OVERHEAD) {
-            val special = if (layer == CloudLayer.HORIZON) CloudTextureType.HORIZON_BANK else CloudTextureType.OVERHEAD_BANK
-            CloudTypeChip(if (layer == CloudLayer.HORIZON) "Horizon bank" else "Overhead deck", special, config, onChange)
+            val special = if (layer ==
+                CloudLayer.HORIZON
+            ) {
+                CloudTextureType.HORIZON_BANK
+            } else {
+                CloudTextureType.OVERHEAD_BANK
+            }
+            CloudTypeChip(
+                if (layer ==
+                    CloudLayer.HORIZON
+                ) {
+                    "Horizon bank"
+                } else {
+                    "Overhead deck"
+                },
+                special,
+                config,
+                onChange
+            )
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             val labels = listOf("None", "A few", "Some", "A lot")
@@ -297,7 +317,7 @@ private fun CloudLayerSection(layer: CloudLayer, config: LayerCloudConfig, onCha
                     selected = config.amount == amount,
                     onClick = { onChange(config.copy(amount = amount)) },
                     label = { Text(labels[index], fontSize = 10.sp) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
@@ -306,42 +326,42 @@ private fun CloudLayerSection(layer: CloudLayer, config: LayerCloudConfig, onCha
             "${(config.sizeMultiplier * 100).roundToInt()}%",
             config.sizeMultiplier,
             .35f..2.5f,
-            { onChange(config.copy(sizeMultiplier = it)) },
+            { onChange(config.copy(sizeMultiplier = it)) }
         )
         CloudTuningSlider(
             "Height",
             "%+.0f%%".format(config.heightOffset * 100f),
             config.heightOffset,
             (-.22f)..(.22f),
-            { onChange(config.copy(heightOffset = it)) },
+            { onChange(config.copy(heightOffset = it)) }
         )
         CloudTuningSlider(
             "Vertical spread",
             "${(config.verticalSpread * 100).roundToInt()}%",
             config.verticalSpread,
             .15f..2f,
-            { onChange(config.copy(verticalSpread = it)) },
+            { onChange(config.copy(verticalSpread = it)) }
         )
         CloudTuningSlider(
             "Horizontal spread",
             "${(config.horizontalSpread * 100).roundToInt()}%",
             config.horizontalSpread,
             .4f..2f,
-            { onChange(config.copy(horizontalSpread = it)) },
+            { onChange(config.copy(horizontalSpread = it)) }
         )
         CloudTuningSlider(
             "Layer speed",
             "${(config.speedMultiplier * 100).roundToInt()}%",
             config.speedMultiplier,
             0f..3f,
-            { onChange(config.copy(speedMultiplier = it)) },
+            { onChange(config.copy(speedMultiplier = it)) }
         )
         CloudTuningSlider(
             "Opacity",
             "${(config.alphaMultiplier * 100).roundToInt()}%",
             config.alphaMultiplier,
             0f..1f,
-            { onChange(config.copy(alphaMultiplier = it)) },
+            { onChange(config.copy(alphaMultiplier = it)) }
         )
     }
 }
@@ -361,7 +381,7 @@ private fun CloudTypeChip(
             onChange(config.copy(types = types))
         },
         label = { Text(label, fontSize = 11.sp) },
-        modifier = modifier,
+        modifier = modifier
     )
 }
 

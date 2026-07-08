@@ -16,9 +16,9 @@
 
 package com.liveweatherwallpaperapp.sources.ekuk
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.ekuk.json.EkukObservationsResult
 import com.liveweatherwallpaperapp.sources.ekuk.json.EkukStationsResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Query
 

@@ -16,13 +16,13 @@
 
 package com.liveweatherwallpaperapp.sources.hko
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.hko.json.HkoCurrentResult
 import com.liveweatherwallpaperapp.sources.hko.json.HkoLocationsResult
 import com.liveweatherwallpaperapp.sources.hko.json.HkoNormalsResult
 import com.liveweatherwallpaperapp.sources.hko.json.HkoOneJsonResult
 import com.liveweatherwallpaperapp.sources.hko.json.HkoWarningResult
 import com.liveweatherwallpaperapp.sources.hko.json.HkoWarningSummaryResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Path
 

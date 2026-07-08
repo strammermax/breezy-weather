@@ -24,14 +24,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
-import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3Scaffold
 import com.liveweatherwallpaperapp.ui.common.widgets.generateCollapsedScrollBehavior
 import com.liveweatherwallpaperapp.ui.common.widgets.insets.FitStatusBarTopAppBar
 import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
+import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
+import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 
 class DependenciesActivity : BreezyActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

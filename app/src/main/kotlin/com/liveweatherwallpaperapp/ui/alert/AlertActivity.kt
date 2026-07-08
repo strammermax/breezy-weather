@@ -18,8 +18,8 @@ package com.liveweatherwallpaperapp.ui.alert
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import dagger.hilt.android.AndroidEntryPoint
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
+import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class AlertActivity : BreezyActivity() {

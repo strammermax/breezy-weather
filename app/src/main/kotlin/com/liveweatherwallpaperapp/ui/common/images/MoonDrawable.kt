@@ -122,8 +122,10 @@ class MoonDrawable : Drawable() {
         // fully opaque no matter what setAlpha() was called with. Bake alpha directly
         // into fill()'s colour instead, which always survives.
         val layerId = canvas.saveLayer(
-            mBounds.left.toFloat(), mBounds.top.toFloat(),
-            mBounds.right.toFloat(), mBounds.bottom.toFloat(),
+            mBounds.left.toFloat(),
+            mBounds.top.toFloat(),
+            mBounds.right.toFloat(),
+            mBounds.bottom.toFloat(),
             null
         )
         if (mMirrored) {
@@ -191,8 +193,11 @@ class MoonDrawable : Drawable() {
         }
         mPaint.alpha = (mAlpha * 255).toInt()
         mPaint.xfermode = null
-        if (startAngle == null) canvas.drawOval(rect, mPaint)
-        else canvas.drawArc(rect, startAngle, 180f, true, mPaint)
+        if (startAngle == null) {
+            canvas.drawOval(rect, mPaint)
+        } else {
+            canvas.drawArc(rect, startAngle, 180f, true, mPaint)
+        }
     }
 
     /** Clear (punch transparent) a half of the given [rect]. */

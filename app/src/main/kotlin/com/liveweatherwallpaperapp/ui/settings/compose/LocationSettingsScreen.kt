@@ -36,7 +36,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.app.ActivityCompat
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
-import kotlinx.collections.immutable.ImmutableList
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
@@ -71,6 +70,7 @@ import com.liveweatherwallpaperapp.ui.settings.preference.listPreferenceItem
 import com.liveweatherwallpaperapp.ui.settings.preference.sectionFooterItem
 import com.liveweatherwallpaperapp.ui.settings.preference.sectionHeaderItem
 import com.liveweatherwallpaperapp.ui.settings.preference.smallSeparatorItem
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun LocationSettingsScreen(

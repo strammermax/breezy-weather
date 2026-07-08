@@ -16,7 +16,7 @@ private val PRECIPITATING_CODES = setOf(
     WeatherCode.SNOW,
     WeatherCode.SLEET,
     WeatherCode.HAIL,
-    WeatherCode.THUNDERSTORM,
+    WeatherCode.THUNDERSTORM
 )
 
 /**

@@ -20,12 +20,12 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.databinding.ItemLocationCardBinding
 import com.liveweatherwallpaperapp.sources.SourceManager
 import com.liveweatherwallpaperapp.ui.common.adapters.SyncListAdapter
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import livewallpaperweather.domain.location.model.Location
 
 /**
  * Location adapter.

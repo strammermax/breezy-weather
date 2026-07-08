@@ -17,10 +17,10 @@
 package com.liveweatherwallpaperapp.sources.geonames
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.LocationAddressInfo
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.common.exceptions.NonFreeNetSourceException
 import com.liveweatherwallpaperapp.common.preference.Preference
+import io.reactivex.rxjava3.core.Observable
+import livewallpaperweather.domain.location.model.LocationAddressInfo
 import javax.inject.Inject
 
 class GeoNamesService @Inject constructor() : GeoNamesServiceStub() {

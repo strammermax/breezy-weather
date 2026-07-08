@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.pirateweather
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.pirateweather.json.PirateWeatherForecastResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

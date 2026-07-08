@@ -36,8 +36,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import livewallpaperweather.domain.location.model.Location
-import kotlinx.coroutines.launch
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.activities.livedata.EqualtableLiveData
@@ -45,8 +43,8 @@ import com.liveweatherwallpaperapp.common.extensions.density
 import com.liveweatherwallpaperapp.common.extensions.doOnApplyWindowInsets
 import com.liveweatherwallpaperapp.common.extensions.getBlocksPerRow
 import com.liveweatherwallpaperapp.common.extensions.getThemeColor
-import com.liveweatherwallpaperapp.common.extensions.isDarkMode
 import com.liveweatherwallpaperapp.common.extensions.isBackgroundAnimationEnabled
+import com.liveweatherwallpaperapp.common.extensions.isDarkMode
 import com.liveweatherwallpaperapp.common.extensions.isTabletDevice
 import com.liveweatherwallpaperapp.common.extensions.setSystemBarStyle
 import com.liveweatherwallpaperapp.databinding.FragmentHomeBinding
@@ -64,6 +62,8 @@ import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView
 import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherViewController
+import kotlinx.coroutines.launch
+import livewallpaperweather.domain.location.model.Location
 
 class HomeFragment : MainModuleFragment() {
 

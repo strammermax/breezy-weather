@@ -18,9 +18,9 @@ package com.liveweatherwallpaperapp.common.source
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import kotlinx.collections.immutable.ImmutableList
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.source.SourceFeature
-import kotlinx.collections.immutable.ImmutableList
 
 /**
  * Implement this if you need parameters specific to each location

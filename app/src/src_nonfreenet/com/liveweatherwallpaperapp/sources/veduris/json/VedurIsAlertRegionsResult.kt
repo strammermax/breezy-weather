@@ -1,7 +1,7 @@
 package com.liveweatherwallpaperapp.sources.veduris.json
 
-import kotlinx.serialization.Serializable
 import com.liveweatherwallpaperapp.sources.veduris.serializers.VedurIsAnySerializer
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class VedurIsAlertRegionsResult(

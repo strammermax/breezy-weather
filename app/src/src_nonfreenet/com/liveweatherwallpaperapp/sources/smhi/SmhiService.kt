@@ -17,18 +17,6 @@
 package com.liveweatherwallpaperapp.sources.smhi
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceFeature
-import livewallpaperweather.domain.weather.model.Precipitation
-import livewallpaperweather.domain.weather.model.PrecipitationProbability
-import livewallpaperweather.domain.weather.model.Wind
-import livewallpaperweather.domain.weather.reference.WeatherCode
-import livewallpaperweather.domain.weather.wrappers.DailyWrapper
-import livewallpaperweather.domain.weather.wrappers.HourlyWrapper
-import livewallpaperweather.domain.weather.wrappers.TemperatureWrapper
-import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.common.exceptions.InvalidOrIncompleteDataException
 import com.liveweatherwallpaperapp.common.extensions.getIsoFormattedDate
 import com.liveweatherwallpaperapp.common.extensions.toDateNoHour
@@ -39,6 +27,18 @@ import com.liveweatherwallpaperapp.unit.pressure.Pressure.Companion.hectopascals
 import com.liveweatherwallpaperapp.unit.ratio.Ratio.Companion.percent
 import com.liveweatherwallpaperapp.unit.speed.Speed.Companion.metersPerSecond
 import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceFeature
+import livewallpaperweather.domain.weather.model.Precipitation
+import livewallpaperweather.domain.weather.model.PrecipitationProbability
+import livewallpaperweather.domain.weather.model.Wind
+import livewallpaperweather.domain.weather.reference.WeatherCode
+import livewallpaperweather.domain.weather.wrappers.DailyWrapper
+import livewallpaperweather.domain.weather.wrappers.HourlyWrapper
+import livewallpaperweather.domain.weather.wrappers.TemperatureWrapper
+import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
 import retrofit2.Retrofit
 import javax.inject.Inject
 import javax.inject.Named

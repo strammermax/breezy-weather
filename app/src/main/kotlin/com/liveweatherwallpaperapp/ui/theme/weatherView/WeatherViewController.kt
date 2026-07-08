@@ -16,12 +16,12 @@
 
 package com.liveweatherwallpaperapp.ui.theme.weatherView
 
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.reference.WeatherCode
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.domain.location.model.isDaylight
 import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView.WeatherKindRule
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.reference.WeatherCode
 
 object WeatherViewController {
 

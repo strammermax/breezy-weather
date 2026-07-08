@@ -16,7 +16,6 @@
 
 package com.liveweatherwallpaperapp.sources.mf
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.mf.json.MfCurrentResult
 import com.liveweatherwallpaperapp.sources.mf.json.MfForecastResult
 import com.liveweatherwallpaperapp.sources.mf.json.MfNormalsResult
@@ -24,6 +23,7 @@ import com.liveweatherwallpaperapp.sources.mf.json.MfRainResult
 import com.liveweatherwallpaperapp.sources.mf.json.MfWarningDictionaryResult
 import com.liveweatherwallpaperapp.sources.mf.json.MfWarningsOverseasResult
 import com.liveweatherwallpaperapp.sources.mf.json.MfWarningsResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Query

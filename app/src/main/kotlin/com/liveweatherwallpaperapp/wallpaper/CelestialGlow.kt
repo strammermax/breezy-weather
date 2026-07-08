@@ -33,7 +33,7 @@ object CelestialGlow {
         Color.argb(90, 255, 240, 190),
         Color.argb(46, 255, 230, 170),
         Color.argb(16, 255, 220, 160),
-        Color.TRANSPARENT,
+        Color.TRANSPARENT
     )
 
     private val GLOW_STOPS = floatArrayOf(0f, 0.08f, 0.22f, 0.40f, 0.62f, 0.84f, 1f)
@@ -47,7 +47,7 @@ object CelestialGlow {
         glowRadius,
         GLOW_COLORS,
         GLOW_STOPS,
-        Shader.TileMode.CLAMP,
+        Shader.TileMode.CLAMP
     )
 
     /** Draws the sun (glow + core) using the given paints, which should already have their shader/color set. */

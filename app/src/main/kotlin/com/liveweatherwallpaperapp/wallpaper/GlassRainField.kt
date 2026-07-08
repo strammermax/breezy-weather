@@ -29,7 +29,8 @@ data class GlassRainProfile(
  */
 object GlassRainFieldFactory {
     val LOW = GlassRainProfile(maxDrops = 14, trailLength = 0f, highlightStrength = 0.65f, refractionStrength = 0f)
-    val BALANCED = GlassRainProfile(maxDrops = 24, trailLength = 0.6f, highlightStrength = 0.95f, refractionStrength = 0.55f)
+    val BALANCED =
+        GlassRainProfile(maxDrops = 24, trailLength = 0.6f, highlightStrength = 0.95f, refractionStrength = 0.55f)
     val HIGH = GlassRainProfile(maxDrops = 36, trailLength = 1f, highlightStrength = 1.2f, refractionStrength = 0.85f)
 
     /**

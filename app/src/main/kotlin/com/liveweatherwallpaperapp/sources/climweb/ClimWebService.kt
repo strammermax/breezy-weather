@@ -18,14 +18,6 @@ package com.liveweatherwallpaperapp.sources.climweb
 
 import android.content.Context
 import androidx.compose.ui.text.input.KeyboardType
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceContinent
-import livewallpaperweather.domain.source.SourceFeature
-import livewallpaperweather.domain.weather.model.Alert
-import livewallpaperweather.domain.weather.model.Normals
-import livewallpaperweather.domain.weather.reference.AlertSeverity
-import livewallpaperweather.domain.weather.reference.Month
-import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.SphericalUtil
 import com.google.maps.android.data.geojson.GeoJsonFeature
@@ -33,7 +25,6 @@ import com.google.maps.android.data.geojson.GeoJsonMultiPolygon
 import com.google.maps.android.data.geojson.GeoJsonParser
 import com.google.maps.android.data.geojson.GeoJsonPolygon
 import com.google.maps.android.model.LatLng
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.exceptions.InvalidLocationException
 import com.liveweatherwallpaperapp.common.preference.EditTextPreference
@@ -48,6 +39,15 @@ import com.liveweatherwallpaperapp.domain.settings.SourceConfigStore
 import com.liveweatherwallpaperapp.sources.climweb.json.ClimWebAlertsResult
 import com.liveweatherwallpaperapp.sources.climweb.json.ClimWebNormals
 import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
+import io.reactivex.rxjava3.core.Observable
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceContinent
+import livewallpaperweather.domain.source.SourceFeature
+import livewallpaperweather.domain.weather.model.Alert
+import livewallpaperweather.domain.weather.model.Normals
+import livewallpaperweather.domain.weather.reference.AlertSeverity
+import livewallpaperweather.domain.weather.reference.Month
+import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
 import org.json.JSONObject
 import retrofit2.Retrofit
 import java.text.SimpleDateFormat

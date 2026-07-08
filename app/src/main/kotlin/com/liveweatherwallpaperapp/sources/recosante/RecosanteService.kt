@@ -17,12 +17,6 @@
 package com.liveweatherwallpaperapp.sources.recosante
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceContinent
-import livewallpaperweather.domain.source.SourceFeature
-import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.common.exceptions.SourceNotInstalledException
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import com.liveweatherwallpaperapp.common.extensions.getCountryName
@@ -31,6 +25,12 @@ import com.liveweatherwallpaperapp.common.source.RemovedSource
 import com.liveweatherwallpaperapp.common.source.WeatherSource
 import com.liveweatherwallpaperapp.common.source.WeatherSource.Companion.PRIORITY_MEDIUM
 import com.liveweatherwallpaperapp.common.source.WeatherSource.Companion.PRIORITY_NONE
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceContinent
+import livewallpaperweather.domain.source.SourceFeature
+import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
 import javax.inject.Inject
 
 /**

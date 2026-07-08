@@ -16,11 +16,11 @@
 
 package com.liveweatherwallpaperapp.sources.accu
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.accu.json.AccuAirQualityResult
 import com.liveweatherwallpaperapp.sources.accu.json.AccuAlertResult
 import com.liveweatherwallpaperapp.sources.accu.json.AccuClimoSummaryResult
 import com.liveweatherwallpaperapp.sources.accu.json.AccuMinutelyResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

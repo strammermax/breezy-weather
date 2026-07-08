@@ -67,8 +67,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
-import livewallpaperweather.domain.location.model.Location
-import dagger.hilt.android.AndroidEntryPoint
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
@@ -89,6 +87,8 @@ import com.liveweatherwallpaperapp.ui.common.widgets.Material3SearchBarInputFiel
 import com.liveweatherwallpaperapp.ui.settings.preference.LargeSeparatorItem
 import com.liveweatherwallpaperapp.ui.settings.preference.composables.RadioButton
 import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
+import dagger.hilt.android.AndroidEntryPoint
+import livewallpaperweather.domain.location.model.Location
 import javax.inject.Inject
 
 @AndroidEntryPoint

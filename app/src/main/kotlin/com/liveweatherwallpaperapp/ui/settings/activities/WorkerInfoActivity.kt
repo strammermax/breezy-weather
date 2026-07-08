@@ -39,11 +39,6 @@ import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.ViewModelProvider
 import androidx.work.WorkInfo
 import androidx.work.WorkQuery
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.activities.BreezyViewModel
@@ -58,6 +53,11 @@ import com.liveweatherwallpaperapp.ui.common.widgets.insets.bottomInsetItem
 import com.liveweatherwallpaperapp.ui.settings.preference.sectionFooterItem
 import com.liveweatherwallpaperapp.ui.settings.preference.sectionHeaderItem
 import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 /**

@@ -19,14 +19,14 @@ package com.liveweatherwallpaperapp.ui.alert
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import livewallpaperweather.data.location.LocationRepository
-import livewallpaperweather.data.weather.WeatherRepository
-import livewallpaperweather.domain.location.model.Location
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import livewallpaperweather.data.location.LocationRepository
+import livewallpaperweather.data.weather.WeatherRepository
+import livewallpaperweather.domain.location.model.Location
 import javax.inject.Inject
 
 @HiltViewModel

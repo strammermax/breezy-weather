@@ -29,8 +29,6 @@ import android.provider.CalendarContract
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Weather
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
@@ -58,6 +56,8 @@ import com.liveweatherwallpaperapp.ui.theme.ThemeManager
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.formatting.format
 import com.liveweatherwallpaperapp.unit.temperature.TemperatureUnit
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Weather
 import java.util.Date
 
 abstract class AbstractRemoteViewsPresenter {

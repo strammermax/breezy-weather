@@ -19,8 +19,6 @@ package com.liveweatherwallpaperapp.ui.main.utils
 import android.app.Activity
 import android.content.Context
 import androidx.annotation.StringRes
-import kotlinx.serialization.MissingFieldException
-import kotlinx.serialization.SerializationException
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.exceptions.ApiKeyMissingException
 import com.liveweatherwallpaperapp.common.exceptions.ApiLimitReachedException
@@ -47,6 +45,8 @@ import com.liveweatherwallpaperapp.ui.main.MainActivity
 import com.liveweatherwallpaperapp.ui.main.dialogs.ErrorHelpDialog
 import com.liveweatherwallpaperapp.ui.main.dialogs.LocationHelpDialog
 import com.liveweatherwallpaperapp.ui.main.dialogs.SourceNoLongerAvailableHelpDialog
+import kotlinx.serialization.MissingFieldException
+import kotlinx.serialization.SerializationException
 import retrofit2.HttpException
 import java.net.SocketException
 import java.net.SocketTimeoutException

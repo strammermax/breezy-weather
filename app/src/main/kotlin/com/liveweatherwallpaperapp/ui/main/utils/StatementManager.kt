@@ -17,8 +17,8 @@
 package com.liveweatherwallpaperapp.ui.main.utils
 
 import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
 import com.liveweatherwallpaperapp.domain.settings.ConfigStore
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class StatementManager @Inject constructor(

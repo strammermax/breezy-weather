@@ -18,8 +18,6 @@
 package livewallpaperweather.data
 
 import app.cash.sqldelight.ColumnAdapter
-import livewallpaperweather.domain.weather.reference.AlertSeverity
-import livewallpaperweather.domain.weather.reference.WeatherCode
 import com.liveweatherwallpaperapp.unit.distance.Distance
 import com.liveweatherwallpaperapp.unit.distance.Distance.Companion.meters
 import com.liveweatherwallpaperapp.unit.pollen.PollenConcentration
@@ -36,6 +34,8 @@ import com.liveweatherwallpaperapp.unit.speed.Speed
 import com.liveweatherwallpaperapp.unit.speed.Speed.Companion.centimetersPerSecond
 import com.liveweatherwallpaperapp.unit.temperature.Temperature
 import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.deciCelsius
+import livewallpaperweather.domain.weather.reference.AlertSeverity
+import livewallpaperweather.domain.weather.reference.WeatherCode
 import java.util.Date
 import java.util.TimeZone
 import kotlin.time.Duration

@@ -38,7 +38,7 @@ internal fun rememberGlassChartStyle(): GlassChartStyle {
     return GlassChartStyle(
         background = background,
         content = content,
-        outline = content.copy(alpha = 0.45f),
+        outline = content.copy(alpha = 0.45f)
     )
 }
 
@@ -49,5 +49,5 @@ internal fun Modifier.withGlassChartBackground(background: Color): Modifier = th
     .background(background)
     .padding(
         horizontal = dimensionResource(R.dimen.normal_margin),
-        vertical = dimensionResource(R.dimen.small_margin),
+        vertical = dimensionResource(R.dimen.small_margin)
     )

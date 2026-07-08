@@ -18,10 +18,10 @@ package com.liveweatherwallpaperapp.common.options.appearance
 
 import android.content.Context
 import androidx.core.os.LocaleListCompat
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.capitalize
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import org.xmlpull.v1.XmlPullParser
 import java.util.Locale
 

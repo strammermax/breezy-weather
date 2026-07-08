@@ -16,14 +16,14 @@
 
 package com.liveweatherwallpaperapp.sources.namem
 
-import io.reactivex.rxjava3.core.Observable
-import okhttp3.RequestBody
 import com.liveweatherwallpaperapp.sources.namem.json.NamemAirQualityResult
 import com.liveweatherwallpaperapp.sources.namem.json.NamemCurrentResult
 import com.liveweatherwallpaperapp.sources.namem.json.NamemDailyResult
 import com.liveweatherwallpaperapp.sources.namem.json.NamemHourlyResult
 import com.liveweatherwallpaperapp.sources.namem.json.NamemNormalsResult
 import com.liveweatherwallpaperapp.sources.namem.json.NamemStationsResult
+import io.reactivex.rxjava3.core.Observable
+import okhttp3.RequestBody
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Headers

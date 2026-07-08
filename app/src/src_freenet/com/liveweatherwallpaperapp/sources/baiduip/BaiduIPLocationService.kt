@@ -17,11 +17,11 @@
 package com.liveweatherwallpaperapp.sources.baiduip
 
 import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.common.exceptions.NonFreeNetSourceException
 import com.liveweatherwallpaperapp.common.preference.Preference
 import com.liveweatherwallpaperapp.common.source.LocationPositionWrapper
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
 import javax.inject.Inject
 
 class BaiduIPLocationService @Inject constructor(

@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.meteoam.json
 
-import kotlinx.serialization.Serializable
 import com.liveweatherwallpaperapp.sources.meteoam.serializers.MeteoAmAnySerializer
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class MeteoAmObservationResult(

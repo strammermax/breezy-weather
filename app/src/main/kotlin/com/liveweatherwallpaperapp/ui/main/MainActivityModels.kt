@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.ui.main
 
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.domain.location.model.isDaylight
+import livewallpaperweather.domain.location.model.Location
 
 class Indicator(
     val total: Int,

@@ -16,9 +16,9 @@
 
 package com.liveweatherwallpaperapp.sources.ncei
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.ncei.json.NceiDataResult
 import com.liveweatherwallpaperapp.sources.ncei.json.NceiStationsResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Query
 

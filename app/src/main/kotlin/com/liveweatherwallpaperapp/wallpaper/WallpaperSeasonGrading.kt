@@ -51,7 +51,7 @@ data class SeasonGrading(
             tint = 0x00000000,
             tintStrength = 0f,
             brightnessShift = 0f,
-            saturationShift = 0f,
+            saturationShift = 0f
         )
     }
 }
@@ -85,28 +85,28 @@ object WallpaperSeasonGrading {
         tint = WINTER_TINT,
         tintStrength = 0.12f,
         brightnessShift = -0.05f,
-        saturationShift = -0.10f,
+        saturationShift = -0.10f
     )
     private val SPRING_GRADING = SeasonGrading(
         warmthShift = 0.05f,
         tint = SPRING_TINT,
         tintStrength = 0.08f,
         brightnessShift = 0.05f,
-        saturationShift = 0.10f,
+        saturationShift = 0.10f
     )
     private val SUMMER_GRADING = SeasonGrading(
         warmthShift = 0.20f,
         tint = SUMMER_TINT,
         tintStrength = 0.10f,
         brightnessShift = 0.05f,
-        saturationShift = 0.10f,
+        saturationShift = 0.10f
     )
     private val AUTUMN_GRADING = SeasonGrading(
         warmthShift = 0.15f,
         tint = AUTUMN_TINT,
         tintStrength = 0.10f,
         brightnessShift = -0.05f,
-        saturationShift = 0.05f,
+        saturationShift = 0.05f
     )
 
     /**
@@ -157,7 +157,7 @@ object WallpaperSeasonGrading {
             tint = base.tint,
             tintStrength = base.tintStrength * factor,
             brightnessShift = base.brightnessShift * factor,
-            saturationShift = base.saturationShift * factor,
+            saturationShift = base.saturationShift * factor
         )
     }
 
@@ -183,7 +183,7 @@ object WallpaperSeasonGrading {
             tint = lerpColor(from.tint, to.tint, p),
             tintStrength = lerp(from.tintStrength, to.tintStrength, p),
             brightnessShift = lerp(from.brightnessShift, to.brightnessShift, p),
-            saturationShift = lerp(from.saturationShift, to.saturationShift, p),
+            saturationShift = lerp(from.saturationShift, to.saturationShift, p)
         )
     }
 

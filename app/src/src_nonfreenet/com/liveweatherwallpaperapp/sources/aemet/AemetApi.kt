@@ -16,13 +16,13 @@
 
 package com.liveweatherwallpaperapp.sources.aemet
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.aemet.json.AemetApiResult
 import com.liveweatherwallpaperapp.sources.aemet.json.AemetCurrentResult
 import com.liveweatherwallpaperapp.sources.aemet.json.AemetDailyResult
 import com.liveweatherwallpaperapp.sources.aemet.json.AemetHourlyResult
 import com.liveweatherwallpaperapp.sources.aemet.json.AemetNormalsResult
 import com.liveweatherwallpaperapp.sources.aemet.json.AemetStationsResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path

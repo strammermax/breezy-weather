@@ -137,7 +137,7 @@ class TransitionManagerTest {
             from = null,
             to = WallpaperWeatherFamily.RAIN,
             reason = SceneTransitionReason.WEATHER_DATA_CHANGED,
-            animationsEnabled = true,
+            animationsEnabled = true
         ) shouldBe 0L
     }
 
@@ -147,7 +147,7 @@ class TransitionManagerTest {
             from = WallpaperWeatherFamily.CLEAR,
             to = WallpaperWeatherFamily.RAIN,
             reason = SceneTransitionReason.WEATHER_DATA_CHANGED,
-            animationsEnabled = false,
+            animationsEnabled = false
         ) shouldBe 0L
     }
 
@@ -157,7 +157,7 @@ class TransitionManagerTest {
             from = WallpaperWeatherFamily.CLEAR,
             to = WallpaperWeatherFamily.RAIN,
             reason = SceneTransitionReason.ROTATING_TEST,
-            animationsEnabled = true,
+            animationsEnabled = true
         ) shouldBe 2_000L
     }
 
@@ -167,7 +167,7 @@ class TransitionManagerTest {
             from = WallpaperWeatherFamily.CLEAR,
             to = WallpaperWeatherFamily.CLOUDY,
             reason = SceneTransitionReason.USER_FORCED_MODE,
-            animationsEnabled = true,
+            animationsEnabled = true
         ) shouldBe 3_000L
     }
 
@@ -177,7 +177,7 @@ class TransitionManagerTest {
             from = WallpaperWeatherFamily.CLEAR,
             to = WallpaperWeatherFamily.CLOUDY,
             reason = SceneTransitionReason.WEATHER_DATA_CHANGED,
-            animationsEnabled = true,
+            animationsEnabled = true
         ) shouldBe 60_000L
     }
 
@@ -187,7 +187,7 @@ class TransitionManagerTest {
             from = WallpaperWeatherFamily.CLOUDY,
             to = WallpaperWeatherFamily.RAIN,
             reason = SceneTransitionReason.WEATHER_DATA_CHANGED,
-            animationsEnabled = true,
+            animationsEnabled = true
         ) shouldBe 45_000L
     }
 
@@ -197,7 +197,7 @@ class TransitionManagerTest {
             from = WallpaperWeatherFamily.RAIN,
             to = WallpaperWeatherFamily.THUNDERSTORM,
             reason = SceneTransitionReason.WEATHER_DATA_CHANGED,
-            animationsEnabled = true,
+            animationsEnabled = true
         ) shouldBe 30_000L
     }
 
@@ -207,7 +207,7 @@ class TransitionManagerTest {
             from = WallpaperWeatherFamily.RAIN,
             to = WallpaperWeatherFamily.RAIN,
             reason = SceneTransitionReason.WEATHER_DATA_CHANGED,
-            animationsEnabled = true,
+            animationsEnabled = true
         ) shouldBe 0L
     }
 }

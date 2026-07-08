@@ -84,10 +84,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import livewallpaperweather.domain.location.model.Location
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import kotlinx.coroutines.launch
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
@@ -120,6 +118,8 @@ import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
 import com.liveweatherwallpaperapp.ui.theme.compose.themeRipple
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import kotlinx.coroutines.launch
+import livewallpaperweather.domain.location.model.Location
 
 class PushedManagementFragment : ManagementFragment() {
 

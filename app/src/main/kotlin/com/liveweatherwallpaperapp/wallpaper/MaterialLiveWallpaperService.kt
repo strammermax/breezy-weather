@@ -47,13 +47,8 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.Size
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.withTranslation
-import livewallpaperweather.data.location.LocationRepository
-import livewallpaperweather.data.weather.WeatherRepository
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.reference.WeatherCode
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.runBlocking
 import com.liveweatherwallpaperapp.BreezyWeather
+import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.isLandscape
 import com.liveweatherwallpaperapp.common.extensions.sensorManager
@@ -68,9 +63,14 @@ import com.liveweatherwallpaperapp.ui.theme.weatherView.materialWeatherView.Dela
 import com.liveweatherwallpaperapp.ui.theme.weatherView.materialWeatherView.IntervalComputer
 import com.liveweatherwallpaperapp.ui.theme.weatherView.materialWeatherView.MaterialWeatherView
 import com.liveweatherwallpaperapp.ui.theme.weatherView.materialWeatherView.WeatherImplementorFactory
-import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperImageStore
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.runBlocking
+import livewallpaperweather.data.location.LocationRepository
+import livewallpaperweather.data.weather.WeatherRepository
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.reference.WeatherCode
 import java.io.File
 import java.time.Instant
 import java.time.ZoneId
@@ -107,7 +107,7 @@ private val SEASON_GRADING_IDENTITY_MATRIX = floatArrayOf(
     1f, 0f, 0f, 0f, 0f,
     0f, 1f, 0f, 0f, 0f,
     0f, 0f, 1f, 0f, 0f,
-    0f, 0f, 0f, 1f, 0f,
+    0f, 0f, 0f, 1f, 0f
 )
 
 /**
@@ -170,9 +170,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mHasSceneTarget = false
         private val mTransitionManager = TransitionManager()
         private var mBackground: Drawable? = null
+
         // The processed location photo is the middle layer: sky and celestial body behind it,
         // weather effects in front of it.
         private var mForeground: Drawable? = null
+
         /** Far-depth foreground layer (buildings, distant objects) — drawn BEFORE cloud layers. */
         private var mForegroundFar: Drawable? = null
         private var mGlassSceneBitmap: Bitmap? = null
@@ -259,16 +261,19 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mDaytime = false
         private var mSceneState = WallpaperSceneStateFactory.create(
             weatherKind = WeatherView.WEATHER_KIND_CLEAR,
-            daylight = 1f,
+            daylight = 1f
         )
         private var mVisible = false
         private var mAnimate = false
         private var mRotatingWeather = false
         private var mRotatingWeatherIndex = 0
+
         /** Cloud cover override for fixed (non-rotating) presets like "Holl. wolken". */
         private var mForcedCloudCoverPercent: Float? = null
+
         /** Intensity overrides for the fixed rain presets in the preview selector. */
         private var mForcedPrecipitationMillimetersPerHour: Float? = null
+
         /** Visibility overrides for the fixed fog presets in the preview selector. */
         private var mForcedVisibilityMeters: Float? = null
         private var mForcedRichSky = false
@@ -417,13 +422,13 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         height,
                         bgOffset,
                         fgOffset,
-                        celestialOffset,
+                        celestialOffset
                     )
                     if (transitionProgress != null && mOutgoingEffectRenderer != null) {
                         mOutgoingEffectRenderer?.drawGlassRainDrops(
                             it,
                             1f - transitionProgress,
-                            glassSceneTexture,
+                            glassSceneTexture
                         )
                         mCurrentEffectRenderer?.drawGlassRainDrops(it, transitionProgress, glassSceneTexture)
                     } else {
@@ -477,7 +482,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     profile,
                     snapshot.degradationEvents,
                     snapshot.recoveryEvents,
-                    mCurrentEffectFamily,
+                    mCurrentEffectFamily
                 )
             }
         }
@@ -613,7 +618,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 moonsetMillis = mMoonsetMillis,
                 weatherRefreshedAtMillis = mCurrentLocationData?.weather?.base?.refreshTime?.time,
                 latitude = mCurrentLocationData?.latitude,
-                richSky = rotatingScenario?.richSky ?: mForcedRichSky,
+                richSky = rotatingScenario?.richSky ?: mForcedRichSky
             )
         }
 
@@ -628,7 +633,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val season = WallpaperSeasonGrading.seasonFor(date, mSceneState.latitude)
             val targetGrading = WallpaperSeasonGrading.effectiveGrading(
                 WallpaperSeasonGrading.baseGradingFor(season),
-                mSeasonGradingStrength,
+                mSeasonGradingStrength
             )
             val targetEnabledFactor = if (mSeasonGradingEnabled) 1f else 0f
 
@@ -701,7 +706,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     0f,
                     0f,
                     1f,
-                    0f,
+                    0f
                 )
             )
             gradingMatrix.postConcat(warmthAndBrightness)
@@ -726,7 +731,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
             val label = getString(
                 R.string.widget_live_wallpaper_rotating_label,
-                getString(RotatingWeatherScenarios.ALL[mRotatingWeatherIndex].labelRes),
+                getString(RotatingWeatherScenarios.ALL[mRotatingWeatherIndex].labelRes)
             )
             val textSize = (canvas.height * 0.022f).coerceIn(34f, 60f)
             mRotatingLabelPaint.textSize = textSize
@@ -743,7 +748,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 centerX - textWidth / 2f - paddingX,
                 baseline + metrics.ascent - paddingY,
                 centerX + textWidth / 2f + paddingX,
-                baseline + metrics.descent + paddingY,
+                baseline + metrics.descent + paddingY
             )
 
             mRotatingLabelPaint.color = 0x99000000.toInt()
@@ -780,18 +785,18 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         cloudDensity = sceneState.cloudDensity,
                         cloudDarkness = sceneState.cloudDarkness,
                         windFactor = sceneState.windFactor,
-                        windDirectionDegrees = sceneState.windDirectionDegrees,
+                        windDirectionDegrees = sceneState.windDirectionDegrees
                     ),
                     fogField = FogFieldFactory.fogFieldParams(
                         fogIntensity = sceneState.fogIntensity,
                         hazeIntensity = sceneState.hazeIntensity,
                         windFactor = sceneState.windFactor,
-                        windDirectionDegrees = sceneState.windDirectionDegrees,
+                        windDirectionDegrees = sceneState.windDirectionDegrees
                     ),
                     starField = StarFieldFactory.starFieldParams(
                         locationSeed = mCurrentLocationData?.let {
                             StarFieldFactory.locationSeed(it.latitude, it.longitude)
-                        } ?: 0L,
+                        } ?: 0L
                     ),
                     glassRainIntensity = sceneState.glassRainIntensity,
                     precipitationIntensity = sceneState.precipitationIntensity,
@@ -802,7 +807,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     fairSky = sceneState.condition.sky == WallpaperSkyCondition.FAIR,
                     useNewClouds = liveWallpaperConfig.newCloudsEnabled,
                     newCloudsParams = CloudEngineAdapter.sceneParams(sceneState),
-                    cloudEngineContext = applicationContext,
+                    cloudEngineContext = applicationContext
                 )
             } else {
                 null
@@ -812,7 +817,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 from = mCurrentEffectFamily,
                 to = newFamily,
                 reason = reason,
-                animationsEnabled = mAnimate,
+                animationsEnabled = mAnimate
             )
 
             if (mCurrentEffectRenderer != null && newRenderer != null && duration > 0L &&
@@ -844,7 +849,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
             // The scene layer draws its own time-positioned sun. Avoid the old fixed clear-day sun.
             mImplementor = if (mCurrentEffectRenderer != null ||
-                sceneState.weatherKind == WeatherView.WEATHER_KIND_CLEAR && sceneState.daytime
+                (sceneState.weatherKind == WeatherView.WEATHER_KIND_CLEAR && sceneState.daytime)
             ) {
                 null
             } else {
@@ -943,7 +948,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 mGlassSceneShader = android.graphics.BitmapShader(
                     bitmap,
                     Shader.TileMode.CLAMP,
-                    Shader.TileMode.CLAMP,
+                    Shader.TileMode.CLAMP
                 )
             }
 
@@ -983,7 +988,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 (coverage * 0.86f * 255f).roundToInt().coerceIn(0, 255),
                 (r * 255f).roundToInt().coerceIn(0, 255),
                 (g * 255f).roundToInt().coerceIn(0, 255),
-                (b * 255f).roundToInt().coerceIn(0, 255),
+                (b * 255f).roundToInt().coerceIn(0, 255)
             )
             canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), mSkyTintPaint)
         }
@@ -1031,7 +1036,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
             }
             val source = mWallpaperRepository.loadCachedBitmap()
             if (source == null) {
-                lwwLog { "buildPhotoForeground skipped: no cached bitmap (path=${mWallpaperImageStore.cachedPhotoPath})" }
+                lwwLog {
+                    "buildPhotoForeground skipped: no cached bitmap (path=${mWallpaperImageStore.cachedPhotoPath})"
+                }
                 return null
             }
             return try {
@@ -1078,7 +1085,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val greyscaleAmount = tint.greyscaleAmount
             if (abs(dimming - mForegroundNightTint) < 0.001f &&
                 abs(greyscaleAmount - mForegroundGreyscaleAmount) < 0.001f
-            ) return
+            ) {
+                return
+            }
 
             val filter = if (greyscaleAmount > 0f) {
                 ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(1f - greyscaleAmount) })
@@ -1091,7 +1100,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                             lerp(1f, 0.58f, dimming),
                             lerp(1f, 0.62f, dimming),
                             lerp(1f, 0.72f, dimming),
-                            1f,
+                            1f
                         )
                     }
                 )
@@ -1123,7 +1132,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                         drawBounds.bottom,
                         colors[0],
                         colors[1],
-                        Shader.TileMode.CLAMP,
+                        Shader.TileMode.CLAMP
                     )
                     cachedMinute = minute
                     cachedBounds = drawBounds
@@ -1161,10 +1170,26 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     when {
                         now < sunrise - transition -> night
                         now < sunrise -> SkyColors.blendSky(night, dawn, fraction(now, sunrise - transition, sunrise))
-                        now < sunrise + transition -> SkyColors.blendSky(dawn, day, fraction(now, sunrise, sunrise + transition))
+                        now < sunrise + transition -> SkyColors.blendSky(
+                            dawn,
+                            day,
+                            fraction(
+                                now,
+                                sunrise,
+                                sunrise + transition
+                            )
+                        )
                         now < sunset - transition -> day
                         now < sunset -> SkyColors.blendSky(day, dusk, fraction(now, sunset - transition, sunset))
-                        now < sunset + transition -> SkyColors.blendSky(dusk, night, fraction(now, sunset, sunset + transition))
+                        now < sunset + transition -> SkyColors.blendSky(
+                            dusk,
+                            night,
+                            fraction(
+                                now,
+                                sunset,
+                                sunset + transition
+                            )
+                        )
                         else -> night
                     }
                 }
@@ -1178,7 +1203,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val overcastColors = SkyColors.applyOvercastTint(
                 profiledSkyColors,
                 mSceneState.cloudDarkness,
-                mDaytime,
+                mDaytime
             )
             return SkyColors.applyFogSkyTint(overcastColors, mSceneState.fogIntensity, mDaytime)
         }
@@ -1197,14 +1222,14 @@ class MaterialLiveWallpaperService : WallpaperService() {
             // shining through a near-opaque overcast/storm ceiling.
             val celestialOcclusion = max(
                 mSceneState.cloudDensity * mSceneState.cloudDarkness,
-                max(mSceneState.fogIntensity * 0.72f, mSceneState.hazeIntensity * 0.35f),
+                max(mSceneState.fogIntensity * 0.72f, mSceneState.hazeIntensity * 0.35f)
             ).coerceIn(0f, 1f)
             val celestialVisibility = 1f - celestialOcclusion
             val sunAlpha = CelestialTiming.sunVisibility(
                 now,
                 sunriseMillis = if (mAutomaticDayNight) mSunriseMillis else null,
                 sunsetMillis = if (mAutomaticDayNight) mSunsetMillis else null,
-                daytime = mDaytime,
+                daytime = mDaytime
             ) * celestialVisibility
             val moonAlpha = CelestialTiming.moonVisibility(now, mMoonriseMillis, mMoonsetMillis) *
                 (1f - sunAlpha) * celestialVisibility
@@ -1214,7 +1239,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 val sunProgress = CelestialTiming.celestialProgress(
                     positionTime,
                     mSunriseMillis ?: mCelestialStartMillis,
-                    mSunsetMillis ?: mCelestialEndMillis,
+                    mSunsetMillis ?: mCelestialEndMillis
                 )
                 val sunX = CelestialTiming.celestialX(width, sunProgress)
                 val sunY = CelestialTiming.celestialY(height, sunProgress)
@@ -1224,7 +1249,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 val moonProgress = CelestialTiming.celestialProgress(
                     positionTime,
                     mMoonriseMillis ?: mCelestialStartMillis,
-                    mMoonsetMillis ?: mCelestialEndMillis,
+                    mMoonsetMillis ?: mCelestialEndMillis
                 )
                 val moonX = CelestialTiming.celestialX(width, moonProgress)
                 val moonY = CelestialTiming.celestialY(height, moonProgress)
@@ -1237,7 +1262,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     (moonX - halfSize).toInt(),
                     (moonY - halfSize).toInt(),
                     (moonX + halfSize).toInt(),
-                    (moonY + halfSize).toInt(),
+                    (moonY + halfSize).toInt()
                 )
                 mMoonDrawable.draw(canvas)
             }
@@ -1444,7 +1469,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                             snapshot.p95FrameTimeMillis,
                             snapshot.droppedFrames,
                             snapshot.totalFrames,
-                            profile,
+                            profile
                         )
                     }
                     mFrameTelemetry.reset()
@@ -1586,7 +1611,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             xOffsetStep: Float,
             yOffsetStep: Float,
             xPixelOffset: Int,
-            yPixelOffset: Int
+            yPixelOffset: Int,
         ) {
             super.onOffsetsChanged(xOffset, yOffset, xOffsetStep, yOffsetStep, xPixelOffset, yPixelOffset)
             if (mParallaxEnabled && mXOffset != xOffset) {

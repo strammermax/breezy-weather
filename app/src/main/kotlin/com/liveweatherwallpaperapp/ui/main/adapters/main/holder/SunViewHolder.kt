@@ -23,13 +23,13 @@ import android.annotation.SuppressLint
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Weather
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.getFormattedTime
 import com.liveweatherwallpaperapp.common.extensions.is12Hour
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Weather
 import kotlin.time.Duration.Companion.days
 
 class SunViewHolder(parent: ViewGroup) : AstroViewHolder(parent, isSun = true) {

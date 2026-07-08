@@ -35,9 +35,6 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import livewallpaperweather.domain.weather.model.Pollen
-import kotlinx.collections.immutable.ImmutableSet
-import kotlinx.collections.immutable.persistentSetOf
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
@@ -48,6 +45,9 @@ import com.liveweatherwallpaperapp.domain.weather.model.getConcentration
 import com.liveweatherwallpaperapp.domain.weather.model.getIndexName
 import com.liveweatherwallpaperapp.domain.weather.model.validPollens
 import com.liveweatherwallpaperapp.unit.pollen.PollenConcentrationUnit
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
+import livewallpaperweather.domain.weather.model.Pollen
 import java.text.Collator
 
 @Composable

@@ -16,9 +16,9 @@
 
 package com.liveweatherwallpaperapp.sources.ims
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.ims.json.ImsLocationResult
 import com.liveweatherwallpaperapp.sources.ims.json.ImsWeatherResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Path
 

@@ -17,8 +17,6 @@
 package com.liveweatherwallpaperapp.sources.naturalearth
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.LocationAddressInfo
-import livewallpaperweather.domain.source.SourceFeature
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.SphericalUtil
 import com.google.maps.android.data.Feature
@@ -27,8 +25,6 @@ import com.google.maps.android.data.geojson.GeoJsonParser
 import com.google.maps.android.data.geojson.GeoJsonPoint
 import com.google.maps.android.data.geojson.GeoJsonPolygon
 import com.google.maps.android.model.LatLng
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.codeForNaturalEarth
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -37,6 +33,10 @@ import com.liveweatherwallpaperapp.common.extensions.parseRawGeoJson
 import com.liveweatherwallpaperapp.common.source.ReverseGeocodingSource
 import com.liveweatherwallpaperapp.common.utils.helpers.LogHelper
 import com.liveweatherwallpaperapp.sources.RefreshHelper
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
+import livewallpaperweather.domain.location.model.LocationAddressInfo
+import livewallpaperweather.domain.source.SourceFeature
 import javax.inject.Inject
 
 /**

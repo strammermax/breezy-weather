@@ -14,5 +14,5 @@ internal data class CloudInstance(
     val assetIndex: Int,
     val baseWidthDp: Float,
     val rotationDegrees: Float,
-    val alpha: Float
+    val alpha: Float,
 )

@@ -26,7 +26,6 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.WorkInfo
 import androidx.work.WorkQuery
-import dagger.hilt.android.HiltAndroidApp
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.uiModeManager
 import com.liveweatherwallpaperapp.common.extensions.workManager
@@ -34,6 +33,7 @@ import com.liveweatherwallpaperapp.common.utils.AndroidSignatureFinder
 import com.liveweatherwallpaperapp.common.utils.helpers.LogHelper
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.remoteviews.Notifications
+import dagger.hilt.android.HiltAndroidApp
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader

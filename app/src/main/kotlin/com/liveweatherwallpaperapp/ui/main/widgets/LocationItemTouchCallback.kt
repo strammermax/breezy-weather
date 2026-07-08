@@ -22,12 +22,12 @@ import androidx.annotation.Px
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
 import com.liveweatherwallpaperapp.ui.common.widgets.slidingItem.SlidingItemTouchCallback
 import com.liveweatherwallpaperapp.ui.main.MainActivityViewModel
+import livewallpaperweather.domain.location.model.Location
 
 class LocationItemTouchCallback(
     private val mActivity: BreezyActivity,

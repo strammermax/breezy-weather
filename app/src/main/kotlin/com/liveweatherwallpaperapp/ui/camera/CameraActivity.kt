@@ -34,19 +34,17 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
-import androidx.exifinterface.media.ExifInterface as AndroidXExifInterface
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import com.liveweatherwallpaperapp.R
-import com.liveweatherwallpaperapp.databinding.ActivityCameraBinding
 import com.liveweatherwallpaperapp.common.utils.DiagnosticLogger
+import com.liveweatherwallpaperapp.databinding.ActivityCameraBinding
 import com.liveweatherwallpaperapp.wallpaper.launchLiveWallpaperPicker
 import com.liveweatherwallpaperapp.wallpaper.photo.CameraUploadResult
 import com.liveweatherwallpaperapp.wallpaper.photo.RemoveSkyCheckResult
 import com.liveweatherwallpaperapp.wallpaper.photo.RemoveSkyHttpException
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import java.io.File
@@ -55,6 +53,8 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import javax.inject.Inject
+import androidx.exifinterface.media.ExifInterface as AndroidXExifInterface
 
 @AndroidEntryPoint
 class CameraActivity : AppCompatActivity() {
@@ -62,7 +62,7 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCameraBinding
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
-    
+
     private lateinit var resultImageView: ImageView
     private lateinit var resultTextView: TextView
     private lateinit var progressBar: ProgressBar
@@ -139,6 +139,7 @@ class CameraActivity : AppCompatActivity() {
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
         private const val THUMBNAIL_SIZE_DIP = 96
+
         // A phone sensor JPEG is commonly 12-50 MP. Keeping that entire bitmap in memory while
         // encoding can exceed Android's heap; this is still ample for a wallpaper/server upload.
         private const val CAMERA_UPLOAD_MAX_DIMENSION = 2560
@@ -154,7 +155,7 @@ class CameraActivity : AppCompatActivity() {
             "TAG_ROWS_PER_STRIP",
             "TAG_STRIP_BYTE_COUNTS",
             "TAG_JPEG_INTERCHANGE_FORMAT",
-            "TAG_JPEG_INTERCHANGE_FORMAT_LENGTH",
+            "TAG_JPEG_INTERCHANGE_FORMAT_LENGTH"
         )
     }
 
@@ -165,14 +166,14 @@ class CameraActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
+
         resultImageView = binding.resultImageView
         resultTextView = binding.resultTextView
         progressBar = binding.progressBar
         captureButton = binding.captureButton
-        
+
         cameraExecutor = Executors.newSingleThreadExecutor()
-        
+
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -190,7 +191,7 @@ class CameraActivity : AppCompatActivity() {
 
         setupClickListeners()
     }
-    
+
     private fun setupClickListeners() {
         binding.captureButton.setOnClickListener {
             takePhoto()
@@ -287,7 +288,11 @@ class CameraActivity : AppCompatActivity() {
                 runOnUiThread {
                     binding.saveSelectedButton.visibility = View.GONE
                     binding.saveSelectedButton.isEnabled = true
-                    Toast.makeText(this, getString(R.string.camera_photos_saved, selected.size), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        getString(R.string.camera_photos_saved, selected.size),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -370,20 +375,20 @@ class CameraActivity : AppCompatActivity() {
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-        
+
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
-            
+
             val preview = Preview.Builder().build().also {
                 it.surfaceProvider = binding.cameraPreviewView.surfaceProvider
             }
-            
+
             imageCapture = ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .build()
-            
+
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-            
+
             try {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
@@ -399,14 +404,14 @@ class CameraActivity : AppCompatActivity() {
 
         captureInProgress = true
         binding.captureButton.isEnabled = false
-        
+
         val photoFile = File(
             getExternalFilesDir(Environment.DIRECTORY_PICTURES),
             SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis()) + ".jpg"
         )
-        
+
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-        
+
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
@@ -438,10 +443,12 @@ class CameraActivity : AppCompatActivity() {
         val bitmap = requireNotNull(
             BitmapFactory.decodeFile(file.absolutePath, BitmapFactory.Options().apply { inSampleSize = sampleSize })
         ) { "Captured photo could not be decoded" }
-        val rotationDegrees = when (ExifInterface(file.absolutePath).getAttributeInt(
-            ExifInterface.TAG_ORIENTATION,
-            ExifInterface.ORIENTATION_NORMAL
-        )) {
+        val rotationDegrees = when (
+            ExifInterface(file.absolutePath).getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
+        ) {
             ExifInterface.ORIENTATION_ROTATE_90 -> 90
             ExifInterface.ORIENTATION_ROTATE_180 -> 180
             ExifInterface.ORIENTATION_ROTATE_270 -> 270
@@ -465,10 +472,13 @@ class CameraActivity : AppCompatActivity() {
             val written = webp.outputStream().use { output ->
                 @Suppress("DEPRECATION")
                 bitmap.compress(
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) Bitmap.CompressFormat.WEBP_LOSSY
-                    else Bitmap.CompressFormat.WEBP,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        Bitmap.CompressFormat.WEBP_LOSSY
+                    } else {
+                        Bitmap.CompressFormat.WEBP
+                    },
                     CAMERA_UPLOAD_WEBP_QUALITY,
-                    output,
+                    output
                 )
             }
             check(written) { "WebP conversion failed" }
@@ -476,7 +486,7 @@ class CameraActivity : AppCompatActivity() {
             DiagnosticLogger.log(
                 this,
                 "Camera",
-                "WebP reference=${webp.name} (${bitmap.width}x${bitmap.height}, ${webp.length()} bytes, EXIF copied)",
+                "WebP reference=${webp.name} (${bitmap.width}x${bitmap.height}, ${webp.length()} bytes, EXIF copied)"
             )
             return webp
         } catch (e: Exception) {
@@ -504,7 +514,7 @@ class CameraActivity : AppCompatActivity() {
             }
         destination.setAttribute(
             AndroidXExifInterface.TAG_ORIENTATION,
-            AndroidXExifInterface.ORIENTATION_NORMAL.toString(),
+            AndroidXExifInterface.ORIENTATION_NORMAL.toString()
         )
         destination.saveAttributes()
     }
@@ -630,13 +640,13 @@ class CameraActivity : AppCompatActivity() {
                     // The camera flow activates explicitly via the "Verwerk" button once the
                     // user has seen the suitability check, not automatically on upload.
                     activate = false,
-                    cancelTag = currentUploadCancelTag,
+                    cancelTag = currentUploadCancelTag
                 )
             }
             DiagnosticLogger.log(
                 this,
                 "Camera",
-                "Upload and server processing completed; processedUrl=${result.processedUrl}",
+                "Upload and server processing completed; processedUrl=${result.processedUrl}"
             )
             appendProgressLog(getString(R.string.camera_step_uploading_done))
             appendProgressLog(getString(R.string.camera_step_checking))
@@ -649,11 +659,10 @@ class CameraActivity : AppCompatActivity() {
                         locationName = result.location,
                         processedUrl = result.processedUrl,
                         uploadFailureReason = null,
-                        activationResult = result,
+                        activationResult = result
                     )
                 )
             )
-
         } catch (e: Exception) {
             if (singleUploadCancelled) {
                 // The "Stoppen" click already switched the button to "Sluiten" — nothing more to show.
@@ -663,10 +672,12 @@ class CameraActivity : AppCompatActivity() {
             DiagnosticLogger.log(
                 this,
                 "Camera",
-                "Upload failed" + ((e as? RemoveSkyHttpException)?.let {
-                    " (HTTP ${it.statusCode}, body=${it.responseBody})"
-                } ?: ""),
-                e,
+                "Upload failed" + (
+                    (e as? RemoveSkyHttpException)?.let {
+                        " (HTTP ${it.statusCode}, body=${it.responseBody})"
+                    } ?: ""
+                    ),
+                e
             )
             val rejectionCode = extractRejectionReasonCode(e)
             if (rejectionCode != null || e is RemoveSkyHttpException) {
@@ -677,7 +688,7 @@ class CameraActivity : AppCompatActivity() {
                             source = getString(R.string.camera_source_camera),
                             locationName = null,
                             processedUrl = null,
-                            uploadFailureReason = rejectionCode ?: "unknown",
+                            uploadFailureReason = rejectionCode ?: "unknown"
                         )
                     )
                 )
@@ -782,7 +793,9 @@ class CameraActivity : AppCompatActivity() {
                         file.delete()
                         continue
                     }
-                    appendProgressLog(getString(R.string.camera_gallery_exif_gps_found, label, exifLatLong[0], exifLatLong[1]))
+                    appendProgressLog(
+                        getString(R.string.camera_gallery_exif_gps_found, label, exifLatLong[0], exifLatLong[1])
+                    )
                     var uploadFile: File? = null
                     try {
                         // Rotated to match its EXIF orientation up front — a gallery photo's raw
@@ -805,7 +818,7 @@ class CameraActivity : AppCompatActivity() {
                                 // Activation is deferred to "Bewaar", after the user sees which
                                 // photos were approved — same as the single-photo camera flow.
                                 activate = false,
-                                cancelTag = currentUploadCancelTag,
+                                cancelTag = currentUploadCancelTag
                             )
                         }
                         successCount++
@@ -816,7 +829,7 @@ class CameraActivity : AppCompatActivity() {
                                 locationName = result.location,
                                 processedUrl = result.processedUrl,
                                 uploadFailureReason = null,
-                                activationResult = result,
+                                activationResult = result
                             )
                         )
                         appendProgressLog(getString(R.string.camera_gallery_saved, label))
@@ -831,7 +844,7 @@ class CameraActivity : AppCompatActivity() {
                                     source = getString(R.string.camera_source_gallery),
                                     locationName = null,
                                     processedUrl = null,
-                                    uploadFailureReason = rejectionCode,
+                                    uploadFailureReason = rejectionCode
                                 )
                             )
                         }
@@ -921,7 +934,8 @@ class CameraActivity : AppCompatActivity() {
             binding.uploadResultCardsScroll.visibility = View.VISIBLE
             binding.retakeButton.visibility = View.VISIBLE
             binding.processButton.visibility = if (approvedActivation != null) View.VISIBLE else View.GONE
-            binding.saveSelectedButton.visibility = if (isGalleryFlow && gallerySelection.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.saveSelectedButton.visibility =
+                if (isGalleryFlow && gallerySelection.isNotEmpty()) View.VISIBLE else View.GONE
             binding.setLiveWallpaperButton.visibility = if (anyApproved) View.VISIBLE else View.GONE
             binding.closeButton.visibility = View.VISIBLE
         }
@@ -986,7 +1000,8 @@ class CameraActivity : AppCompatActivity() {
 
         val badgesGroup = card.findViewById<ChipGroup>(R.id.cardBadgesGroup)
         check?.checks?.isNightVisual?.let { isNight ->
-            val label = getString(if (isNight) R.string.wallpaper_photo_meta_night else R.string.wallpaper_photo_meta_day)
+            val label =
+                getString(if (isNight) R.string.wallpaper_photo_meta_night else R.string.wallpaper_photo_meta_day)
             addBadgeChip(badgesGroup, label)
         }
         check?.checks?.seasonVisual?.let { season ->
@@ -1041,7 +1056,12 @@ class CameraActivity : AppCompatActivity() {
             file.outputStream().use { output -> input.copyTo(output) }
             true
         } ?: false
-        if (copied) file else { file.delete(); null }
+        if (copied) {
+            file
+        } else {
+            file.delete()
+            null
+        }
     } catch (e: Exception) {
         null
     }
@@ -1094,7 +1114,7 @@ class CameraActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
-        grantResults: IntArray
+        grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE_PERMISSIONS) {

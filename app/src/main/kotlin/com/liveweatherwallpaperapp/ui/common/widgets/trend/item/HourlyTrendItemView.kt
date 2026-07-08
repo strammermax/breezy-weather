@@ -70,7 +70,10 @@ class HourlyTrendItemView @JvmOverloads constructor(
     }
     private var mHourText: String? = null
     private var mPrecipitationText: String? = null
-    private val mPrecipitationIconDrawable: Drawable? = ContextCompat.getDrawable(context, R.drawable.ic_water)?.mutate()
+    private val mPrecipitationIconDrawable: Drawable? = ContextCompat.getDrawable(
+        context,
+        R.drawable.ic_water
+    )?.mutate()
     private val mPrecipitationIconSize: Int
     private var mWindIconDrawable: Drawable? = null
     private var mWindForceText: String? = null

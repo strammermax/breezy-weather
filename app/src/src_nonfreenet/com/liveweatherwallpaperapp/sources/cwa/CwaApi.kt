@@ -16,8 +16,6 @@
 
 package com.liveweatherwallpaperapp.sources.cwa
 
-import io.reactivex.rxjava3.core.Observable
-import okhttp3.RequestBody
 import com.liveweatherwallpaperapp.sources.cwa.json.CwaAirQualityResult
 import com.liveweatherwallpaperapp.sources.cwa.json.CwaAlertResult
 import com.liveweatherwallpaperapp.sources.cwa.json.CwaAssistantResult
@@ -25,6 +23,8 @@ import com.liveweatherwallpaperapp.sources.cwa.json.CwaCurrentResult
 import com.liveweatherwallpaperapp.sources.cwa.json.CwaForecastResult
 import com.liveweatherwallpaperapp.sources.cwa.json.CwaLocationResult
 import com.liveweatherwallpaperapp.sources.cwa.json.CwaNormalsResult
+import io.reactivex.rxjava3.core.Observable
+import okhttp3.RequestBody
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST

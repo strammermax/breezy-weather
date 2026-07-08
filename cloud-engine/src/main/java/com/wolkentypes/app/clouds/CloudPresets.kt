@@ -13,7 +13,7 @@ data class PersistedPreset(
     val layers: Map<CloudLayer, LayerCloudConfig>,
     val density: Float,
     val wind: Float,
-    val depth: Float
+    val depth: Float,
 )
 
 fun savePreset(
@@ -22,7 +22,7 @@ fun savePreset(
     layers: Map<CloudLayer, LayerCloudConfig>,
     density: Float,
     wind: Float,
-    depth: Float
+    depth: Float,
 ) {
     val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     prefs.edit().apply {

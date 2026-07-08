@@ -26,7 +26,6 @@ import android.view.View
 import android.widget.RemoteViews
 import androidx.annotation.IdRes
 import androidx.annotation.IntRange
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.background.receiver.widget.WidgetMultiCityProvider
 import com.liveweatherwallpaperapp.domain.location.model.getPlace
@@ -36,6 +35,7 @@ import com.liveweatherwallpaperapp.domain.weather.model.getTrendTemperature
 import com.liveweatherwallpaperapp.remoteviews.Widgets
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
+import livewallpaperweather.domain.location.model.Location
 import kotlin.math.roundToInt
 
 object MultiCityWidgetIMP : AbstractRemoteViewsPresenter() {

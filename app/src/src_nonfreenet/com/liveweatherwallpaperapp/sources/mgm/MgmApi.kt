@@ -16,13 +16,13 @@
 
 package com.liveweatherwallpaperapp.sources.mgm
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.mgm.json.MgmAlertResult
 import com.liveweatherwallpaperapp.sources.mgm.json.MgmCurrentResult
 import com.liveweatherwallpaperapp.sources.mgm.json.MgmDailyForecastResult
 import com.liveweatherwallpaperapp.sources.mgm.json.MgmHourlyForecastResult
 import com.liveweatherwallpaperapp.sources.mgm.json.MgmLocationResult
 import com.liveweatherwallpaperapp.sources.mgm.json.MgmNormalsResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.Path

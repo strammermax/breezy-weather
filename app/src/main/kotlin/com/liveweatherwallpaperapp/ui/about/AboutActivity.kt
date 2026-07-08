@@ -18,9 +18,9 @@ package com.liveweatherwallpaperapp.ui.about
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import dagger.hilt.android.AndroidEntryPoint
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class AboutActivity : BreezyActivity() {

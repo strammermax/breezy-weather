@@ -17,6 +17,17 @@
 package com.liveweatherwallpaperapp.sources.bmd
 
 import android.content.Context
+import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.common.exceptions.InvalidLocationException
+import com.liveweatherwallpaperapp.common.utils.helpers.LogHelper
+import com.liveweatherwallpaperapp.sources.bmd.json.BmdData
+import com.liveweatherwallpaperapp.sources.bmd.json.BmdForecastResult
+import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.millimeters
+import com.liveweatherwallpaperapp.unit.ratio.Ratio.Companion.percent
+import com.liveweatherwallpaperapp.unit.speed.Speed.Companion.kilometersPerHour
+import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.location.model.LocationAddressInfo
 import livewallpaperweather.domain.source.SourceFeature
@@ -30,19 +41,8 @@ import livewallpaperweather.domain.weather.wrappers.HalfDayWrapper
 import livewallpaperweather.domain.weather.wrappers.HourlyWrapper
 import livewallpaperweather.domain.weather.wrappers.TemperatureWrapper
 import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.core.Observable
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import com.liveweatherwallpaperapp.R
-import com.liveweatherwallpaperapp.common.exceptions.InvalidLocationException
-import com.liveweatherwallpaperapp.common.utils.helpers.LogHelper
-import com.liveweatherwallpaperapp.sources.bmd.json.BmdData
-import com.liveweatherwallpaperapp.sources.bmd.json.BmdForecastResult
-import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.millimeters
-import com.liveweatherwallpaperapp.unit.ratio.Ratio.Companion.percent
-import com.liveweatherwallpaperapp.unit.speed.Speed.Companion.kilometersPerHour
-import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
 import retrofit2.Retrofit
 import java.text.SimpleDateFormat
 import java.util.Date

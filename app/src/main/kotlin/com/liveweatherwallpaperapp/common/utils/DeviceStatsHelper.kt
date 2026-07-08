@@ -41,7 +41,7 @@ object DeviceStatsHelper {
             freeStorageGb = freeStorageGb(),
             usedRamGb = usedRamGb(context),
             totalRamGb = totalRamGb(context),
-            cpuTemperatureCelsius = cpuTemperatureCelsius(),
+            cpuTemperatureCelsius = cpuTemperatureCelsius()
         )
     }
 

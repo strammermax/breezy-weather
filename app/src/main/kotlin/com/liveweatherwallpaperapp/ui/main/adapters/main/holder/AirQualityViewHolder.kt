@@ -27,7 +27,6 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -42,6 +41,7 @@ import com.liveweatherwallpaperapp.domain.weather.model.validAirQuality
 import com.liveweatherwallpaperapp.ui.common.widgets.ArcProgress
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import com.liveweatherwallpaperapp.unit.formatting.format
+import livewallpaperweather.domain.location.model.Location
 import kotlin.math.roundToInt
 
 class AirQualityViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(

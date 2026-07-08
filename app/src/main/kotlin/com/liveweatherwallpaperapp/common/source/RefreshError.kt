@@ -17,11 +17,11 @@
 package com.liveweatherwallpaperapp.common.source
 
 import android.content.Context
-import livewallpaperweather.domain.source.SourceFeature
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.domain.source.resourceName
 import com.liveweatherwallpaperapp.sources.SourceManager
 import com.liveweatherwallpaperapp.ui.main.utils.RefreshErrorType
+import livewallpaperweather.domain.source.SourceFeature
 
 class RefreshError(
     val error: RefreshErrorType,

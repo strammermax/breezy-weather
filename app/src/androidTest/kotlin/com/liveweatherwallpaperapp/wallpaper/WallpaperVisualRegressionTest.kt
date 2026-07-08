@@ -82,6 +82,7 @@ class WallpaperVisualRegressionTest {
 
         /** ~06:00 local. */
         const val SUNRISE_MILLIS = 6L * 60 * 60 * 1000
+
         /** ~21:00 local. */
         const val SUNSET_MILLIS = 21L * 60 * 60 * 1000
         const val MOONRISE_MILLIS = 20L * 60 * 60 * 1000
@@ -108,7 +109,7 @@ class WallpaperVisualRegressionTest {
             sunriseMillis = SUNRISE_MILLIS,
             sunsetMillis = SUNSET_MILLIS,
             moonriseMillis = MOONRISE_MILLIS,
-            moonsetMillis = MOONSET_MILLIS,
+            moonsetMillis = MOONSET_MILLIS
         )
     }
 
@@ -124,7 +125,7 @@ class WallpaperVisualRegressionTest {
         Scenario("wind", WeatherView.WEATHER_KIND_WIND, daylight = 1f, seed = 1009L, windSpeedMetersPerSecond = 12f),
         Scenario("snow", WeatherView.WEATHER_KIND_SNOW, daylight = 1f, seed = 1010L),
         Scenario("sleet", WeatherView.WEATHER_KIND_SLEET, daylight = 1f, seed = 1011L),
-        Scenario("fog", WeatherView.WEATHER_KIND_FOG, daylight = 1f, seed = 1012L),
+        Scenario("fog", WeatherView.WEATHER_KIND_FOG, daylight = 1f, seed = 1012L)
     )
 
     init {
@@ -252,7 +253,7 @@ class WallpaperVisualRegressionTest {
             width = WIDTH,
             height = HEIGHT,
             seed = 2000L,
-            progress = 0.5f,
+            progress = 0.5f
         )
         assert(bitmap.width == WIDTH && bitmap.height == HEIGHT)
         assert(!isSingleColor(bitmap)) { "Transition render must not be an empty/flat frame" }
@@ -264,7 +265,7 @@ class WallpaperVisualRegressionTest {
         width = WIDTH,
         height = HEIGHT,
         seed = scenario.seed,
-        qualityProfile = WallpaperQualityProfile.BALANCED,
+        qualityProfile = WallpaperQualityProfile.BALANCED
     )
 
     private fun isSingleColor(bitmap: Bitmap, expected: Int? = null): Boolean {
@@ -325,7 +326,10 @@ class WallpaperVisualRegressionTest {
                 "generatedTopLeft=${bitmap.getPixel(0, 0).toUInt().toString(16)}, " +
                 "baselineTopLeft=${baselineBitmap.getPixel(0, 0).toUInt().toString(16)}, " +
                 "generatedCenter=${bitmap.getPixel(bitmap.width / 2, bitmap.height / 2).toUInt().toString(16)}, " +
-                "baselineCenter=${baselineBitmap.getPixel(baselineBitmap.width / 2, baselineBitmap.height / 2).toUInt().toString(16)}"
+                "baselineCenter=${baselineBitmap.getPixel(
+                    baselineBitmap.width / 2,
+                    baselineBitmap.height / 2
+                ).toUInt().toString(16)}"
         }
     }
 

@@ -16,10 +16,10 @@
 
 package com.liveweatherwallpaperapp.sources.china
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.china.json.ChinaForecastResult
 import com.liveweatherwallpaperapp.sources.china.json.ChinaLocationResult
 import com.liveweatherwallpaperapp.sources.china.json.ChinaMinutelyResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Query
 

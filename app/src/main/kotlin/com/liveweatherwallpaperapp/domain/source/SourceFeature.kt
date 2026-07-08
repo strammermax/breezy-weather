@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.domain.source
 
-import livewallpaperweather.domain.source.SourceFeature
 import com.liveweatherwallpaperapp.R
+import livewallpaperweather.domain.source.SourceFeature
 
 val SourceFeature.resourceName: Int
     get() = when (this) {

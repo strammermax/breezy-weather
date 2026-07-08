@@ -16,10 +16,10 @@
 
 package com.liveweatherwallpaperapp.sources.meteoam
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.meteoam.json.MeteoAmForecastResult
 import com.liveweatherwallpaperapp.sources.meteoam.json.MeteoAmObservationResult
 import com.liveweatherwallpaperapp.sources.meteoam.json.MeteoAmReverseLocationResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Path
 

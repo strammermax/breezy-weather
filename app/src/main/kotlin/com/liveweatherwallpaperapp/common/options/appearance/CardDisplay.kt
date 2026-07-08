@@ -59,12 +59,12 @@ enum class CardDisplay(
     CARD_RADAR(
         "radar",
         R.string.action_radar,
-        { activity -> IntentHelper.startRadarTileSettingsActivity(activity) },
+        { activity -> IntentHelper.startRadarTileSettingsActivity(activity) }
     ),
     CARD_WIDGET(
         "widget",
         R.string.widget_tile,
-        { activity -> IntentHelper.startWidgetTileSelectActivity(activity) },
+        { activity -> IntentHelper.startWidgetTileSelectActivity(activity) }
     ),
     ;
 
@@ -91,7 +91,9 @@ enum class CardDisplay(
         }
 
         fun getSummary(context: Context, list: List<CardDisplay>): String {
-            return list.joinToString(context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)) { item ->
+            return list.joinToString(
+                context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
+            ) { item ->
                 item.getName(context)
             }
         }

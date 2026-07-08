@@ -19,10 +19,6 @@ package com.liveweatherwallpaperapp
 import android.Manifest
 import android.content.Context
 import android.os.Build
-import livewallpaperweather.data.location.LocationRepository
-import livewallpaperweather.data.weather.WeatherRepository
-import livewallpaperweather.domain.source.SourceFeature
-import kotlinx.coroutines.runBlocking
 import com.liveweatherwallpaperapp.background.forecast.TodayForecastNotificationJob
 import com.liveweatherwallpaperapp.background.forecast.TomorrowForecastNotificationJob
 import com.liveweatherwallpaperapp.background.weather.WeatherUpdateJob
@@ -33,6 +29,10 @@ import com.liveweatherwallpaperapp.sources.SourceManager
 import com.liveweatherwallpaperapp.ui.main.utils.StatementManager
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperImageStore
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperPhotoRefreshWorker
+import kotlinx.coroutines.runBlocking
+import livewallpaperweather.data.location.LocationRepository
+import livewallpaperweather.data.weather.WeatherRepository
+import livewallpaperweather.domain.source.SourceFeature
 import java.io.File
 
 object Migrations {

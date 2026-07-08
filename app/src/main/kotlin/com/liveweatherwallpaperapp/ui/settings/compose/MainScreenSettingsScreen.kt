@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import kotlinx.collections.immutable.ImmutableList
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.isMotionReduced
@@ -51,6 +50,7 @@ import com.liveweatherwallpaperapp.ui.settings.preference.sectionFooterItem
 import com.liveweatherwallpaperapp.ui.settings.preference.sectionHeaderItem
 import com.liveweatherwallpaperapp.ui.settings.preference.smallSeparatorItem
 import com.liveweatherwallpaperapp.ui.settings.preference.switchPreferenceItem
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun MainScreenSettingsScreen(

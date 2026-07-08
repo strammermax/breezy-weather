@@ -110,7 +110,7 @@ class WallpaperParticleTrajectoryTest {
                 WallpaperParticleKind.SNOW,
                 layers,
                 minActive = 140,
-                maxActive = 240,
+                maxActive = 240
             )
             count shouldBeGreaterThanOrEqual 140
             count shouldBeLessThanOrEqual 240
@@ -120,10 +120,16 @@ class WallpaperParticleTrajectoryTest {
     @Test
     fun `higher quality draws more active particles`() {
         val low = WallpaperParticleTrajectory.activeParticleCount(
-            WallpaperParticleKind.SNOW, 10f, 140, 240,
+            WallpaperParticleKind.SNOW,
+            10f,
+            140,
+            240
         )
         val high = WallpaperParticleTrajectory.activeParticleCount(
-            WallpaperParticleKind.SNOW, 20f, 140, 240,
+            WallpaperParticleKind.SNOW,
+            20f,
+            140,
+            240
         )
         high shouldBeGreaterThan low
     }
@@ -131,10 +137,16 @@ class WallpaperParticleTrajectoryTest {
     @Test
     fun `snow is denser than hail at the same quality`() {
         val snow = WallpaperParticleTrajectory.activeParticleCount(
-            WallpaperParticleKind.SNOW, 20f, 100, 240,
+            WallpaperParticleKind.SNOW,
+            20f,
+            100,
+            240
         )
         val hail = WallpaperParticleTrajectory.activeParticleCount(
-            WallpaperParticleKind.HAIL, 20f, 100, 240,
+            WallpaperParticleKind.HAIL,
+            20f,
+            100,
+            240
         )
         snow shouldBeGreaterThan hail
     }

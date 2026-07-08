@@ -17,11 +17,11 @@
 package com.liveweatherwallpaperapp.option.appearance
 
 import android.content.Context
+import com.liveweatherwallpaperapp.common.options.appearance.CardDisplay
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import com.liveweatherwallpaperapp.common.options.appearance.CardDisplay
 import org.junit.jupiter.api.Test
 
 class CardDisplayTest {

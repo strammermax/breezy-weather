@@ -19,7 +19,6 @@ package com.liveweatherwallpaperapp.ui.main.adapters.trend
 import android.annotation.SuppressLint
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.options.appearance.HourlyTrendDisplay
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
@@ -36,6 +35,7 @@ import com.liveweatherwallpaperapp.ui.main.adapters.trend.hourly.HourlyUVAdapter
 import com.liveweatherwallpaperapp.ui.main.adapters.trend.hourly.HourlyVisibilityAdapter
 import com.liveweatherwallpaperapp.ui.main.adapters.trend.hourly.HourlyWindAdapter
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
+import livewallpaperweather.domain.location.model.Location
 
 @SuppressLint("NotifyDataSetChanged")
 class HourlyTrendAdapter(

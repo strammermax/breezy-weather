@@ -19,14 +19,14 @@ package com.liveweatherwallpaperapp.background.receiver.widget
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
-import livewallpaperweather.data.location.LocationRepository
-import livewallpaperweather.data.weather.WeatherRepository
+import com.liveweatherwallpaperapp.remoteviews.presenters.ClockDayHorizontalWidgetIMP
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import com.liveweatherwallpaperapp.remoteviews.presenters.ClockDayHorizontalWidgetIMP
+import livewallpaperweather.data.location.LocationRepository
+import livewallpaperweather.data.weather.WeatherRepository
 import javax.inject.Inject
 
 /**

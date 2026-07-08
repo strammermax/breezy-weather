@@ -16,9 +16,9 @@
 
 package com.liveweatherwallpaperapp.sources.mgm.json
 
+import com.liveweatherwallpaperapp.common.serializer.DateSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import com.liveweatherwallpaperapp.common.serializer.DateSerializer
 import java.util.Date
 
 @Serializable

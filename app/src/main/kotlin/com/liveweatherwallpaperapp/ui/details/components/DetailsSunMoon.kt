@@ -42,15 +42,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Astro
-import livewallpaperweather.domain.weather.model.Daily
-import livewallpaperweather.domain.weather.model.MoonPhase
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
-import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableMap
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -72,6 +63,15 @@ import com.liveweatherwallpaperapp.ui.theme.weatherView.materialWeatherView.impl
 import com.liveweatherwallpaperapp.ui.theme.weatherView.materialWeatherView.implementor.SunImplementor
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.temperature.TemperatureUnit
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableMap
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Astro
+import livewallpaperweather.domain.weather.model.Daily
+import livewallpaperweather.domain.weather.model.MoonPhase
 import org.shredzone.commons.suncalc.MoonPosition
 import org.shredzone.commons.suncalc.SunPosition
 import java.util.Calendar
@@ -381,13 +381,17 @@ fun DailySun(
                 }
                 if (sunsetTime != null) {
                     if (talkBackBuilder.toString().isNotEmpty()) {
-                        talkBackBuilder.append(context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
+                        talkBackBuilder.append(
+                            context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
+                        )
                     }
                     talkBackBuilder.append(context.getString(R.string.ephemeris_sunset_at, sunsetTime))
                 }
                 sun.duration?.let {
                     if (talkBackBuilder.toString().isNotEmpty()) {
-                        talkBackBuilder.append(context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
+                        talkBackBuilder.append(
+                            context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
+                        )
                     }
                     talkBackBuilder.append(context.getString(R.string.sunshine_duration))
                     talkBackBuilder.append(
@@ -455,7 +459,9 @@ fun DailyTwilight(
                 }
                 if (dusk != null) {
                     if (talkBackBuilder.toString().isNotEmpty()) {
-                        talkBackBuilder.append(context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
+                        talkBackBuilder.append(
+                            context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
+                        )
                     }
                     talkBackBuilder.append(context.getString(R.string.ephemeris_dusk_at, dusk))
                 }
@@ -516,7 +522,9 @@ fun DailyMoon(
                 }
                 if (moonsetTime != null) {
                     if (talkBackBuilder.toString().isNotEmpty()) {
-                        talkBackBuilder.append(context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
+                        talkBackBuilder.append(
+                            context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
+                        )
                     }
                     talkBackBuilder.append(context.getString(R.string.ephemeris_moonset_at, moonsetTime))
                 }

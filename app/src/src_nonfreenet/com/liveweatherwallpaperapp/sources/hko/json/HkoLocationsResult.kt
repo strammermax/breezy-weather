@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.hko.json
 
-import kotlinx.serialization.Serializable
 import com.liveweatherwallpaperapp.sources.hko.serializers.HkoAnySerializer
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class HkoLocationsResult(

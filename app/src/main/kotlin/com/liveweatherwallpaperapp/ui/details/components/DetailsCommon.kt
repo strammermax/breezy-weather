@@ -71,11 +71,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.pxToDp
 import com.liveweatherwallpaperapp.common.extensions.spToPx
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3ExpressiveCardListItem
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @Composable

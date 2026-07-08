@@ -25,26 +25,8 @@ import android.os.Build
 import android.os.TransactionTooLargeException
 import androidx.annotation.RequiresApi
 import androidx.core.location.LocationManagerCompat
-import livewallpaperweather.data.location.LocationRepository
-import livewallpaperweather.data.weather.WeatherRepository
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.location.model.LocationAddressInfo
-import livewallpaperweather.domain.source.SourceFeature
-import livewallpaperweather.domain.weather.model.Base
-import livewallpaperweather.domain.weather.model.Weather
-import livewallpaperweather.domain.weather.reference.Month
-import livewallpaperweather.domain.weather.reference.WeatherCode
-import livewallpaperweather.domain.weather.wrappers.DailyWrapper
-import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
 import com.google.maps.android.SphericalUtil
 import com.google.maps.android.model.LatLng
-import io.reactivex.rxjava3.core.Observable
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.rx3.awaitFirstOrElse
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.common.exceptions.ApiKeyMissingException
@@ -100,6 +82,24 @@ import com.liveweatherwallpaperapp.remoteviews.presenters.WeekWidgetIMP
 import com.liveweatherwallpaperapp.remoteviews.presenters.notification.WidgetNotificationIMP
 import com.liveweatherwallpaperapp.ui.main.utils.RefreshErrorType
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
+import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.rx3.awaitFirstOrElse
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import livewallpaperweather.data.location.LocationRepository
+import livewallpaperweather.data.weather.WeatherRepository
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.location.model.LocationAddressInfo
+import livewallpaperweather.domain.source.SourceFeature
+import livewallpaperweather.domain.weather.model.Base
+import livewallpaperweather.domain.weather.model.Weather
+import livewallpaperweather.domain.weather.reference.Month
+import livewallpaperweather.domain.weather.reference.WeatherCode
+import livewallpaperweather.domain.weather.wrappers.DailyWrapper
+import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
@@ -1064,7 +1064,7 @@ class RefreshHelper @Inject constructor(
             val forecast = fallbackSource.requestWeather(
                 context,
                 location,
-                listOf(SourceFeature.FORECAST),
+                listOf(SourceFeature.FORECAST)
             ).awaitFirstOrElse { WeatherWrapper() }.dailyForecast
             LogHelper.log(
                 msg = "[Forecast] fallback=$FORECAST_FALLBACK_SOURCE, " +

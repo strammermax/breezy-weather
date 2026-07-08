@@ -1,7 +1,13 @@
 package com.wolkentypes.app.clouds
 
 enum class CloudTextureType {
-    WHITE, DARK, SMOKE, EXPLOSION, EXPLOSION_2, HORIZON_BANK, OVERHEAD_BANK
+    WHITE,
+    DARK,
+    SMOKE,
+    EXPLOSION,
+    EXPLOSION_2,
+    HORIZON_BANK,
+    OVERHEAD_BANK,
 }
 
 enum class CloudAmount(val weight: Int) { NONE(0), A_FEW(1), SOME(3), A_LOT(7) }
@@ -14,30 +20,60 @@ data class LayerCloudConfig(
     val verticalSpread: Float = 1f,
     val speedMultiplier: Float = 1f,
     val alphaMultiplier: Float = 1f,
-    val horizontalSpread: Float = 1f
+    val horizontalSpread: Float = 1f,
 )
 
 data class CloudProfile(
     val amounts: Map<CloudTextureType, CloudAmount> = emptyMap(),
     val layers: Map<CloudLayer, LayerCloudConfig> = emptyMap(),
     val density: Float = 1f,
-    val speed: Float = 1f
+    val speed: Float = 1f,
 )
 
 fun cloudProfileFor(weatherId: String): CloudProfile {
     val (types, amount, density, speed) = when (weatherId) {
         "clear" -> ProfileSeed(emptySet(), CloudAmount.NONE, 0f, 1f)
         "mostly_clear" -> ProfileSeed(setOf(CloudTextureType.WHITE), CloudAmount.A_FEW, 0.8f, 1f)
-        "partly_cloudy" -> ProfileSeed(setOf(CloudTextureType.WHITE, CloudTextureType.DARK), CloudAmount.A_LOT, 1.2f, 1f)
+        "partly_cloudy" -> ProfileSeed(
+            setOf(CloudTextureType.WHITE, CloudTextureType.DARK),
+            CloudAmount.A_LOT,
+            1.2f,
+            1f
+        )
         // "Zwaar bewolkt": dreigende, donkere wolken — vrijwel volledige dekking, DARK-zwaar.
-        "mostly_cloudy" -> ProfileSeed(setOf(CloudTextureType.DARK, CloudTextureType.WHITE), CloudAmount.A_LOT, 1.6f, 1f)
+        "mostly_cloudy" -> ProfileSeed(
+            setOf(CloudTextureType.DARK, CloudTextureType.WHITE),
+            CloudAmount.A_LOT,
+            1.6f,
+            1f
+        )
         "cloudy" -> ProfileSeed(setOf(CloudTextureType.WHITE, CloudTextureType.DARK), CloudAmount.A_LOT, 1.8f, 1f)
-        "overcast", "rain" -> ProfileSeed(setOf(CloudTextureType.DARK, CloudTextureType.SMOKE), CloudAmount.A_LOT, 1.15f, 1f)
-        "drizzle", "fog" -> ProfileSeed(setOf(CloudTextureType.SMOKE, CloudTextureType.DARK), CloudAmount.SOME, 1.1f, 0.8f)
-        "showers", "thunderstorm" -> ProfileSeed(setOf(CloudTextureType.DARK, CloudTextureType.WHITE), CloudAmount.A_LOT, 1.15f, 1.5f)
+        "overcast", "rain" -> ProfileSeed(
+            setOf(CloudTextureType.DARK, CloudTextureType.SMOKE),
+            CloudAmount.A_LOT,
+            1.15f,
+            1f
+        )
+        "drizzle", "fog" -> ProfileSeed(
+            setOf(CloudTextureType.SMOKE, CloudTextureType.DARK),
+            CloudAmount.SOME,
+            1.1f,
+            0.8f
+        )
+        "showers", "thunderstorm" -> ProfileSeed(
+            setOf(CloudTextureType.DARK, CloudTextureType.WHITE),
+            CloudAmount.A_LOT,
+            1.15f,
+            1.5f
+        )
         // Zelfde egaal-grijze dekcompositie als "overcast": vraag was om dat wolkendek ook
         // voor sneeuw en sneeuwbuien te gebruiken.
-        "snow", "snow_showers" -> ProfileSeed(setOf(CloudTextureType.DARK, CloudTextureType.SMOKE), CloudAmount.A_LOT, 1.15f, .85f)
+        "snow", "snow_showers" -> ProfileSeed(
+            setOf(CloudTextureType.DARK, CloudTextureType.SMOKE),
+            CloudAmount.A_LOT,
+            1.15f,
+            .85f
+        )
         "windy" -> ProfileSeed(setOf(CloudTextureType.WHITE, CloudTextureType.DARK), CloudAmount.SOME, 1f, 2.4f)
         else -> ProfileSeed(setOf(CloudTextureType.WHITE), CloudAmount.SOME, 1f, 1f)
     }
@@ -297,16 +333,21 @@ private fun showerLayers() = mapOf(
     )
 )
 
-private fun standardLayers(types: Set<CloudTextureType>, amount: CloudAmount, weatherId: String): Map<CloudLayer, LayerCloudConfig> {
+private fun standardLayers(
+    types: Set<CloudTextureType>,
+    amount: CloudAmount,
+    weatherId: String,
+): Map<CloudLayer, LayerCloudConfig> {
     if (types.isEmpty()) return CloudLayer.entries.associateWith { LayerCloudConfig() }
     val dense = amount == CloudAmount.A_LOT
+    val overheadHasBank = dense || weatherId in setOf("overcast", "rain", "thunderstorm")
     return mapOf(
         CloudLayer.HORIZON to LayerCloudConfig(types + CloudTextureType.HORIZON_BANK, amount),
         CloudLayer.DISTANT to LayerCloudConfig(types, amount),
         CloudLayer.MIDFIELD to LayerCloudConfig(types, amount),
         CloudLayer.NEAR to LayerCloudConfig(types, if (dense) CloudAmount.SOME else amount),
         CloudLayer.OVERHEAD to LayerCloudConfig(
-            types + if (dense || weatherId in setOf("overcast", "rain", "thunderstorm")) setOf(CloudTextureType.OVERHEAD_BANK) else emptySet(),
+            types + if (overheadHasBank) setOf(CloudTextureType.OVERHEAD_BANK) else emptySet(),
             if (dense) CloudAmount.SOME else CloudAmount.A_FEW
         )
     )
@@ -316,5 +357,5 @@ private data class ProfileSeed(
     val types: Set<CloudTextureType>,
     val amount: CloudAmount,
     val density: Float,
-    val speed: Float
+    val speed: Float,
 )

@@ -13,14 +13,14 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ViewGroup
 import android.webkit.WebView
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
+import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.radar.RadarActivity
 import com.liveweatherwallpaperapp.radar.RadarWebMapLoader
 import com.liveweatherwallpaperapp.radar.RainViewerMap
-import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import livewallpaperweather.domain.location.model.Location
 
 class RadarViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
     LayoutInflater.from(parent.context).inflate(R.layout.container_main_radar, parent, false)
@@ -44,8 +44,9 @@ class RadarViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                 val dark = when (settings.radarTileMapStyle) {
                     "dark" -> true
                     "light" -> false
-                    else -> context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
-                        Configuration.UI_MODE_NIGHT_YES
+                    else ->
+                        context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
+                            Configuration.UI_MODE_NIGHT_YES
                 }
                 RainViewerMap.load(radarMap, location.latitude, location.longitude, dark, compact = true)
             }

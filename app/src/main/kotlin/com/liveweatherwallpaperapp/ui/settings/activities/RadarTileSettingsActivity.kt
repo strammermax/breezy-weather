@@ -21,7 +21,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
-import dagger.hilt.android.AndroidEntryPoint
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.plus
@@ -35,6 +34,7 @@ import com.liveweatherwallpaperapp.ui.settings.preference.composables.Preference
 import com.liveweatherwallpaperapp.ui.settings.preference.largeSeparatorItem
 import com.liveweatherwallpaperapp.ui.settings.preference.listPreferenceItem
 import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class RadarTileSettingsActivity : BreezyActivity() {
@@ -65,9 +65,9 @@ class RadarTileSettingsActivity : BreezyActivity() {
                 FitStatusBarTopAppBar(
                     title = stringResource(R.string.settings_radar_tile_title),
                     onBackPressed = { finish() },
-                    scrollBehavior = scrollBehavior,
+                    scrollBehavior = scrollBehavior
                 )
-            },
+            }
         ) { paddingValues ->
             PreferenceScreen(
                 paddingValues = paddingValues.plus(
@@ -86,7 +86,7 @@ class RadarTileSettingsActivity : BreezyActivity() {
                         onValueChanged = { newValue ->
                             source = newValue
                             settings.radarTileSource = newValue
-                        },
+                        }
                     )
                 }
 
@@ -104,7 +104,7 @@ class RadarTileSettingsActivity : BreezyActivity() {
                             onValueChanged = { newValue ->
                                 mapStyle = newValue
                                 settings.radarTileMapStyle = newValue
-                            },
+                            }
                         )
                     }
                 }

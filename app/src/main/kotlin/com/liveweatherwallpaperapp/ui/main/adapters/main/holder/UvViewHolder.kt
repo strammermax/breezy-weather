@@ -21,7 +21,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -32,6 +31,7 @@ import com.liveweatherwallpaperapp.domain.weather.model.getLevel
 import com.liveweatherwallpaperapp.domain.weather.model.getShape
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import com.liveweatherwallpaperapp.unit.formatting.format
+import livewallpaperweather.domain.location.model.Location
 import kotlin.math.roundToInt
 
 class UvViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(

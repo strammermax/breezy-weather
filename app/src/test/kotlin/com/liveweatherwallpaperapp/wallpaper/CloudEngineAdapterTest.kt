@@ -8,12 +8,12 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
+import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView
 import com.wolkentypes.app.clouds.CloudAmount
 import com.wolkentypes.app.clouds.cloudProfileFor
 import io.kotest.matchers.floats.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.floats.shouldBeLessThanOrEqual
 import io.kotest.matchers.shouldBe
-import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView
 import org.junit.jupiter.api.Test
 import kotlin.math.abs
 
@@ -31,7 +31,7 @@ class CloudEngineAdapterTest {
         windSpeedMetersPerSecond = windSpeedMetersPerSecond,
         precipitationMillimetersPerHour = precipitationMillimetersPerHour,
         cloudCoverPercent = cloudCoverPercent,
-        visibilityMeters = visibilityMeters,
+        visibilityMeters = visibilityMeters
     )
 
     @Test
@@ -47,7 +47,7 @@ class CloudEngineAdapterTest {
     @Test
     fun `Partly cloudy with high measured cover promotes to mostly_cloudy`() {
         val params = CloudEngineAdapter.sceneParams(
-            scene(WeatherView.WEATHER_KIND_CLOUD, cloudCoverPercent = 80f),
+            scene(WeatherView.WEATHER_KIND_CLOUD, cloudCoverPercent = 80f)
         )
         params.weatherId shouldBe "mostly_cloudy"
     }
@@ -60,7 +60,7 @@ class CloudEngineAdapterTest {
     @Test
     fun `Cloudy with fully overcast measured cover maps to overcast`() {
         val params = CloudEngineAdapter.sceneParams(
-            scene(WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 95f),
+            scene(WeatherView.WEATHER_KIND_CLOUDY, cloudCoverPercent = 95f)
         )
         params.weatherId shouldBe "overcast"
     }
@@ -68,10 +68,10 @@ class CloudEngineAdapterTest {
     @Test
     fun `Non-drizzle rain maps to rain regardless of intensity`() {
         val moderate = CloudEngineAdapter.sceneParams(
-            scene(WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 8f),
+            scene(WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 8f)
         )
         val heavy = CloudEngineAdapter.sceneParams(
-            scene(WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 20f),
+            scene(WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 20f)
         )
         moderate.weatherId shouldBe "rain"
         heavy.weatherId shouldBe "rain"
@@ -80,7 +80,7 @@ class CloudEngineAdapterTest {
     @Test
     fun `Drizzle-range rain maps to drizzle`() {
         val params = CloudEngineAdapter.sceneParams(
-            scene(WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 0.05f),
+            scene(WeatherView.WEATHER_KIND_RAINY, precipitationMillimetersPerHour = 0.05f)
         )
         params.weatherId shouldBe "drizzle"
     }
@@ -93,10 +93,10 @@ class CloudEngineAdapterTest {
     @Test
     fun `Snow maps to snow or snow_showers depending on intensity`() {
         val light = CloudEngineAdapter.sceneParams(
-            scene(WeatherView.WEATHER_KIND_SNOW, precipitationMillimetersPerHour = 0.1f),
+            scene(WeatherView.WEATHER_KIND_SNOW, precipitationMillimetersPerHour = 0.1f)
         )
         val heavy = CloudEngineAdapter.sceneParams(
-            scene(WeatherView.WEATHER_KIND_SNOW, precipitationMillimetersPerHour = 5f),
+            scene(WeatherView.WEATHER_KIND_SNOW, precipitationMillimetersPerHour = 5f)
         )
         light.weatherId shouldBe "snow"
         heavy.weatherId shouldBe "snow_showers"

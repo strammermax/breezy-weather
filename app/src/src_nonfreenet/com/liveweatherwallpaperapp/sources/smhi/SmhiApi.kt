@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.smhi
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.smhi.json.SmhiForecastResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Path
 

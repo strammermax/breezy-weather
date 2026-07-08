@@ -22,7 +22,7 @@ class FogFieldTest {
             fogIntensity = 0.85f,
             hazeIntensity = 0f,
             windFactor = 1f,
-            windDirectionDegrees = null,
+            windDirectionDegrees = null
         )
         params.bands.size shouldBe 4
     }
@@ -33,7 +33,7 @@ class FogFieldTest {
             fogIntensity = 0.85f,
             hazeIntensity = 0f,
             windFactor = 1f,
-            windDirectionDegrees = null,
+            windDirectionDegrees = null
         )
         val horizonBand = params.bands.first()
         val topBand = params.bands.last()
@@ -55,7 +55,7 @@ class FogFieldTest {
         val color = FogFieldFactory.fogColor(
             isHaze = false,
             daylight = 1f,
-            neutralAmount = 1f,
+            neutralAmount = 1f
         )
 
         color[0] shouldBe color[1]
@@ -68,13 +68,13 @@ class FogFieldTest {
             fogIntensity = 1f,
             hazeIntensity = 0f,
             windFactor = 1f,
-            windDirectionDegrees = null,
+            windDirectionDegrees = null
         )
         val haze = FogFieldFactory.fogFieldParams(
             fogIntensity = 0f,
             hazeIntensity = 1f,
             windFactor = 1f,
-            windDirectionDegrees = null,
+            windDirectionDegrees = null
         )
         val fogMax = fog.bands.maxOf { it.baseAlpha }
         val hazeMax = haze.bands.maxOf { it.baseAlpha }
@@ -125,7 +125,7 @@ class FogFieldTest {
             fogIntensity = 0f,
             hazeIntensity = 0f,
             windFactor = 1f,
-            windDirectionDegrees = null,
+            windDirectionDegrees = null
         )
         params.bands.forEach { it.baseAlpha shouldBe 0f }
     }
@@ -151,7 +151,7 @@ class FogFieldTest {
             fogIntensity = Float.NaN,
             hazeIntensity = Float.POSITIVE_INFINITY,
             windFactor = Float.NaN,
-            windDirectionDegrees = Float.NaN,
+            windDirectionDegrees = Float.NaN
         )
         params.bands.forEach { band ->
             band.baseAlpha.isNaN() shouldBe false

@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.recosante
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.recosante.json.RecosanteResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Query
 

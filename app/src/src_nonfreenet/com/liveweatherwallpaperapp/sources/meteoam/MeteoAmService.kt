@@ -17,6 +17,18 @@
 package com.liveweatherwallpaperapp.sources.meteoam
 
 import android.content.Context
+import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.sources.meteoam.json.MeteoAmForecastResult
+import com.liveweatherwallpaperapp.sources.meteoam.json.MeteoAmForecastStats
+import com.liveweatherwallpaperapp.sources.meteoam.json.MeteoAmObservationResult
+import com.liveweatherwallpaperapp.sources.meteoam.json.MeteoAmReverseLocation
+import com.liveweatherwallpaperapp.sources.meteoam.json.MeteoAmReverseLocationResult
+import com.liveweatherwallpaperapp.unit.pressure.Pressure.Companion.hectopascals
+import com.liveweatherwallpaperapp.unit.ratio.Ratio.Companion.percent
+import com.liveweatherwallpaperapp.unit.speed.Speed.Companion.kilometersPerHour
+import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.location.model.LocationAddressInfo
 import livewallpaperweather.domain.source.SourceFeature
@@ -29,18 +41,6 @@ import livewallpaperweather.domain.weather.wrappers.HalfDayWrapper
 import livewallpaperweather.domain.weather.wrappers.HourlyWrapper
 import livewallpaperweather.domain.weather.wrappers.TemperatureWrapper
 import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.core.Observable
-import com.liveweatherwallpaperapp.R
-import com.liveweatherwallpaperapp.sources.meteoam.json.MeteoAmForecastResult
-import com.liveweatherwallpaperapp.sources.meteoam.json.MeteoAmForecastStats
-import com.liveweatherwallpaperapp.sources.meteoam.json.MeteoAmObservationResult
-import com.liveweatherwallpaperapp.sources.meteoam.json.MeteoAmReverseLocation
-import com.liveweatherwallpaperapp.sources.meteoam.json.MeteoAmReverseLocationResult
-import com.liveweatherwallpaperapp.unit.pressure.Pressure.Companion.hectopascals
-import com.liveweatherwallpaperapp.unit.ratio.Ratio.Companion.percent
-import com.liveweatherwallpaperapp.unit.speed.Speed.Companion.kilometersPerHour
-import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
 import retrofit2.Retrofit
 import java.util.Date
 import javax.inject.Inject

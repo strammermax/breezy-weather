@@ -46,7 +46,7 @@ class DataFreshnessTest {
         val freshness = DataFreshness.create(
             weatherRefreshedAtMillis = now - DataFreshness.MAX_WEATHER_AGE_MILLIS - 1L,
             photoRefreshedAtMillis = now - oneHourMillis,
-            nowMillis = now,
+            nowMillis = now
         )
 
         freshness.isWeatherStale shouldBe true
@@ -66,12 +66,12 @@ class DataFreshnessTest {
         val sceneA = WallpaperSceneStateFactory.create(
             weatherKind = com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView.WEATHER_KIND_CLEAR,
             daylight = 1f,
-            weatherRefreshedAtMillis = refreshedAt,
+            weatherRefreshedAtMillis = refreshedAt
         )
         val sceneB = WallpaperSceneStateFactory.create(
             weatherKind = com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView.WEATHER_KIND_RAINY,
             daylight = 0f,
-            weatherRefreshedAtMillis = refreshedAt,
+            weatherRefreshedAtMillis = refreshedAt
         )
 
         sceneA.weatherRefreshedAtMillis shouldBe sceneB.weatherRefreshedAtMillis
@@ -82,12 +82,12 @@ class DataFreshnessTest {
         val first = DataFreshness.create(
             weatherRefreshedAtMillis = now - oneHourMillis,
             photoRefreshedAtMillis = now - oneHourMillis,
-            nowMillis = now,
+            nowMillis = now
         )
         val second = DataFreshness.create(
             weatherRefreshedAtMillis = now - oneHourMillis,
             photoRefreshedAtMillis = now - oneHourMillis,
-            nowMillis = now,
+            nowMillis = now
         )
 
         first shouldBe second

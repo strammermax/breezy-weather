@@ -16,11 +16,11 @@
 
 package com.liveweatherwallpaperapp.sources.geonames
 
-import livewallpaperweather.domain.source.SourceContinent
 import com.liveweatherwallpaperapp.common.source.ConfigurableSource
 import com.liveweatherwallpaperapp.common.source.HttpSource
 import com.liveweatherwallpaperapp.common.source.LocationSearchSource
 import com.liveweatherwallpaperapp.common.source.NonFreeNetSource
+import livewallpaperweather.domain.source.SourceContinent
 
 /**
  * The actual implementation is in the src_freenet and src_nonfreenet folders

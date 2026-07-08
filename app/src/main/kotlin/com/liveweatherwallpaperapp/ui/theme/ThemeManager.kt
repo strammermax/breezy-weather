@@ -19,13 +19,13 @@ package com.liveweatherwallpaperapp.ui.theme
 import android.app.UiModeManager
 import android.content.Context
 import android.os.Build
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.common.extensions.uiModeManager
 import com.liveweatherwallpaperapp.common.options.DarkMode
 import com.liveweatherwallpaperapp.domain.location.model.isDaylight
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherThemeDelegate
 import com.liveweatherwallpaperapp.ui.theme.weatherView.materialWeatherView.MaterialWeatherThemeDelegate
+import livewallpaperweather.domain.location.model.Location
 import java.time.LocalTime
 
 class ThemeManager private constructor(

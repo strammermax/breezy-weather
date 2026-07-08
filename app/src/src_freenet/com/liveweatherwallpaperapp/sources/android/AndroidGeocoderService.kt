@@ -17,9 +17,9 @@
 package com.liveweatherwallpaperapp.sources.android
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.LocationAddressInfo
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.common.exceptions.NonFreeNetSourceException
+import io.reactivex.rxjava3.core.Observable
+import livewallpaperweather.domain.location.model.LocationAddressInfo
 import javax.inject.Inject
 
 class AndroidGeocoderService @Inject constructor() : AndroidGeocoderServiceStub() {

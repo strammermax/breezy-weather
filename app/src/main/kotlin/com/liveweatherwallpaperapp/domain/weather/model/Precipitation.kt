@@ -20,9 +20,9 @@ import android.content.Context
 import android.graphics.Color
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
-import livewallpaperweather.domain.weather.model.Precipitation
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.millimeters
+import livewallpaperweather.domain.weather.model.Precipitation
 
 @ColorInt
 fun Precipitation.getHalfDayPrecipitationColor(context: Context): Int {

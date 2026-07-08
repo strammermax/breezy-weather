@@ -29,7 +29,7 @@ class CloudFieldTest {
             cloudDensity = 0f,
             cloudDarkness = 0f,
             windFactor = 1f,
-            windDirectionDegrees = null,
+            windDirectionDegrees = null
         )
         params.layers.forEach { it.alpha shouldBe 0f }
     }
@@ -41,14 +41,14 @@ class CloudFieldTest {
             cloudDensity = 0.35f,
             cloudDarkness = 0.05f,
             windFactor = 1f,
-            windDirectionDegrees = null,
+            windDirectionDegrees = null
         )
         val cloudy = CloudFieldFactory.cloudFieldParams(
             family = WallpaperWeatherFamily.CLOUDY,
             cloudDensity = 0.85f,
             cloudDarkness = 0.25f,
             windFactor = 1f,
-            windDirectionDegrees = null,
+            windDirectionDegrees = null
         )
         totalAlpha(partlyCloudy) shouldBeLessThan totalAlpha(cloudy)
     }
@@ -56,13 +56,25 @@ class CloudFieldTest {
     @Test
     fun `Cloudy Rain and Thunderstorm have five visible layers`() {
         val cloudy = CloudFieldFactory.cloudFieldParams(
-            WallpaperWeatherFamily.CLOUDY, 0.85f, 0.25f, 1f, null,
+            WallpaperWeatherFamily.CLOUDY,
+            0.85f,
+            0.25f,
+            1f,
+            null
         )
         val rain = CloudFieldFactory.cloudFieldParams(
-            WallpaperWeatherFamily.RAIN, 0.95f, 0.55f, 1f, null,
+            WallpaperWeatherFamily.RAIN,
+            0.95f,
+            0.55f,
+            1f,
+            null
         )
         val thunderstorm = CloudFieldFactory.cloudFieldParams(
-            WallpaperWeatherFamily.THUNDERSTORM, 1f, 0.85f, 3f, null,
+            WallpaperWeatherFamily.THUNDERSTORM,
+            1f,
+            0.85f,
+            3f,
+            null
         )
         visibleLayers(cloudy) shouldBe 5
         visibleLayers(rain) shouldBe 5
@@ -74,10 +86,14 @@ class CloudFieldTest {
         listOf(
             WallpaperWeatherFamily.RAIN to 0.95f,
             WallpaperWeatherFamily.THUNDER to 0.95f,
-            WallpaperWeatherFamily.THUNDERSTORM to 1f,
+            WallpaperWeatherFamily.THUNDERSTORM to 1f
         ).forEach { (family, density) ->
             val params = CloudFieldFactory.cloudFieldParams(
-                family, density, 0.7f, 1f, null,
+                family,
+                density,
+                0.7f,
+                1f,
+                null
             )
             params.layers.maxOf { it.alpha } shouldBe 1f
         }
@@ -86,10 +102,18 @@ class CloudFieldTest {
     @Test
     fun `Thunderstorm is darker than Cloudy`() {
         val cloudy = CloudFieldFactory.cloudFieldParams(
-            WallpaperWeatherFamily.CLOUDY, 0.85f, 0.25f, 1f, null,
+            WallpaperWeatherFamily.CLOUDY,
+            0.85f,
+            0.25f,
+            1f,
+            null
         )
         val thunderstorm = CloudFieldFactory.cloudFieldParams(
-            WallpaperWeatherFamily.THUNDERSTORM, 1f, 0.85f, 3f, null,
+            WallpaperWeatherFamily.THUNDERSTORM,
+            1f,
+            0.85f,
+            3f,
+            null
         )
         val cloudyDarkness = cloudy.layers.sumOf { it.darkness.toDouble() }.toFloat()
         val thunderstormDarkness = thunderstorm.layers.sumOf { it.darkness.toDouble() }.toFloat()
@@ -99,10 +123,18 @@ class CloudFieldTest {
     @Test
     fun `Thunderstorm has higher total speed than Partly cloudy`() {
         val partlyCloudy = CloudFieldFactory.cloudFieldParams(
-            WallpaperWeatherFamily.PARTLY_CLOUDY, 0.35f, 0.05f, 1f, null,
+            WallpaperWeatherFamily.PARTLY_CLOUDY,
+            0.35f,
+            0.05f,
+            1f,
+            null
         )
         val thunderstorm = CloudFieldFactory.cloudFieldParams(
-            WallpaperWeatherFamily.THUNDERSTORM, 1f, 0.85f, 3f, null,
+            WallpaperWeatherFamily.THUNDERSTORM,
+            1f,
+            0.85f,
+            3f,
+            null
         )
         totalSpeed(thunderstorm) shouldBeGreaterThan totalSpeed(partlyCloudy)
     }
@@ -110,10 +142,18 @@ class CloudFieldTest {
     @Test
     fun `wind increases speed factor for the same coverage`() {
         val calm = CloudFieldFactory.cloudFieldParams(
-            WallpaperWeatherFamily.CLOUDY, 0.85f, 0.25f, 1f, null,
+            WallpaperWeatherFamily.CLOUDY,
+            0.85f,
+            0.25f,
+            1f,
+            null
         )
         val windy = CloudFieldFactory.cloudFieldParams(
-            WallpaperWeatherFamily.CLOUDY, 0.85f, 0.25f, 4.2f, null,
+            WallpaperWeatherFamily.CLOUDY,
+            0.85f,
+            0.25f,
+            4.2f,
+            null
         )
         totalSpeed(windy) shouldBeGreaterThan totalSpeed(calm)
     }
@@ -139,7 +179,11 @@ class CloudFieldTest {
     @Test
     fun `all layer alpha and darkness values stay within 0f to 1f`() {
         val params = CloudFieldFactory.cloudFieldParams(
-            WallpaperWeatherFamily.THUNDERSTORM, 1f, 1f, 10f, 720f,
+            WallpaperWeatherFamily.THUNDERSTORM,
+            1f,
+            1f,
+            10f,
+            720f
         )
         params.layers.forEach { layer ->
             layer.alpha shouldBeGreaterThanOrEqual 0f
@@ -152,7 +196,11 @@ class CloudFieldTest {
     @Test
     fun `back layer is slower than front layer`() {
         val params = CloudFieldFactory.cloudFieldParams(
-            WallpaperWeatherFamily.CLOUDY, 0.85f, 0.25f, 2f, null,
+            WallpaperWeatherFamily.CLOUDY,
+            0.85f,
+            0.25f,
+            2f,
+            null
         )
         val back = params.layers.first()
         val front = params.layers.last()
@@ -162,7 +210,11 @@ class CloudFieldTest {
     @Test
     fun `five layers increase scale speed depth and vertical placement from back to front`() {
         val layers = CloudFieldFactory.cloudFieldParams(
-            WallpaperWeatherFamily.CLOUDY, 0.85f, 0.25f, 1f, null,
+            WallpaperWeatherFamily.CLOUDY,
+            0.85f,
+            0.25f,
+            1f,
+            null
         ).layers
 
         layers.size shouldBe 5
@@ -177,7 +229,11 @@ class CloudFieldTest {
     @Test
     fun `missing wind direction yields a valid default direction and no NaN`() {
         val params = CloudFieldFactory.cloudFieldParams(
-            WallpaperWeatherFamily.CLOUDY, 0.85f, 0.25f, 1f, null,
+            WallpaperWeatherFamily.CLOUDY,
+            0.85f,
+            0.25f,
+            1f,
+            null
         )
         params.directionDegrees.isNaN() shouldBe false
         params.directionDegrees shouldBeGreaterThanOrEqual 0f
@@ -187,7 +243,11 @@ class CloudFieldTest {
     @Test
     fun `wind direction is normalized to 0 until 360`() {
         val params = CloudFieldFactory.cloudFieldParams(
-            WallpaperWeatherFamily.CLOUDY, 0.85f, 0.25f, 1f, 725f,
+            WallpaperWeatherFamily.CLOUDY,
+            0.85f,
+            0.25f,
+            1f,
+            725f
         )
         params.directionDegrees shouldBeGreaterThanOrEqual 0f
         params.directionDegrees shouldBeLessThan 360f
@@ -208,7 +268,7 @@ class CloudFieldTest {
             cloudDensity = Float.NaN,
             cloudDarkness = Float.POSITIVE_INFINITY,
             windFactor = Float.NaN,
-            windDirectionDegrees = Float.NaN,
+            windDirectionDegrees = Float.NaN
         )
         params.layers.forEach { layer ->
             layer.alpha.isNaN() shouldBe false

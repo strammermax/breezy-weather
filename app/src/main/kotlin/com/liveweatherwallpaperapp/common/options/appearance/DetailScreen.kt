@@ -19,11 +19,11 @@ package com.liveweatherwallpaperapp.common.options.appearance
 import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import livewallpaperweather.domain.location.model.Location
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.options.BaseEnum
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
+import livewallpaperweather.domain.location.model.Location
 
 enum class DetailScreen(
     override val id: String,
@@ -110,7 +110,10 @@ enum class DetailScreen(
             if (builder.isNotEmpty() && builder[0] == ',') {
                 builder.deleteCharAt(0)
             }
-            return builder.toString().replace(",", context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
+            return builder.toString().replace(
+                ",",
+                context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
+            )
         }
     }
 

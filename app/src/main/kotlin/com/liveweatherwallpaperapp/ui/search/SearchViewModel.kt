@@ -18,11 +18,6 @@ package com.liveweatherwallpaperapp.ui.search
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.location.model.LocationAddressInfo
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.common.activities.BreezyViewModel
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -30,6 +25,11 @@ import com.liveweatherwallpaperapp.common.extensions.launchIO
 import com.liveweatherwallpaperapp.common.source.LocationSearchSource
 import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
 import com.liveweatherwallpaperapp.ui.main.utils.RefreshErrorType
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.location.model.LocationAddressInfo
 import javax.inject.Inject
 
 @HiltViewModel

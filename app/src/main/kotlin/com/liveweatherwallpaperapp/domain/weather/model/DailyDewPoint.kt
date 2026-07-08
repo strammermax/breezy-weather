@@ -17,12 +17,12 @@
 package com.liveweatherwallpaperapp.domain.weather.model
 
 import android.content.Context
-import livewallpaperweather.domain.weather.model.DailyDewPoint
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
 import com.liveweatherwallpaperapp.common.extensions.formatValue
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.temperature.TemperatureUnit
+import livewallpaperweather.domain.weather.model.DailyDewPoint
 
 fun DailyDewPoint.getRangeSummary(context: Context, temperatureUnit: TemperatureUnit): String? {
     return if (min == null || max == null) {

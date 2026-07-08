@@ -54,8 +54,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceFeature
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.splitKeeping
 import com.liveweatherwallpaperapp.common.source.HttpSource
@@ -67,6 +65,8 @@ import com.liveweatherwallpaperapp.ui.theme.ThemeManager
 import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherViewController
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceFeature
 
 class FooterViewHolder(
     private val composeView: ComposeView,

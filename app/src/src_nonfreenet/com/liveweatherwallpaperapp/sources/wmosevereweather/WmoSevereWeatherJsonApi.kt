@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.wmosevereweather
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.wmosevereweather.json.WmoSevereWeatherAlertResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Query
 

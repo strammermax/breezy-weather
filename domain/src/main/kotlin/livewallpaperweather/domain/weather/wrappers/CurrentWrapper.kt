@@ -16,14 +16,14 @@
 
 package livewallpaperweather.domain.weather.wrappers
 
-import livewallpaperweather.domain.weather.model.Current
-import livewallpaperweather.domain.weather.model.UV
-import livewallpaperweather.domain.weather.model.Wind
-import livewallpaperweather.domain.weather.reference.WeatherCode
 import com.liveweatherwallpaperapp.unit.distance.Distance
 import com.liveweatherwallpaperapp.unit.pressure.Pressure
 import com.liveweatherwallpaperapp.unit.ratio.Ratio
 import com.liveweatherwallpaperapp.unit.temperature.Temperature
+import livewallpaperweather.domain.weather.model.Current
+import livewallpaperweather.domain.weather.model.UV
+import livewallpaperweather.domain.weather.model.Wind
+import livewallpaperweather.domain.weather.reference.WeatherCode
 
 /**
  * Current wrapper

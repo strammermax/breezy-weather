@@ -48,7 +48,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.utils.helpers.IntentHelper
@@ -57,6 +56,7 @@ import com.liveweatherwallpaperapp.ui.theme.ThemeManager
 import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
 import com.liveweatherwallpaperapp.ui.theme.compose.themeRipple
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import livewallpaperweather.domain.location.model.Location
 import java.util.Date
 
 class AlertViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(

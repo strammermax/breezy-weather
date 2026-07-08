@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.eccc.json
 
-import kotlinx.serialization.Serializable
 import com.liveweatherwallpaperapp.sources.eccc.serializers.EcccSunSerializer
+import kotlinx.serialization.Serializable
 
 @Serializable(with = EcccSunSerializer::class)
 data class EcccSun(

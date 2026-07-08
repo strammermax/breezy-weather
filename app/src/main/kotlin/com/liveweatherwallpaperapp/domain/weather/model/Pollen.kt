@@ -19,10 +19,10 @@ package com.liveweatherwallpaperapp.domain.weather.model
 import android.content.Context
 import android.graphics.Color
 import androidx.annotation.ColorInt
-import livewallpaperweather.domain.weather.model.Pollen
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.source.PollenIndexSource
 import com.liveweatherwallpaperapp.domain.weather.index.PollenIndex
+import livewallpaperweather.domain.weather.model.Pollen
 
 val Pollen.validPollens: List<PollenIndex>
     get() {
@@ -111,7 +111,9 @@ fun Pollen.getSummary(
     context: Context,
     source: PollenIndexSource? = null,
 ): String {
-    return pollensWithConcentration.joinToString(context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)) {
+    return pollensWithConcentration.joinToString(
+        context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
+    ) {
         getName(context, it) +
             context.getString(R.string.colon_separator) +
             getIndexName(context, it, source)

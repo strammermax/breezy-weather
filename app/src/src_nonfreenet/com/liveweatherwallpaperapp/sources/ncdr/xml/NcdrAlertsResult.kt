@@ -16,11 +16,11 @@
 
 package com.liveweatherwallpaperapp.sources.ncdr.xml
 
+import com.liveweatherwallpaperapp.common.serializer.DateSerializer
 import kotlinx.serialization.Serializable
 import nl.adaptivity.xmlutil.serialization.XmlKeyName
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
-import com.liveweatherwallpaperapp.common.serializer.DateSerializer
 import java.util.Date
 
 @Serializable

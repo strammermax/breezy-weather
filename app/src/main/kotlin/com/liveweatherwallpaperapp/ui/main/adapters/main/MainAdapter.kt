@@ -21,7 +21,6 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.common.extensions.toCalendarWithTimeZone
 import com.liveweatherwallpaperapp.common.options.appearance.CardDisplay
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
@@ -53,6 +52,7 @@ import com.liveweatherwallpaperapp.ui.main.adapters.main.holder.WidgetViewHolder
 import com.liveweatherwallpaperapp.ui.main.adapters.main.holder.WindViewHolder
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView
+import livewallpaperweather.domain.location.model.Location
 import java.util.Calendar
 import java.util.Collections
 import java.util.Date

@@ -17,12 +17,12 @@
 package com.liveweatherwallpaperapp.option.utils
 
 import android.content.res.Resources
+import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.common.utils.UnitUtils
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import com.liveweatherwallpaperapp.R
-import com.liveweatherwallpaperapp.common.utils.UnitUtils
 import org.junit.jupiter.api.Test
 
 class UtilsTest {

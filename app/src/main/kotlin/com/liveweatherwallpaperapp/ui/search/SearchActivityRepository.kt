@@ -17,12 +17,6 @@
 package com.liveweatherwallpaperapp.ui.search
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.location.model.LocationAddressInfo
-import livewallpaperweather.domain.source.SourceFeature
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.observers.DisposableObserver
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.common.rxjava.ObserverContainer
 import com.liveweatherwallpaperapp.common.rxjava.SchedulerTransformer
@@ -33,6 +27,12 @@ import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.sources.RefreshHelper
 import com.liveweatherwallpaperapp.sources.SourceManager
 import com.liveweatherwallpaperapp.ui.main.utils.RefreshErrorType
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.observers.DisposableObserver
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.location.model.LocationAddressInfo
+import livewallpaperweather.domain.source.SourceFeature
 import javax.inject.Inject
 
 class SearchActivityRepository @Inject internal constructor(

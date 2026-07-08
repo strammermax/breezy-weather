@@ -8,11 +8,11 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
+import io.kotest.matchers.floats.plusOrMinus
 import io.kotest.matchers.floats.shouldBeGreaterThan
 import io.kotest.matchers.floats.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.floats.shouldBeLessThan
 import io.kotest.matchers.floats.shouldBeLessThanOrEqual
-import io.kotest.matchers.floats.plusOrMinus
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -72,7 +72,8 @@ class WallpaperSeasonGradingTest {
     fun `the effective strength is bounded by MAX_SEASON_GRADING_STRENGTH`() {
         WallpaperSeasonGrading.effectiveStrength(1f) shouldBe WallpaperSeasonGrading.MAX_SEASON_GRADING_STRENGTH
         WallpaperSeasonGrading.effectiveStrength(2f) shouldBe WallpaperSeasonGrading.MAX_SEASON_GRADING_STRENGTH
-        WallpaperSeasonGrading.effectiveStrength(0.5f) shouldBeLessThan WallpaperSeasonGrading.MAX_SEASON_GRADING_STRENGTH
+        WallpaperSeasonGrading.effectiveStrength(0.5f) shouldBeLessThan
+            WallpaperSeasonGrading.MAX_SEASON_GRADING_STRENGTH
     }
 
     @Test

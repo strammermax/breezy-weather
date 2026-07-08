@@ -27,9 +27,6 @@ import androidx.annotation.Size
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.Guideline
 import androidx.core.graphics.ColorUtils
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Astro
-import livewallpaperweather.domain.weather.model.Weather
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.areBlocksSquished
@@ -42,6 +39,9 @@ import com.liveweatherwallpaperapp.ui.theme.ThemeManager
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Astro
+import livewallpaperweather.domain.weather.model.Weather
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone

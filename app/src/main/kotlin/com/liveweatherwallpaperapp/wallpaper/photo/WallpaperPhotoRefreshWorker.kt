@@ -28,15 +28,15 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkerParameters
-import livewallpaperweather.data.location.LocationRepository
-import livewallpaperweather.domain.location.model.Location
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
-import kotlinx.coroutines.CancellationException
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.common.extensions.isOnline
 import com.liveweatherwallpaperapp.common.extensions.isRunning
 import com.liveweatherwallpaperapp.common.extensions.workManager
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CancellationException
+import livewallpaperweather.data.location.LocationRepository
+import livewallpaperweather.domain.location.model.Location
 import java.util.concurrent.TimeUnit
 
 /**
@@ -90,12 +90,14 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                 val activeRemoved = wallpaperRepository.pruneDisabledPhotos(
                     latitude = latitude,
                     longitude = longitude,
-                    place = place,
+                    place = place
                 )
 
                 val lastRefreshedAt = store.photoRefreshedAtFor(location.formattedId)
                 val minIntervalMillis = TimeUnit.MINUTES.toMillis(store.photoRefreshIntervalMinutes.toLong())
-                if (!WallpaperPhotoRefreshPlanner.needsRefresh(lastRefreshedAt, now, minIntervalMillis) && !activeRemoved) {
+                if (!WallpaperPhotoRefreshPlanner.needsRefresh(lastRefreshedAt, now, minIntervalMillis) &&
+                    !activeRemoved
+                ) {
                     skippedCount++
                     return@forEachIndexed
                 }
@@ -105,7 +107,7 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                     longitude = longitude,
                     place = place,
                     forceRefresh = true,
-                    activate = isActivating || activeRemoved,
+                    activate = isActivating || activeRemoved
                 )
                 if (file != null) {
                     store.setPhotoRefreshedAt(location.formattedId, now)

@@ -17,10 +17,10 @@
 package com.liveweatherwallpaperapp.common.source
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceFeature
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceFeature
 
 fun Source.getName(context: Context, feature: SourceFeature? = null, location: Location? = null): String {
     return if (this is RemovedSource) {

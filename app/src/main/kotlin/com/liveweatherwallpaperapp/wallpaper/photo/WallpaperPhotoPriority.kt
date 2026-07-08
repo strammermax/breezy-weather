@@ -8,10 +8,10 @@
 
 package com.liveweatherwallpaperapp.wallpaper.photo
 
-import livewallpaperweather.data.wallpaper.WallpaperPhotoRecord
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.wallpaper.CelestialTiming
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSeasonGrading
+import livewallpaperweather.data.wallpaper.WallpaperPhotoRecord
+import livewallpaperweather.domain.location.model.Location
 import java.time.Instant
 import java.time.ZoneId
 import kotlin.math.atan2
@@ -51,7 +51,7 @@ internal fun selectWallpaperPhoto(
     val isNight = isCurrentlyNight(latitude, longitude, now)
     val currentSeason = WallpaperSeasonGrading.seasonFor(
         Instant.ofEpochMilli(now).atZone(ZoneId.systemDefault()).toLocalDate(),
-        latitude,
+        latitude
     ).name.lowercase()
 
     return photos
@@ -103,7 +103,7 @@ private fun haversineKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double):
 private fun isCurrentlyNight(latitude: Double, longitude: Double, now: Long): Boolean {
     val (sunrise, sunset) = CelestialTiming.approximateSunInterval(
         Location(latitude = latitude, longitude = longitude),
-        now,
+        now
     ) ?: return false
     return now < sunrise || now > sunset
 }

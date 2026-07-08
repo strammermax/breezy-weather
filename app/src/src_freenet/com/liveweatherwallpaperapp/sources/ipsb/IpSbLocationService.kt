@@ -17,9 +17,9 @@
 package com.liveweatherwallpaperapp.sources.ipsb
 
 import android.content.Context
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.common.exceptions.NonFreeNetSourceException
 import com.liveweatherwallpaperapp.common.source.LocationPositionWrapper
+import io.reactivex.rxjava3.core.Observable
 import javax.inject.Inject
 
 class IpSbLocationService @Inject constructor() : IpSbLocationServiceStub() {

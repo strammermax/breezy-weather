@@ -56,7 +56,7 @@ object WallpaperQualityProfileFactory {
             fogBands = 2,
             maxGlassDrops = 14,
             blurStrength = 0.4f,
-            effectUpdateHz = 20,
+            effectUpdateHz = 20
         ),
         WallpaperQualityProfile.BALANCED to QualityBudget(
             maxSnowParticles = 100,
@@ -65,7 +65,7 @@ object WallpaperQualityProfileFactory {
             fogBands = 3,
             maxGlassDrops = 24,
             blurStrength = 0.7f,
-            effectUpdateHz = 30,
+            effectUpdateHz = 30
         ),
         WallpaperQualityProfile.HIGH to QualityBudget(
             maxSnowParticles = 140,
@@ -74,8 +74,8 @@ object WallpaperQualityProfileFactory {
             fogBands = 4,
             maxGlassDrops = 36,
             blurStrength = 1.0f,
-            effectUpdateHz = 30,
-        ),
+            effectUpdateHz = 30
+        )
     )
 
     fun budgetFor(profile: WallpaperQualityProfile): QualityBudget = BUDGETS.getValue(profile)

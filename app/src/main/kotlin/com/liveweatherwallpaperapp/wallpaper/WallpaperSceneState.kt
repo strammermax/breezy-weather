@@ -8,15 +8,15 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
-import livewallpaperweather.domain.weather.model.Precipitation
 import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView
+import livewallpaperweather.domain.weather.model.Precipitation
 import org.shredzone.commons.suncalc.MoonIllumination
+import java.util.Date
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.tan
-import java.util.Date
 
 enum class WallpaperWeatherFamily {
     CLEAR,
@@ -188,7 +188,7 @@ object WallpaperSceneStateFactory {
             cloudCoverPercent = cloudCoverPercent,
             visibilityMeters = visibilityMeters,
             windSpeedMetersPerSecond = safeWindSpeed,
-            windGustMetersPerSecond = safeWindGust,
+            windGustMetersPerSecond = safeWindGust
         )
         val profile = effectProfile(condition)
 
@@ -271,7 +271,7 @@ object WallpaperSceneStateFactory {
             weatherRefreshedAtMillis = weatherRefreshedAtMillis,
             latitude = latitude,
             moonPhaseAngle = moonPhaseAngle,
-            richSky = richSky,
+            richSky = richSky
         )
     }
 
@@ -377,7 +377,7 @@ object WallpaperSceneStateFactory {
         val precipitationIntensity = precipitationIntensity(
             precipitation,
             precipitationMillimetersPerHour,
-            family == WallpaperWeatherFamily.THUNDERSTORM,
+            family == WallpaperWeatherFamily.THUNDERSTORM
         )
         val visibility = visibilityCondition(family, visibilityMeters)
         val thunder = when (family) {
@@ -392,7 +392,7 @@ object WallpaperSceneStateFactory {
             visibility = visibility,
             thunderIntensity = thunder,
             windy = family == WallpaperWeatherFamily.WIND ||
-                max(windSpeedMetersPerSecond, windGustMetersPerSecond) >= 8f,
+                max(windSpeedMetersPerSecond, windGustMetersPerSecond) >= 8f
         )
     }
 
@@ -406,12 +406,15 @@ object WallpaperSceneStateFactory {
             WallpaperSkyCondition.MOSTLY_CLOUDY -> 0.70f
             WallpaperSkyCondition.OVERCAST -> 0.95f
         }
-        val cloudDensity = max(skyCloudDensity, when {
-            condition.thunderIntensity >= 1f -> 1f
-            condition.precipitation == WallpaperPrecipitationCondition.HAIL -> 1f
-            condition.precipitation != WallpaperPrecipitationCondition.NONE -> 0.95f
-            else -> 0f
-        })
+        val cloudDensity = max(
+            skyCloudDensity,
+            when {
+                condition.thunderIntensity >= 1f -> 1f
+                condition.precipitation == WallpaperPrecipitationCondition.HAIL -> 1f
+                condition.precipitation != WallpaperPrecipitationCondition.NONE -> 0.95f
+                else -> 0f
+            }
+        )
         var cloudDarkness = when (condition.sky) {
             WallpaperSkyCondition.CLEAR -> 0f
             // Even sparse Fair clouds need enough tonal range for a light-grey base;
@@ -421,14 +424,17 @@ object WallpaperSceneStateFactory {
             WallpaperSkyCondition.MOSTLY_CLOUDY -> 0.24f
             WallpaperSkyCondition.OVERCAST -> 0.34f
         }
-        cloudDarkness = max(cloudDarkness, when (condition.precipitation) {
-            WallpaperPrecipitationCondition.DRIZZLE -> 0.38f
-            WallpaperPrecipitationCondition.RAIN -> 0.55f
-            WallpaperPrecipitationCondition.SLEET -> 0.50f
-            WallpaperPrecipitationCondition.SNOW -> 0.45f
-            WallpaperPrecipitationCondition.HAIL -> 0.70f
-            WallpaperPrecipitationCondition.NONE -> 0f
-        })
+        cloudDarkness = max(
+            cloudDarkness,
+            when (condition.precipitation) {
+                WallpaperPrecipitationCondition.DRIZZLE -> 0.38f
+                WallpaperPrecipitationCondition.RAIN -> 0.55f
+                WallpaperPrecipitationCondition.SLEET -> 0.50f
+                WallpaperPrecipitationCondition.SNOW -> 0.45f
+                WallpaperPrecipitationCondition.HAIL -> 0.70f
+                WallpaperPrecipitationCondition.NONE -> 0f
+            }
+        )
         cloudDarkness = max(cloudDarkness, condition.thunderIntensity * 0.85f)
 
         val precipitationStrength = when (condition.precipitationIntensity) {
@@ -454,7 +460,7 @@ object WallpaperSceneStateFactory {
             fogIntensity = fogIntensity,
             hazeIntensity = hazeIntensity,
             thunderIntensity = condition.thunderIntensity,
-            glassRainIntensity = if (supportsWetGlass) precipitationStrength else 0f,
+            glassRainIntensity = if (supportsWetGlass) precipitationStrength else 0f
         )
     }
 

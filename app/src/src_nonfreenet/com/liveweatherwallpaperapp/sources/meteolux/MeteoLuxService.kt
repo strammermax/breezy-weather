@@ -17,6 +17,18 @@
 package com.liveweatherwallpaperapp.sources.meteolux
 
 import android.content.Context
+import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.common.exceptions.InvalidLocationException
+import com.liveweatherwallpaperapp.common.extensions.code
+import com.liveweatherwallpaperapp.common.extensions.currentLocale
+import com.liveweatherwallpaperapp.sources.getWindDegree
+import com.liveweatherwallpaperapp.sources.meteolux.json.MeteoLuxWeatherResult
+import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.centimeters
+import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.millimeters
+import com.liveweatherwallpaperapp.unit.speed.Speed.Companion.kilometersPerHour
+import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.location.model.LocationAddressInfo
 import livewallpaperweather.domain.source.SourceFeature
@@ -32,18 +44,6 @@ import livewallpaperweather.domain.weather.wrappers.HalfDayWrapper
 import livewallpaperweather.domain.weather.wrappers.HourlyWrapper
 import livewallpaperweather.domain.weather.wrappers.TemperatureWrapper
 import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.core.Observable
-import com.liveweatherwallpaperapp.R
-import com.liveweatherwallpaperapp.common.exceptions.InvalidLocationException
-import com.liveweatherwallpaperapp.common.extensions.code
-import com.liveweatherwallpaperapp.common.extensions.currentLocale
-import com.liveweatherwallpaperapp.sources.getWindDegree
-import com.liveweatherwallpaperapp.sources.meteolux.json.MeteoLuxWeatherResult
-import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.centimeters
-import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.millimeters
-import com.liveweatherwallpaperapp.unit.speed.Speed.Companion.kilometersPerHour
-import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
 import retrofit2.Retrofit
 import java.text.SimpleDateFormat
 import java.util.Locale

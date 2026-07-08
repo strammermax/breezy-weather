@@ -21,13 +21,13 @@ import android.icu.util.ULocale
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.text.util.LocalePreferences
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.capitalize
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import com.liveweatherwallpaperapp.common.utils.helpers.LogHelper
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import java.util.Locale
 
 object CalendarHelper {

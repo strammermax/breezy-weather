@@ -20,9 +20,6 @@ import android.app.Notification
 import android.content.Context
 import android.graphics.drawable.Icon
 import androidx.core.app.NotificationCompat
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Daily
-import livewallpaperweather.domain.weather.reference.WeatherCode
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.cancelNotification
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
@@ -37,6 +34,9 @@ import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.temperature.TemperatureUnit
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Daily
+import livewallpaperweather.domain.weather.reference.WeatherCode
 
 class ForecastNotificationNotifier(
     private val context: Context,

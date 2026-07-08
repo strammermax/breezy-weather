@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.wallpaper.photo
 
-import livewallpaperweather.domain.location.model.Location
 import io.kotest.matchers.shouldBe
+import livewallpaperweather.domain.location.model.Location
 import org.junit.jupiter.api.Test
 
 class WallpaperPhotoRefreshPlannerTest {

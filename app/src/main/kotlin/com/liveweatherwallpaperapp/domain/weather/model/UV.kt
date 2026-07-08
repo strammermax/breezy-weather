@@ -21,10 +21,10 @@ import android.graphics.Color
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
-import livewallpaperweather.domain.weather.model.UV
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import com.liveweatherwallpaperapp.unit.formatting.format
+import livewallpaperweather.domain.weather.model.UV
 
 fun UV.getLevel(context: Context): String? {
     if (index == null) return null

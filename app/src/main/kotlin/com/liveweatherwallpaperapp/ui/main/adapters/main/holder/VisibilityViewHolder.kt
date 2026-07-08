@@ -19,7 +19,6 @@ package com.liveweatherwallpaperapp.ui.main.adapters.main.holder
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
@@ -29,6 +28,7 @@ import com.liveweatherwallpaperapp.common.utils.UnitUtils
 import com.liveweatherwallpaperapp.common.utils.helpers.IntentHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
+import livewallpaperweather.domain.location.model.Location
 
 class VisibilityViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
     LayoutInflater.from(parent.context).inflate(R.layout.container_main_visibility, parent, false)

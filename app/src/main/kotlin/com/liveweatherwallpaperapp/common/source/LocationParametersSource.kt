@@ -17,9 +17,9 @@
 package com.liveweatherwallpaperapp.common.source
 
 import android.content.Context
+import io.reactivex.rxjava3.core.Observable
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.source.SourceFeature
-import io.reactivex.rxjava3.core.Observable
 
 /**
  * Implement this if you need parameters such as an ID for the location

@@ -17,9 +17,6 @@
 package com.liveweatherwallpaperapp.sources.nws
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceContinent
-import livewallpaperweather.domain.source.SourceFeature
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -31,6 +28,9 @@ import com.liveweatherwallpaperapp.common.source.ReverseGeocodingSource
 import com.liveweatherwallpaperapp.common.source.WeatherSource
 import com.liveweatherwallpaperapp.common.source.WeatherSource.Companion.PRIORITY_HIGHEST
 import com.liveweatherwallpaperapp.common.source.WeatherSource.Companion.PRIORITY_NONE
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceContinent
+import livewallpaperweather.domain.source.SourceFeature
 
 /**
  * The actual implementation is in the src_freenet and src_nonfreenet folders

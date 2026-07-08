@@ -19,10 +19,10 @@ package com.liveweatherwallpaperapp.wallpaper.photo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
@@ -92,7 +92,7 @@ class RemoveSkyProvider(
                             season = item.optStringOrNull("season"),
                             exifLatitude = item.optDoubleOrNull("exif_lat"),
                             exifLongitude = item.optDoubleOrNull("exif_lon"),
-                            depthUrl = item.optStringOrNull("depth_url")?.let(::normalizeServiceUrl),
+                            depthUrl = item.optStringOrNull("depth_url")?.let(::normalizeServiceUrl)
                         )
                     )
                 }
@@ -129,9 +129,9 @@ class RemoveSkyProvider(
                             hasGps = it.optBooleanOrNull("has_gps"),
                             hasDate = it.optBooleanOrNull("has_date"),
                             isNightVisual = it.optBooleanOrNull("is_night_visual"),
-                            seasonVisual = it.optStringOrNull("season_visual"),
+                            seasonVisual = it.optStringOrNull("season_visual")
                         )
-                    },
+                    }
                 )
             }
         } catch (e: Throwable) {
@@ -175,7 +175,7 @@ class RemoveSkyProvider(
                 file.asRequestBody(
                     (if (file.extension.equals("webp", ignoreCase = true)) "image/webp" else "image/jpeg")
                         .toMediaTypeOrNull()
-                ),
+                )
             )
             .apply {
                 location?.takeIf { it.isNotBlank() }?.let { addFormDataPart("location", it) }
@@ -213,7 +213,7 @@ class RemoveSkyProvider(
                 season = json.optStringOrNull("season"),
                 exifLatitude = exifGps?.takeIf { it.length() >= 2 }?.optDouble(0)?.takeIf { it.isFinite() },
                 exifLongitude = exifGps?.takeIf { it.length() >= 2 }?.optDouble(1)?.takeIf { it.isFinite() },
-                depthUrl = json.optStringOrNull("depth_url")?.let(::normalizeServiceUrl),
+                depthUrl = json.optStringOrNull("depth_url")?.let(::normalizeServiceUrl)
             )
         }
     }
@@ -240,7 +240,7 @@ class RemoveSkyProvider(
                     season = item.optStringOrNull("season"),
                     exifLatitude = item.optDoubleOrNull("exif_lat"),
                     exifLongitude = item.optDoubleOrNull("exif_lon"),
-                    depthUrl = item.optStringOrNull("depth_url")?.let(::normalizeServiceUrl),
+                    depthUrl = item.optStringOrNull("depth_url")?.let(::normalizeServiceUrl)
                 )
             }
         }
@@ -266,7 +266,7 @@ class RemoveSkyProvider(
                 season = item.optStringOrNull("season"),
                 exifLatitude = item.optDoubleOrNull("exif_lat"),
                 exifLongitude = item.optDoubleOrNull("exif_lon"),
-                depthUrl = uploadResult.second,
+                depthUrl = uploadResult.second
             )
         }
         null

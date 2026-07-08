@@ -17,13 +17,6 @@
 package com.liveweatherwallpaperapp.sources.atmo
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceFeature
-import livewallpaperweather.domain.weather.model.Pollen
-import livewallpaperweather.domain.weather.wrappers.PollenWrapper
-import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.exceptions.InvalidLocationException
@@ -35,6 +28,13 @@ import com.liveweatherwallpaperapp.domain.settings.SourceConfigStore
 import com.liveweatherwallpaperapp.sources.atmo.json.AtmoFrancePollenProperties
 import com.liveweatherwallpaperapp.sources.atmo.json.AtmoFrancePollenResult
 import com.liveweatherwallpaperapp.unit.pollen.PollenConcentration.Companion.perCubicMeter
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceFeature
+import livewallpaperweather.domain.weather.model.Pollen
+import livewallpaperweather.domain.weather.wrappers.PollenWrapper
+import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
 import retrofit2.Retrofit
 import java.util.Calendar
 import java.util.Date

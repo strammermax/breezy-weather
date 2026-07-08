@@ -16,12 +16,12 @@
 
 package com.liveweatherwallpaperapp.sources.lvgmc
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.lvgmc.json.LvgmcAirQualityLocationResult
 import com.liveweatherwallpaperapp.sources.lvgmc.json.LvgmcAirQualityResult
 import com.liveweatherwallpaperapp.sources.lvgmc.json.LvgmcCurrentLocation
 import com.liveweatherwallpaperapp.sources.lvgmc.json.LvgmcCurrentResult
 import com.liveweatherwallpaperapp.sources.lvgmc.json.LvgmcForecastResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

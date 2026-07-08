@@ -17,10 +17,10 @@
 package com.liveweatherwallpaperapp.sources.atmo
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import dagger.hilt.android.qualifiers.ApplicationContext
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import com.liveweatherwallpaperapp.common.extensions.getCountryName
+import dagger.hilt.android.qualifiers.ApplicationContext
+import livewallpaperweather.domain.location.model.Location
 import javax.inject.Inject
 
 /**

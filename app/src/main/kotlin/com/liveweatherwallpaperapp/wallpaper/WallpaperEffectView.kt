@@ -85,7 +85,7 @@ internal class WallpaperEffectView @JvmOverloads constructor(
     fun setWeather(weatherKind: Int, daylight: Float) {
         val state = WallpaperSceneStateFactory.create(
             weatherKind = weatherKind,
-            daylight = daylight,
+            daylight = daylight
         )
         val liveWallpaperConfig = LiveWallpaperConfigManager(context)
         renderer = WallpaperWeatherEffectRenderer(
@@ -97,13 +97,13 @@ internal class WallpaperEffectView @JvmOverloads constructor(
                 cloudDensity = state.cloudDensity,
                 cloudDarkness = state.cloudDarkness,
                 windFactor = state.windFactor,
-                windDirectionDegrees = state.windDirectionDegrees,
+                windDirectionDegrees = state.windDirectionDegrees
             ),
             fogField = FogFieldFactory.fogFieldParams(
                 fogIntensity = state.fogIntensity,
                 hazeIntensity = state.hazeIntensity,
                 windFactor = state.windFactor,
-                windDirectionDegrees = state.windDirectionDegrees,
+                windDirectionDegrees = state.windDirectionDegrees
             ),
             starField = StarFieldFactory.starFieldParams(locationSeed = 0L),
             glassRainIntensity = state.glassRainIntensity,
@@ -112,7 +112,7 @@ internal class WallpaperEffectView @JvmOverloads constructor(
             resources = resources,
             useNewClouds = liveWallpaperConfig.newCloudsEnabled,
             newCloudsParams = CloudEngineAdapter.sceneParams(state),
-            cloudEngineContext = context,
+            cloudEngineContext = context
         )
     }
 

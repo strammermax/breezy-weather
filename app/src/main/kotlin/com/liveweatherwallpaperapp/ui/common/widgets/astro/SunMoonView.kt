@@ -142,7 +142,8 @@ class SunMoonView @JvmOverloads constructor(
         }
         mX1ShaderColors[0] = com.liveweatherwallpaperapp.common.utils.ColorUtils.blendColor(lineShadowShader, rootColor)
         mX1ShaderColors[1] = rootColor
-        mX2ShaderColors[0] = com.liveweatherwallpaperapp.common.utils.ColorUtils.blendColor(lineShadowShader, mX1ShaderColors[0])
+        mX2ShaderColors[0] =
+            com.liveweatherwallpaperapp.common.utils.ColorUtils.blendColor(lineShadowShader, mX1ShaderColors[0])
         mX2ShaderColors[1] = rootColor
         mRootColor = rootColor
         if (mX1ShaderWrapper.isDifferent(measuredWidth, measuredHeight, lightTheme, mX1ShaderColors)) {

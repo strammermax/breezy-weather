@@ -26,13 +26,13 @@ import android.widget.TextView
 import androidx.annotation.CallSuper
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
-import livewallpaperweather.domain.location.model.Location
 import com.google.android.material.card.MaterialCardView
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.dpToPx
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import livewallpaperweather.domain.location.model.Location
 
 @SuppressLint("ObjectAnimatorBinding")
 abstract class AbstractMainCardViewHolder(

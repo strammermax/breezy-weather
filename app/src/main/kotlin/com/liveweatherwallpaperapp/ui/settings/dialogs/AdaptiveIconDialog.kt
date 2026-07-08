@@ -22,13 +22,13 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import androidx.core.graphics.drawable.toDrawable
-import livewallpaperweather.domain.weather.reference.WeatherCode
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import james.adaptiveicon.AdaptiveIcon
-import james.adaptiveicon.AdaptiveIconView
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import james.adaptiveicon.AdaptiveIcon
+import james.adaptiveicon.AdaptiveIconView
+import livewallpaperweather.domain.weather.reference.WeatherCode
 import java.util.Random
 
 object AdaptiveIconDialog {

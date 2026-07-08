@@ -24,9 +24,9 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import android.net.Uri
 import androidx.core.content.res.ResourcesCompat
-import livewallpaperweather.domain.weather.reference.WeatherCode
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.ui.theme.resource.utils.Constants
+import livewallpaperweather.domain.weather.reference.WeatherCode
 
 class ChronusResourceProvider(
     c: Context,

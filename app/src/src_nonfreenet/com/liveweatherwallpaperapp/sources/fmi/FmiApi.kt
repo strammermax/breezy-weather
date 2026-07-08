@@ -1,8 +1,8 @@
 package com.liveweatherwallpaperapp.sources.fmi
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.fmi.xml.FmiSimpleResult
 import com.liveweatherwallpaperapp.sources.fmi.xml.FmiStationsResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query

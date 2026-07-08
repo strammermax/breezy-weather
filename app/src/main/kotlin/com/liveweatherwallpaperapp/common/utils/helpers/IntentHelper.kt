@@ -25,7 +25,6 @@ import android.os.Build
 import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.ui.about.AboutActivity
 import com.liveweatherwallpaperapp.ui.alert.AlertActivity
@@ -33,17 +32,18 @@ import com.liveweatherwallpaperapp.ui.details.DetailsActivity
 import com.liveweatherwallpaperapp.ui.main.MainActivity
 import com.liveweatherwallpaperapp.ui.search.SearchActivity
 import com.liveweatherwallpaperapp.ui.settings.activities.CardDisplayManageActivity
-import com.liveweatherwallpaperapp.ui.settings.activities.WidgetTileSelectActivity
 import com.liveweatherwallpaperapp.ui.settings.activities.DailyTrendDisplayManageActivity
 import com.liveweatherwallpaperapp.ui.settings.activities.DependenciesActivity
 import com.liveweatherwallpaperapp.ui.settings.activities.DetailsOverviewDisplayManageActivity
 import com.liveweatherwallpaperapp.ui.settings.activities.HourlyTrendDisplayManageActivity
-import com.liveweatherwallpaperapp.ui.settings.activities.RadarTileSettingsActivity
 import com.liveweatherwallpaperapp.ui.settings.activities.PreviewIconActivity
 import com.liveweatherwallpaperapp.ui.settings.activities.PrivacyPolicyActivity
+import com.liveweatherwallpaperapp.ui.settings.activities.RadarTileSettingsActivity
 import com.liveweatherwallpaperapp.ui.settings.activities.SettingsActivity
 import com.liveweatherwallpaperapp.ui.settings.activities.TileAppearanceActivity
+import com.liveweatherwallpaperapp.ui.settings.activities.WidgetTileSelectActivity
 import com.liveweatherwallpaperapp.ui.settings.compose.SettingsScreenRouter
+import livewallpaperweather.domain.location.model.Location
 
 /**
  * Intent helper.

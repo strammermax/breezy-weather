@@ -18,9 +18,9 @@ package com.liveweatherwallpaperapp.ui.settings.compose
 
 import android.os.Build
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,7 +32,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import kotlinx.coroutines.launch
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.background.weather.WeatherUpdateJob
@@ -58,6 +57,7 @@ import com.liveweatherwallpaperapp.ui.settings.preference.sectionFooterItem
 import com.liveweatherwallpaperapp.ui.settings.preference.sectionHeaderItem
 import com.liveweatherwallpaperapp.ui.settings.preference.smallSeparatorItem
 import com.liveweatherwallpaperapp.ui.settings.preference.switchPreferenceItem
+import kotlinx.coroutines.launch
 
 @Composable
 fun DebugSettingsScreen(
@@ -236,7 +236,7 @@ fun DebugSettingsScreen(
                 TextButton(onClick = { askToDeleteLogs.value = false }) {
                     Text(stringResource(R.string.settings_debug_keep_logs))
                 }
-            },
+            }
         )
     }
 }

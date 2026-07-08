@@ -1,9 +1,6 @@
 package com.liveweatherwallpaperapp.sources.veduris
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceContinent
-import livewallpaperweather.domain.source.SourceFeature
 import com.liveweatherwallpaperapp.common.extensions.code
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import com.liveweatherwallpaperapp.common.extensions.getCountryName
@@ -14,6 +11,9 @@ import com.liveweatherwallpaperapp.common.source.ReverseGeocodingSource
 import com.liveweatherwallpaperapp.common.source.WeatherSource
 import com.liveweatherwallpaperapp.common.source.WeatherSource.Companion.PRIORITY_HIGHEST
 import com.liveweatherwallpaperapp.common.source.WeatherSource.Companion.PRIORITY_NONE
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceContinent
+import livewallpaperweather.domain.source.SourceFeature
 
 /**
  * The actual implementation is in the src_freenet and src_nonfreenet folders

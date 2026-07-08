@@ -58,8 +58,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.os.LocaleListCompat
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableMap
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.options.appearance.CalendarHelper
 import com.liveweatherwallpaperapp.common.options.appearance.LocaleHelper
@@ -68,6 +66,8 @@ import com.liveweatherwallpaperapp.ui.common.composables.AlertDialogNoPadding
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3ExpressiveCardListItem
 import com.liveweatherwallpaperapp.ui.common.widgets.defaultCardListItemElevation
 import com.liveweatherwallpaperapp.ui.theme.compose.themeRipple
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import java.util.Date
 
 @Composable

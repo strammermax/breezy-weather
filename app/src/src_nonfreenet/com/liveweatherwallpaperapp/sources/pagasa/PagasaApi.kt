@@ -16,10 +16,10 @@
 
 package com.liveweatherwallpaperapp.sources.pagasa
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.pagasa.json.PagasaCurrentResult
 import com.liveweatherwallpaperapp.sources.pagasa.json.PagasaHourlyResult
 import com.liveweatherwallpaperapp.sources.pagasa.json.PagasaLocationResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.POST

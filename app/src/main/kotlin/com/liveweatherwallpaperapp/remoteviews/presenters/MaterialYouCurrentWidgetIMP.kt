@@ -23,7 +23,6 @@ import android.os.Build
 import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.background.receiver.widget.WidgetMaterialYouCurrentProvider
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
@@ -36,6 +35,7 @@ import com.liveweatherwallpaperapp.remoteviews.common.WidgetSizeUtils
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
+import livewallpaperweather.domain.location.model.Location
 import kotlin.math.min
 import kotlin.math.roundToInt
 

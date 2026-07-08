@@ -97,9 +97,11 @@ class CloudEngineRenderer(private val context: Context) {
                     CloudInstance(
                         layer = layer,
                         laneOffsetFraction = .5f + (lane - .5f) * config.horizontalSpread,
-                        yFraction = (bandCenter +
-                            (rnd.nextFloat() * 2f - 1f) * bandHalfHeight * config.verticalSpread +
-                            config.heightOffset).coerceIn(-.2f, .9f),
+                        yFraction = (
+                            bandCenter +
+                                (rnd.nextFloat() * 2f - 1f) * bandHalfHeight * config.verticalSpread +
+                                config.heightOffset
+                            ).coerceIn(-.2f, .9f),
                         scale = layer.scaleRange.start + rnd.nextFloat() *
                             (layer.scaleRange.endInclusive - layer.scaleRange.start),
                         assetIndex = rnd.nextInt(pool.size),
@@ -128,7 +130,7 @@ class CloudEngineRenderer(private val context: Context) {
         width: Float,
         height: Float,
         alpha: Float,
-        rotationDegrees: Float = 0f
+        rotationDegrees: Float = 0f,
     ) {
         srcRect.set(
             asset.contentOffsetX,
@@ -173,7 +175,7 @@ class CloudEngineRenderer(private val context: Context) {
         screenHeight: Float,
         pxPerDp: Float,
         time: Float,
-        isOvercastFamily: Boolean
+        isOvercastFamily: Boolean,
     ) {
         val horizonConfig = profile.layers[CloudLayer.HORIZON] ?: LayerCloudConfig()
         if (CloudTextureType.HORIZON_BANK !in horizonConfig.types || horizonConfig.amount == CloudAmount.NONE) return
@@ -185,11 +187,19 @@ class CloudEngineRenderer(private val context: Context) {
             -(width - screenWidth) / 2f +
                 sin(time * .08f * windSpeedMultiplier * horizonConfig.speedMultiplier) * screenWidth * .06f
         } else {
-            -width + ((time * .7f * pxPerDp * windSpeedMultiplier * horizonConfig.speedMultiplier + travel * .3f) % travel)
+            -width + (
+                (time * .7f * pxPerDp * windSpeedMultiplier * horizonConfig.speedMultiplier + travel * .3f) % travel
+                )
         }
-        val top = screenHeight * ((if (weatherId == "cloudy") .76f else .655f) + horizonConfig.heightOffset) - height / 2f
+        val top = screenHeight *
+            ((if (weatherId == "cloudy") .76f else .655f) + horizonConfig.heightOffset) - height / 2f
         drawAsset(
-            canvas, bank, x, top, width, height,
+            canvas,
+            bank,
+            x,
+            top,
+            width,
+            height,
             (horizonConfig.amount.weight / 4f * .82f * horizonConfig.alphaMultiplier).coerceIn(0f, 1f)
         )
     }
@@ -211,9 +221,42 @@ class CloudEngineRenderer(private val context: Context) {
 
         val isDrizzle = weatherId == "drizzle"
         val isRain = weatherId == "rain"
-        plate(CloudLayer.DISTANT, if (isDrizzle) .60f else if (isRain) .66f else .55f, 1.95f, 4.1f)
-        plate(CloudLayer.MIDFIELD, if (isDrizzle) .39f else if (isRain) .43f else .36f, 1.85f, 2.4f)
-        plate(CloudLayer.NEAR, if (isDrizzle) .16f else if (isRain) .20f else .18f, 1.78f, .8f)
+        plate(
+            CloudLayer.DISTANT,
+            if (isDrizzle) {
+                .60f
+            } else if (isRain) {
+                .66f
+            } else {
+                .55f
+            },
+            1.95f,
+            4.1f
+        )
+        plate(
+            CloudLayer.MIDFIELD,
+            if (isDrizzle) {
+                .39f
+            } else if (isRain) {
+                .43f
+            } else {
+                .36f
+            },
+            1.85f,
+            2.4f
+        )
+        plate(
+            CloudLayer.NEAR,
+            if (isDrizzle) {
+                .16f
+            } else if (isRain) {
+                .20f
+            } else {
+                .18f
+            },
+            1.78f,
+            .8f
+        )
     }
 
     private fun drawOverheadVeilAndBank(
@@ -222,7 +265,7 @@ class CloudEngineRenderer(private val context: Context) {
         screenHeight: Float,
         pxPerDp: Float,
         time: Float,
-        isOvercastFamily: Boolean
+        isOvercastFamily: Boolean,
     ) {
         val overheadConfig = profile.layers[CloudLayer.OVERHEAD] ?: LayerCloudConfig()
         if (CloudTextureType.SMOKE in overheadConfig.types && overheadConfig.amount != CloudAmount.NONE) {
@@ -230,10 +273,16 @@ class CloudEngineRenderer(private val context: Context) {
                 val width = screenWidth * 1.75f * overheadConfig.sizeMultiplier
                 val height = width / veil.aspectRatio
                 val travel = screenWidth + width
-                val x = -width + ((time * .22f * pxPerDp * windSpeedMultiplier * overheadConfig.speedMultiplier + travel * .55f) % travel)
+                val phase = time * .22f * pxPerDp * windSpeedMultiplier * overheadConfig.speedMultiplier
+                val x = -width + ((phase + travel * .55f) % travel)
                 val top = screenHeight * (.17f + overheadConfig.heightOffset) - height / 2f
                 drawAsset(
-                    canvas, veil, x, top, width, height,
+                    canvas,
+                    veil,
+                    x,
+                    top,
+                    width,
+                    height,
                     (overheadConfig.amount.weight / 4f * .48f * overheadConfig.alphaMultiplier).coerceIn(0f, 1f)
                 )
             }
@@ -247,11 +296,17 @@ class CloudEngineRenderer(private val context: Context) {
                 -(width - screenWidth) / 2f +
                     sin(time * .07f * windSpeedMultiplier * overheadConfig.speedMultiplier) * screenWidth * .06f
             } else {
-                -screenWidth * .32f + (time * .45f * pxPerDp * windSpeedMultiplier * overheadConfig.speedMultiplier) % (screenWidth * .25f)
+                val phase = time * .45f * pxPerDp * windSpeedMultiplier * overheadConfig.speedMultiplier
+                -screenWidth * .32f + phase % (screenWidth * .25f)
             }
             val top = screenHeight * (.06f + overheadConfig.heightOffset) - height / 2f
             drawAsset(
-                canvas, bank, x, top, width, height,
+                canvas,
+                bank,
+                x,
+                top,
+                width,
+                height,
                 (overheadConfig.amount.weight / 4f * .9f * overheadConfig.alphaMultiplier).coerceIn(0f, 1f)
             )
         }
@@ -272,7 +327,9 @@ class CloudEngineRenderer(private val context: Context) {
             val width = screenWidth * 1.72f
             val height = width / bank.aspectRatio
             val travel = screenWidth + width
-            val x = -width + ((time * .34f * pxPerDp * windSpeedMultiplier + travel * .46f) % travel)
+            val x = -width + (
+                (time * .34f * pxPerDp * windSpeedMultiplier + travel * .46f) % travel
+                )
             val top = screenHeight * .56f - height / 2f
             drawAsset(canvas, bank, x, top, width, height, .98f)
 
@@ -281,7 +338,9 @@ class CloudEngineRenderer(private val context: Context) {
             val lowerWidth = screenWidth * 1.52f
             val lowerHeight = lowerWidth / bank.aspectRatio
             val lowerTravel = screenWidth + lowerWidth
-            val lowerX = -lowerWidth + ((time * .24f * pxPerDp * windSpeedMultiplier + lowerTravel * .76f) % lowerTravel)
+            val lowerX = -lowerWidth + (
+                (time * .24f * pxPerDp * windSpeedMultiplier + lowerTravel * .76f) % lowerTravel
+                )
             val lowerTop = screenHeight * .70f - lowerHeight / 2f
             drawAsset(canvas, bank, lowerX, lowerTop, lowerWidth, lowerHeight, .97f)
         }
@@ -301,7 +360,13 @@ class CloudEngineRenderer(private val context: Context) {
         drawAsset(canvas, front, x, top, width, height, if (isShower) .96f else 1f)
     }
 
-    private fun drawBillboardInstances(canvas: Canvas, screenWidth: Float, screenHeight: Float, pxPerDp: Float, time: Float) {
+    private fun drawBillboardInstances(
+        canvas: Canvas,
+        screenWidth: Float,
+        screenHeight: Float,
+        pxPerDp: Float,
+        time: Float,
+    ) {
         instances.forEach { cloud ->
             val pool = assetsByLayer[cloud.layer].orEmpty()
             val asset = pool.getOrNull(cloud.assetIndex) ?: return@forEach

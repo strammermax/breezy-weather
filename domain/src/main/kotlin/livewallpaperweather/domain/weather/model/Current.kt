@@ -16,11 +16,11 @@
 
 package livewallpaperweather.domain.weather.model
 
-import livewallpaperweather.domain.weather.reference.WeatherCode
-import livewallpaperweather.domain.weather.wrappers.CurrentWrapper
 import com.liveweatherwallpaperapp.unit.distance.Distance
 import com.liveweatherwallpaperapp.unit.pressure.Pressure
 import com.liveweatherwallpaperapp.unit.ratio.Ratio
+import livewallpaperweather.domain.weather.reference.WeatherCode
+import livewallpaperweather.domain.weather.wrappers.CurrentWrapper
 import java.io.Serializable
 
 /**

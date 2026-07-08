@@ -22,6 +22,13 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import com.liveweatherwallpaperapp.BuildConfig
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
 import livewallpaperweather.data.AlertSeverityColumnAdapter
 import livewallpaperweather.data.Alerts
 import livewallpaperweather.data.AndroidDatabaseHandler
@@ -45,15 +52,8 @@ import livewallpaperweather.data.TimeZoneColumnAdapter
 import livewallpaperweather.data.WeatherCodeColumnAdapter
 import livewallpaperweather.data.Weathers
 import livewallpaperweather.data.location.LocationRepository
-import livewallpaperweather.data.weather.WeatherRepository
 import livewallpaperweather.data.wallpaper.WallpaperPhotoRepository
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
-import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
-import com.liveweatherwallpaperapp.BuildConfig
+import livewallpaperweather.data.weather.WeatherRepository
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)

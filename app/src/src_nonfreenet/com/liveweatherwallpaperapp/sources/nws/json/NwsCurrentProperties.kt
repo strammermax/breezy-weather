@@ -17,8 +17,8 @@
 
 package com.liveweatherwallpaperapp.sources.nws.json
 
-import kotlinx.serialization.Serializable
 import com.liveweatherwallpaperapp.common.serializer.DateSerializer
+import kotlinx.serialization.Serializable
 import java.util.Date
 
 @Serializable

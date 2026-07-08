@@ -382,7 +382,7 @@ configure<ApplicationExtension> {
         "REMOVESKY_URL" to (localProperties.getProperty("lww.removesky.url") ?: ""),
         "REMOVESKY_API_KEY" to (localProperties.getProperty("lww.removesky.apikey") ?: ""),
         "CF_ACCESS_CLIENT_ID" to (localProperties.getProperty("lww.cfaccess.id") ?: ""),
-        "CF_ACCESS_CLIENT_SECRET" to (localProperties.getProperty("lww.cfaccess.secret") ?: ""),
+        "CF_ACCESS_CLIENT_SECRET" to (localProperties.getProperty("lww.cfaccess.secret") ?: "")
     )
     val lwwWebpLossless = localProperties.getProperty("lww.webp.lossless")
         ?.toBooleanStrictOrNull()

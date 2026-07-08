@@ -22,8 +22,8 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import android.net.Uri
 import androidx.annotation.Size
-import livewallpaperweather.domain.weather.reference.WeatherCode
 import com.liveweatherwallpaperapp.ui.theme.resource.utils.ResourceUtils
+import livewallpaperweather.domain.weather.reference.WeatherCode
 
 abstract class ResourceProvider {
     protected open fun getDrawableUri(resName: String): Uri {

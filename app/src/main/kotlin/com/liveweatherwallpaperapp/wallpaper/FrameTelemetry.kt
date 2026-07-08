@@ -69,7 +69,7 @@ class FrameTelemetry(private val windowSize: Int = MIN_WINDOW_SIZE) {
                 totalFrames = totalFrames,
                 activeProfile = activeProfile,
                 degradationEvents = degradationEvents,
-                recoveryEvents = recoveryEvents,
+                recoveryEvents = recoveryEvents
             )
         }
         var sum = 0f
@@ -88,7 +88,7 @@ class FrameTelemetry(private val windowSize: Int = MIN_WINDOW_SIZE) {
             totalFrames = totalFrames,
             activeProfile = activeProfile,
             degradationEvents = degradationEvents,
-            recoveryEvents = recoveryEvents,
+            recoveryEvents = recoveryEvents
         )
     }
 

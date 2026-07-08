@@ -24,8 +24,6 @@ import android.os.Build
 import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Weather
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.background.receiver.widget.WidgetDayWeekProvider
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -51,6 +49,8 @@ import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.formatting.format
 import com.liveweatherwallpaperapp.unit.temperature.TemperatureUnit
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Weather
 import java.util.Date
 import kotlin.math.roundToInt
 

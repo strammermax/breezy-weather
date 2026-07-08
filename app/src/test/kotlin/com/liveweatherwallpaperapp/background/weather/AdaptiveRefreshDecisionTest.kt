@@ -1,11 +1,11 @@
 package com.liveweatherwallpaperapp.background.weather
 
+import io.kotest.matchers.shouldBe
 import livewallpaperweather.domain.weather.model.Alert
 import livewallpaperweather.domain.weather.model.Current
 import livewallpaperweather.domain.weather.model.Hourly
 import livewallpaperweather.domain.weather.model.Weather
 import livewallpaperweather.domain.weather.reference.WeatherCode
-import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import java.util.Date
 import kotlin.time.Duration.Companion.minutes
@@ -14,7 +14,7 @@ class AdaptiveRefreshDecisionTest {
 
     private fun hourly(offsetMinutes: Long, weatherCode: WeatherCode?) = Hourly(
         date = Date(System.currentTimeMillis() + offsetMinutes.minutes.inWholeMilliseconds),
-        weatherCode = weatherCode,
+        weatherCode = weatherCode
     )
 
     @Test
@@ -26,7 +26,7 @@ class AdaptiveRefreshDecisionTest {
     fun `an active alert always needs an adaptive refresh`() {
         val weather = Weather(
             current = Current(weatherCode = WeatherCode.CLEAR),
-            alertList = listOf(Alert(alertId = "1", color = 0)),
+            alertList = listOf(Alert(alertId = "1", color = 0))
         )
 
         needsAdaptiveRefresh(weather) shouldBe true
@@ -38,7 +38,7 @@ class AdaptiveRefreshDecisionTest {
             current = Current(weatherCode = WeatherCode.CLEAR),
             alertList = listOf(
                 Alert(alertId = "1", endDate = Date(System.currentTimeMillis() - 60_000), color = 0)
-            ),
+            )
         )
 
         needsAdaptiveRefresh(weather) shouldBe false
@@ -51,8 +51,8 @@ class AdaptiveRefreshDecisionTest {
             hourlyForecast = listOf(
                 hourly(0, WeatherCode.CLEAR),
                 hourly(60, WeatherCode.CLEAR),
-                hourly(120, WeatherCode.PARTLY_CLOUDY),
-            ),
+                hourly(120, WeatherCode.PARTLY_CLOUDY)
+            )
         )
 
         needsAdaptiveRefresh(weather) shouldBe false
@@ -64,8 +64,8 @@ class AdaptiveRefreshDecisionTest {
             current = Current(weatherCode = WeatherCode.CLEAR),
             hourlyForecast = listOf(
                 hourly(0, WeatherCode.CLEAR),
-                hourly(60, WeatherCode.RAIN),
-            ),
+                hourly(60, WeatherCode.RAIN)
+            )
         )
 
         needsAdaptiveRefresh(weather) shouldBe true
@@ -77,8 +77,8 @@ class AdaptiveRefreshDecisionTest {
             current = Current(weatherCode = WeatherCode.RAIN),
             hourlyForecast = listOf(
                 hourly(0, WeatherCode.RAIN),
-                hourly(60, WeatherCode.CLOUDY),
-            ),
+                hourly(60, WeatherCode.CLOUDY)
+            )
         )
 
         needsAdaptiveRefresh(weather) shouldBe true
@@ -92,8 +92,8 @@ class AdaptiveRefreshDecisionTest {
                 hourly(0, WeatherCode.CLEAR),
                 hourly(60, WeatherCode.CLEAR),
                 hourly(120, WeatherCode.CLEAR),
-                hourly(180, WeatherCode.RAIN),
-            ),
+                hourly(180, WeatherCode.RAIN)
+            )
         )
 
         needsAdaptiveRefresh(weather) shouldBe false
@@ -107,8 +107,8 @@ class AdaptiveRefreshDecisionTest {
             current = Current(weatherCode = WeatherCode.CLEAR),
             hourlyForecast = listOf(
                 hourly(0, WeatherCode.CLEAR),
-                hourly(60, WeatherCode.THUNDER),
-            ),
+                hourly(60, WeatherCode.THUNDER)
+            )
         )
 
         needsAdaptiveRefresh(weather) shouldBe false
@@ -120,8 +120,8 @@ class AdaptiveRefreshDecisionTest {
             current = Current(weatherCode = WeatherCode.CLEAR),
             hourlyForecast = listOf(
                 hourly(0, WeatherCode.CLEAR),
-                hourly(60, WeatherCode.THUNDERSTORM),
-            ),
+                hourly(60, WeatherCode.THUNDERSTORM)
+            )
         )
 
         needsAdaptiveRefresh(weather) shouldBe true

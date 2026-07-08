@@ -21,12 +21,12 @@ import android.graphics.Color
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
-import livewallpaperweather.domain.weather.model.Wind
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
 import com.liveweatherwallpaperapp.common.extensions.getBeaufortScaleStrength
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.speed.Speed.Companion.centimetersPerSecond
+import livewallpaperweather.domain.weather.model.Wind
 
 fun Wind.validate(): Wind {
     return copy(

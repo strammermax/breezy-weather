@@ -16,10 +16,10 @@
 
 package com.liveweatherwallpaperapp.sources.metoffice
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.metoffice.json.MetOfficeDaily
 import com.liveweatherwallpaperapp.sources.metoffice.json.MetOfficeForecast
 import com.liveweatherwallpaperapp.sources.metoffice.json.MetOfficeHourly
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Query

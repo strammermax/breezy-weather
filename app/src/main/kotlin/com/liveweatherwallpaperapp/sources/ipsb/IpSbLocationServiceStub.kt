@@ -17,10 +17,10 @@
 package com.liveweatherwallpaperapp.sources.ipsb
 
 import android.content.Context
-import livewallpaperweather.domain.source.SourceContinent
 import com.liveweatherwallpaperapp.common.source.HttpSource
 import com.liveweatherwallpaperapp.common.source.LocationSource
 import com.liveweatherwallpaperapp.common.source.NonFreeNetSource
+import livewallpaperweather.domain.source.SourceContinent
 
 /**
  * The actual implementation is in the src_freenet and src_nonfreenet folders

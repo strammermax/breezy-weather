@@ -28,7 +28,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import dagger.hilt.android.AndroidEntryPoint
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
@@ -46,6 +45,7 @@ import com.liveweatherwallpaperapp.ui.settings.preference.clickablePreferenceIte
 import com.liveweatherwallpaperapp.ui.settings.preference.composables.PreferenceScreen
 import com.liveweatherwallpaperapp.ui.settings.preference.composables.PreferenceViewWithCard
 import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
+import dagger.hilt.android.AndroidEntryPoint
 import java.text.Collator
 import javax.inject.Inject
 

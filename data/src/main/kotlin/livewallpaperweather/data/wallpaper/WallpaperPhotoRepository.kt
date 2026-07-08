@@ -82,7 +82,7 @@ class WallpaperPhotoRepository(
             season = season,
             exifLat = exifLat,
             exifLon = exifLon,
-            now = now,
+            now = now
         )
     }
 
@@ -144,6 +144,6 @@ class WallpaperPhotoRepository(
         country = country,
         season = season,
         exifLat = exifLat,
-        exifLon = exifLon,
+        exifLon = exifLon
     )
 }

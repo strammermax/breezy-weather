@@ -17,18 +17,18 @@
 package com.liveweatherwallpaperapp.sources.ekuk
 
 import android.content.Context
+import com.google.maps.android.model.LatLng
+import com.liveweatherwallpaperapp.sources.ekuk.json.EkukObservationsResult
+import com.liveweatherwallpaperapp.sources.ekuk.json.EkukStationsResult
+import com.liveweatherwallpaperapp.unit.pollutant.PollutantConcentration.Companion.microgramsPerCubicMeter
+import com.liveweatherwallpaperapp.unit.pollutant.PollutantConcentration.Companion.milligramsPerCubicMeter
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.source.SourceFeature
 import livewallpaperweather.domain.weather.model.AirQuality
 import livewallpaperweather.domain.weather.wrappers.AirQualityWrapper
 import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import com.google.maps.android.model.LatLng
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.core.Observable
-import com.liveweatherwallpaperapp.sources.ekuk.json.EkukObservationsResult
-import com.liveweatherwallpaperapp.sources.ekuk.json.EkukStationsResult
-import com.liveweatherwallpaperapp.unit.pollutant.PollutantConcentration.Companion.microgramsPerCubicMeter
-import com.liveweatherwallpaperapp.unit.pollutant.PollutantConcentration.Companion.milligramsPerCubicMeter
 import retrofit2.Retrofit
 import java.text.SimpleDateFormat
 import java.util.Calendar

@@ -16,11 +16,11 @@
 
 package com.liveweatherwallpaperapp.sources.ipma
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.ipma.json.IpmaAlertResult
 import com.liveweatherwallpaperapp.sources.ipma.json.IpmaDistrictResult
 import com.liveweatherwallpaperapp.sources.ipma.json.IpmaForecastResult
 import com.liveweatherwallpaperapp.sources.ipma.json.IpmaLocationResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Path
 

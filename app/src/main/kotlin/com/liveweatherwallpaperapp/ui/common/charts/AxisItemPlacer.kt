@@ -16,6 +16,7 @@
 
 package com.liveweatherwallpaperapp.ui.common.charts
 
+import com.liveweatherwallpaperapp.common.extensions.toTimezoneSpecificHour
 import com.patrykandpatrick.vico.core.cartesian.CartesianDrawingContext
 import com.patrykandpatrick.vico.core.cartesian.CartesianMeasuringContext
 import com.patrykandpatrick.vico.core.cartesian.axis.Axis
@@ -23,7 +24,6 @@ import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.layer.CartesianLayerDimensions
 import kotlinx.collections.immutable.ImmutableList
-import com.liveweatherwallpaperapp.common.extensions.toTimezoneSpecificHour
 import java.util.Date
 import java.util.TimeZone
 import kotlin.math.ceil

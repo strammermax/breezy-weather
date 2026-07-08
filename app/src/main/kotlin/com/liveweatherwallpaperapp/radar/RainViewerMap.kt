@@ -54,12 +54,19 @@ internal object RainViewerMap {
         }
         // Compact: 100vh fills the card WebView. Full: 400px CSS fallback, JS overrides to actual height - ctrl.
         val mapHeight = if (compact) "100vh" else "400px"
-        val setHeightJs = if (compact) "" else """
+        val setHeightJs = if (compact) {
+            ""
+        } else {
+            """
  function setMapH(){var h=window.innerHeight-54;if(h>100){document.getElementById('map').style.height=h+'px';fixSize();}}
  [0,150,400,900].forEach(function(t){setTimeout(setMapH,t)});
  window.addEventListener('resize',setMapH);"""
+        }
         // Full-mode only: control bar HTML + player functions.
-        val ctrlHtml = if (compact) "" else """
+        val ctrlHtml = if (compact) {
+            ""
+        } else {
+            """
 <div class="ctrl">
   <button class="btn" onclick="stepFrame(-1)">&#9664;</button>
   <button class="btn" id="playBtn" onclick="togglePlay()">&#9654;</button>
@@ -67,7 +74,11 @@ internal object RainViewerMap {
   <input type="range" id="scrubber" min="0" max="0" value="0"
          oninput="scrub(this.value)" style="flex:1;margin:0 6px;accent-color:#2196f3">
 </div>"""
-        val playerFunctions = if (compact) "" else """
+        }
+        val playerFunctions = if (compact) {
+            ""
+        } else {
+            """
  var playing=false,timer=null;
  function updatePlayBtn(){var b=document.getElementById('playBtn');if(b)b.innerHTML=playing?'&#9646;&#9646;':'&#9654;';}
  function startPlay(){
@@ -84,6 +95,7 @@ internal object RainViewerMap {
    var sc=document.getElementById('scrubber'); if(sc)sc.value=idx;
  }
  function scrub(val){stopPlay(); idx=parseInt(val); show(idx);}"""
+        }
         val afterLoad = if (compact) {
             "setInterval(function(){idx=(idx+1)%frames.length;show(idx);},700);"
         } else {

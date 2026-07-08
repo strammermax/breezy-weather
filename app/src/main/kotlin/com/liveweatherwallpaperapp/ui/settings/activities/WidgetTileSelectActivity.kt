@@ -71,17 +71,17 @@ class WidgetTileSelectActivity : BreezyActivity() {
                 FitStatusBarTopAppBar(
                     title = stringResource(R.string.widget_tile_select),
                     onBackPressed = { finish() },
-                    scrollBehavior = scrollBehavior,
+                    scrollBehavior = scrollBehavior
                 )
-            },
+            }
         ) { paddingValues ->
             LazyColumn(
                 contentPadding = PaddingValues(
                     start = dimensionResource(R.dimen.normal_margin),
                     end = dimensionResource(R.dimen.normal_margin),
                     top = paddingValues.calculateTopPadding(),
-                    bottom = paddingValues.calculateBottomPadding() + 16.dp,
-                ),
+                    bottom = paddingValues.calculateBottomPadding() + 16.dp
+                )
             ) {
                 items(options) { (type, label) ->
                     Row(
@@ -90,19 +90,21 @@ class WidgetTileSelectActivity : BreezyActivity() {
                             .clickable {
                                 selectedType = type
                                 SettingsManager.getInstance(context).widgetTileType = type
-                                EventBus.instance.with(SettingsChangedMessage::class.java).postValue(SettingsChangedMessage())
+                                EventBus.instance.with(
+                                    SettingsChangedMessage::class.java
+                                ).postValue(SettingsChangedMessage())
                                 finish()
                             }
                             .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
                             selected = selectedType == type,
-                            onClick = null,
+                            onClick = null
                         )
                         Text(
                             text = label,
-                            modifier = Modifier.padding(start = 12.dp),
+                            modifier = Modifier.padding(start = 12.dp)
                         )
                     }
                 }

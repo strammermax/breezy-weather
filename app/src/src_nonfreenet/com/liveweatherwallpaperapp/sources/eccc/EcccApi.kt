@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.eccc
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.eccc.json.EcccResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path

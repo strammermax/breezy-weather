@@ -27,14 +27,14 @@ class PlaceQueryTest {
             city = "Hoofddorp",
             municipality = "Haarlemmermeer",
             state = "Noord-Holland",
-            country = "Netherlands",
+            country = "Netherlands"
         )
         place.searchTerms() shouldBe listOf(
             "Hoofddorp",
             "Hoofddorp Netherlands",
             "Haarlemmermeer",
             "Noord-Holland",
-            "Netherlands",
+            "Netherlands"
         )
     }
 
@@ -44,12 +44,12 @@ class PlaceQueryTest {
             city = "Paris",
             municipality = "  ",
             state = "Paris", // duplicate of city -> dropped
-            country = "France",
+            country = "France"
         )
         place.searchTerms() shouldBe listOf(
             "Paris",
             "Paris France",
-            "France",
+            "France"
         )
     }
 

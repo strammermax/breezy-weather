@@ -22,7 +22,6 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.GridLayoutManager
-import livewallpaperweather.domain.weather.reference.WeatherCode
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.doOnApplyWindowInsets
@@ -39,6 +38,7 @@ import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.DefaultResourceProvider
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import livewallpaperweather.domain.weather.reference.WeatherCode
 import java.util.Locale
 
 class PreviewIconActivity : BreezyActivity() {

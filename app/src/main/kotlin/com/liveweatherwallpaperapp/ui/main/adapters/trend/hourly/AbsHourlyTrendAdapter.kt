@@ -19,7 +19,6 @@ package com.liveweatherwallpaperapp.ui.main.adapters.trend.hourly
 import android.content.Context
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.getHour
@@ -29,6 +28,7 @@ import com.liveweatherwallpaperapp.common.utils.helpers.IntentHelper
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendRecyclerView
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendRecyclerViewAdapter
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.item.HourlyTrendItemView
+import livewallpaperweather.domain.location.model.Location
 import kotlin.time.Duration.Companion.days
 
 abstract class AbsHourlyTrendAdapter(

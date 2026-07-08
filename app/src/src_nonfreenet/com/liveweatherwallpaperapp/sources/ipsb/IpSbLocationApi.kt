@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.ipsb
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.ipsb.json.IpSbLocationResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 
 interface IpSbLocationApi {

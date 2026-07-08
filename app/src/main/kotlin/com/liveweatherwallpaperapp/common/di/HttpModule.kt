@@ -18,6 +18,9 @@ package com.liveweatherwallpaperapp.common.di
 
 import android.app.Application
 import android.os.Build
+import com.liveweatherwallpaperapp.BreezyWeather
+import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.common.utils.DiagnosticLogger
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,9 +32,6 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import okhttp3.tls.HandshakeCertificates
-import com.liveweatherwallpaperapp.BreezyWeather
-import com.liveweatherwallpaperapp.R
-import com.liveweatherwallpaperapp.common.utils.DiagnosticLogger
 import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
@@ -95,7 +95,11 @@ class HttpModule {
                 try {
                     chain.proceed(request).also { response ->
                         val elapsedMs = (System.nanoTime() - started) / 1_000_000
-                        DiagnosticLogger.log(app, "Network", "${request.method} $safeUrl -> ${response.code} (${elapsedMs} ms)")
+                        DiagnosticLogger.log(
+                            app,
+                            "Network",
+                            "${request.method} $safeUrl -> ${response.code} ($elapsedMs ms)"
+                        )
                         val contentType = response.body.contentType()?.toString().orEmpty()
                         if (contentType.startsWith("text/") || contentType.contains("json")) {
                             val body = runCatching { response.peekBody(512L * 1024L).string() }.getOrNull()

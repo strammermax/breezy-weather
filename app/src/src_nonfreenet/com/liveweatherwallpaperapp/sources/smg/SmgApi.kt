@@ -16,13 +16,13 @@
 
 package com.liveweatherwallpaperapp.sources.smg
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.smg.json.SmgBulletinResult
 import com.liveweatherwallpaperapp.sources.smg.json.SmgCurrentResult
 import com.liveweatherwallpaperapp.sources.smg.json.SmgForecastResult
 import com.liveweatherwallpaperapp.sources.smg.json.SmgOutlookResult
 import com.liveweatherwallpaperapp.sources.smg.json.SmgUvResult
 import com.liveweatherwallpaperapp.sources.smg.json.SmgWarningResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.POST
 import retrofit2.http.Query
 

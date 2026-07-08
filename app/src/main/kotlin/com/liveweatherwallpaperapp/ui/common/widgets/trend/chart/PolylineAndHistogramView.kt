@@ -722,6 +722,7 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         private const val CHART_LINE_SIZE_DIP = 1f
         private const val TEXT_MARGIN_DIP = 2f
         private const val DOT_RADIUS_DIP = 3f
+
         // ACT-013: glass cards show the live-wallpaper snapshot through their
         // transparent background, so the high/low-temperature area shading (which
         // used to read as a subtle tint on an opaque card) now reads as a dark

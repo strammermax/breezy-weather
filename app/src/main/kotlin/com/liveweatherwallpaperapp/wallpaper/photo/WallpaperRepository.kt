@@ -20,14 +20,14 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
+import com.liveweatherwallpaperapp.BuildConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
-import livewallpaperweather.data.wallpaper.WallpaperPhotoRecord
-import livewallpaperweather.data.wallpaper.WallpaperPhotoRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import livewallpaperweather.data.wallpaper.WallpaperPhotoRecord
+import livewallpaperweather.data.wallpaper.WallpaperPhotoRepository
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import com.liveweatherwallpaperapp.BuildConfig
 import java.io.File
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
@@ -168,7 +168,7 @@ class WallpaperRepository @Inject constructor(
             },
             tried,
             latitude = latitude,
-            longitude = longitude,
+            longitude = longitude
         )
         if (cachedCandidate != null) {
             val cachedFile = File(cachedCandidate.filePath!!)
@@ -213,7 +213,7 @@ class WallpaperRepository @Inject constructor(
                 country = result.country,
                 season = result.season,
                 exifLat = result.exifLatitude,
-                exifLon = result.exifLongitude,
+                exifLon = result.exifLongitude
             )
             store.recordRecentUrl(placeKey, url)
             if (activate) {
@@ -272,7 +272,7 @@ class WallpaperRepository @Inject constructor(
             country = upload.country,
             season = upload.season,
             exifLat = upload.exifLatitude,
-            exifLon = upload.exifLongitude,
+            exifLon = upload.exifLongitude
         )
         store.recordRecentUrl(place.cacheFileName(), upload.processedUrl)
         val depthPath = upload.depthUrl?.let { downloadAndCacheDepthMap(it, place, upload.processedUrl) }
@@ -403,7 +403,7 @@ class WallpaperRepository @Inject constructor(
             country = newPhoto.country,
             season = newPhoto.season,
             exifLat = newPhoto.exifLatitude,
-            exifLon = newPhoto.exifLongitude,
+            exifLon = newPhoto.exifLongitude
         )
         pruneLocationCache(cacheFile.parentFile, cacheFile)
         prunePhotoCache(cacheFile)
@@ -472,7 +472,7 @@ class WallpaperRepository @Inject constructor(
         val files = photoCacheDir().walkTopDown().filter(File::isFile).toList()
         return WallpaperCacheStats(
             photoCount = files.size,
-            totalBytes = files.sumOf(File::length),
+            totalBytes = files.sumOf(File::length)
         )
     }
 
@@ -528,7 +528,7 @@ class WallpaperRepository @Inject constructor(
             locationName = photo.locationName,
             filePath = cacheFile.absolutePath,
             attribution = photo.attribution,
-            processed = photo.processed,
+            processed = photo.processed
         )
         return true
     }
@@ -555,7 +555,7 @@ class WallpaperRepository @Inject constructor(
                     locationName = photo.locationName,
                     filePath = filePath,
                     attribution = photo.attribution,
-                    processed = photo.processed,
+                    processed = photo.processed
                 )
             }
 
@@ -588,7 +588,7 @@ class WallpaperRepository @Inject constructor(
                     null
                 },
                 processed = true,
-                now = file.lastModified().takeIf { it > 0 } ?: System.currentTimeMillis(),
+                now = file.lastModified().takeIf { it > 0 } ?: System.currentTimeMillis()
             )
         }
     }
@@ -640,8 +640,10 @@ class WallpaperRepository @Inject constructor(
         val overflow = directory.listFiles()
             ?.filter { it.isFile && it != activeFile }
             ?.sortedBy(File::lastModified)
-            ?.dropLast((store.maxCachedPhotosPerLocation - if (activeFile?.parentFile == directory) 1 else 0)
-                .coerceAtLeast(0))
+            ?.dropLast(
+                (store.maxCachedPhotosPerLocation - if (activeFile?.parentFile == directory) 1 else 0)
+                    .coerceAtLeast(0)
+            )
             .orEmpty()
         overflow.forEach(File::delete)
         if (directory.listFiles().isNullOrEmpty()) directory.delete()

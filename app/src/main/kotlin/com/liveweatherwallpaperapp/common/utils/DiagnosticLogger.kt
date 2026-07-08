@@ -94,7 +94,7 @@ object DiagnosticLogger {
                     logFile.delete()
                 }.onFailure { Log.e(LOG_TAG, "Could not archive ${logFile.name}", it) }
             }
-        }
+    }
 
     private fun root(context: Context) = File(context.filesDir, DIRECTORY).apply { mkdirs() }
     private fun dayStamp() = SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(Date())

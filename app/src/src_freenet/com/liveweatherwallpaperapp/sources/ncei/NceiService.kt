@@ -17,11 +17,11 @@
 package com.liveweatherwallpaperapp.sources.ncei
 
 import android.content.Context
+import com.liveweatherwallpaperapp.common.exceptions.NonFreeNetSourceException
+import io.reactivex.rxjava3.core.Observable
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.source.SourceFeature
 import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import io.reactivex.rxjava3.core.Observable
-import com.liveweatherwallpaperapp.common.exceptions.NonFreeNetSourceException
 import javax.inject.Inject
 
 class NceiService @Inject constructor() : NceiServiceStub() {

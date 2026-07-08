@@ -16,11 +16,11 @@
 
 package com.liveweatherwallpaperapp.sources.metno
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.metno.json.MetNoAirQualityResult
 import com.liveweatherwallpaperapp.sources.metno.json.MetNoAlertResult
 import com.liveweatherwallpaperapp.sources.metno.json.MetNoForecastResult
 import com.liveweatherwallpaperapp.sources.metno.json.MetNoNowcastResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Query

@@ -17,12 +17,6 @@
 package com.liveweatherwallpaperapp.sources
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceFeature
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableList
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -121,6 +115,12 @@ import com.liveweatherwallpaperapp.sources.smg.SmgService
 import com.liveweatherwallpaperapp.sources.smhi.SmhiService
 import com.liveweatherwallpaperapp.sources.veduris.VedurIsService
 import com.liveweatherwallpaperapp.sources.wmosevereweather.WmoSevereWeatherService
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceFeature
 import java.text.Collator
 import javax.inject.Inject
 

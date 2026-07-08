@@ -61,7 +61,9 @@ enum class HourlyTrendDisplay(
         }
 
         fun getSummary(context: Context, list: List<HourlyTrendDisplay>): String {
-            return list.joinToString(context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)) { item ->
+            return list.joinToString(
+                context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
+            ) { item ->
                 item.getName(context)
             }
         }

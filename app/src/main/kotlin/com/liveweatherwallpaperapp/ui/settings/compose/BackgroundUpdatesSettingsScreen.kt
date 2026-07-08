@@ -45,7 +45,6 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
-import kotlinx.coroutines.delay
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.background.weather.WeatherUpdateJob
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -74,6 +73,7 @@ import com.liveweatherwallpaperapp.ui.settings.preference.smallSeparatorItem
 import com.liveweatherwallpaperapp.ui.settings.preference.switchPreferenceItem
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.formatting.format
+import kotlinx.coroutines.delay
 import java.util.Date
 import kotlin.time.DurationUnit
 

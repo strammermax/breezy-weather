@@ -26,7 +26,6 @@ import android.view.ViewGroup
 import androidx.annotation.Size
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
@@ -45,6 +44,7 @@ import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.millimeters
 import com.liveweatherwallpaperapp.unit.temperature.TemperatureUnit
+import livewallpaperweather.domain.location.model.Location
 import java.util.Date
 import kotlin.math.max
 
@@ -64,6 +64,7 @@ class DailyTemperatureAdapter(
     private val mDailyPrecipitation: Array<Float?>
     private var mHighestTemperature: Float? = null
     private var mLowestTemperature: Float? = null
+
     // Scaled to the highest *actual* daily total below (init block), not a fixed heavy-rain
     // threshold — otherwise routine light rain would render as a barely-visible sliver next to
     // an arbitrary, usually-unreached maximum.
@@ -94,7 +95,9 @@ class DailyTemperatureAdapter(
                 }
                 if (showPrecipitationProbability) {
                     day.precipitationProbability?.total?.let { p ->
-                        talkBackBuilder.append(activity.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
+                        talkBackBuilder.append(
+                            activity.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
+                        )
                             .append(activity.getString(R.string.precipitation_probability))
                             .append(activity.getString(R.string.colon_separator))
                             .append(p.formatPercent(activity))
@@ -114,7 +117,9 @@ class DailyTemperatureAdapter(
                 }
                 if (showPrecipitationProbability) {
                     night.precipitationProbability?.total?.let { p ->
-                        talkBackBuilder.append(activity.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
+                        talkBackBuilder.append(
+                            activity.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
+                        )
                             .append(activity.getString(R.string.precipitation_probability))
                             .append(activity.getString(R.string.colon_separator))
                             .append(p.formatPercent(activity))

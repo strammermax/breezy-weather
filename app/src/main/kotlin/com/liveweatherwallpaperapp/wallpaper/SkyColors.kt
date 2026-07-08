@@ -42,13 +42,13 @@ object SkyColors {
 
     fun blendSky(from: IntArray, to: IntArray, amount: Float): IntArray = intArrayOf(
         blendColor(from[0], to[0], amount),
-        blendColor(from[1], to[1], amount),
+        blendColor(from[1], to[1], amount)
     )
 
     fun blendColor(from: Int, to: Int, amount: Float): Int = Color.rgb(
         (Color.red(from) + (Color.red(to) - Color.red(from)) * amount).toInt(),
         (Color.green(from) + (Color.green(to) - Color.green(from)) * amount).toInt(),
-        (Color.blue(from) + (Color.blue(to) - Color.blue(from)) * amount).toInt(),
+        (Color.blue(from) + (Color.blue(to) - Color.blue(from)) * amount).toInt()
     )
 
     fun fraction(value: Long, start: Long, end: Long): Float =

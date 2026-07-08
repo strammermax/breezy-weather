@@ -204,7 +204,7 @@ internal class WallpaperParticlePool(
                             center,
                             intArrayOf(Color.WHITE, Color.argb(0, 255, 255, 255)),
                             floatArrayOf(softness.coerceIn(0.2f, 0.85f), 1f),
-                            Shader.TileMode.CLAMP,
+                            Shader.TileMode.CLAMP
                         )
                         canvas.drawCircle(center, center, center, paint)
                     }

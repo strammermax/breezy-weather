@@ -20,9 +20,12 @@ import android.graphics.Bitmap
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import livewallpaperweather.data.location.LocationRepository
-import livewallpaperweather.data.weather.WeatherRepository
-import livewallpaperweather.domain.location.model.Location
+import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
+import com.liveweatherwallpaperapp.common.source.PollenIndexSource
+import com.liveweatherwallpaperapp.domain.weather.index.PollutantIndex
+import com.liveweatherwallpaperapp.sources.SourceManager
+import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView
+import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,12 +33,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
-import com.liveweatherwallpaperapp.common.source.PollenIndexSource
-import com.liveweatherwallpaperapp.domain.weather.index.PollutantIndex
-import com.liveweatherwallpaperapp.sources.SourceManager
-import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView
-import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
+import livewallpaperweather.data.location.LocationRepository
+import livewallpaperweather.data.weather.WeatherRepository
+import livewallpaperweather.domain.location.model.Location
 import javax.inject.Inject
 
 @HiltViewModel

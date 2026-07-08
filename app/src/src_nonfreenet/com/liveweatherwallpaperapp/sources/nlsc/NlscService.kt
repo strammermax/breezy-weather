@@ -1,10 +1,10 @@
 package com.liveweatherwallpaperapp.sources.nlsc
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.LocationAddressInfo
+import com.liveweatherwallpaperapp.common.exceptions.InvalidLocationException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.reactivex.rxjava3.core.Observable
-import com.liveweatherwallpaperapp.common.exceptions.InvalidLocationException
+import livewallpaperweather.domain.location.model.LocationAddressInfo
 import retrofit2.Retrofit
 import javax.inject.Inject
 import javax.inject.Named

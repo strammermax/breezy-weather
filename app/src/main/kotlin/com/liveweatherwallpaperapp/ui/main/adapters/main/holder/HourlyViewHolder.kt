@@ -22,7 +22,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
-import livewallpaperweather.domain.location.model.Location
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonGroup
 import com.liveweatherwallpaperapp.R
@@ -36,6 +35,7 @@ import com.liveweatherwallpaperapp.ui.main.adapters.trend.HourlyTrendAdapter
 import com.liveweatherwallpaperapp.ui.main.widgets.TrendRecyclerViewScrollBar
 import com.liveweatherwallpaperapp.ui.theme.ThemeManager
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import livewallpaperweather.domain.location.model.Location
 
 class HourlyViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
     LayoutInflater.from(parent.context).inflate(R.layout.container_main_hourly_trend_card, parent, false)

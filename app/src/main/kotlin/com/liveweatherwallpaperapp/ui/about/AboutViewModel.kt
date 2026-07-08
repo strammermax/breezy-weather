@@ -19,11 +19,11 @@ package com.liveweatherwallpaperapp.ui.about
 import android.app.Activity
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.background.updater.AppUpdateChecker
 import com.liveweatherwallpaperapp.background.updater.interactor.GetApplicationRelease
 import com.liveweatherwallpaperapp.common.utils.helpers.IntentHelper
+import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel

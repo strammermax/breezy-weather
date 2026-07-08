@@ -1,10 +1,10 @@
 package com.liveweatherwallpaperapp.sources.veduris
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.veduris.json.VedurIsAlertRegionsResult
 import com.liveweatherwallpaperapp.sources.veduris.json.VedurIsAlertResult
 import com.liveweatherwallpaperapp.sources.veduris.json.VedurIsResult
 import com.liveweatherwallpaperapp.sources.veduris.json.VedurIsStationResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

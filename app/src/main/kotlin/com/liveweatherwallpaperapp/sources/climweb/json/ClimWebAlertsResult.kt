@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.climweb.json
 
-import kotlinx.serialization.Serializable
 import com.liveweatherwallpaperapp.sources.climweb.serializers.ClimWebAnySerializer
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class ClimWebAlertsResult(

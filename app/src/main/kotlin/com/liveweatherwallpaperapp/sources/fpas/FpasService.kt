@@ -18,15 +18,7 @@ package com.liveweatherwallpaperapp.sources.fpas
 
 import android.content.Context
 import androidx.compose.ui.text.input.KeyboardType
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceContinent
-import livewallpaperweather.domain.source.SourceFeature
-import livewallpaperweather.domain.weather.model.Alert
-import livewallpaperweather.domain.weather.reference.AlertSeverity
-import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
 import com.google.maps.android.model.LatLng
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.exceptions.InvalidOrIncompleteDataException
 import com.liveweatherwallpaperapp.common.exceptions.WeatherException
@@ -37,6 +29,14 @@ import com.liveweatherwallpaperapp.common.source.HttpSource
 import com.liveweatherwallpaperapp.common.source.WeatherSource
 import com.liveweatherwallpaperapp.domain.settings.SourceConfigStore
 import com.liveweatherwallpaperapp.sources.common.xml.CapAlert
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceContinent
+import livewallpaperweather.domain.source.SourceFeature
+import livewallpaperweather.domain.weather.model.Alert
+import livewallpaperweather.domain.weather.reference.AlertSeverity
+import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
 import retrofit2.Retrofit
 import java.util.Objects
 import javax.inject.Inject

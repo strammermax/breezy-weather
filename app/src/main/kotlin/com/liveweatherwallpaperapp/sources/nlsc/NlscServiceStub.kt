@@ -1,9 +1,6 @@
 package com.liveweatherwallpaperapp.sources.nlsc
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceContinent
-import livewallpaperweather.domain.source.SourceFeature
 import com.google.maps.android.model.LatLng
 import com.google.maps.android.model.LatLngBounds
 import com.liveweatherwallpaperapp.common.extensions.code
@@ -14,6 +11,9 @@ import com.liveweatherwallpaperapp.common.source.NonFreeNetSource
 import com.liveweatherwallpaperapp.common.source.ReverseGeocodingSource
 import com.liveweatherwallpaperapp.common.source.WeatherSource.Companion.PRIORITY_HIGHEST
 import com.liveweatherwallpaperapp.common.source.WeatherSource.Companion.PRIORITY_NONE
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceContinent
+import livewallpaperweather.domain.source.SourceFeature
 
 /**
  * The actual implementation is in the src_freenet and src_nonfreenet folders

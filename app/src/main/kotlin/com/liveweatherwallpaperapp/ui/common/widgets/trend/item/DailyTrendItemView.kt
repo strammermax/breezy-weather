@@ -73,7 +73,10 @@ class DailyTrendItemView @JvmOverloads constructor(
     private var mPrecipitationTextNight: String? = null
     private var mPrecipitationIsSnowDay = false
     private var mPrecipitationIsSnowNight = false
-    private val mPrecipitationIconDrawableRain: Drawable? = ContextCompat.getDrawable(context, R.drawable.ic_water)?.mutate()
+    private val mPrecipitationIconDrawableRain: Drawable? = ContextCompat.getDrawable(
+        context,
+        R.drawable.ic_water
+    )?.mutate()
     private val mPrecipitationIconDrawableSnow: Drawable? =
         ContextCompat.getDrawable(context, R.drawable.ic_snowflake)?.mutate()
     private val mPrecipitationIconSize: Int

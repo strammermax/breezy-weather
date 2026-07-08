@@ -25,6 +25,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.plus
+import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3Scaffold
 import com.liveweatherwallpaperapp.ui.common.widgets.generateCollapsedScrollBehavior
 import com.liveweatherwallpaperapp.ui.common.widgets.insets.FitStatusBarTopAppBar
@@ -34,7 +35,6 @@ import com.liveweatherwallpaperapp.ui.settings.preference.composables.Preference
 import com.liveweatherwallpaperapp.ui.settings.preference.composables.PreferenceViewWithCard
 import com.liveweatherwallpaperapp.ui.settings.preference.largeSeparatorItem
 import com.liveweatherwallpaperapp.ui.settings.preference.smallSeparatorItem
-import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
 import com.liveweatherwallpaperapp.wallpaper.launchLiveWallpaperPicker
 
 @Composable

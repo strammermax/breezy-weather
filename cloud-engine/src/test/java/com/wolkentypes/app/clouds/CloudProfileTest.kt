@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 private val ADAPTER_WEATHER_IDS = listOf(
     "clear", "mostly_clear", "windy", "fog", "thunderstorm",
     "partly_cloudy", "mostly_cloudy", "cloudy", "overcast",
-    "snow", "snow_showers", "rain", "drizzle",
+    "snow", "snow_showers", "rain", "drizzle"
 )
 
 private val SPRITE_TYPES = setOf(CloudTextureType.WHITE, CloudTextureType.DARK, CloudTextureType.SMOKE)

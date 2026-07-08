@@ -20,8 +20,8 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import kotlinx.coroutines.delay
 import com.liveweatherwallpaperapp.common.utils.helpers.LogHelper
+import kotlinx.coroutines.delay
 
 /**
  * Taken from Mihon

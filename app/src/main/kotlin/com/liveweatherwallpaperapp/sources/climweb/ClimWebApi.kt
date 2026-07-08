@@ -16,10 +16,10 @@
 
 package com.liveweatherwallpaperapp.sources.climweb
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.climweb.json.ClimWebAlertsResult
 import com.liveweatherwallpaperapp.sources.climweb.json.ClimWebLocation
 import com.liveweatherwallpaperapp.sources.climweb.json.ClimWebNormals
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

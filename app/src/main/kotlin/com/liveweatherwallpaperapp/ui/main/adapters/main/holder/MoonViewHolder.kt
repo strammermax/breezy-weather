@@ -25,8 +25,6 @@ import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import androidx.core.content.ContextCompat
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Weather
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.areBlocksSquished
@@ -35,6 +33,8 @@ import com.liveweatherwallpaperapp.common.extensions.getThemeColor
 import com.liveweatherwallpaperapp.common.extensions.is12Hour
 import com.liveweatherwallpaperapp.domain.weather.model.getDescription
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Weather
 import java.util.Date
 
 class MoonViewHolder(parent: ViewGroup) : AstroViewHolder(parent, isSun = false) {

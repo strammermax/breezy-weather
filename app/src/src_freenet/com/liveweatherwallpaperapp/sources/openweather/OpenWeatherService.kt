@@ -17,12 +17,12 @@
 package com.liveweatherwallpaperapp.sources.openweather
 
 import android.content.Context
+import com.liveweatherwallpaperapp.common.exceptions.NonFreeNetSourceException
+import com.liveweatherwallpaperapp.common.preference.Preference
+import io.reactivex.rxjava3.core.Observable
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.source.SourceFeature
 import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import io.reactivex.rxjava3.core.Observable
-import com.liveweatherwallpaperapp.common.exceptions.NonFreeNetSourceException
-import com.liveweatherwallpaperapp.common.preference.Preference
 import javax.inject.Inject
 
 class OpenWeatherService @Inject constructor() : OpenWeatherServiceStub() {

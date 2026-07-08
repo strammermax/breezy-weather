@@ -65,6 +65,7 @@ object FogFieldFactory {
     private val VERTICAL_CENTER = floatArrayOf(0.92f, 0.76f, 0.60f, 0.42f)
     private val HEIGHT = floatArrayOf(0.30f, 0.24f, 0.20f, 0.16f)
     private val ALPHA_FRACTION = floatArrayOf(1.00f, 0.65f, 0.40f, 0.20f)
+
     // Light mist stays close to the landscape: no high band that could be mistaken
     // for a cloud, and enough overlap to create visible drifting wisps over the photo.
     private val HAZE_VERTICAL_CENTER = floatArrayOf(0.94f, 0.82f, 0.70f, 0.58f)
@@ -102,7 +103,7 @@ object FogFieldFactory {
                 height = heights[i],
                 baseAlpha = (intensity * alphaFractions[i] * maxAlpha).coerceIn(0f, 1f),
                 speedFactor = SPEED_FACTOR[i] * speedMultiplier,
-                blurStrength = BLUR_STRENGTH[i],
+                blurStrength = BLUR_STRENGTH[i]
             )
         }
 
@@ -111,17 +112,19 @@ object FogFieldFactory {
             // Light mist keeps the sky open, but needs a substantial low-lying veil
             // over the landscape. Its shader profile is ground-weighted, unlike fog.
             0.74f
-        } else when {
-            intensity >= 0.95f -> 1f
-            intensity >= 0.60f -> 0.72f
-            else -> 0f
+        } else {
+            when {
+                intensity >= 0.95f -> 1f
+                intensity >= 0.60f -> 0.72f
+                else -> 0f
+            }
         }
         return FogFieldParams(
             bands = bands,
             isHaze = isHaze,
             directionDegrees = normalizeDegrees(windDirectionDegrees),
             globalAlpha = (intensity * globalFraction * maxAlpha).coerceIn(0f, 1f),
-            foregroundGradientStrength = foregroundGradientStrength,
+            foregroundGradientStrength = foregroundGradientStrength
         )
     }
 

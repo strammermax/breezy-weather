@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.smg
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.smg.json.SmgAirQualityResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Query
 

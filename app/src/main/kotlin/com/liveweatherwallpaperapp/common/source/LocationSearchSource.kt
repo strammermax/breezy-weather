@@ -17,8 +17,8 @@
 package com.liveweatherwallpaperapp.common.source
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.LocationAddressInfo
 import io.reactivex.rxjava3.core.Observable
+import livewallpaperweather.domain.location.model.LocationAddressInfo
 
 /**
  * Location search source

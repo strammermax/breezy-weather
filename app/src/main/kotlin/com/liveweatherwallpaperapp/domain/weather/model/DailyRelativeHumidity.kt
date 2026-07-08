@@ -17,10 +17,10 @@
 package com.liveweatherwallpaperapp.domain.weather.model
 
 import android.content.Context
-import livewallpaperweather.domain.weather.model.DailyRelativeHumidity
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.formatPercent
 import com.liveweatherwallpaperapp.common.extensions.formatValue
+import livewallpaperweather.domain.weather.model.DailyRelativeHumidity
 
 fun DailyRelativeHumidity.getRangeSummary(context: Context): String? {
     return if (min == null || max == null) {

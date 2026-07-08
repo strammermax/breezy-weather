@@ -8,13 +8,13 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
+import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.floats.shouldBeGreaterThan
 import io.kotest.matchers.floats.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.floats.shouldBeLessThan
 import io.kotest.matchers.floats.shouldBeLessThanOrEqual
 import io.kotest.matchers.shouldBe
-import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView
 import org.junit.jupiter.api.Test
 
 class WallpaperSceneStateTest {
@@ -32,7 +32,7 @@ class WallpaperSceneStateTest {
             WeatherView.WEATHER_KIND_HAZE to WallpaperWeatherFamily.HAZE,
             WeatherView.WEATHER_KIND_THUNDER to WallpaperWeatherFamily.THUNDER,
             WeatherView.WEATHER_KIND_THUNDERSTORM to WallpaperWeatherFamily.THUNDERSTORM,
-            WeatherView.WEATHER_KIND_WIND to WallpaperWeatherFamily.WIND,
+            WeatherView.WEATHER_KIND_WIND to WallpaperWeatherFamily.WIND
         )
 
         mappings.map { WallpaperSceneStateFactory.weatherFamily(it.first) to it.second }
@@ -59,7 +59,7 @@ class WallpaperSceneStateTest {
                 state.hazeIntensity,
                 state.thunderIntensity,
                 state.glassRainIntensity,
-                state.photoDimming,
+                state.photoDimming
             ).forEach {
                 it.shouldBeGreaterThanOrEqual(0f)
                 it.shouldBeLessThanOrEqual(1f)
@@ -73,7 +73,7 @@ class WallpaperSceneStateTest {
             WeatherView.WEATHER_KIND_RAINY,
             WeatherView.WEATHER_KIND_SNOW,
             WeatherView.WEATHER_KIND_SLEET,
-            WeatherView.WEATHER_KIND_HAIL,
+            WeatherView.WEATHER_KIND_HAIL
         ).forEach {
             WallpaperSceneStateFactory.create(it, daylight = 1f).cloudDensity.shouldBeGreaterThan(0f)
         }
@@ -86,7 +86,7 @@ class WallpaperSceneStateTest {
         enabled shouldContainExactly listOf(
             WallpaperWeatherFamily.RAIN,
             WallpaperWeatherFamily.SLEET,
-            WallpaperWeatherFamily.THUNDERSTORM,
+            WallpaperWeatherFamily.THUNDERSTORM
         )
     }
 
@@ -94,13 +94,13 @@ class WallpaperSceneStateTest {
     fun `plain thunder and measured rain on dry families do not enable glass rain`() {
         WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_THUNDER,
-            daylight = 1f,
+            daylight = 1f
         ).glassRainIntensity shouldBe 0f
 
         WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_CLEAR,
             daylight = 1f,
-            precipitationMillimetersPerHour = 4f,
+            precipitationMillimetersPerHour = 4f
         ).glassRainIntensity shouldBe 0f
     }
 
@@ -109,7 +109,7 @@ class WallpaperSceneStateTest {
         fun intensity(mmPerHour: Float) = WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_RAINY,
             daylight = 1f,
-            precipitationMillimetersPerHour = mmPerHour,
+            precipitationMillimetersPerHour = mmPerHour
         ).glassRainIntensity
 
         intensity(1f) shouldBe 0.3f
@@ -132,7 +132,7 @@ class WallpaperSceneStateTest {
         val state = WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_CLEAR,
             daylight = 1f,
-            cloudCoverPercent = 75f,
+            cloudCoverPercent = 75f
         )
 
         state.condition.sky shouldBe WallpaperSkyCondition.MOSTLY_CLOUDY
@@ -144,12 +144,12 @@ class WallpaperSceneStateTest {
         val fair = WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_CLEAR,
             daylight = 1f,
-            cloudCoverPercent = 20f,
+            cloudCoverPercent = 20f
         )
         val partlyCloudy = WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_CLOUD,
             daylight = 1f,
-            cloudCoverPercent = 45f,
+            cloudCoverPercent = 45f
         )
 
         fair.condition.sky shouldBe WallpaperSkyCondition.FAIR
@@ -161,7 +161,7 @@ class WallpaperSceneStateTest {
     fun `Light cloudy defaults to Fair when measured cloud cover is unavailable`() {
         val state = WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_CLOUD,
-            daylight = 1f,
+            daylight = 1f
         )
 
         state.weatherFamily shouldBe WallpaperWeatherFamily.PARTLY_CLOUDY
@@ -174,7 +174,7 @@ class WallpaperSceneStateTest {
         fun state(mm: Float) = WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_RAINY,
             daylight = 1f,
-            precipitationMillimetersPerHour = mm,
+            precipitationMillimetersPerHour = mm
         )
 
         state(0.1f).condition.precipitation shouldBe WallpaperPrecipitationCondition.DRIZZLE
@@ -189,7 +189,7 @@ class WallpaperSceneStateTest {
         val state = WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_RAINY,
             daylight = 1f,
-            visibilityMeters = 800f,
+            visibilityMeters = 800f
         )
 
         state.condition.precipitation shouldBe WallpaperPrecipitationCondition.RAIN
@@ -206,7 +206,7 @@ class WallpaperSceneStateTest {
         fun state(visibilityMeters: Float) = WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_FOG,
             daylight = 1f,
-            visibilityMeters = visibilityMeters,
+            visibilityMeters = visibilityMeters
         )
 
         val light = state(8_000f)
@@ -228,7 +228,7 @@ class WallpaperSceneStateTest {
         val state = WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_HAZE,
             daylight = 1f,
-            visibilityMeters = 8_000f,
+            visibilityMeters = 8_000f
         )
 
         state.condition.sky shouldBe WallpaperSkyCondition.FAIR
@@ -242,7 +242,7 @@ class WallpaperSceneStateTest {
         val state = WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_RAINY,
             daylight = 1f,
-            cloudCoverPercent = 5f,
+            cloudCoverPercent = 5f
         )
 
         state.condition.sky shouldBe WallpaperSkyCondition.OVERCAST
@@ -254,13 +254,13 @@ class WallpaperSceneStateTest {
         WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_CLOUD,
             daylight = 1f,
-            windSpeedMetersPerSecond = 7.9f,
+            windSpeedMetersPerSecond = 7.9f
         ).windFactor shouldBe 1f
 
         val medium = WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_CLOUD,
             daylight = 1f,
-            windSpeedMetersPerSecond = 11f,
+            windSpeedMetersPerSecond = 11f
         ).windFactor
         medium.shouldBeGreaterThan(1f)
         medium.shouldBeLessThanOrEqual(2.8f)
@@ -268,7 +268,7 @@ class WallpaperSceneStateTest {
         WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_CLOUD,
             daylight = 1f,
-            windGustMetersPerSecond = 14f,
+            windGustMetersPerSecond = 14f
         ).windFactor shouldBe 3.6f
     }
 
@@ -276,12 +276,12 @@ class WallpaperSceneStateTest {
     fun `storm and wind families enforce minimum animation speeds`() {
         WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_THUNDERSTORM,
-            daylight = 1f,
+            daylight = 1f
         ).windFactor shouldBe 2.8f
 
         WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_WIND,
-            daylight = 1f,
+            daylight = 1f
         ).windFactor shouldBe 4.2f
     }
 
@@ -306,7 +306,7 @@ class WallpaperSceneStateTest {
             daylight = 1f,
             windSpeedMetersPerSecond = Float.NaN,
             windGustMetersPerSecond = Float.POSITIVE_INFINITY,
-            windDirectionDegrees = -10f,
+            windDirectionDegrees = -10f
         )
 
         state.windSpeedMetersPerSecond shouldBe 0f
@@ -316,7 +316,7 @@ class WallpaperSceneStateTest {
         WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_CLOUD,
             daylight = 1f,
-            windDirectionDegrees = -1f,
+            windDirectionDegrees = -1f
         ).windDirectionDegrees shouldBe null
     }
 
@@ -328,7 +328,7 @@ class WallpaperSceneStateTest {
             sunriseMillis = 100L,
             sunsetMillis = 200L,
             moonriseMillis = 300L,
-            moonsetMillis = 400L,
+            moonsetMillis = 400L
         )
         val second = WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_CLOUDY,
@@ -336,7 +336,7 @@ class WallpaperSceneStateTest {
             sunriseMillis = 100L,
             sunsetMillis = 200L,
             moonriseMillis = 300L,
-            moonsetMillis = 400L,
+            moonsetMillis = 400L
         )
 
         first shouldBe second
@@ -358,6 +358,6 @@ class WallpaperSceneStateTest {
         WeatherView.WEATHER_KIND_HAZE,
         WeatherView.WEATHER_KIND_THUNDER,
         WeatherView.WEATHER_KIND_THUNDERSTORM,
-        WeatherView.WEATHER_KIND_WIND,
+        WeatherView.WEATHER_KIND_WIND
     ).map { WallpaperSceneStateFactory.create(it, daylight = 0.5f) }
 }

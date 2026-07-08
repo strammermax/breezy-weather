@@ -16,10 +16,10 @@
 
 package com.liveweatherwallpaperapp.sources.openweather
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.openweather.json.OpenWeatherAirPollutionResult
 import com.liveweatherwallpaperapp.sources.openweather.json.OpenWeatherForecast
 import com.liveweatherwallpaperapp.sources.openweather.json.OpenWeatherForecastResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Query
 

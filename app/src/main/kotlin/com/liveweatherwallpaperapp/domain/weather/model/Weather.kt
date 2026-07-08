@@ -17,9 +17,6 @@
 package com.liveweatherwallpaperapp.domain.weather.model
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.AirQuality
-import livewallpaperweather.domain.weather.model.Weather
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
 import com.liveweatherwallpaperapp.common.extensions.getFormattedTime
@@ -28,6 +25,9 @@ import com.liveweatherwallpaperapp.common.extensions.toCalendarWithTimeZone
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.temperature.Temperature
 import com.liveweatherwallpaperapp.unit.temperature.TemperatureUnit
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.AirQuality
+import livewallpaperweather.domain.weather.model.Weather
 import java.util.Calendar
 import java.util.Date
 

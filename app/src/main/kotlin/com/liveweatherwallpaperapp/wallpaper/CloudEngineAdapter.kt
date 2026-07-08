@@ -37,7 +37,7 @@ object CloudEngineAdapter {
     fun sceneParams(state: WallpaperSceneState): CloudEngineSceneParams = CloudEngineSceneParams(
         weatherId = weatherId(state),
         windSpeedMultiplier = state.windFactor,
-        densityMultiplier = state.cloudDensity.coerceIn(0f, 1f),
+        densityMultiplier = state.cloudDensity.coerceIn(0f, 1f)
     )
 
     /**
@@ -64,14 +64,18 @@ object CloudEngineAdapter {
      * `null` when no tuning-screen preset has been saved yet for this weatherId, in which case the
      * scene's own values pass through unchanged.
      */
-    internal fun scaledPhotoTint(state: WallpaperSceneState, presetDensity: Float?, baseDensity: Float): CloudEnginePhotoTint {
+    internal fun scaledPhotoTint(
+        state: WallpaperSceneState,
+        presetDensity: Float?,
+        baseDensity: Float,
+    ): CloudEnginePhotoTint {
         if (presetDensity == null || baseDensity <= 0f) {
             return CloudEnginePhotoTint(state.photoDimming, state.photoGreyscaleAmount)
         }
         val densityRatio = (presetDensity / baseDensity).coerceIn(0f, 3f)
         return CloudEnginePhotoTint(
             dimming = (state.photoDimming * densityRatio).coerceIn(0f, 1f),
-            greyscaleAmount = (state.photoGreyscaleAmount * densityRatio).coerceIn(0f, 1f),
+            greyscaleAmount = (state.photoGreyscaleAmount * densityRatio).coerceIn(0f, 1f)
         )
     }
 

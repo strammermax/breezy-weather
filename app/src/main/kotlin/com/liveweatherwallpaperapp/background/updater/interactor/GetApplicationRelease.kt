@@ -17,10 +17,10 @@
 package com.liveweatherwallpaperapp.background.updater.interactor
 
 import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
 import com.liveweatherwallpaperapp.background.updater.data.ReleaseService
 import com.liveweatherwallpaperapp.background.updater.model.Release
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days

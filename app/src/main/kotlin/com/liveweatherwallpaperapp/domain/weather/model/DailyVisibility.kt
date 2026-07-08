@@ -17,12 +17,12 @@
 package com.liveweatherwallpaperapp.domain.weather.model
 
 import android.content.Context
-import livewallpaperweather.domain.weather.model.DailyVisibility
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
 import com.liveweatherwallpaperapp.common.extensions.formatValue
 import com.liveweatherwallpaperapp.common.extensions.getVisibilityDescription
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
+import livewallpaperweather.domain.weather.model.DailyVisibility
 
 fun DailyVisibility.getRangeSummary(context: Context): String? {
     return if (min == null || max == null) {

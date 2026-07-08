@@ -56,7 +56,6 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import kotlinx.collections.immutable.ImmutableList
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import com.liveweatherwallpaperapp.common.extensions.toBitmap
@@ -64,6 +63,7 @@ import com.liveweatherwallpaperapp.ui.common.composables.AlertDialogNoPadding
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3ExpressiveCardListItem
 import com.liveweatherwallpaperapp.ui.common.widgets.defaultCardListItemElevation
 import com.liveweatherwallpaperapp.ui.theme.compose.themeRipple
+import kotlinx.collections.immutable.ImmutableList
 import java.text.Collator
 
 data class PreferenceItem(

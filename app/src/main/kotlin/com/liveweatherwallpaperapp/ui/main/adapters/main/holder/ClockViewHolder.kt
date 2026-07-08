@@ -22,7 +22,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AnalogClock
 import android.widget.TextClock
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.getFormattedTime
@@ -30,6 +29,7 @@ import com.liveweatherwallpaperapp.common.extensions.is12Hour
 import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.common.utils.helpers.IntentHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import livewallpaperweather.domain.location.model.Location
 import java.util.Date
 import java.util.TimeZone
 

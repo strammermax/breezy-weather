@@ -19,7 +19,7 @@ class RotatingWeatherScenarioTest {
             daylight = 1f,
             precipitationMillimetersPerHour = scenario.precipitationMillimetersPerHour,
             cloudCoverPercent = scenario.cloudCoverPercent,
-            visibilityMeters = scenario.visibilityMeters,
+            visibilityMeters = scenario.visibilityMeters
         )
     }
 

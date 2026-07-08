@@ -45,7 +45,14 @@ internal object RadarWebMapLoader {
         // The "weil-am-rhein_..." style place slug in the path is cosmetic/SEO-only — the page
         // loads fine without it and the hash always wins for the displayed location and layers.
         val url = if (latitude != null && longitude != null) {
-            String.format(Locale.US, "%s#coords=9/%.4f/%.4f&map=%s", METEOBLUE_MAPS_URL, latitude, longitude, METEOBLUE_MAP_LAYERS)
+            String.format(
+                Locale.US,
+                "%s#coords=9/%.4f/%.4f&map=%s",
+                METEOBLUE_MAPS_URL,
+                latitude,
+                longitude,
+                METEOBLUE_MAP_LAYERS
+            )
         } else {
             "$METEOBLUE_MAPS_URL#map=$METEOBLUE_MAP_LAYERS"
         }
@@ -67,7 +74,8 @@ internal object RadarWebMapLoader {
             override fun onPageFinished(view: WebView, url: String) {
                 // The page ignores the map= hash on initial load and defaults to Wind Animation.
                 // Inject JS to programmatically select Weather Radar > EU (+2h Forecast).
-                view.evaluateJavascript("""
+                view.evaluateJavascript(
+                    """
                     (function() {
                         function clickText(text, root) {
                             var els = (root || document).querySelectorAll('li, a, div, span');
@@ -83,7 +91,9 @@ internal object RadarWebMapLoader {
                             if (!clickText('EU (+2u prognose)')) clickText('EU (+2h Forecast)');
                         }, 400);
                     })();
-                """.trimIndent(), null)
+                    """.trimIndent(),
+                    null
+                )
             }
         }
     }

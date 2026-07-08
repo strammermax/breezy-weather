@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.geosphereat
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.geosphereat.json.GeoSphereAtTimeseriesResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

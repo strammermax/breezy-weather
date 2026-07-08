@@ -19,12 +19,14 @@ package com.liveweatherwallpaperapp.wallpaper
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,49 +34,59 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
-import kotlinx.coroutines.delay
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
+import com.liveweatherwallpaperapp.common.extensions.getRelativeTime
 import com.liveweatherwallpaperapp.common.extensions.openApplicationDetailsSettings
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3Scaffold
 import com.liveweatherwallpaperapp.ui.common.widgets.insets.FitStatusBarTopAppBar
@@ -86,26 +98,14 @@ import com.liveweatherwallpaperapp.wallpaper.photo.PlaceQuery
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperImageStore
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperPhotoRefreshWorker
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
-import android.graphics.Bitmap
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
-import livewallpaperweather.data.location.LocationRepository
-import livewallpaperweather.data.weather.WeatherRepository
 import dagger.hilt.android.AndroidEntryPoint
-import com.liveweatherwallpaperapp.common.extensions.getRelativeTime
-import java.util.Date
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import livewallpaperweather.data.location.LocationRepository
+import livewallpaperweather.data.weather.WeatherRepository
+import java.util.Date
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
@@ -199,7 +199,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 Triple(
                     wallpaperRepository.loadCachedBitmap(),
                     locationRepository.getFirstLocation(withParameters = false),
-                    wallpaperRepository.cacheStats(),
+                    wallpaperRepository.cacheStats()
                 )
             }
             previewBitmapValue.value = bitmap
@@ -267,7 +267,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                     location.latitude,
                     location.longitude,
                     place,
-                    forceRefresh = true,
+                    forceRefresh = true
                 )
             }
             if (file != null) {
@@ -334,7 +334,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
             parallaxEnabledValue.value,
             seasonGradingEnabled = seasonGradingEnabledValue.value,
             seasonGradingStrength = seasonGradingStrengthValue.value,
-            newCloudsEnabled = newCloudsEnabledValue.value,
+            newCloudsEnabled = newCloudsEnabledValue.value
         )
     }
 
@@ -381,7 +381,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         names = weatherKinds,
                         values = weatherKindValues,
                         titleId = R.string.widget_live_wallpaper_weather_kind,
-                        onSelected = { persistCoreSettings() },
+                        onSelected = { persistCoreSettings() }
                     )
                 }
                 item {
@@ -390,7 +390,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         names = dayNightTypeKinds,
                         values = dayNightTypeValues,
                         titleId = R.string.widget_live_wallpaper_day_night_type,
-                        onSelected = { persistCoreSettings() },
+                        onSelected = { persistCoreSettings() }
                     )
                 }
                 item {
@@ -452,32 +452,37 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             Text(
                                 text = stringResource(
                                     R.string.widget_live_wallpaper_refresh_interval,
-                                    photoRefreshIntervalMinutesValue.value.roundToInt(),
+                                    photoRefreshIntervalMinutesValue.value.roundToInt()
                                 ),
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = stringResource(R.string.widget_live_wallpaper_refresh_interval_summary),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MaterialTheme.typography.bodySmall
                             )
+                            val photoRefreshMinMinutes = WallpaperImageStore.MIN_REFRESH_INTERVAL_MINUTES.toFloat()
+                            val photoRefreshMaxMinutes = WallpaperImageStore.MAX_REFRESH_INTERVAL_MINUTES.toFloat()
+                            val photoRefreshRange = WallpaperImageStore.MAX_REFRESH_INTERVAL_MINUTES -
+                                WallpaperImageStore.MIN_REFRESH_INTERVAL_MINUTES
+                            val photoRefreshSteps =
+                                photoRefreshRange / WallpaperImageStore.REFRESH_INTERVAL_STEP_MINUTES - 1
                             Slider(
                                 value = photoRefreshIntervalMinutesValue.value,
                                 onValueChange = { value ->
                                     photoRefreshIntervalMinutesValue.value =
-                                        ((value / WallpaperImageStore.REFRESH_INTERVAL_STEP_MINUTES).roundToInt() *
-                                            WallpaperImageStore.REFRESH_INTERVAL_STEP_MINUTES).toFloat()
+                                        (
+                                            (value / WallpaperImageStore.REFRESH_INTERVAL_STEP_MINUTES).roundToInt() *
+                                                WallpaperImageStore.REFRESH_INTERVAL_STEP_MINUTES
+                                            ).toFloat()
                                 },
-                                valueRange = WallpaperImageStore.MIN_REFRESH_INTERVAL_MINUTES.toFloat()..
-                                    WallpaperImageStore.MAX_REFRESH_INTERVAL_MINUTES.toFloat(),
-                                steps = (WallpaperImageStore.MAX_REFRESH_INTERVAL_MINUTES -
-                                    WallpaperImageStore.MIN_REFRESH_INTERVAL_MINUTES) /
-                                    WallpaperImageStore.REFRESH_INTERVAL_STEP_MINUTES - 1,
+                                valueRange = photoRefreshMinMinutes..photoRefreshMaxMinutes,
+                                steps = photoRefreshSteps,
                                 onValueChangeFinished = {
                                     persistPhotoRefreshIntervalMinutes(
                                         photoRefreshIntervalMinutesValue.value.roundToInt()
                                     )
-                                },
+                                }
                             )
                             if (backgroundLocationPermissionState != null &&
                                 backgroundLocationPermissionState.status != PermissionStatus.Granted
@@ -486,7 +491,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                 Text(
                                     text = stringResource(R.string.widget_live_wallpaper_background_location_summary),
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = MaterialTheme.typography.bodySmall
                                 )
                                 OutlinedButton(
                                     onClick = {
@@ -503,7 +508,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(top = 6.dp),
+                                        .padding(top = 6.dp)
                                 ) {
                                     Text(stringResource(R.string.widget_live_wallpaper_background_location_action))
                                 }
@@ -546,15 +551,15 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             Text(
                                 text = stringResource(
                                     R.string.widget_live_wallpaper_grading_strength,
-                                    (seasonGradingStrengthValue.value * 100).roundToInt(),
+                                    (seasonGradingStrengthValue.value * 100).roundToInt()
                                 ),
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.Bold
                             )
                             Slider(
                                 value = seasonGradingStrengthValue.value,
                                 onValueChange = { seasonGradingStrengthValue.value = it },
                                 valueRange = 0f..1f,
-                                onValueChangeFinished = { persistCoreSettings() },
+                                onValueChangeFinished = { persistCoreSettings() }
                             )
                         }
                     }
@@ -583,7 +588,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = dimensionResource(R.dimen.normal_margin)),
+                                .padding(horizontal = dimensionResource(R.dimen.normal_margin))
                         ) {
                             Text(stringResource(R.string.widget_live_wallpaper_new_clouds_tuning))
                         }
@@ -596,7 +601,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         val cacheLimitMb = photoCacheLimitMbValue.value.roundToInt()
                         Text(
                             text = stringResource(R.string.widget_live_wallpaper_photo_cache, cacheLimitMb),
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Bold
                         )
                         val cacheUsedMb = cachedPhotoBytesValue.value / BYTES_PER_MB.toDouble()
                         val cacheUsage = (cacheUsedMb / cacheLimitMb.coerceAtLeast(1))
@@ -606,10 +611,10 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             text = stringResource(
                                 R.string.widget_live_wallpaper_cache_usage,
                                 cachedPhotoCountValue.value,
-                                cacheUsedMb,
+                                cacheUsedMb
                             ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodySmall
                         )
                         LinearProgressIndicator(
                             progress = { cacheUsage },
@@ -619,44 +624,45 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                 .height(8.dp)
                                 .background(
                                     MaterialTheme.colorScheme.surfaceVariant,
-                                    RoundedCornerShape(4.dp),
+                                    RoundedCornerShape(4.dp)
                                 ),
                             color = Color(0xFFE4003B),
                             trackColor = Color.Transparent,
                             strokeCap = StrokeCap.Round,
-                            drawStopIndicator = {},
+                            drawStopIndicator = {}
                         )
                         OutlinedButton(
                             onClick = {
                                 startActivity(
                                     Intent(
                                         this@LiveWallpaperConfigActivity,
-                                        WallpaperPhotoManagerActivity::class.java,
+                                        WallpaperPhotoManagerActivity::class.java
                                     )
                                 )
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 6.dp),
+                                .padding(vertical = 6.dp)
                         ) {
                             Text(stringResource(R.string.wallpaper_photo_manager_title))
                         }
                         Text(
                             text = stringResource(
                                 R.string.widget_live_wallpaper_recent_photos_skipped,
-                                WallpaperImageStore.RECENT_URL_COUNT,
+                                WallpaperImageStore.RECENT_URL_COUNT
                             ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodySmall
                         )
+                        val cacheLimitMinMb = WallpaperImageStore.MIN_CACHE_LIMIT_MB.toFloat()
+                        val cacheLimitMaxMb = WallpaperImageStore.MAX_CACHE_LIMIT_MB.toFloat()
                         Slider(
                             value = photoCacheLimitMbValue.value,
                             onValueChange = { value ->
                                 photoCacheLimitMbValue.value =
                                     (value / CACHE_LIMIT_STEP_MB).roundToInt() * CACHE_LIMIT_STEP_MB
                             },
-                            valueRange = WallpaperImageStore.MIN_CACHE_LIMIT_MB.toFloat()..
-                                WallpaperImageStore.MAX_CACHE_LIMIT_MB.toFloat(),
+                            valueRange = cacheLimitMinMb..cacheLimitMaxMb,
                             steps = CACHE_LIMIT_STEPS,
                             onValueChangeFinished = {
                                 wallpaperImageStore.photoCacheLimitMb =
@@ -665,20 +671,20 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                     wallpaperRepository.enforceCacheLimit()
                                     refreshCacheStats()
                                 }
-                            },
+                            }
                         )
                         val maxPhotos = maxPhotosPerLocationValue.value.roundToInt()
                         Text(
                             text = stringResource(R.string.widget_live_wallpaper_max_per_location, maxPhotos),
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Bold
                         )
+                        val minPhotosPerLocation = WallpaperImageStore.MIN_PHOTOS_PER_LOCATION
+                        val maxPhotosPerLocation = WallpaperImageStore.MAX_PHOTOS_PER_LOCATION
                         Slider(
                             value = maxPhotosPerLocationValue.value,
                             onValueChange = { maxPhotosPerLocationValue.value = it.roundToInt().toFloat() },
-                            valueRange = WallpaperImageStore.MIN_PHOTOS_PER_LOCATION.toFloat()..
-                                WallpaperImageStore.MAX_PHOTOS_PER_LOCATION.toFloat(),
-                            steps = WallpaperImageStore.MAX_PHOTOS_PER_LOCATION -
-                                WallpaperImageStore.MIN_PHOTOS_PER_LOCATION - 1,
+                            valueRange = minPhotosPerLocation.toFloat()..maxPhotosPerLocation.toFloat(),
+                            steps = maxPhotosPerLocation - minPhotosPerLocation - 1,
                             onValueChangeFinished = {
                                 wallpaperImageStore.maxCachedPhotosPerLocation =
                                     maxPhotosPerLocationValue.value.roundToInt()
@@ -686,7 +692,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                                     wallpaperRepository.enforceCacheLimit()
                                     refreshCacheStats()
                                 }
-                            },
+                            }
                         )
                         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
                         run {
@@ -694,23 +700,36 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             val freshness = DataFreshness.create(
                                 weatherRefreshedAtMillis = weatherRefreshedAtValue.value,
                                 photoRefreshedAtMillis = photoRefreshedAtValue.value,
-                                nowMillis = System.currentTimeMillis(),
+                                nowMillis = System.currentTimeMillis()
+                            )
+                            val weatherAge = dataAgeLabel(
+                                context,
+                                weatherRefreshedAtValue.value,
+                                freshness.isWeatherStale
+                            )
+                            val photoAge = dataAgeLabel(
+                                context,
+                                photoRefreshedAtValue.value,
+                                freshness.isPhotoStale
                             )
                             Text(
-                                text = stringResource(R.string.widget_live_wallpaper_weather_age, dataAgeLabel(context, weatherRefreshedAtValue.value, freshness.isWeatherStale)),
+                                text = stringResource(R.string.widget_live_wallpaper_weather_age, weatherAge),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MaterialTheme.typography.bodySmall
                             )
                             Text(
-                                text = stringResource(R.string.widget_live_wallpaper_photo_age, dataAgeLabel(context, photoRefreshedAtValue.value, freshness.isPhotoStale)),
+                                text = stringResource(R.string.widget_live_wallpaper_photo_age, photoAge),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MaterialTheme.typography.bodySmall
                             )
                             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.small_margin)))
                         }
                         if (currentLocationValue.value.isNotBlank()) {
                             Text(
-                                text = stringResource(R.string.widget_live_wallpaper_current_location, currentLocationValue.value),
+                                text = stringResource(
+                                    R.string.widget_live_wallpaper_current_location,
+                                    currentLocationValue.value
+                                ),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.small_margin)))

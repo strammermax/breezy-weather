@@ -22,10 +22,10 @@ import android.content.Context
 import android.view.View
 import androidx.annotation.CallSuper
 import androidx.recyclerview.widget.RecyclerView
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.common.utils.helpers.AsyncHelper
 import com.liveweatherwallpaperapp.ui.main.utils.MainModuleUtils
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import livewallpaperweather.domain.location.model.Location
 
 abstract class AbstractMainViewHolder(
     view: View,

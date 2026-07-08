@@ -16,9 +16,9 @@
 
 package com.liveweatherwallpaperapp.sources.infoplaza
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.infoplaza.json.InfoplazaClimateResult
 import com.liveweatherwallpaperapp.sources.infoplaza.json.InfoplazaForecastResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Query
 

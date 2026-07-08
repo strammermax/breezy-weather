@@ -1,8 +1,8 @@
 package com.liveweatherwallpaperapp.ui.theme.weatherView
 
-import livewallpaperweather.domain.weather.reference.WeatherCode
-import io.kotest.matchers.shouldBe
 import com.liveweatherwallpaperapp.R
+import io.kotest.matchers.shouldBe
+import livewallpaperweather.domain.weather.reference.WeatherCode
 import org.junit.jupiter.api.Test
 
 class WeatherViewControllerTest {
@@ -21,7 +21,7 @@ class WeatherViewControllerTest {
             WeatherCode.HAZE to R.string.weather_kind_haze,
             WeatherCode.THUNDER to R.string.weather_kind_thunder,
             WeatherCode.THUNDERSTORM to R.string.weather_kind_thunderstorm,
-            WeatherCode.WIND to R.string.weather_kind_wind,
+            WeatherCode.WIND to R.string.weather_kind_wind
         )
 
         expectedResources.forEach { (weatherCode, resource) ->

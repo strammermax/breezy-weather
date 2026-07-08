@@ -21,11 +21,11 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import androidx.appcompat.widget.AppCompatImageView
-import livewallpaperweather.domain.weather.reference.WeatherCode
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import livewallpaperweather.domain.weather.reference.WeatherCode
 
 object MinimalIconDialog {
     fun show(

@@ -1,7 +1,7 @@
 package com.liveweatherwallpaperapp.sources.openmeteo
 
-import livewallpaperweather.domain.weather.reference.WeatherCode
 import io.kotest.matchers.shouldBe
+import livewallpaperweather.domain.weather.reference.WeatherCode
 import org.junit.jupiter.api.Test
 
 class OpenMeteoWeatherCodeTest {

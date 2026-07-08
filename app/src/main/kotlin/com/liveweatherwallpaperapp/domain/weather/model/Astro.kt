@@ -16,9 +16,9 @@
 
 package com.liveweatherwallpaperapp.domain.weather.model
 
+import com.liveweatherwallpaperapp.common.extensions.toTimezone
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.weather.model.Astro
-import com.liveweatherwallpaperapp.common.extensions.toTimezone
 import java.util.Calendar
 import java.util.Date
 import kotlin.time.Duration.Companion.days

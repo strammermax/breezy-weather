@@ -17,14 +17,14 @@
 package com.liveweatherwallpaperapp.domain.location.model
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.location.model.Location.Companion.CLOSE_DISTANCE
-import livewallpaperweather.domain.source.SourceFeature
 import com.google.maps.android.SphericalUtil
 import com.google.maps.android.model.LatLng
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.domain.weather.model.getRiseProgress
 import com.liveweatherwallpaperapp.sources.SourceManager
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.location.model.Location.Companion.CLOSE_DISTANCE
+import livewallpaperweather.domain.source.SourceFeature
 
 fun Location.getPlace(context: Context, showCurrentPositionInPriority: Boolean = false): String {
     if (showCurrentPositionInPriority && isCurrentPosition) {

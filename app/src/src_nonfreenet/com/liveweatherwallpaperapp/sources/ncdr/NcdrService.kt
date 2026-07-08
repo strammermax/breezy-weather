@@ -18,19 +18,19 @@ package com.liveweatherwallpaperapp.sources.ncdr
 
 import android.content.Context
 import android.graphics.Color
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceFeature
-import livewallpaperweather.domain.weather.model.Alert
-import livewallpaperweather.domain.weather.reference.AlertSeverity
-import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
 import com.google.maps.android.model.LatLng
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.common.exceptions.InvalidLocationException
 import com.liveweatherwallpaperapp.common.exceptions.InvalidOrIncompleteDataException
 import com.liveweatherwallpaperapp.common.exceptions.WeatherException
 import com.liveweatherwallpaperapp.sources.common.xml.CapAlert
 import com.liveweatherwallpaperapp.sources.nlsc.NlscApi
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceFeature
+import livewallpaperweather.domain.weather.model.Alert
+import livewallpaperweather.domain.weather.reference.AlertSeverity
+import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
 import retrofit2.Retrofit
 import java.util.Objects
 import javax.inject.Inject

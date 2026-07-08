@@ -18,10 +18,10 @@ package com.liveweatherwallpaperapp.sources.android
 
 import android.content.Context
 import android.location.Geocoder
-import livewallpaperweather.domain.location.model.LocationAddressInfo
+import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import io.reactivex.rxjava3.core.Observable
 import kotlinx.coroutines.rx3.rxObservable
-import com.liveweatherwallpaperapp.common.extensions.currentLocale
+import livewallpaperweather.domain.location.model.LocationAddressInfo
 import javax.inject.Inject
 
 class AndroidGeocoderService @Inject constructor() : AndroidGeocoderServiceStub() {

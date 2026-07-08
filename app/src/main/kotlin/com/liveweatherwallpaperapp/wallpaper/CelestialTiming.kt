@@ -11,13 +11,13 @@ package com.liveweatherwallpaperapp.wallpaper
 import livewallpaperweather.domain.location.model.Location
 import java.util.Calendar
 import java.util.TimeZone
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.tan
-import kotlin.math.PI
 
 /**
  * Sun/moon interval resolution shared between [MaterialLiveWallpaperService] and the
@@ -32,10 +32,13 @@ internal object CelestialTiming {
 
     /** Fraction of screen height at which the celestial arc crosses the horizon. */
     const val HORIZON_Y_FRACTION = 0.48f
+
     /** Fraction of screen height at the apex of the arc (topmost point). */
     const val PEAK_Y_FRACTION = 0.12f
+
     /** Fraction of shortest screen dimension for the moon disc diameter. */
     const val CELESTIAL_SIZE_FRACTION = 0.14f
+
     /** Cross-fade duration around sunrise/sunset (25 minutes each side). */
     const val CROSSFADE_MILLIS = 25L * 60L * 1000L
 
@@ -74,9 +77,15 @@ internal object CelestialTiming {
         val sunset = sunsetMillis ?: return if (daytime) 1f else 0f
         return when {
             now < sunrise - CROSSFADE_MILLIS -> 0f
-            now < sunrise + CROSSFADE_MILLIS -> SkyColors.fraction(now, sunrise - CROSSFADE_MILLIS, sunrise + CROSSFADE_MILLIS)
+            now < sunrise + CROSSFADE_MILLIS -> SkyColors.fraction(
+                now,
+                sunrise - CROSSFADE_MILLIS,
+                sunrise + CROSSFADE_MILLIS
+            )
             now < sunset - CROSSFADE_MILLIS -> 1f
-            now < sunset + CROSSFADE_MILLIS -> 1f - SkyColors.fraction(now, sunset - CROSSFADE_MILLIS, sunset + CROSSFADE_MILLIS)
+            now < sunset + CROSSFADE_MILLIS ->
+                1f -
+                    SkyColors.fraction(now, sunset - CROSSFADE_MILLIS, sunset + CROSSFADE_MILLIS)
             else -> 0f
         }
     }
@@ -91,9 +100,15 @@ internal object CelestialTiming {
         if (moonset <= moonrise) return 0f
         return when {
             now < moonrise - CROSSFADE_MILLIS -> 0f
-            now < moonrise + CROSSFADE_MILLIS -> SkyColors.fraction(now, moonrise - CROSSFADE_MILLIS, moonrise + CROSSFADE_MILLIS)
+            now < moonrise + CROSSFADE_MILLIS -> SkyColors.fraction(
+                now,
+                moonrise - CROSSFADE_MILLIS,
+                moonrise + CROSSFADE_MILLIS
+            )
             now < moonset - CROSSFADE_MILLIS -> 1f
-            now < moonset + CROSSFADE_MILLIS -> 1f - SkyColors.fraction(now, moonset - CROSSFADE_MILLIS, moonset + CROSSFADE_MILLIS)
+            now < moonset + CROSSFADE_MILLIS ->
+                1f -
+                    SkyColors.fraction(now, moonset - CROSSFADE_MILLIS, moonset + CROSSFADE_MILLIS)
             else -> 0f
         }
     }

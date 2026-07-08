@@ -28,7 +28,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import kotlinx.collections.immutable.ImmutableList
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.plus
 import com.liveweatherwallpaperapp.common.options.NotificationStyle
@@ -76,6 +75,7 @@ import com.liveweatherwallpaperapp.ui.settings.preference.sectionHeaderItem
 import com.liveweatherwallpaperapp.ui.settings.preference.smallSeparatorItem
 import com.liveweatherwallpaperapp.ui.settings.preference.switchPreferenceItem
 import com.liveweatherwallpaperapp.wallpaper.launchLiveWallpaperPicker
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun ModulesSettingsScreen(

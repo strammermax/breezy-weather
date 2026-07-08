@@ -16,13 +16,13 @@
 
 package livewallpaperweather.domain.weather.model
 
+import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.micrometers
 import livewallpaperweather.domain.weather.reference.Month
 import livewallpaperweather.domain.weather.wrappers.AirQualityWrapper
 import livewallpaperweather.domain.weather.wrappers.DailyWrapper
 import livewallpaperweather.domain.weather.wrappers.HourlyWrapper
 import livewallpaperweather.domain.weather.wrappers.PollenWrapper
 import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.micrometers
 import java.io.Serializable
 import java.util.Date
 import kotlin.time.Duration

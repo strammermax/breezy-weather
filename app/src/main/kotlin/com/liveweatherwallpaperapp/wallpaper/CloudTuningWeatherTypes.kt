@@ -35,5 +35,5 @@ internal val CLOUD_TUNING_WEATHER_TYPES = listOf(
     CloudTuningWeatherType("snow", "Snow", Color(0xFFB7C4D6), Color(0xFFEAF1F8)),
     CloudTuningWeatherType("snow_showers", "Snow showers", Color(0xFFA9B8CC), Color(0xFFDDE7F1)),
     CloudTuningWeatherType("fog", "Fog", Color(0xFFAEB4B9), Color(0xFFD9DCDE)),
-    CloudTuningWeatherType("windy", "Windy", Color(0xFF4F7FAE), Color(0xFFB9D6EA)),
+    CloudTuningWeatherType("windy", "Windy", Color(0xFF4F7FAE), Color(0xFFB9D6EA))
 )

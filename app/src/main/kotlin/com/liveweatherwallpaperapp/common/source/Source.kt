@@ -17,11 +17,11 @@
 package com.liveweatherwallpaperapp.common.source
 
 import androidx.annotation.StringRes
+import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.domain.source.resourceName
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.source.SourceContinent
 import livewallpaperweather.domain.source.SourceFeature
-import com.liveweatherwallpaperapp.R
-import com.liveweatherwallpaperapp.domain.source.resourceName
 
 interface Source {
     /**

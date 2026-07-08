@@ -38,10 +38,10 @@ import com.liveweatherwallpaperapp.common.extensions.doOnApplyWindowInsets
 import com.liveweatherwallpaperapp.common.extensions.getThemeColor
 import com.liveweatherwallpaperapp.common.options.appearance.CardDisplay
 import com.liveweatherwallpaperapp.common.utils.ColorUtils
+import com.liveweatherwallpaperapp.common.utils.helpers.IntentHelper
 import com.liveweatherwallpaperapp.databinding.ActivityCardDisplayManageBinding
 import com.liveweatherwallpaperapp.domain.settings.SettingsChangedMessage
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
-import com.liveweatherwallpaperapp.common.utils.helpers.IntentHelper
 import com.liveweatherwallpaperapp.ui.common.adapters.TagAdapter
 import com.liveweatherwallpaperapp.ui.common.decorations.GridMarginsDecoration
 import com.liveweatherwallpaperapp.ui.common.decorations.ListDecoration

@@ -16,9 +16,9 @@
 
 package com.liveweatherwallpaperapp.ui.details
 
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.domain.weather.index.PollutantIndex
+import livewallpaperweather.domain.location.model.Location
 
 data class DetailsUiState(
     val location: Location? = null,

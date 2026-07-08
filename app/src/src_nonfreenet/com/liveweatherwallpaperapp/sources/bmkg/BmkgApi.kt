@@ -16,12 +16,12 @@
 
 package com.liveweatherwallpaperapp.sources.bmkg
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.bmkg.json.BmkgCurrentResult
 import com.liveweatherwallpaperapp.sources.bmkg.json.BmkgForecastResult
 import com.liveweatherwallpaperapp.sources.bmkg.json.BmkgIbfResult
 import com.liveweatherwallpaperapp.sources.bmkg.json.BmkgLocationResult
 import com.liveweatherwallpaperapp.sources.bmkg.json.BmkgWarningResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Query

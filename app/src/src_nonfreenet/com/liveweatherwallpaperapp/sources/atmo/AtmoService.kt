@@ -17,12 +17,6 @@
 package com.liveweatherwallpaperapp.sources.atmo
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceFeature
-import livewallpaperweather.domain.weather.model.AirQuality
-import livewallpaperweather.domain.weather.wrappers.AirQualityWrapper
-import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.getFormattedDate
 import com.liveweatherwallpaperapp.common.extensions.toCalendarWithTimeZone
@@ -32,6 +26,12 @@ import com.liveweatherwallpaperapp.domain.settings.SourceConfigStore
 import com.liveweatherwallpaperapp.sources.atmo.json.AtmoPointResult
 import com.liveweatherwallpaperapp.unit.pollutant.PollutantConcentration
 import com.liveweatherwallpaperapp.unit.pollutant.PollutantConcentration.Companion.microgramsPerCubicMeter
+import io.reactivex.rxjava3.core.Observable
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceFeature
+import livewallpaperweather.domain.weather.model.AirQuality
+import livewallpaperweather.domain.weather.wrappers.AirQualityWrapper
+import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
 import retrofit2.Retrofit
 import java.util.Calendar
 import java.util.Date

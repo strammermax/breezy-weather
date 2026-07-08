@@ -63,16 +63,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import livewallpaperweather.data.location.LocationRepository
-import livewallpaperweather.data.weather.WeatherRepository
-import livewallpaperweather.domain.location.model.Location
-import com.liveweatherwallpaperapp.domain.location.model.isDaylight as locationIsDaylight
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.Migrations
@@ -82,6 +72,7 @@ import com.liveweatherwallpaperapp.common.bus.EventBus
 import com.liveweatherwallpaperapp.common.extensions.conditional
 import com.liveweatherwallpaperapp.common.extensions.doOnApplyWindowInsets
 import com.liveweatherwallpaperapp.common.extensions.hasPermission
+import com.liveweatherwallpaperapp.common.extensions.isBackgroundAnimationEnabled
 import com.liveweatherwallpaperapp.common.extensions.isLandscape
 import com.liveweatherwallpaperapp.common.extensions.isOnline
 import com.liveweatherwallpaperapp.common.extensions.isRtl
@@ -110,8 +101,17 @@ import com.liveweatherwallpaperapp.wallpaper.WallpaperSceneStateFactory
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperImageStore
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
 import com.liveweatherwallpaperapp.wallpaper.photo.toWallpaperPlaceQuery
-import com.liveweatherwallpaperapp.common.extensions.isBackgroundAnimationEnabled
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import livewallpaperweather.data.location.LocationRepository
+import livewallpaperweather.data.weather.WeatherRepository
+import livewallpaperweather.domain.location.model.Location
 import javax.inject.Inject
+import com.liveweatherwallpaperapp.domain.location.model.isDaylight as locationIsDaylight
 
 @AndroidEntryPoint
 class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment.Callback {
@@ -915,7 +915,7 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
             sunriseMillis = sunInterval?.first,
             sunsetMillis = sunInterval?.second,
             moonriseMillis = moonInterval?.first,
-            moonsetMillis = moonInterval?.second,
+            moonsetMillis = moonInterval?.second
         )
 
         effectView.setWeather(sceneState.weatherKind, sceneState.daylight)
@@ -951,12 +951,21 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
                 var nearPhoto: Bitmap? = null
                 val bitmap = withContext(Dispatchers.Default) {
                     Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
-                        nearPhoto = WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState, resources, depth)
+                        nearPhoto =
+                            WallpaperSceneSnapshot.render(
+                                Canvas(it),
+                                width,
+                                height,
+                                photo,
+                                sceneState,
+                                resources,
+                                depth
+                            )
                     }
                 }
                 effectView.setForegroundPhoto(
                     nearPhoto,
-                    if (sceneState.usesGreyscalePhoto) sceneState.photoGreyscaleAmount else 0f,
+                    if (sceneState.usesGreyscalePhoto) sceneState.photoGreyscaleAmount else 0f
                 )
                 if (this@MainActivity.getResources().configuration.orientation != 2) {
                     binding.root.background = BitmapDrawable(resources, bitmap)

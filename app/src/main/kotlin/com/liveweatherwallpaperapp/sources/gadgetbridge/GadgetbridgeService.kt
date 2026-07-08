@@ -18,12 +18,6 @@ package com.liveweatherwallpaperapp.sources.gadgetbridge
 
 import android.content.Context
 import android.os.Bundle
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.AirQuality
-import livewallpaperweather.domain.weather.model.Daily
-import livewallpaperweather.domain.weather.model.Hourly
-import livewallpaperweather.domain.weather.reference.WeatherCode
-import kotlinx.serialization.json.Json
 import com.liveweatherwallpaperapp.common.extensions.gzipCompress
 import com.liveweatherwallpaperapp.common.source.BroadcastSource
 import com.liveweatherwallpaperapp.common.utils.helpers.LogHelper
@@ -35,6 +29,12 @@ import com.liveweatherwallpaperapp.sources.gadgetbridge.json.GadgetbridgeDailyFo
 import com.liveweatherwallpaperapp.sources.gadgetbridge.json.GadgetbridgeData
 import com.liveweatherwallpaperapp.sources.gadgetbridge.json.GadgetbridgeHourlyForecast
 import com.liveweatherwallpaperapp.unit.ratio.Ratio
+import kotlinx.serialization.json.Json
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.AirQuality
+import livewallpaperweather.domain.weather.model.Daily
+import livewallpaperweather.domain.weather.model.Hourly
+import livewallpaperweather.domain.weather.reference.WeatherCode
 import javax.inject.Inject
 import kotlin.math.roundToInt
 

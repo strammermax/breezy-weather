@@ -30,7 +30,6 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.Size
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.createBitmap
-import livewallpaperweather.domain.weather.reference.WeatherCode
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
 import com.liveweatherwallpaperapp.common.options.NotificationTextColor
@@ -39,6 +38,7 @@ import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.temperature.Temperature
 import com.liveweatherwallpaperapp.unit.temperature.TemperatureUnit
+import livewallpaperweather.domain.weather.reference.WeatherCode
 
 object ResourceHelper {
     fun getWeatherIcon(

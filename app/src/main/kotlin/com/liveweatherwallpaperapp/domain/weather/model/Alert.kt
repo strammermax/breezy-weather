@@ -17,12 +17,12 @@
 package com.liveweatherwallpaperapp.domain.weather.model
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Alert
 import com.liveweatherwallpaperapp.common.extensions.getFormattedFullDayAndMonth
 import com.liveweatherwallpaperapp.common.extensions.getFormattedMediumDayAndMonth
 import com.liveweatherwallpaperapp.common.extensions.getFormattedTime
 import com.liveweatherwallpaperapp.common.extensions.is12Hour
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Alert
 
 fun Alert.getFormattedDates(
     location: Location,
@@ -47,7 +47,9 @@ fun Alert.getFormattedDates(
                 endDate.getFormattedMediumDayAndMonth(location, context)
             }
             if (startDateDay != endDateDay) {
-                builder.append(endDateDay).append(context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
+                builder.append(
+                    endDateDay
+                ).append(context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
             }
             builder.append(endDate.getFormattedTime(location, context, context.is12Hour))
         }

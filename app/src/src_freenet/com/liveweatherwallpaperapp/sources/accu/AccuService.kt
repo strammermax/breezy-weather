@@ -17,14 +17,14 @@
 package com.liveweatherwallpaperapp.sources.accu
 
 import android.content.Context
+import com.liveweatherwallpaperapp.common.exceptions.NonFreeNetSourceException
+import com.liveweatherwallpaperapp.common.preference.Preference
+import com.liveweatherwallpaperapp.sources.accu.preferences.AccuPortalPreference
+import io.reactivex.rxjava3.core.Observable
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.location.model.LocationAddressInfo
 import livewallpaperweather.domain.source.SourceFeature
 import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
-import io.reactivex.rxjava3.core.Observable
-import com.liveweatherwallpaperapp.common.exceptions.NonFreeNetSourceException
-import com.liveweatherwallpaperapp.common.preference.Preference
-import com.liveweatherwallpaperapp.sources.accu.preferences.AccuPortalPreference
 import javax.inject.Inject
 
 class AccuService @Inject constructor() : AccuServiceStub() {

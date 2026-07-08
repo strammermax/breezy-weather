@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.jma.json
 
-import kotlinx.serialization.Serializable
 import com.liveweatherwallpaperapp.sources.jma.serializers.JmaAnySerializer
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class JmaClass20sResult(

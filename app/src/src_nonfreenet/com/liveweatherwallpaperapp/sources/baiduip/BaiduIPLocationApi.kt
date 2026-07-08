@@ -16,8 +16,8 @@
 
 package com.liveweatherwallpaperapp.sources.baiduip
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.baiduip.json.BaiduIPLocationResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Query
 

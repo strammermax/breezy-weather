@@ -16,11 +16,11 @@
 
 package com.liveweatherwallpaperapp.unit.computing
 
-import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.test.runTest
 import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.centimeters
 import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.millimeters
 import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
+import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
 class PrecipitationComputingTest {

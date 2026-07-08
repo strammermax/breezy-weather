@@ -17,8 +17,6 @@
 package com.liveweatherwallpaperapp.domain.weather.model
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Daily
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.capitalize
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -27,6 +25,8 @@ import com.liveweatherwallpaperapp.common.extensions.getFormattedDate
 import com.liveweatherwallpaperapp.common.extensions.getLongWeekdayDayMonth
 import com.liveweatherwallpaperapp.common.extensions.getWeek
 import com.liveweatherwallpaperapp.unit.temperature.TemperatureUnit
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Daily
 import java.util.Calendar
 import kotlin.time.Duration.Companion.days
 

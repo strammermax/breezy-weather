@@ -49,7 +49,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import livewallpaperweather.domain.location.model.Location
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
@@ -61,8 +60,8 @@ import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.common.options.appearance.DetailsOverviewDisplay
 import com.liveweatherwallpaperapp.common.utils.helpers.IntentHelper
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
-import com.liveweatherwallpaperapp.domain.weather.model.getDirection
 import com.liveweatherwallpaperapp.domain.weather.model.getDescription
+import com.liveweatherwallpaperapp.domain.weather.model.getDirection
 import com.liveweatherwallpaperapp.domain.weather.model.getIndex
 import com.liveweatherwallpaperapp.domain.weather.model.getIndexName
 import com.liveweatherwallpaperapp.domain.weather.model.getLevel
@@ -73,6 +72,7 @@ import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.pollutant.PollutantConcentrationUnit
+import livewallpaperweather.domain.location.model.Location
 
 class DetailsOverviewViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
     LayoutInflater.from(parent.context).inflate(R.layout.container_main_details_overview, parent, false)
@@ -171,8 +171,8 @@ class DetailsOverviewViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                 DetailsOverviewDisplay.TAG_VISIBILITY,
                 labelOverride = context.getString(
                     R.string.details_overview_visibility_label,
-                    current?.visibility?.getVisibilityDescription(context) ?: "-",
-                ),
+                    current?.visibility?.getVisibilityDescription(context) ?: "-"
+                )
             ),
             DetailItem(
                 R.string.wind,
@@ -247,7 +247,7 @@ class DetailsOverviewViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                 DetailScreen.TAG_SUN_MOON,
                 R.string.ephemeris_about,
                 context.getString(R.string.ephemeris_about_rise),
-                DetailsOverviewDisplay.TAG_SUN,
+                DetailsOverviewDisplay.TAG_SUN
             ),
             DetailItem(
                 R.string.ephemeris_moon,
@@ -256,7 +256,7 @@ class DetailsOverviewViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                 DetailScreen.TAG_SUN_MOON,
                 R.string.ephemeris_about,
                 context.getString(R.string.ephemeris_about_rise),
-                DetailsOverviewDisplay.TAG_MOON,
+                DetailsOverviewDisplay.TAG_MOON
             ),
             DetailItem(
                 R.string.air_quality,
@@ -267,7 +267,7 @@ class DetailsOverviewViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                 context.getString(R.string.air_quality_index_about_description_1),
                 DetailsOverviewDisplay.TAG_AIR_QUALITY,
                 labelOverride = location.weather?.validAirQuality?.getName(context)
-                    ?.let { "${context.getString(R.string.air_quality)}: $it" },
+                    ?.let { "${context.getString(R.string.air_quality)}: $it" }
             ),
             DetailItem(
                 R.string.pollen,
@@ -276,7 +276,7 @@ class DetailsOverviewViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                 DetailScreen.TAG_POLLEN,
                 R.string.pollen,
                 context.getString(R.string.pollen),
-                DetailsOverviewDisplay.TAG_POLLEN,
+                DetailsOverviewDisplay.TAG_POLLEN
             )
         )
 
@@ -384,20 +384,20 @@ class DetailsOverviewViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     softWrap = false,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
             IconButton(
                 onClick = onInfoClick,
                 modifier = Modifier
                     .align(Alignment.Top)
-                    .size(32.dp),
+                    .size(32.dp)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_help),
                     contentDescription = stringResource(R.string.action_help),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }

@@ -98,13 +98,13 @@ internal object WallpaperSceneRenderer {
                 cloudDensity = state.cloudDensity,
                 cloudDarkness = state.cloudDarkness,
                 windFactor = state.windFactor,
-                windDirectionDegrees = state.windDirectionDegrees,
+                windDirectionDegrees = state.windDirectionDegrees
             ),
             fogField = FogFieldFactory.fogFieldParams(
                 fogIntensity = state.fogIntensity,
                 hazeIntensity = state.hazeIntensity,
                 windFactor = state.windFactor,
-                windDirectionDegrees = state.windDirectionDegrees,
+                windDirectionDegrees = state.windDirectionDegrees
             ),
             starField = StarFieldFactory.starFieldParams(locationSeed = seed),
             glassRainIntensity = state.glassRainIntensity,
@@ -112,7 +112,7 @@ internal object WallpaperSceneRenderer {
             precipitationTiltSlope = state.precipitationTiltSlope,
             qualityProfile = qualityProfile,
             randomSeed = seed,
-            fairSky = state.condition.sky == WallpaperSkyCondition.FAIR,
+            fairSky = state.condition.sky == WallpaperSkyCondition.FAIR
         )
         repeat(SETTLE_FRAME_COUNT) {
             renderer.update(FIXED_FRAME_INTERVAL_MILLIS, animate = true)

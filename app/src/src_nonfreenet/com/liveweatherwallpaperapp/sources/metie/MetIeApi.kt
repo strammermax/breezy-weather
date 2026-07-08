@@ -16,10 +16,10 @@
 
 package com.liveweatherwallpaperapp.sources.metie
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.metie.json.MetIeForecastResult
 import com.liveweatherwallpaperapp.sources.metie.json.MetIeLocationResult
 import com.liveweatherwallpaperapp.sources.metie.json.MetIeWarningResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path

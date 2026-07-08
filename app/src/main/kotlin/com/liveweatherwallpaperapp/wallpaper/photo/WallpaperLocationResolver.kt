@@ -17,11 +17,11 @@
 package com.liveweatherwallpaperapp.wallpaper.photo
 
 import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.rx3.awaitFirstOrElse
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.sources.SourceManager
 import com.liveweatherwallpaperapp.sources.android.AndroidLocationService
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.rx3.awaitFirstOrElse
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -63,7 +63,7 @@ class WallpaperLocationResolver @Inject constructor(
             city = address?.city?.ifBlank { null },
             municipality = address?.admin2?.ifBlank { null },
             state = address?.admin1?.ifBlank { null },
-            country = address?.country?.ifBlank { null },
+            country = address?.country?.ifBlank { null }
         )
         return WallpaperLocationFix(position.latitude, position.longitude, place)
     }

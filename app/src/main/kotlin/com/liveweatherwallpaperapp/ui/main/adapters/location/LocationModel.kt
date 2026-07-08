@@ -17,14 +17,14 @@
 package com.liveweatherwallpaperapp.ui.main.adapters.location
 
 import android.content.Context
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.reference.WeatherCode
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import com.liveweatherwallpaperapp.common.extensions.getRelativeTime
 import com.liveweatherwallpaperapp.common.extensions.uncapitalize
 import com.liveweatherwallpaperapp.domain.location.model.getPlace
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.reference.WeatherCode
 import java.util.Date
 import kotlin.time.Duration.Companion.hours
 

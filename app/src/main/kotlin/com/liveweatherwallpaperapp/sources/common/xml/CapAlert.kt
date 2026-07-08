@@ -19,12 +19,12 @@ package com.liveweatherwallpaperapp.sources.common.xml
 import android.content.Context
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.model.LatLng
+import com.liveweatherwallpaperapp.common.extensions.currentLocale
+import com.liveweatherwallpaperapp.common.serializer.DateSerializer
 import kotlinx.serialization.Serializable
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
 import nl.adaptivity.xmlutil.util.CompactFragment
-import com.liveweatherwallpaperapp.common.extensions.currentLocale
-import com.liveweatherwallpaperapp.common.serializer.DateSerializer
 import java.util.Date
 
 /**

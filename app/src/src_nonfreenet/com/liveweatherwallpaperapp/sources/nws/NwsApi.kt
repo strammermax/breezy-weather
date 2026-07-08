@@ -16,13 +16,13 @@
 
 package com.liveweatherwallpaperapp.sources.nws
 
-import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.sources.nws.json.NwsAlertsResult
 import com.liveweatherwallpaperapp.sources.nws.json.NwsCurrentResult
 import com.liveweatherwallpaperapp.sources.nws.json.NwsDailyResult
 import com.liveweatherwallpaperapp.sources.nws.json.NwsGridPointResult
 import com.liveweatherwallpaperapp.sources.nws.json.NwsPointResult
 import com.liveweatherwallpaperapp.sources.nws.json.NwsStationsResult
+import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path

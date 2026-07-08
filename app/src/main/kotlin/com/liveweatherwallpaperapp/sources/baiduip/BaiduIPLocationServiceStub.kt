@@ -17,7 +17,6 @@
 package com.liveweatherwallpaperapp.sources.baiduip
 
 import android.content.Context
-import livewallpaperweather.domain.source.SourceContinent
 import com.liveweatherwallpaperapp.common.extensions.code
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import com.liveweatherwallpaperapp.common.extensions.getCountryName
@@ -25,6 +24,7 @@ import com.liveweatherwallpaperapp.common.source.ConfigurableSource
 import com.liveweatherwallpaperapp.common.source.HttpSource
 import com.liveweatherwallpaperapp.common.source.LocationSource
 import com.liveweatherwallpaperapp.common.source.NonFreeNetSource
+import livewallpaperweather.domain.source.SourceContinent
 
 /**
  * The actual implementation is in the src_freenet and src_nonfreenet folders

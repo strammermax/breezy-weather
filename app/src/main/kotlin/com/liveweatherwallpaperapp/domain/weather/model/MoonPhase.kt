@@ -17,8 +17,8 @@
 package com.liveweatherwallpaperapp.domain.weather.model
 
 import android.content.Context
-import livewallpaperweather.domain.weather.model.MoonPhase
 import com.liveweatherwallpaperapp.R
+import livewallpaperweather.domain.weather.model.MoonPhase
 import org.shredzone.commons.suncalc.MoonPhase.Phase
 
 fun MoonPhase.getDescription(context: Context): String? {

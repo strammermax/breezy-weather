@@ -25,7 +25,6 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.recyclerview.widget.RecyclerView
-import livewallpaperweather.domain.location.model.Location
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonGroup
 import com.liveweatherwallpaperapp.R
@@ -39,6 +38,7 @@ import com.liveweatherwallpaperapp.ui.main.adapters.trend.HourlyTrendAdapter
 import com.liveweatherwallpaperapp.ui.main.widgets.TrendRecyclerViewScrollBar
 import com.liveweatherwallpaperapp.ui.theme.ThemeManager
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import livewallpaperweather.domain.location.model.Location
 
 /**
  * Combined forecast card: a single tile that switches between the daily and the hourly trend
