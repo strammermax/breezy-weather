@@ -54,9 +54,27 @@ jobs:
         env:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
 
+      - name: Write RemoveSky config
+        run: |
+          set -e
+          # app/build.gradle.kts bakes these into BuildConfig for every buildType (incl.
+          # release) from local.properties - without this, the release build ships with
+          # empty REMOVESKY_API_KEY/CF_ACCESS_* and RemoveSky requests get rejected.
+          cat >> local.properties <<EOF
+          lww.removesky.url=$REMOVESKY_URL
+          lww.removesky.apikey=$REMOVESKY_API_KEY
+          lww.cfaccess.id=$CF_ACCESS_CLIENT_ID
+          lww.cfaccess.secret=$CF_ACCESS_CLIENT_SECRET
+          EOF
+        env:
+          REMOVESKY_URL: ${{ secrets.LWW_REMOVESKY_URL }}
+          REMOVESKY_API_KEY: ${{ secrets.LWW_REMOVESKY_APIKEY }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.LWW_CFACCESS_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.LWW_CFACCESS_SECRET }}
+
       - name: Publish basic flavor to Play Store internal track
         run: ./gradlew publishBasicReleaseBundle
 
       - name: Remove secrets from workspace
         if: always()
-        run: rm -f app/release.jks keystore.properties play-service-account.json
+        run: rm -f app/release.jks keystore.properties play-service-account.json local.properties
