@@ -72,6 +72,27 @@ jobs:
           CF_ACCESS_CLIENT_ID: ${{ secrets.LWW_CFACCESS_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.LWW_CFACCESS_SECRET }}
 
+      - name: Verify RemoveSky secrets against the live service
+        run: |
+          set -e
+          base="${REMOVESKY_URL:-https://removesky.vanburik.info}"
+          code=$(curl -sS -o /tmp/removesky_health.txt -w "%{http_code}" "$base/api/v1/health" \
+            -H "User-Agent: LiveWallpaperWeather/1.0" \
+            -H "x-api-key: $REMOVESKY_API_KEY" \
+            -H "CF-Access-Client-Id: $CF_ACCESS_CLIENT_ID" \
+            -H "CF-Access-Client-Secret: $CF_ACCESS_CLIENT_SECRET")
+          echo "RemoveSky /health responded HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "::error::RemoveSky health check failed with HTTP $code - the release build's RemoveSky secrets are wrong or the service is down. See body below (should not contain secret values):"
+            cat /tmp/removesky_health.txt
+            exit 1
+          fi
+        env:
+          REMOVESKY_URL: ${{ secrets.LWW_REMOVESKY_URL }}
+          REMOVESKY_API_KEY: ${{ secrets.LWW_REMOVESKY_APIKEY }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.LWW_CFACCESS_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.LWW_CFACCESS_SECRET }}
+
       - name: Publish basic flavor to Play Store internal track
         run: ./gradlew publishBasicReleaseBundle
 
