@@ -171,12 +171,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private val mTransitionManager = TransitionManager()
         private var mBackground: Drawable? = null
 
-        // The processed location photo is the middle layer: sky and celestial body behind it,
-        // weather effects in front of it.
+        // Draw the complete photo after the cloud pass so clouds remain behind photographed
+        // objects such as houses, trees and the horizon.
         private var mForeground: Drawable? = null
-
-        /** Far-depth foreground layer (buildings, distant objects) — drawn BEFORE cloud layers. */
-        private var mForegroundFar: Drawable? = null
         private var mGlassSceneBitmap: Bitmap? = null
         private var mGlassSceneCanvas: Canvas? = null
         private var mGlassSceneShader: Shader? = null
@@ -355,11 +352,6 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     }
                     it.withTranslation(-celestialOffset, 0f) {
                         drawCelestialBody(it)
-                    }
-                    // Far foreground (distant buildings, mountains) drawn BEHIND all cloud layers
-                    // so cloud animations appear in front of them.
-                    mForegroundFar?.let { far ->
-                        it.withTranslation(-fgOffset, 0f) { far.draw(it) }
                     }
                     val transitionProgress = mTransitionManager.transitionProgress()
                     if (transitionProgress == null && mOutgoingEffectRenderer != null) {
@@ -914,14 +906,13 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val key = "$path|${file.lastModified()}|${mSizes[0]}x${mSizes[1]}|$mParallaxEnabled"
             if (key == mForegroundKey && mForeground != null) return
 
-            mForegroundFar = null
             mForeground = buildPhotoForeground()
             mForegroundKey = if (mForeground != null) key else null
             mForegroundNightTint = Float.NaN
             mForegroundGreyscaleAmount = 0f
             updateForegroundNightTint()
             updateLayerBounds()
-            lwwLog { "foreground rebuilt success=${mForeground != null} key=$key depthSplit=${mForegroundFar != null}" }
+            lwwLog { "foreground rebuilt success=${mForeground != null} key=$key" }
         }
 
         private fun updateGlassSceneTexture(
@@ -1011,11 +1002,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 val fgExtra = (width * PARALLAX_FG_FACTOR).toInt()
                 mBackground?.setBounds(-bgExtra, 0, width + bgExtra, height)
                 mForeground?.setBounds(-fgExtra, 0, width + fgExtra, height)
-                mForegroundFar?.setBounds(-fgExtra, 0, width + fgExtra, height)
             } else {
                 mBackground?.setBounds(0, 0, width, height)
                 mForeground?.setBounds(0, 0, width, height)
-                mForegroundFar?.setBounds(0, 0, width, height)
             }
             lwwLog { "layer bounds updated ${width}x$height parallax=$mParallaxEnabled" }
         }
@@ -1049,19 +1038,8 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 }
                 val positioned = positionPhotoAtBottom(source, width, mSizes[1])
 
-                // If a depth map is available, split foreground into near (in front of clouds)
-                // and far (behind clouds) layers for a cloud-fly-through effect.
-                val depth = mWallpaperRepository.loadCachedDepthBitmap()
-                if (depth != null) {
-                    val (near, far) = WallpaperPhotoLayout.splitByDepth(positioned, depth)
-                    depth.recycle()
-                    mForegroundFar = BitmapDrawable(resources, far)
-                    lwwLog { "buildPhotoForeground ok (depth split): ${width}x${mSizes[1]}" }
-                    BitmapDrawable(resources, near)
-                } else {
-                    lwwLog { "buildPhotoForeground ok: src=${source.width}x${source.height} -> ${width}x${mSizes[1]}" }
-                    BitmapDrawable(resources, positioned)
-                }
+                lwwLog { "buildPhotoForeground ok: src=${source.width}x${source.height} -> ${width}x${mSizes[1]}" }
+                BitmapDrawable(resources, positioned)
             } catch (e: Throwable) {
                 lwwLog { "buildPhotoForeground failed: ${e.message}" }
                 null
@@ -1106,7 +1084,6 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 )
             }
             foreground.colorFilter = filter
-            mForegroundFar?.colorFilter = filter
             mForegroundNightTint = dimming
             mForegroundGreyscaleAmount = greyscaleAmount
         }

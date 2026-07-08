@@ -25,7 +25,8 @@ import android.graphics.RectF
  * Shared photo-placement logic for the live wallpaper and its in-app snapshot/effect views.
  * The photo always anchors to the bottom of the target area, via [positionAtBottom] — bakes
  * into a new bitmap covering the full target width so there are no side gaps regardless of
- * aspect ratio. [splitByDepth] then optionally divides that into near/far layers.
+ * aspect ratio. The positioned photo stays one foreground layer so animated clouds cannot drift
+ * across opaque photographed objects.
  */
 internal object WallpaperPhotoLayout {
 
@@ -58,47 +59,5 @@ internal object WallpaperPhotoLayout {
             paint
         )
         return result
-    }
-
-    /**
-     * Splits [rgba] into two bitmaps based on the grayscale [depth] map (255=near, 0=far).
-     * Returns (nearBitmap, farBitmap): pixels above [threshold] go to near, the rest to far.
-     * Transparent pixels in the RGBA source remain transparent in both outputs.
-     *
-     * Shared by [MaterialLiveWallpaperService] (animated cloud-fly-through) and
-     * [WallpaperSceneSnapshot] (static in-app preview) so both draw clouds behind the same
-     * near/foreground pixels instead of the snapshot painting clouds over the whole photo.
-     */
-    fun splitByDepth(rgba: Bitmap, depth: Bitmap, threshold: Int = 128): Pair<Bitmap, Bitmap> {
-        val w = rgba.width
-        val h = rgba.height
-        val depthScaled = if (depth.width == w && depth.height == h) {
-            depth
-        } else {
-            Bitmap.createScaledBitmap(depth, w, h, true)
-        }
-        val rgbaPixels = IntArray(w * h)
-        val depthPixels = IntArray(w * h)
-        rgba.getPixels(rgbaPixels, 0, w, 0, 0, w, h)
-        depthScaled.getPixels(depthPixels, 0, w, 0, 0, w, h)
-        if (depthScaled !== depth) depthScaled.recycle()
-
-        val nearPixels = IntArray(w * h)
-        val farPixels = IntArray(w * h)
-        for (i in rgbaPixels.indices) {
-            // Depth is stored as a greyscale ARGB — take the red channel as intensity.
-            val depthVal = (depthPixels[i] shr 16) and 0xFF
-            if (depthVal > threshold) {
-                nearPixels[i] = rgbaPixels[i]
-            } else {
-                farPixels[i] = rgbaPixels[i]
-            }
-        }
-
-        val nearBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        val farBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        nearBitmap.setPixels(nearPixels, 0, w, 0, 0, w, h)
-        farBitmap.setPixels(farPixels, 0, w, 0, 0, w, h)
-        return Pair(nearBitmap, farBitmap)
     }
 }

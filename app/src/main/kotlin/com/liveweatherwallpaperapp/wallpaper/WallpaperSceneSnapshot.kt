@@ -52,16 +52,14 @@ internal object WallpaperSceneSnapshot {
     }
 
     /**
-     * Renders the static sky/celestial layer (and, when [depth] is available, the *far* photo
-     * split) onto [canvas], and returns the photo bitmap the caller must draw *on top of* the
-     * animated weather layer (see [WallpaperEffectView.setForegroundPhoto]) — this is either
-     * the *near* depth split, or, when there's no depth map, the whole positioned [photo].
+     * Renders the static sky/celestial layer onto [canvas], and returns the complete positioned
+     * photo bitmap for the caller to draw *on top of* the animated cloud layer (see
+     * [WallpaperEffectView.setForegroundPhoto]).
      *
-     * This mirrors [MaterialLiveWallpaperService]'s actual draw order: the sky/far-photo layer
-     * comes before the cloud background pass, while the foreground photo (near split, or the
-     * whole photo when there's nothing to split) is drawn *between* the background and
-     * foreground weather passes — never before both, which would let clouds paint over the
-     * entire photo including near/foreground content like a building.
+     * This mirrors [MaterialLiveWallpaperService]'s actual draw order: sky, celestial body and
+     * clouds first, then the whole photo. A cached [depth] map is deliberately ignored here;
+     * placing photographed pixels behind moving clouds makes clouds intermittently cover
+     * buildings and other opaque objects.
      *
      * Returns null (nothing for the caller to draw) when there's no [photo].
      */
@@ -86,31 +84,7 @@ internal object WallpaperSceneSnapshot {
         // drawable, those passes are drawn separately by WallpaperEffectView on top.
         if (photo == null) return null
 
-        val positioned = WallpaperPhotoLayout.positionAtBottom(photo, width, height)
-        val (foregroundLayer, farLayer) = if (depth != null) {
-            val (near, far) = WallpaperPhotoLayout.splitByDepth(positioned, depth)
-            positioned.recycle()
-            near to far
-        } else {
-            positioned to null
-        }
-
-        if (farLayer != null) {
-            val drawFar: (Canvas) -> Unit = { it.drawBitmap(farLayer, 0f, 0f, PHOTO_PAINT) }
-            if (sceneState.usesGreyscalePhoto) {
-                val greyscalePaint = Paint().apply {
-                    colorFilter = ColorMatrixColorFilter(
-                        ColorMatrix().apply { setSaturation(1f - sceneState.photoGreyscaleAmount) }
-                    )
-                }
-                canvas.saveLayer(null, greyscalePaint)
-                drawFar(canvas)
-                canvas.restore()
-            } else {
-                drawFar(canvas)
-            }
-        }
-        return foregroundLayer
+        return WallpaperPhotoLayout.positionAtBottom(photo, width, height)
     }
 
     private fun drawSkyBackground(canvas: Canvas, width: Int, height: Int, sceneState: WallpaperSceneState) {
