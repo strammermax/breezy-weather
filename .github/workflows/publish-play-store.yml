@@ -34,7 +34,9 @@ jobs:
       - name: Write release keystore
         run: |
           set -e
-          echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > release.jks
+          # storeFile in keystore.properties is resolved by app/build.gradle.kts via file(),
+          # which is relative to the app/ module directory - not the repo root.
+          echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > app/release.jks
           cat > keystore.properties <<EOF
           storeFile=release.jks
           storePassword=$SIGNING_STORE_PASSWORD
@@ -57,4 +59,4 @@ jobs:
 
       - name: Remove secrets from workspace
         if: always()
-        run: rm -f release.jks keystore.properties play-service-account.json
+        run: rm -f app/release.jks keystore.properties play-service-account.json
