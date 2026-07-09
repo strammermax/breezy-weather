@@ -7,7 +7,7 @@
 <h3 align="center">Enhanced fork of Breezy Weather</h3>
 
 <div align="center">
-  <small>Based on <a href="https://github.com/breezy-weather/breezy-weather">Breezy Weather</a> with additional features and improvements</small>
+  <small>Based on <a href="https://github.com/strammermax/breezy-weather">Breezy Weather</a> with additional features and improvements</small>
 </div>
 
 <br />
@@ -26,7 +26,7 @@
 
 **Developer Setup**  
 ```bash
-git clone https://github.com/breezy-weather/breezy-weather.git
+git clone https://github.com/strammermax/breezy-weather.git
 cd breezy-weather
 ./gradlew assembleDebug
 adb install app/build/outputs/apk/basic/debug/app-basic-universal-debug.apk
@@ -44,12 +44,12 @@ adb install app/build/outputs/apk/basic/debug/app-basic-universal-debug.apk
     <img alt="Material 3 Expressive" src="https://custom-icon-badges.demolab.com/badge/m3%20expressive-lightblue?style=for-the-badge&logoColor=333&logo=material-you" />
   </a>
   <br />
-  <a href="https://github.com/breezy-weather/breezy-weather/blob/main/LICENSE">
+  <a href="https://github.com/strammermax/breezy-weather/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/breezy-weather/breezy-weather?style=for-the-badge" alt="License LGPL-3.0" />
   </a>
   <img src="https://img.shields.io/github/languages/code-size/breezy-weather/breezy-weather?style=for-the-badge" alt="GitHub code size in bytes" />
   <br /><br />
-  <a href="https://github.com/breezy-weather/breezy-weather/releases">
+  <a href="https://github.com/strammermax/breezy-weather/releases">
       <img src="https://img.shields.io/github/v/release/breezy-weather/breezy-weather?color=purple&include_prereleases&logo=github&style=for-the-badge" alt="Download from GitHub" />
   </a>
   <a href="https://apt.izzysoft.de/fdroid/index/apk/org.breezyweather/">
@@ -67,27 +67,27 @@ adb install app/build/outputs/apk/basic/debug/app-basic-universal-debug.apk
 
 # ⬇️ Download
 
-<a href="https://github.com/breezy-weather/breezy-weather/releases">
+<a href="https://github.com/strammermax/breezy-weather/releases">
 <img src="https://user-images.githubusercontent.com/69304392/148696068-0cfea65d-b18f-4685-82b5-329a330b1c0d.png"
 alt="Get it on GitHub" align="center" height="80" /></a>
 
-<a href="https://github.com/breezy-weather/breezy-weather/blob/main/INSTALL.md#obtainium">
+<a href="https://github.com/strammermax/breezy-weather/blob/main/INSTALL.md#obtainium">
 <img src="https://github.com/ImranR98/Obtainium/blob/main/assets/graphics/badge_obtainium.png"
 alt="Get it on Obtainium" align="center" height="54" />
 </a>
 
-<a href="https://github.com/breezy-weather/breezy-weather/blob/main/INSTALL.md#f-droid-client">
+<a href="https://github.com/strammermax/breezy-weather/blob/main/INSTALL.md#f-droid-client">
 <img src="https://f-droid.org/badge/get-it-on.png"
 alt="Get it on F-Droid" align="center" height="80" /></a>
 </div>
 
 <div align="center">
-    <p><a href="https://github.com/breezy-weather/breezy-weather/blob/main/INSTALL.md"><strong>All installation methods</strong></a></p>
+    <p><a href="https://github.com/strammermax/breezy-weather/blob/main/INSTALL.md"><strong>All installation methods</strong></a></p>
 </div>
 
 <div align="center">
   <p><strong>SHA-256 hash of the signing certificate:</strong> 29d435f70aa9aec3c1faff7f7ffa6e15785088d87f06ecfcab9c3cc62dc269d8<br />
-  SHA-256 checksums are also provided per file on the <a href="https://github.com/breezy-weather/breezy-weather/releases">GitHub releases page</a>.</p>
+  SHA-256 checksums are also provided per file on the <a href="https://github.com/strammermax/breezy-weather/releases">GitHub releases page</a>.</p>
 </div>
 
 <hr />
@@ -127,7 +127,7 @@ alt="Get it on F-Droid" align="center" height="80" /></a>
 - 🖼️ Live wallpaper
 - 🎨 Customization
   - Icon packs:
-    - [Geometric Weather](https://github.com/breezy-weather/breezy-weather-icon-packs)
+    - [Geometric Weather](https://github.com/strammermax/breezy-weather-icon-packs)
     - Chronus Weather compatible
   - 20+ widget styles
   - Dark/light theme scheduling
@@ -156,7 +156,7 @@ alt="Get it on F-Droid" align="center" height="80" /></a>
 
 - <details><summary>🛡️ Privacy-friendly</summary>
 
-  - No personal data collected by the app ([link to app privacy policy](https://github.com/breezy-weather/breezy-weather/blob/main/PRIVACY.md))
+  - No personal data collected by the app ([link to app privacy policy](https://github.com/strammermax/breezy-weather/blob/main/PRIVACY.md))
   - Multiple sources are available, with links to their privacy policies for transparency
   - Current location is optional and not added by default
   - If using current location, an IP location service can be used instead of GPS to send less accurate coordinates to weather source
@@ -173,51 +173,23 @@ alt="Get it on F-Droid" align="center" height="80" /></a>
 
 # 🤝 Contribute
 
-Pull requests are welcome. You can have a look at [issues opened to contributions](https://github.com/breezy-weather/breezy-weather/issues?q=is%3Aissue+is%3Aopen+label%3A%22Open+to+contributions%22). For other changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome. You can have a look at [issues opened to contributions](https://github.com/strammermax/breezy-weather/issues?q=is%3Aissue+is%3Aopen+label%3A%22Open+to+contributions%22). For other changes, please open an issue first to discuss what you would like to change.
 
 * [Contribution guide (includes a guide to create a new weather source)](CONTRIBUTE.md)
 
-## Features currently being worked on by a contributor
 
-- [Announcement](https://github.com/breezy-weather/breezy-weather/discussions/2089) - Make Breezy weather data available through a ContentProvider. Landed in v6.1.0. Currently in an experimental phase; feedback appreciated
-- [#10](https://github.com/breezy-weather/breezy-weather/issues/10) - “Add location” page needs a new design, in the spirit of Google Maps where you can select location points on the map, or search manually - No mockup done yet
-
-## Features lacking an active contributor
-
-- [#937](https://github.com/breezy-weather/breezy-weather/issues/937) - Widget overhaul (prerequisite for any new widget improvement) - Some mockups were done but no one is working on it anymore
 
 ## Features that will not be implemented
 
 - Paid-only sources, too limited free-tier, or free-tier that requires privacy-invasive information (credit card info, phone number, etc)
 - Radar; [please check out this document for alternatives](docs/RADAR.md)
 - Adding `standard` flavor or non-free sources to the F-Droid default repo: please use the `standard` flavor from a different store/source instead
-- Changes to the [background updates process](docs/UPDATES.md), including but not limited: options for refreshing less than every 30 minutes, every time you open the app, every time you tap on widget, every time you unlock your phone
-- “Circular sky” interface: you can set a fixed light/dark background globally from Main screen settings instead.
-- Publish to Google Play Store: please [check alternatives](INSTALL.md)
-- Allow different flavors to be installed in parallel
-- Implement features that are no longer available in latest Android versions
 - Backport features/fixes from latest Android versions to older Android versions
 - Donations: if you have extra money to spare, consider [donating to Open-Meteo](https://github.com/sponsors/open-meteo) to support infrastructure costs and future developments (we currently lack a libre and gratis worldwide alternative for the following features: [Reverse geocoding](https://github.com/open-meteo/geocoding-api/issues/6), [Alerts](https://github.com/open-meteo/open-meteo/issues/351), [Normals](https://github.com/open-meteo/open-meteo/issues/361))
 
 
-# 🌍 Translations
-
-Translation is done externally [on Weblate](https://hosted.weblate.org/projects/breezy-weather/breezy-weather-android/#information). Please read carefully project instructions if you want to help.
-
-[![Translation progress report](https://hosted.weblate.org/widget/breezy-weather/breezy-weather-android/multi-auto.svg)](https://hosted.weblate.org/projects/breezy-weather/breezy-weather-android/#information)
-
-English (and regional variants) and French translations are maintained by repo maintainers, but they are open to proofreading/improvements. You will need to make a pull request, as we didn’t find a way to make these languages in suggestion-only mode in Weblate (let us know if you find anything).
-
-For unit formatting, we use [Unicode data](https://www.unicode.org/cldr/charts/47/summary/root.html) as much as possible. If you believe there is an error, please [open a discussion](https://github.com/breezy-weather/breezy-weather/discussions/categories/general) with evidences that the changes you suggest is the recommendation for your language.
 
 
-# ✉️ Contact us
-
-* If you’d like to report a bug or suggest a new feature, GitHub discussions or issues are best for organization.
-* We’ve also created a Matrix/Element space with a number of different channels for more general discussion: [`#breezy-weather-space:matrix.org`](https://matrix.to/#/#breezy-weather-space:matrix.org).
-  * If you are not comfortable writing a GitHub discussion/issue in English, you can ask on the channel if someone can help you in your language.
-    * We also have a dedicated help channel in French: [`#breezy-weather-francais:matrix.org`](https://matrix.to/#/#breezy-weather-francais:matrix.org)
-  * If you’d prefer a direct channel link instead of a space link, here’s the main Breezy Weather Matrix channel: [`#breezy-weather:matrix.org`](https://matrix.to/#/#breezy-weather:matrix.org)
 
 
 # 📜 License
@@ -226,13 +198,13 @@ For unit formatting, we use [Unicode data](https://www.unicode.org/cldr/charts/4
 * This License does not grant any rights in the trademarks, service marks, or logos of any Contributor.
 * Misrepresentation of the origin of that material is prohibited, and modified versions of such material must be marked in reasonable ways as different from the original version.
 
-Before creating a fork, check if the intent action `nodomain.freeyourgadget.gadgetbridge.ACTION_GENERIC_WEATHER` can cover your need (for example, you want to re-use our weather data in your own customized widget). It can be enabled from Settings > Widgets & Live Wallpaper > Data sharing. You can also [help testing our `ContentProvider` exposing the full weather data of Breezy Weather](https://github.com/breezy-weather/breezy-weather/discussions/2089).
+Before creating a fork, check if the intent action `nodomain.freeyourgadget.gadgetbridge.ACTION_GENERIC_WEATHER` can cover your need (for example, you want to re-use our weather data in your own customized widget). It can be enabled from Settings > Widgets & Live Wallpaper > Data sharing. You can also [help testing our `ContentProvider` exposing the full weather data of Breezy Weather](https://github.com/strammermax/breezy-weather/discussions/2089).
 
 Otherwise, remember to:
 
 - Respect the project’s LICENSE
 - Avoid confusion with the Breezy Weather app:
   - Do NOT use the `breezy` flag when compiling releases you plan to distribute
-  - Change the app name in [`res_fork/values/strings.xml`](https://github.com/breezy-weather/breezy-weather/blob/main/app/src/res_fork/values/strings.xml)
-  - Change the app icons in the [`res_fork`](https://github.com/breezy-weather/breezy-weather/blob/main/app/src/res_fork) folders
-  - Avoid installation conflicts: change the `applicationId` in [`build.gradle.kts`](https://github.com/breezy-weather/breezy-weather/blob/main/app/build.gradle.kts#L25)
+  - Change the app name in [`res_fork/values/strings.xml`](https://github.com/strammermax/breezy-weather/blob/main/app/src/res_fork/values/strings.xml)
+  - Change the app icons in the [`res_fork`](https://github.com/strammermax/breezy-weather/blob/main/app/src/res_fork) folders
+  - Avoid installation conflicts: change the `applicationId` in [`build.gradle.kts`](https://github.com/strammermax/breezy-weather/blob/main/app/build.gradle.kts#L25)
