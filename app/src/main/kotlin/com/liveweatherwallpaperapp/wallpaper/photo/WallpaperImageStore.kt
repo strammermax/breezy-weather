@@ -61,6 +61,20 @@ class WallpaperImageStore(context: Context) {
         }
 
     /**
+     * How many of the most recently shown photo URLs per location are skipped before repeating
+     * one, so the wallpaper doesn't cycle back to the same photo too quickly.
+     */
+    var recentUrlCount: Int
+        get() = config.getInt(KEY_RECENT_URL_COUNT, DEFAULT_RECENT_URL_COUNT)
+            .coerceIn(MIN_RECENT_URL_COUNT, MAX_RECENT_URL_COUNT)
+        set(value) {
+            config.edit().putInt(
+                KEY_RECENT_URL_COUNT,
+                value.coerceIn(MIN_RECENT_URL_COUNT, MAX_RECENT_URL_COUNT)
+            ).apply()
+        }
+
+    /**
      * How often [WallpaperPhotoRefreshWorker] rotates the active wallpaper photo per location
      * (picking another cached photo, or downloading a fresh batch when the cache is empty).
      */
@@ -162,11 +176,11 @@ class WallpaperImageStore(context: Context) {
         emptyList()
     }
 
-    /** Adds [url] to the per-location history while retaining the last four unique entries. */
+    /** Adds [url] to the per-location history while retaining the last [recentUrlCount] unique entries. */
     fun recordRecentUrl(placeKey: String, url: String) {
         val urls = listOf(url) + recentUrlsFor(placeKey).filterNot { it == url }
         val map = recentUrlMap()
-        map.put(placeKey, JSONArray(urls.take(RECENT_URL_COUNT)))
+        map.put(placeKey, JSONArray(urls.take(recentUrlCount)))
         config.edit().putString(KEY_RECENT_URLS, map.toString()).apply()
     }
 
@@ -176,7 +190,7 @@ class WallpaperImageStore(context: Context) {
         if (urls.isEmpty()) {
             map.remove(placeKey)
         } else {
-            map.put(placeKey, JSONArray(urls.take(RECENT_URL_COUNT)))
+            map.put(placeKey, JSONArray(urls.take(recentUrlCount)))
         }
         config.edit().putString(KEY_RECENT_URLS, map.toString()).apply()
     }
@@ -233,6 +247,7 @@ class WallpaperImageStore(context: Context) {
         private const val KEY_ENABLED = "photo_background_enabled"
         private const val KEY_CACHE_LIMIT_MB = "photo_cache_limit_mb"
         private const val KEY_MAX_PHOTOS_PER_LOCATION = "max_photos_per_location"
+        private const val KEY_RECENT_URL_COUNT = "recent_url_count"
         private const val KEY_CACHED_PATH = "cached_photo_path"
         private const val KEY_CACHED_URL = "cached_photo_url"
         private const val KEY_CACHED_ATTRIBUTION = "cached_photo_attribution"
@@ -247,7 +262,9 @@ class WallpaperImageStore(context: Context) {
         const val DEFAULT_CACHE_LIMIT_MB = 100
         const val MIN_CACHE_LIMIT_MB = 25
         const val MAX_CACHE_LIMIT_MB = 500
-        const val RECENT_URL_COUNT = 4
+        const val DEFAULT_RECENT_URL_COUNT = 4
+        const val MIN_RECENT_URL_COUNT = 1
+        const val MAX_RECENT_URL_COUNT = 20
         const val DEFAULT_MAX_PHOTOS_PER_LOCATION = 12
         const val MIN_PHOTOS_PER_LOCATION = 4
         const val MAX_PHOTOS_PER_LOCATION = 50

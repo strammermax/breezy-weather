@@ -127,6 +127,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
     private lateinit var currentLocationValue: MutableState<String>
     private lateinit var photoCacheLimitMbValue: MutableState<Float>
     private lateinit var maxPhotosPerLocationValue: MutableState<Float>
+    private lateinit var recentUrlCountValue: MutableState<Float>
     private lateinit var cachedPhotoCountValue: MutableState<Int>
     private lateinit var cachedPhotoBytesValue: MutableState<Long>
 
@@ -189,6 +190,8 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         photoCacheLimitMbValue = mutableFloatStateOf(wallpaperImageStore.photoCacheLimitMb.toFloat())
         maxPhotosPerLocationValue =
             mutableFloatStateOf(wallpaperImageStore.maxCachedPhotosPerLocation.toFloat())
+        recentUrlCountValue =
+            mutableFloatStateOf(wallpaperImageStore.recentUrlCount.toFloat())
         cachedPhotoCountValue = mutableIntStateOf(0)
         cachedPhotoBytesValue = mutableStateOf(0L)
         weatherRefreshedAtValue = mutableStateOf(null)
@@ -646,13 +649,25 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         ) {
                             Text(stringResource(R.string.wallpaper_photo_manager_title))
                         }
+                        val recentUrlCount = recentUrlCountValue.value.roundToInt()
                         Text(
                             text = stringResource(
                                 R.string.widget_live_wallpaper_recent_photos_skipped,
-                                WallpaperImageStore.RECENT_URL_COUNT
+                                recentUrlCount
                             ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodySmall
+                        )
+                        val minRecentUrlCount = WallpaperImageStore.MIN_RECENT_URL_COUNT
+                        val maxRecentUrlCount = WallpaperImageStore.MAX_RECENT_URL_COUNT
+                        Slider(
+                            value = recentUrlCountValue.value,
+                            onValueChange = { recentUrlCountValue.value = it.roundToInt().toFloat() },
+                            valueRange = minRecentUrlCount.toFloat()..maxRecentUrlCount.toFloat(),
+                            steps = maxRecentUrlCount - minRecentUrlCount - 1,
+                            onValueChangeFinished = {
+                                wallpaperImageStore.recentUrlCount = recentUrlCountValue.value.roundToInt()
+                            }
                         )
                         val cacheLimitMinMb = WallpaperImageStore.MIN_CACHE_LIMIT_MB.toFloat()
                         val cacheLimitMaxMb = WallpaperImageStore.MAX_CACHE_LIMIT_MB.toFloat()
