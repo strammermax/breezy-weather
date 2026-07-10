@@ -1,0 +1,46 @@
+import kotlin.Boolean;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN source TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN provider_name TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN title TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN page_url TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN owner_name TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN license TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN processed_location TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN status TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN source_location TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN captured_at TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN description TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN resolved_city TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN is_city INTEGER AS Boolean;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN scene_type TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN weather TEXT;

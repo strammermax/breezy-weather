@@ -213,7 +213,22 @@ class WallpaperRepository @Inject constructor(
                 country = result.country,
                 season = result.season,
                 exifLat = result.exifLatitude,
-                exifLon = result.exifLongitude
+                exifLon = result.exifLongitude,
+                source = result.source,
+                providerName = result.provider,
+                title = result.title,
+                pageUrl = result.pageUrl,
+                ownerName = result.ownerName,
+                license = result.license,
+                processedLocation = result.processedLocation,
+                status = result.status,
+                sourceLocation = result.location,
+                capturedAt = result.capturedAt,
+                description = result.description,
+                resolvedCity = result.resolvedCity,
+                isCity = result.isCity,
+                sceneType = result.sceneType,
+                weather = result.weather
             )
             store.recordRecentUrl(placeKey, url)
             if (activate) {
@@ -403,7 +418,18 @@ class WallpaperRepository @Inject constructor(
             country = newPhoto.country,
             season = newPhoto.season,
             exifLat = newPhoto.exifLatitude,
-            exifLon = newPhoto.exifLongitude
+            exifLon = newPhoto.exifLongitude,
+            source = newPhoto.source,
+            providerName = newPhoto.provider,
+            title = newPhoto.title,
+            status = newPhoto.status,
+            sourceLocation = newPhoto.location,
+            capturedAt = newPhoto.capturedAt,
+            description = newPhoto.description,
+            resolvedCity = newPhoto.resolvedCity,
+            isCity = newPhoto.isCity,
+            sceneType = newPhoto.sceneType,
+            weather = newPhoto.weather
         )
         pruneLocationCache(cacheFile.parentFile, cacheFile)
         prunePhotoCache(cacheFile)

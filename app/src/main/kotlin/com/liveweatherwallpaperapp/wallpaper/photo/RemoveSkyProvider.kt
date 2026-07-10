@@ -92,7 +92,19 @@ class RemoveSkyProvider(
                             season = item.optStringOrNull("season"),
                             exifLatitude = item.optDoubleOrNull("exif_lat"),
                             exifLongitude = item.optDoubleOrNull("exif_lon"),
-                            depthUrl = item.optStringOrNull("depth_url")?.let(::normalizeServiceUrl)
+                            depthUrl = item.optStringOrNull("depth_url")?.let(::normalizeServiceUrl),
+                            id = item.optStringOrNull("id"),
+                            source = item.optStringOrNull("source"),
+                            provider = item.optStringOrNull("provider"),
+                            title = item.optStringOrNull("title"),
+                            status = item.optStringOrNull("status"),
+                            location = item.optStringOrNull("location"),
+                            capturedAt = item.optStringOrNull("captured_at"),
+                            description = item.optStringOrNull("description"),
+                            resolvedCity = item.optStringOrNull("resolved_city"),
+                            isCity = item.optBooleanOrNull("is_city"),
+                            sceneType = item.optStringOrNull("scene_type"),
+                            weather = item.optStringOrNull("weather")
                         )
                     )
                 }
@@ -240,7 +252,23 @@ class RemoveSkyProvider(
                     season = item.optStringOrNull("season"),
                     exifLatitude = item.optDoubleOrNull("exif_lat"),
                     exifLongitude = item.optDoubleOrNull("exif_lon"),
-                    depthUrl = item.optStringOrNull("depth_url")?.let(::normalizeServiceUrl)
+                    depthUrl = item.optStringOrNull("depth_url")?.let(::normalizeServiceUrl),
+                    id = item.optStringOrNull("id"),
+                    source = item.optStringOrNull("source"),
+                    provider = item.optStringOrNull("provider"),
+                    title = item.optStringOrNull("title"),
+                    pageUrl = item.optStringOrNull("page_url")?.let(::normalizeServiceUrl),
+                    ownerName = item.optStringOrNull("owner_name"),
+                    license = item.optStringOrNull("license"),
+                    processedLocation = item.optStringOrNull("processed_location"),
+                    status = item.optStringOrNull("status"),
+                    location = item.optStringOrNull("location"),
+                    capturedAt = item.optStringOrNull("captured_at"),
+                    description = item.optStringOrNull("description"),
+                    resolvedCity = item.optStringOrNull("resolved_city"),
+                    isCity = item.optBooleanOrNull("is_city"),
+                    sceneType = item.optStringOrNull("scene_type"),
+                    weather = item.optStringOrNull("weather")
                 )
             }
         }
@@ -266,7 +294,23 @@ class RemoveSkyProvider(
                 season = item.optStringOrNull("season"),
                 exifLatitude = item.optDoubleOrNull("exif_lat"),
                 exifLongitude = item.optDoubleOrNull("exif_lon"),
-                depthUrl = uploadResult.second
+                depthUrl = uploadResult.second,
+                id = item.optStringOrNull("id"),
+                source = item.optStringOrNull("source"),
+                provider = item.optStringOrNull("provider"),
+                title = item.optStringOrNull("title"),
+                pageUrl = item.optStringOrNull("page_url")?.let(::normalizeServiceUrl),
+                ownerName = item.optStringOrNull("owner_name"),
+                license = item.optStringOrNull("license"),
+                processedLocation = item.optStringOrNull("processed_location"),
+                status = item.optStringOrNull("status"),
+                location = item.optStringOrNull("location"),
+                capturedAt = item.optStringOrNull("captured_at"),
+                description = item.optStringOrNull("description"),
+                resolvedCity = item.optStringOrNull("resolved_city"),
+                isCity = item.optBooleanOrNull("is_city"),
+                sceneType = item.optStringOrNull("scene_type"),
+                weather = item.optStringOrNull("weather")
             )
         }
         null
@@ -371,11 +415,11 @@ class RemoveSkyProvider(
 
         /**
          * Upper bound when fetching all enabled URLs for a location to prune the local cache
-         * or check for new ones. The `/search` endpoint rejects `limit` above 25 with a 400
-         * (confirmed against the RemoveSky v0.3.1 API), so anything higher silently breaks
-         * every caller of [fetchEnabledPhotos] by making the whole request fail.
+         * or check for new ones. Must stay <= the server's `REMOVESKY_SEARCH_MAX_LIMIT` (200 by
+         * default) — the `/search` endpoint rejects a higher `limit` with a 400, which would
+         * break every caller of [fetchEnabledPhotos].
          */
-        private const val MAX_ENABLED_URLS = 25
+        private const val MAX_ENABLED_URLS = 200
         private const val USER_AGENT =
             "LiveWallpaperWeather/1.0 (https://github.com/strammermax/breezy-weather; " +
                 "based on Breezy Weather)"
@@ -405,6 +449,20 @@ data class RemoveSkyEnabledPhoto(
     val exifLongitude: Double? = null,
     /** Depth map URL (grayscale PNG, 255=near, 0=far). Null if not yet generated. */
     val depthUrl: String? = null,
+    val id: String? = null,
+    val source: String? = null,
+    val provider: String? = null,
+    val title: String? = null,
+    val status: String? = null,
+    val location: String? = null,
+    val capturedAt: String? = null,
+    val description: String? = null,
+    val resolvedCity: String? = null,
+    val isCity: Boolean? = null,
+    /** Not yet populated by RemoveSky (no scene classifier exists server-side). Null for now. */
+    val sceneType: String? = null,
+    /** Not yet populated by RemoveSky (no weather classifier exists server-side). Null for now. */
+    val weather: String? = null,
 )
 
 class RemoveSkyHttpException(

@@ -45,6 +45,38 @@ data class ImageResult(
      * so cloud animations can appear to fly between scene elements. Null if not yet generated.
      */
     val depthUrl: String? = null,
+    /** Result id as reported by the provider, e.g. "local-3056". Null if unknown. */
+    val id: String? = null,
+    /** Provider source key, e.g. "local", "mediawiki", "flickr". Null if unknown. */
+    val source: String? = null,
+    /** Human-readable provider name, e.g. "lokale database". Null if unknown. */
+    val provider: String? = null,
+    /** Photo title as reported by the provider. Null if unknown. */
+    val title: String? = null,
+    /** Page the photo was sourced from (e.g. Wikimedia file page). Null if unknown. */
+    val pageUrl: String? = null,
+    /** Owner/photographer credited by the provider. Null if unknown. */
+    val ownerName: String? = null,
+    /** License string as reported by the provider, e.g. "CC-BY-SA-4.0". Null if unknown. */
+    val license: String? = null,
+    /** RemoveSky's resolved place name for the match. Null if unknown. */
+    val processedLocation: String? = null,
+    /** "enabled"/"disabled" — whether RemoveSky currently serves this photo. Null if unknown. */
+    val status: String? = null,
+    /** Raw `location` field the record was matched/stored under. Null if unknown. */
+    val location: String? = null,
+    /** ISO timestamp the photo was taken, from EXIF. Null if unknown. */
+    val capturedAt: String? = null,
+    /** Free-text description RemoveSky stored for the record. Null if unknown. */
+    val description: String? = null,
+    /** Nearest known city RemoveSky resolved the coordinates to. Null if unknown. */
+    val resolvedCity: String? = null,
+    /** Whether RemoveSky classified the scene as a city/urban shot. Null if unknown. */
+    val isCity: Boolean? = null,
+    /** Not yet populated by RemoveSky (no scene classifier exists server-side). Null for now. */
+    val sceneType: String? = null,
+    /** Not yet populated by RemoveSky (no weather classifier exists server-side). Null for now. */
+    val weather: String? = null,
 )
 
 /**

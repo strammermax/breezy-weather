@@ -18,7 +18,22 @@ CREATE TABLE wallpaper_photos(
     country TEXT,
     season TEXT,
     exif_lat REAL,
-    exif_lon REAL
+    exif_lon REAL,
+    source TEXT,
+    provider_name TEXT,
+    title TEXT,
+    page_url TEXT,
+    owner_name TEXT,
+    license TEXT,
+    processed_location TEXT,
+    status TEXT,
+    source_location TEXT,
+    captured_at TEXT,
+    description TEXT,
+    resolved_city TEXT,
+    is_city INTEGER AS Boolean,
+    scene_type TEXT,
+    weather TEXT
 );
 
 CREATE INDEX wallpaper_photos_location_idx ON wallpaper_photos(location_key);
@@ -44,12 +59,18 @@ upsertDownloaded:
 INSERT INTO wallpaper_photos(
     id, source_url, location_key, location_name, file_path, attribution, processed,
     rating, disabled, view_count, created_at, updated_at, last_shown_at,
-    day_period, country, season, exif_lat, exif_lon
+    day_period, country, season, exif_lat, exif_lon,
+    source, provider_name, title, page_url, owner_name, license, processed_location,
+    status, source_location, captured_at, description, resolved_city, is_city,
+    scene_type, weather
 )
 VALUES (
     :id, :sourceUrl, :locationKey, :locationName, :filePath, :attribution, :processed,
     0, 0, 0, :now, :now, NULL,
-    :dayPeriod, :country, :season, :exifLat, :exifLon
+    :dayPeriod, :country, :season, :exifLat, :exifLon,
+    :source, :providerName, :title, :pageUrl, :ownerName, :license, :processedLocation,
+    :status, :sourceLocation, :capturedAt, :description, :resolvedCity, :isCity,
+    :sceneType, :weather
 )
 ON CONFLICT(id) DO UPDATE SET
     source_url = coalesce(excluded.source_url, source_url),
@@ -63,7 +84,22 @@ ON CONFLICT(id) DO UPDATE SET
     country = coalesce(excluded.country, country),
     season = coalesce(excluded.season, season),
     exif_lat = coalesce(excluded.exif_lat, exif_lat),
-    exif_lon = coalesce(excluded.exif_lon, exif_lon);
+    exif_lon = coalesce(excluded.exif_lon, exif_lon),
+    source = coalesce(excluded.source, source),
+    provider_name = coalesce(excluded.provider_name, provider_name),
+    title = coalesce(excluded.title, title),
+    page_url = coalesce(excluded.page_url, page_url),
+    owner_name = coalesce(excluded.owner_name, owner_name),
+    license = coalesce(excluded.license, license),
+    processed_location = coalesce(excluded.processed_location, processed_location),
+    status = coalesce(excluded.status, status),
+    source_location = coalesce(excluded.source_location, source_location),
+    captured_at = coalesce(excluded.captured_at, captured_at),
+    description = coalesce(excluded.description, description),
+    resolved_city = coalesce(excluded.resolved_city, resolved_city),
+    is_city = coalesce(excluded.is_city, is_city),
+    scene_type = coalesce(excluded.scene_type, scene_type),
+    weather = coalesce(excluded.weather, weather);
 
 setRating:
 UPDATE wallpaper_photos
