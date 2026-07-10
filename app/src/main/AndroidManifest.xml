@@ -648,6 +648,16 @@
             android:foregroundServiceType="dataSync|shortService"
             tools:node="merge" />
 
+        <!-- Receives RemoveSky's "purge this photo now" push; see
+             wallpaper/photo/RemoveSkyMessagingService.kt and docs/UpdateFLow.md flow 5. -->
+        <service
+            android:name=".wallpaper.photo.RemoveSkyMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
         <provider
             android:name=".background.provider.WeatherContentProvider"
             android:authorities="${applicationId}.provider.weather"

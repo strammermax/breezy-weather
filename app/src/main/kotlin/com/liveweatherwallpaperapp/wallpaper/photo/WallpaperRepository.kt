@@ -95,6 +95,12 @@ class WallpaperRepository @Inject constructor(
 
     suspend fun removeSkyHealthStatus(): String? = removeSkyProvider().healthStatus()
 
+    /** See [RemoveSkyProvider.registerFcmToken]. */
+    suspend fun registerFcmToken(token: String): Boolean = removeSkyProvider().registerFcmToken(token)
+
+    /** See [RemoveSkyProvider.normalizeServiceUrl]. */
+    fun normalizeServiceUrl(url: String): String = removeSkyProvider().normalizeServiceUrl(url)
+
     private fun removeSkyProvider(excludedUrls: Set<String> = emptySet()) =
         RemoveSkyProvider(store.removeSkyBaseUrl, client, excludedUrls)
 
@@ -335,6 +341,42 @@ class WallpaperRepository @Inject constructor(
     }
 
     /**
+     * Immediately removes every cached photo whose source URL is in [urls] -- called by
+     * [RemoveSkyMessagingService] when RemoveSky pushes a curator soft-delete/disable, so
+     * the app doesn't have to wait for its next [pruneDisabledPhotos]/[checkForNewPhotos]
+     * poll to stop showing it (see docs/UpdateFLow.md flow 5, child-safety).
+     */
+    suspend fun purgeUrls(urls: Collection<String>) = withContext(Dispatchers.IO) {
+        if (urls.isEmpty()) return@withContext
+        val urlSet = urls.toSet()
+        synchronizePhotoCatalog()
+        var matched = 0
+        for (photo in photoCatalog.getAll()) {
+            val url = photo.sourceUrl ?: continue
+            if (url !in urlSet) continue
+            matched++
+            photo.filePath?.let { path ->
+                val file = File(path)
+                file.delete()
+                depthFileFor(file, url)?.delete()
+            }
+            photoCatalog.setDisabled(photo.id, true)
+            photoCatalog.clearFilePath(photo.id)
+        }
+        android.util.Log.d("RemoveSkyMessaging", "purgeUrls: $matched/${urlSet.size} matched a cached photo")
+        val activeUrl = store.cachedPhotoUrl
+        if (activeUrl != null && activeUrl in urlSet) {
+            store.cachedPhotoPath?.let { File(it).delete() }
+            store.cachedDepthMapPath?.let { File(it).delete() }
+            store.deactivatePhoto()
+        }
+        store.allRecentUrls().forEach { (placeKey, recent) ->
+            val kept = recent.filterNot { it in urlSet }
+            if (kept != recent) store.setRecentUrls(placeKey, kept)
+        }
+    }
+
+    /**
      * Removes cached photos for [place] that RemoveSky no longer reports as `enabled`.
      * Returns true when the currently active photo for this place was removed (caller should
      * trigger a forced [refreshFor] to pick a replacement).
@@ -507,8 +549,17 @@ class WallpaperRepository @Inject constructor(
     private fun depthCacheFile(place: PlaceQuery, url: String): File {
         val placeName = place.cacheFileName().substringBeforeLast('.')
         val locationDirectory = File(photoCacheDir(), placeName).apply { mkdirs() }
+        return depthFileInDir(locationDirectory, url)
+    }
+
+    /** Same naming convention as [depthCacheFile], keyed off an already-cached photo file's
+     * own parent directory rather than re-deriving it from a [PlaceQuery]. */
+    private fun depthFileFor(photoFile: File, url: String): File? =
+        photoFile.parentFile?.let { depthFileInDir(it, url) }
+
+    private fun depthFileInDir(directory: File, url: String): File {
         val ext = if (url.endsWith(".webp", ignoreCase = true)) "webp" else "png"
-        return File(locationDirectory, "${url.sha256Prefix()}_depth.$ext")
+        return File(directory, "${url.sha256Prefix()}_depth.$ext")
     }
 
     fun hasCachedPhoto(): Boolean {

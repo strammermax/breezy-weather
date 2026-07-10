@@ -17,6 +17,7 @@ plugins {
     kotlin("plugin.serialization")
     id("com.mikepenz.aboutlibraries.plugin.android")
     id("com.github.triplet.play")
+    id("com.google.gms.google-services")
 }
 
 val supportedAbi = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
@@ -537,6 +538,11 @@ dependencies {
     // LiveWallpaperWeather: on-device sky segmentation (DeepLab Cityscapes) for the
     // transparent-sky live wallpaper, so weather animations show through the sky.
     implementation(libs.tensorflow.lite)
+
+    // LiveWallpaperWeather: FCM push so RemoveSky curator deletions/disables reach the
+    // app within seconds instead of waiting for the next WallpaperPhotoRefreshWorker tick.
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
 
     implementation(libs.core.ktx)
     implementation(libs.appcompat)

@@ -33,7 +33,12 @@ import com.liveweatherwallpaperapp.common.utils.AndroidSignatureFinder
 import com.liveweatherwallpaperapp.common.utils.helpers.LogHelper
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.remoteviews.Notifications
+import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -76,6 +81,9 @@ class BreezyWeather : Application(), Configuration.Provider {
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
+    @Inject
+    lateinit var wallpaperRepository: WallpaperRepository
+
     override fun onCreate() {
         super.onCreate()
 
@@ -95,6 +103,28 @@ class BreezyWeather : Application(), Configuration.Provider {
          * scheduled workers after the app has been killed/shutdown on some devices
          */
         this.workManager.getWorkInfosLiveData(WorkQuery.fromStates(WorkInfo.State.ENQUEUED))
+
+        registerFcmToken()
+    }
+
+    /**
+     * Sends this device's current FCM token to RemoveSky on every start (a plain idempotent
+     * upsert server-side, see app/dao/fcm_dao.py) so curator deletions/disables reach it via
+     * push instead of waiting for the next poll -- see
+     * com.liveweatherwallpaperapp.wallpaper.photo.RemoveSkyMessagingService and
+     * docs/UpdateFLow.md flow 5. [RemoveSkyMessagingService.onNewToken] covers later
+     * rotations of the same token.
+     */
+    private fun registerFcmToken() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            val token = if (task.isSuccessful) task.result else null
+            android.util.Log.d("RemoveSkyMessaging", "fetched token: ${token?.take(12)}... success=${task.isSuccessful}")
+            if (token.isNullOrBlank()) return@addOnCompleteListener
+            CoroutineScope(Dispatchers.IO).launch {
+                val ok = wallpaperRepository.registerFcmToken(token)
+                android.util.Log.d("RemoveSkyMessaging", "registerFcmToken on start result: $ok")
+            }
+        }
     }
 
     fun addActivity(a: BreezyActivity) {

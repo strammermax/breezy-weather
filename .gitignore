@@ -58,4 +58,5 @@ docs/testfotos/
 *.keystore
 keystore.properties
 play-service-account.json
+app/google-services.json
 docs/~$*.xlsx

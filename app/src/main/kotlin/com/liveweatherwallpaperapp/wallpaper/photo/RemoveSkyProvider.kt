@@ -24,6 +24,7 @@ import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -377,6 +378,29 @@ class RemoveSkyProvider(
         null
     }
 
+    /**
+     * Registers (or refreshes) this device's FCM token with RemoveSky, so it receives an
+     * immediate push when a curator soft-deletes/disables a photo (see
+     * [RemoveSkyMessagingService] and docs/UpdateFLow.md flow 5). Call on app start and
+     * again from FCM's onNewToken. Best-effort: returns false on any failure, caller just
+     * retries next time -- the polling fallback (fetchEnabledPhotos' `since`) still applies.
+     */
+    suspend fun registerFcmToken(token: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val json = JSONObject().put("token", token).toString()
+            val body = json.toRequestBody("application/json".toMediaTypeOrNull())
+            val request = Request.Builder()
+                .url("$apiBase/fcm/register")
+                .post(body)
+                .header("User-Agent", USER_AGENT)
+                .build()
+            client.newCall(request).execute().use { response -> response.isSuccessful }
+        } catch (e: Throwable) {
+            log("fcm register error: ${e.message}")
+            false
+        }
+    }
+
     private fun get(url: String): Request = Request.Builder()
         .url(url)
         .header("User-Agent", USER_AGENT)
@@ -407,7 +431,16 @@ class RemoveSkyProvider(
     private fun enc(value: String): String = URLEncoder.encode(value, "UTF-8")
 
     /** Keeps API-returned service URLs on the configured HTTPS origin behind a TLS proxy. */
-    private fun normalizeServiceUrl(url: String): String {
+    /**
+     * Rewrites [url]'s scheme/host/port to match this provider's configured [base] (when the
+     * host already matches, otherwise returns [url] unchanged). Used both when parsing a
+     * `/search` response and when normalizing a URL received via FCM push
+     * ([WallpaperRepository.normalizeServiceUrl]) -- the server can't always know its own
+     * public scheme (e.g. running plain HTTP behind a TLS-terminating proxy without
+     * `--proxy-headers`), so an `http://` vs `https://` mismatch must not break an exact
+     * URL match against a locally cached [photo.sourceUrl].
+     */
+    fun normalizeServiceUrl(url: String): String {
         if (url.isBlank()) return url
         val serviceBase = base.toHttpUrlOrNull() ?: return url
         val parsed = url.toHttpUrlOrNull() ?: serviceBase.resolve(url) ?: return url
