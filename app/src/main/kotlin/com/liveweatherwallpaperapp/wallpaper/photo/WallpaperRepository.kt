@@ -351,10 +351,12 @@ class WallpaperRepository @Inject constructor(
         val urlSet = urls.toSet()
         synchronizePhotoCatalog()
         var matched = 0
+        var activeLocationKey: String? = null
         for (photo in photoCatalog.getAll()) {
             val url = photo.sourceUrl ?: continue
             if (url !in urlSet) continue
             matched++
+            if (url == store.cachedPhotoUrl) activeLocationKey = photo.locationKey
             photo.filePath?.let { path ->
                 val file = File(path)
                 file.delete()
@@ -369,11 +371,53 @@ class WallpaperRepository @Inject constructor(
             store.cachedPhotoPath?.let { File(it).delete() }
             store.cachedDepthMapPath?.let { File(it).delete() }
             store.deactivatePhoto()
+
+            // The active wallpaper photo was just purged -- don't leave the screen on just
+            // the bare sky background until the next scheduled tick. Prefer an already-
+            // cached replacement for the same location; fall back to an immediate
+            // background refresh (fresh download) if nothing local is left.
+            val replacement = activeLocationKey?.let { locationKey ->
+                selectWallpaperPhoto(
+                    photoCatalog.getForLocation(locationKey).filter { photo ->
+                        photo.sourceUrl != null && photo.filePath?.let { File(it).isFile } == true
+                    },
+                    excludedUrls = urlSet,
+                )
+            }
+            if (replacement != null) {
+                activateCatalogPhoto(replacement, File(replacement.filePath!!))
+                android.util.Log.d("RemoveSkyMessaging", "activated cached replacement: ${replacement.id}")
+            } else {
+                android.util.Log.d("RemoveSkyMessaging", "no cached replacement left, triggering refresh")
+                WallpaperPhotoRefreshWorker.startNow(context)
+            }
         }
         store.allRecentUrls().forEach { (placeKey, recent) ->
             val kept = recent.filterNot { it in urlSet }
             if (kept != recent) store.setRecentUrls(placeKey, kept)
         }
+    }
+
+    /**
+     * Wipes every wallpaper photo (cache files, depth maps, and catalog rows) for [place] --
+     * call this when the user deletes that location from the weather app itself, so its
+     * photos don't linger orphaned in the cache/database forever.
+     */
+    suspend fun clearLocation(place: PlaceQuery) = withContext(Dispatchers.IO) {
+        val placeKey = place.cacheFileName()
+        val locationKey = placeKey.substringBeforeLast('.')
+
+        val activeUrl = store.cachedPhotoUrl
+        val wasActive = activeUrl != null && photoCatalog.getForLocation(locationKey).any { it.sourceUrl == activeUrl }
+        if (wasActive) {
+            store.cachedPhotoPath?.let { File(it).delete() }
+            store.cachedDepthMapPath?.let { File(it).delete() }
+            store.deactivatePhoto()
+        }
+
+        File(photoCacheDir(), locationKey).deleteRecursively()
+        photoCatalog.deleteForLocation(locationKey)
+        store.setRecentUrls(placeKey, emptyList())
     }
 
     /**

@@ -899,6 +899,13 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     lwwLog { "stale cachedPhotoPath $path, clearing" }
                     mWallpaperImageStore.cachedPhotoPath = null
                 }
+                // Without this, a photo purged via RemoveSkyMessagingService (curator
+                // delete/disable push) keeps being drawn from the stale mForeground bitmap
+                // forever, since nothing else ever clears it once cachedPhotoPath is gone.
+                if (mForeground != null) {
+                    mForeground = null
+                    mForegroundKey = null
+                }
                 lwwLog { "no cached photo; waiting for app data layer" }
                 return
             }

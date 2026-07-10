@@ -129,3 +129,6 @@ clearAllFilePaths:
 UPDATE wallpaper_photos
 SET file_path = NULL, updated_at = :now
 WHERE file_path IS NOT NULL;
+
+deleteForLocation:
+DELETE FROM wallpaper_photos WHERE location_key = :locationKey;

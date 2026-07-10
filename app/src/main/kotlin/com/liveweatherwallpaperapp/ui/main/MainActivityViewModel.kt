@@ -42,6 +42,8 @@ import com.liveweatherwallpaperapp.sources.RefreshHelper
 import com.liveweatherwallpaperapp.sources.SourceManager
 import com.liveweatherwallpaperapp.ui.main.utils.RefreshErrorType
 import com.liveweatherwallpaperapp.ui.main.utils.StatementManager
+import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
+import com.liveweatherwallpaperapp.wallpaper.photo.toWallpaperPlaceQuery
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -70,6 +72,7 @@ class MainActivityViewModel @Inject constructor(
     private val locationRepository: LocationRepository,
     private val weatherRepository: WeatherRepository,
     private val currentLocationStore: CurrentLocationStore,
+    private val wallpaperRepository: WallpaperRepository,
 ) : BreezyViewModel(application), WeatherRequestCallback {
 
     // flow
@@ -662,6 +665,11 @@ class MainActivityViewModel @Inject constructor(
             // it will fix by itself on next rewrite of the full location list
             locationRepository.delete(location.formattedId)
             // It cascades delete location parameters, weather and so on
+
+            // Not cascaded by the above: the wallpaper photo cache (files + catalog rows) for
+            // this location lives in its own store, keyed by a derived locationKey, not by
+            // formattedId -- without this it would linger orphaned forever.
+            wallpaperRepository.clearLocation(location.toWallpaperPlaceQuery())
         }
     }
 

@@ -167,6 +167,12 @@ class WallpaperPhotoRepository(
         wallpaper_photosQueries.clearAllFilePaths(now)
     }
 
+    /** Removes every catalog row for [locationKey] -- e.g. when the user deletes that
+     * location from the weather app, so its wallpaper photos don't linger orphaned. */
+    suspend fun deleteForLocation(locationKey: String) = handler.await {
+        wallpaper_photosQueries.deleteForLocation(locationKey)
+    }
+
     private fun map(
         id: String,
         sourceUrl: String?,
