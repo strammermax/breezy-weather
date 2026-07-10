@@ -242,6 +242,30 @@ class WallpaperImageStore(context: Context) {
         JSONObject()
     }
 
+    /**
+     * Server-side `checked_at` (ISO 8601, RemoveSky clock) from the last successful
+     * `/search`/enabled-photos response for [locationId], or null if never synced.
+     *
+     * Distinct from [photoRefreshedAtFor]: that one is this device's own epoch-millis
+     * throttle bookkeeping. This is the server's own clock, sent back as `since` on the next
+     * call so RemoveSky can answer "changed: false" (and skip re-sending the full photo
+     * list) when nothing changed for this location since then.
+     */
+    fun searchSinceFor(locationId: String): String? = searchSinceMap().optString(locationId).takeIf { it.isNotBlank() }
+
+    /** Records the server's `checked_at` from the last successful sync for [locationId]. */
+    fun setSearchSince(locationId: String, checkedAt: String) {
+        val map = searchSinceMap()
+        map.put(locationId, checkedAt)
+        config.edit().putString(KEY_SEARCH_SINCE, map.toString()).apply()
+    }
+
+    private fun searchSinceMap(): JSONObject = try {
+        config.getString(KEY_SEARCH_SINCE, null)?.let(::JSONObject) ?: JSONObject()
+    } catch (e: Throwable) {
+        JSONObject()
+    }
+
     companion object {
         private const val SP_NAME = "live_wallpaper_photo"
         private const val KEY_ENABLED = "photo_background_enabled"
@@ -255,6 +279,7 @@ class WallpaperImageStore(context: Context) {
         private const val KEY_RECENT_URLS = "recent_urls"
         private const val KEY_LOCATION_DATA = "location_data"
         private const val KEY_PHOTO_REFRESHED_AT = "photo_refreshed_at"
+        private const val KEY_SEARCH_SINCE = "search_since_checked_at"
         private const val KEY_REFRESH_INTERVAL_MINUTES = "photo_refresh_interval_minutes"
 
         /** File name used for the cached background bitmap inside the app files dir. */

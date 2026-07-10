@@ -340,9 +340,21 @@ class WallpaperRepository @Inject constructor(
      * trigger a forced [refreshFor] to pick a replacement).
      */
     suspend fun pruneDisabledPhotos(latitude: Double, longitude: Double, place: PlaceQuery): Boolean {
-        val enabledPhotos = removeSkyProvider().fetchEnabledPhotos(latitude, longitude) ?: return false
-        val enabled = enabledPhotos.mapTo(HashSet()) { it.url }
         val placeKey = place.cacheFileName()
+        val locationKey = placeKey.substringBeforeLast('.')
+        val since = store.searchSinceFor(locationKey)
+        val enabledPhotos = when (val result = removeSkyProvider().fetchEnabledPhotos(latitude, longitude, since)) {
+            is EnabledPhotosResult.Failed -> return false
+            is EnabledPhotosResult.Unchanged -> {
+                result.checkedAt?.let { store.setSearchSince(locationKey, it) }
+                return false
+            }
+            is EnabledPhotosResult.Success -> {
+                result.checkedAt?.let { store.setSearchSince(locationKey, it) }
+                result.photos
+            }
+        }
+        val enabled = enabledPhotos.mapTo(HashSet()) { it.url }
 
         // 1. Trim recent-URL history to only still-enabled URLs.
         val recent = store.recentUrlsFor(placeKey)
@@ -386,8 +398,18 @@ class WallpaperRepository @Inject constructor(
         val locationKey = placeKey.substringBeforeLast('.')
         synchronizePhotoCatalog()
 
-        val enabledPhotos = removeSkyProvider().fetchEnabledPhotos(latitude, longitude)
-            ?: return CheckForNewPhotosResult.REQUEST_FAILED
+        val since = store.searchSinceFor(locationKey)
+        val enabledPhotos = when (val result = removeSkyProvider().fetchEnabledPhotos(latitude, longitude, since)) {
+            is EnabledPhotosResult.Failed -> return CheckForNewPhotosResult.REQUEST_FAILED
+            is EnabledPhotosResult.Unchanged -> {
+                result.checkedAt?.let { store.setSearchSince(locationKey, it) }
+                return CheckForNewPhotosResult.NONE_FOUND
+            }
+            is EnabledPhotosResult.Success -> {
+                result.checkedAt?.let { store.setSearchSince(locationKey, it) }
+                result.photos
+            }
+        }
         val known = photoCatalog.getForLocation(locationKey).mapNotNullTo(HashSet()) { it.sourceUrl }
         val newPhoto = enabledPhotos.firstOrNull { it.url !in known } ?: return CheckForNewPhotosResult.NONE_FOUND
 

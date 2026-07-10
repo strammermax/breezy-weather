@@ -71,45 +71,59 @@ class RemoveSkyProvider(
 
     /**
      * Returns every currently `enabled` processed photo (URL plus day/country/season metadata)
-     * RemoveSky knows for this location, or null when the request failed (caller must then skip
-     * pruning/diffing — a failed request is not evidence that images were disabled or absent).
+     * RemoveSky knows for this location.
+     *
+     * Pass the `checkedAt` from a previous [EnabledPhotosResult] as [since] to let RemoveSky
+     * answer with [EnabledPhotosResult.Unchanged] (no photo list, just a fresh `checked_at`)
+     * when nothing changed for this location since then — the caller then skips
+     * pruning/diffing entirely instead of re-downloading and re-comparing the full list on
+     * every call. Omit [since] for a first-ever fetch of a location.
      */
-    suspend fun fetchEnabledPhotos(latitude: Double, longitude: Double): List<RemoveSkyEnabledPhoto>? =
-        withContext(Dispatchers.IO) {
-            val url = "$apiBase/search?source=local&limit=$MAX_ENABLED_URLS&lat=$latitude&lon=$longitude"
-            val results = search(url) ?: return@withContext null
-            buildList {
-                for (i in 0 until results.length()) {
-                    val item = results.getJSONObject(i)
-                    val processedUrl = normalizeServiceUrl(item.optString("processed_url"))
-                    if (processedUrl.isBlank()) continue
-                    add(
-                        RemoveSkyEnabledPhoto(
-                            url = processedUrl,
-                            attribution = attributionOf(item),
-                            dayPeriod = item.optStringOrNull("day_period"),
-                            country = item.optStringOrNull("country"),
-                            season = item.optStringOrNull("season"),
-                            exifLatitude = item.optDoubleOrNull("exif_lat"),
-                            exifLongitude = item.optDoubleOrNull("exif_lon"),
-                            depthUrl = item.optStringOrNull("depth_url")?.let(::normalizeServiceUrl),
-                            id = item.optStringOrNull("id"),
-                            source = item.optStringOrNull("source"),
-                            provider = item.optStringOrNull("provider"),
-                            title = item.optStringOrNull("title"),
-                            status = item.optStringOrNull("status"),
-                            location = item.optStringOrNull("location"),
-                            capturedAt = item.optStringOrNull("captured_at"),
-                            description = item.optStringOrNull("description"),
-                            resolvedCity = item.optStringOrNull("resolved_city"),
-                            isCity = item.optBooleanOrNull("is_city"),
-                            sceneType = item.optStringOrNull("scene_type"),
-                            weather = item.optStringOrNull("weather")
-                        )
+    suspend fun fetchEnabledPhotos(
+        latitude: Double,
+        longitude: Double,
+        since: String? = null,
+    ): EnabledPhotosResult = withContext(Dispatchers.IO) {
+        val sinceParam = since?.let { "&since=${enc(it)}" }.orEmpty()
+        val url = "$apiBase/search?source=local&limit=$MAX_ENABLED_URLS&lat=$latitude&lon=$longitude$sinceParam"
+        val json = searchRaw(url) ?: return@withContext EnabledPhotosResult.Failed
+        if (json.has("changed") && !json.optBoolean("changed", true)) {
+            return@withContext EnabledPhotosResult.Unchanged(json.optStringOrNull("checked_at"))
+        }
+        val results = json.optJSONArray("results") ?: return@withContext EnabledPhotosResult.Failed
+        val photos = buildList {
+            for (i in 0 until results.length()) {
+                val item = results.getJSONObject(i)
+                val processedUrl = normalizeServiceUrl(item.optString("processed_url"))
+                if (processedUrl.isBlank()) continue
+                add(
+                    RemoveSkyEnabledPhoto(
+                        url = processedUrl,
+                        attribution = attributionOf(item),
+                        dayPeriod = item.optStringOrNull("day_period"),
+                        country = item.optStringOrNull("country"),
+                        season = item.optStringOrNull("season"),
+                        exifLatitude = item.optDoubleOrNull("exif_lat"),
+                        exifLongitude = item.optDoubleOrNull("exif_lon"),
+                        depthUrl = item.optStringOrNull("depth_url")?.let(::normalizeServiceUrl),
+                        id = item.optStringOrNull("id"),
+                        source = item.optStringOrNull("source"),
+                        provider = item.optStringOrNull("provider"),
+                        title = item.optStringOrNull("title"),
+                        status = item.optStringOrNull("status"),
+                        location = item.optStringOrNull("location"),
+                        capturedAt = item.optStringOrNull("captured_at"),
+                        description = item.optStringOrNull("description"),
+                        resolvedCity = item.optStringOrNull("resolved_city"),
+                        isCity = item.optBooleanOrNull("is_city"),
+                        sceneType = item.optStringOrNull("scene_type"),
+                        weather = item.optStringOrNull("weather")
                     )
-                }
+                )
             }
         }
+        EnabledPhotosResult.Success(photos, json.optStringOrNull("checked_at"))
+    }
 
     /**
      * Runs RemoveSky's suitability diagnostics (sky-at-top, outdoor, color, GPS, date, season)
@@ -316,13 +330,16 @@ class RemoveSkyProvider(
         null
     }
 
-    private fun search(url: String): JSONArray? = try {
+    private fun search(url: String): JSONArray? = searchRaw(url)?.optJSONArray("results")
+
+    /** Parses the full `/search` response body, or null on a failed/errored request. */
+    private fun searchRaw(url: String): JSONObject? = try {
         val request = get(url)
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
                 null
             } else {
-                response.body?.string()?.let { JSONObject(it).optJSONArray("results") }
+                response.body?.string()?.let(::JSONObject)
             }
         }
     } catch (e: Throwable) {
@@ -464,6 +481,20 @@ data class RemoveSkyEnabledPhoto(
     /** Not yet populated by RemoveSky (no weather classifier exists server-side). Null for now. */
     val weather: String? = null,
 )
+
+/** Outcome of [RemoveSkyProvider.fetchEnabledPhotos]. */
+sealed class EnabledPhotosResult {
+    /** Fresh photo list for the location, with the server's `checked_at` for the next [since]. */
+    data class Success(val photos: List<RemoveSkyEnabledPhoto>, val checkedAt: String?) : EnabledPhotosResult()
+
+    /** Nothing changed for this location since the `since` that was sent — caller should skip
+     * pruning/diffing and just remember [checkedAt] as the new `since`. */
+    data class Unchanged(val checkedAt: String?) : EnabledPhotosResult()
+
+    /** Request failed — not evidence that images were disabled or absent; caller must skip
+     * pruning/diffing rather than treat this as an empty result. */
+    object Failed : EnabledPhotosResult()
+}
 
 class RemoveSkyHttpException(
     val statusCode: Int,
