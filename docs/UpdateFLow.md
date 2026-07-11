@@ -160,8 +160,12 @@ naar 200 in `config.py`). Handmatig aangepast naar 200 + service herstart.
 ---
 
 ## Nog openstaand
-- Flow 1.f.8: oplopende back-off bij lege zoekresultaten (nu nog een vaste 10 minuten).
 - `GET /removed` wordt nog niet door de app gebruikt (staat klaar voor eventueel
   toekomstig gebruik).
-- `attributionValue` in de Live-wallpaper-preview wordt nog niet live bijgewerkt door
-  `catalogChanged` (alleen foto/aantal/locatie) — kleine cosmetische inconsistentie.
+
+## Recent afgerond
+- ✅ Flow 1.f.8: oplopende back-off bij lege zoekresultaten (10m → 30m → 1u → daarna elke
+  6u, per locatie bijgehouden via `WallpaperImageStore.emptyRetryCountFor`, reset zodra
+  een refresh weer wél iets vindt).
+- ✅ `attributionValue` in de Live-wallpaper-preview wordt nu ook bijgewerkt door
+  `catalogChanged`, samen met foto/aantal/locatie.

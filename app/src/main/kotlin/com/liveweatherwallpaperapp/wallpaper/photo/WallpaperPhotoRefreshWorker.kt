@@ -111,13 +111,22 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                 )
                 if (file != null) {
                     store.setPhotoRefreshedAt(location.formattedId, now)
+                    store.clearEmptyRetryCount(location.formattedId)
                     refreshedCount++
                 } else {
                     skippedCount++
                     // Neither the cache nor the server had anything usable for the location that
                     // drives the active wallpaper photo: don't wait a full rotation interval,
                     // try again soon instead (e.g. a freshly-added location with no photos yet).
-                    if (isActivating) scheduleRetrySoon(context)
+                    // The delay escalates with repeated empty results (see RETRY_BACKOFF_MINUTES)
+                    // so a genuinely dead location doesn't get polled as aggressively forever.
+                    if (isActivating) {
+                        val attempt = store.incrementEmptyRetryCount(location.formattedId)
+                        val delayMinutes = WallpaperImageStore.RETRY_BACKOFF_MINUTES[
+                            (attempt - 1).coerceAtMost(WallpaperImageStore.RETRY_BACKOFF_MINUTES.lastIndex)
+                        ]
+                        scheduleRetrySoon(context, delayMinutes)
+                    }
                 }
             }
             if (BuildConfig.DEBUG) {
@@ -202,12 +211,13 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
          * One-off retry shortly after a rotation found nothing for the active location, instead
          * of waiting for the next full [WallpaperImageStore.photoRefreshIntervalMinutes] tick.
          * Replaces any already-scheduled retry so repeated empty results don't pile up.
+         * [delayMinutes] escalates with consecutive empty results -- see RETRY_BACKOFF_MINUTES.
          */
-        private fun scheduleRetrySoon(context: Context) {
+        private fun scheduleRetrySoon(context: Context, delayMinutes: Long) {
             val request = OneTimeWorkRequestBuilder<WallpaperPhotoRefreshWorker>()
                 .addTag(TAG)
                 .addTag(WORK_NAME_RETRY)
-                .setInitialDelay(WallpaperImageStore.RETRY_DELAY_MINUTES_ON_EMPTY, TimeUnit.MINUTES)
+                .setInitialDelay(delayMinutes, TimeUnit.MINUTES)
                 .build()
             context.workManager.enqueueUniqueWork(WORK_NAME_RETRY, ExistingWorkPolicy.REPLACE, request)
         }

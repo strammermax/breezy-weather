@@ -243,6 +243,37 @@ class WallpaperImageStore(context: Context) {
     }
 
     /**
+     * How many consecutive empty-result retries have happened for [locationId] (neither the
+     * cache nor the server had anything usable). Backs an escalating retry delay -- a
+     * fixed 10-minute retry forever would hammer a genuinely dead location (e.g. GPS in the
+     * middle of the ocean) just as often as a freshly-added one still catching up.
+     */
+    fun emptyRetryCountFor(locationId: String): Int = emptyRetryCountMap().optInt(locationId, 0)
+
+    fun incrementEmptyRetryCount(locationId: String): Int {
+        val map = emptyRetryCountMap()
+        val next = map.optInt(locationId, 0) + 1
+        map.put(locationId, next)
+        config.edit().putString(KEY_EMPTY_RETRY_COUNT, map.toString()).apply()
+        return next
+    }
+
+    /** Call once a refresh actually succeeds for [locationId], so the next empty result
+     * starts the back-off over from the shortest delay again. */
+    fun clearEmptyRetryCount(locationId: String) {
+        val map = emptyRetryCountMap()
+        if (!map.has(locationId)) return
+        map.remove(locationId)
+        config.edit().putString(KEY_EMPTY_RETRY_COUNT, map.toString()).apply()
+    }
+
+    private fun emptyRetryCountMap(): JSONObject = try {
+        config.getString(KEY_EMPTY_RETRY_COUNT, null)?.let(::JSONObject) ?: JSONObject()
+    } catch (e: Throwable) {
+        JSONObject()
+    }
+
+    /**
      * Server-side `checked_at` (ISO 8601, RemoveSky clock) from the last successful
      * `/search`/enabled-photos response for [locationId] + [purpose], or null if never synced.
      *
@@ -290,6 +321,7 @@ class WallpaperImageStore(context: Context) {
         private const val KEY_LOCATION_DATA = "location_data"
         private const val KEY_PHOTO_REFRESHED_AT = "photo_refreshed_at"
         private const val KEY_SEARCH_SINCE = "search_since_checked_at"
+        private const val KEY_EMPTY_RETRY_COUNT = "empty_retry_count"
         private const val KEY_REFRESH_INTERVAL_MINUTES = "photo_refresh_interval_minutes"
 
         /** File name used for the cached background bitmap inside the app files dir. */
@@ -308,7 +340,13 @@ class WallpaperImageStore(context: Context) {
         const val MAX_REFRESH_INTERVAL_MINUTES = 180
         const val REFRESH_INTERVAL_STEP_MINUTES = 15
 
-        /** Fixed retry delay used when a rotation finds nothing in cache or on the server. */
-        const val RETRY_DELAY_MINUTES_ON_EMPTY = 10L
+        /**
+         * Escalating retry delay used when a rotation finds nothing in cache or on the
+         * server, indexed by [emptyRetryCountFor] (capped at the last entry): 10m, 30m, 1h,
+         * then every 6h. A flat 10-minute retry forever would poll a genuinely empty
+         * location (e.g. GPS with nothing nearby) just as aggressively as a freshly-added
+         * one still catching up on its first background fill.
+         */
+        val RETRY_BACKOFF_MINUTES = longArrayOf(10L, 30L, 60L, 360L)
     }
 }

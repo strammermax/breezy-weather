@@ -224,6 +224,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 )
             }
             previewBitmapValue.value = bitmap
+            attributionValue.value = wallpaperImageStore.cachedPhotoAttribution.orEmpty()
             cachedPhotoCountValue.value = cacheStats.photoCount
             cachedPhotoBytesValue.value = cacheStats.totalBytes
             currentLocationValue.value = location?.city?.takeIf { it.isNotBlank() }
