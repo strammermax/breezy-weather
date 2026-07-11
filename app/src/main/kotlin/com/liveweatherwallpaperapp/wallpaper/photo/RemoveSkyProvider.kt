@@ -401,6 +401,25 @@ class RemoveSkyProvider(
         }
     }
 
+    /**
+     * Polls `/removed` for photos purged (curator soft-delete/disable) near (lat, lon)
+     * since [since] -- a startup-only reconciliation pass for purges possibly missed while
+     * the app was closed (FCM only reaches a running app; the periodic since/changed poll
+     * in [fetchEnabledPhotos] is the other fallback, but only runs on its own schedule).
+     * Returns (urls, checkedAt); urls are NOT normalized here, callers must run them through
+     * [normalizeServiceUrl] before matching against a cached photo's sourceUrl, same as a
+     * push payload.
+     */
+    suspend fun fetchRemoved(latitude: Double, longitude: Double, since: String): Pair<List<String>, String?> =
+        withContext(Dispatchers.IO) {
+            val url = "$apiBase/removed?lat=$latitude&lon=$longitude&since=${enc(since)}"
+            val json = searchRaw(url) ?: return@withContext emptyList<String>() to null
+            val urls = json.optJSONArray("removed_urls")?.let { arr ->
+                (0 until arr.length()).mapNotNull { arr.optString(it, null) }
+            }.orEmpty()
+            urls to json.optStringOrNull("checked_at")
+        }
+
     private fun get(url: String): Request = Request.Builder()
         .url(url)
         .header("User-Agent", USER_AGENT)

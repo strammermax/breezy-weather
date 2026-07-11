@@ -34,11 +34,13 @@ import com.liveweatherwallpaperapp.common.utils.helpers.LogHelper
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.remoteviews.Notifications
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
+import com.liveweatherwallpaperapp.wallpaper.photo.toWallpaperPlaceQuery
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import livewallpaperweather.data.location.LocationRepository
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -84,6 +86,9 @@ class BreezyWeather : Application(), Configuration.Provider {
     @Inject
     lateinit var wallpaperRepository: WallpaperRepository
 
+    @Inject
+    lateinit var locationRepository: LocationRepository
+
     override fun onCreate() {
         super.onCreate()
 
@@ -105,6 +110,23 @@ class BreezyWeather : Application(), Configuration.Provider {
         this.workManager.getWorkInfosLiveData(WorkQuery.fromStates(WorkInfo.State.ENQUEUED))
 
         registerFcmToken()
+        reconcileRemovalsOnStartup()
+    }
+
+    /**
+     * Startup-only check for curator deletions/disables missed while the app was closed
+     * (FCM only reaches a running app) -- see [WallpaperRepository.reconcileRemovals] and
+     * docs/UpdateFLow.md flow 5. Scoped to the active location only, matching how
+     * [WallpaperPhotoRefreshWorker] treats "the location driving the active wallpaper" as
+     * the one that matters most; the periodic since/changed poll remains the broader
+     * fallback for every tracked location.
+     */
+    private fun reconcileRemovalsOnStartup() {
+        CoroutineScope(Dispatchers.IO).launch {
+            if (!com.liveweatherwallpaperapp.wallpaper.photo.WallpaperImageStore(this@BreezyWeather).photoBackgroundEnabled) return@launch
+            val location = locationRepository.getFirstLocation(withParameters = false) ?: return@launch
+            wallpaperRepository.reconcileRemovals(location.latitude, location.longitude, location.toWallpaperPlaceQuery())
+        }
     }
 
     /**

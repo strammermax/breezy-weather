@@ -114,6 +114,29 @@ class WallpaperRepository @Inject constructor(
     /** See [RemoveSkyProvider.normalizeServiceUrl]. */
     fun normalizeServiceUrl(url: String): String = removeSkyProvider().normalizeServiceUrl(url)
 
+    /**
+     * Startup-only reconciliation: purges anything RemoveSky reports as removed near
+     * (latitude, longitude) since this location's last such check -- catches a curator
+     * delete/disable that happened while the app was closed (FCM push only reaches a
+     * running app) and that hasn't been caught yet by the periodic since/changed poll in
+     * [pruneDisabledPhotos]/[checkForNewPhotos] (which only run on their own schedule).
+     * Best-effort: silently does nothing on a failed request.
+     */
+    suspend fun reconcileRemovals(latitude: Double, longitude: Double, place: PlaceQuery) {
+        val locationKey = place.cacheFileName().substringBeforeLast('.')
+        val since = store.searchSinceFor(locationKey, REMOVED_SINCE_PURPOSE) ?: return reconcileRemovalsFirstRun(locationKey)
+        val (urls, checkedAt) = removeSkyProvider().fetchRemoved(latitude, longitude, since)
+        if (checkedAt != null) store.setSearchSince(locationKey, REMOVED_SINCE_PURPOSE, checkedAt)
+        if (urls.isNotEmpty()) purgeUrls(urls.map { normalizeServiceUrl(it) })
+    }
+
+    /** First-ever check for this location: nothing to reconcile yet, just record a
+     * starting point in time so the next call has a `since` to work with. */
+    private suspend fun reconcileRemovalsFirstRun(locationKey: String) {
+        val checkedAt = java.time.Instant.now().toString()
+        store.setSearchSince(locationKey, REMOVED_SINCE_PURPOSE, checkedAt)
+    }
+
     private fun removeSkyProvider(excludedUrls: Set<String> = emptySet()) =
         RemoveSkyProvider(store.removeSkyBaseUrl, client, excludedUrls)
 
@@ -876,6 +899,7 @@ class WallpaperRepository @Inject constructor(
         // WallpaperImageStore.searchSinceFor's kdoc for why these must not share one value.
         private const val PRUNE_SINCE_PURPOSE = "prune"
         private const val CHECK_NEW_SINCE_PURPOSE = "checkNew"
+        private const val REMOVED_SINCE_PURPOSE = "removedReconcile"
         private const val BYTES_PER_MB = 1024L * 1024L
         private const val USER_AGENT =
             "LiveWallpaperWeather/1.0 (https://github.com/strammermax/breezy-weather; " +
