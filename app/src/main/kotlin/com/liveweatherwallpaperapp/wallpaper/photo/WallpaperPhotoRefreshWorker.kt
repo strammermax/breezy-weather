@@ -36,6 +36,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CancellationException
 import livewallpaperweather.data.location.LocationRepository
+import livewallpaperweather.data.weather.WeatherRepository
 import livewallpaperweather.domain.location.model.Location
 import java.util.concurrent.TimeUnit
 
@@ -54,6 +55,7 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
     private val locationRepository: LocationRepository,
     private val wallpaperRepository: WallpaperRepository,
     private val wallpaperLocationResolver: WallpaperLocationResolver,
+    private val weatherRepository: WeatherRepository,
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
@@ -102,17 +104,27 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                     return@forEachIndexed
                 }
 
+                // Best-effort: a missing/stale weather fetch just means the showlist's weather
+                // tier is skipped (buildShowlist treats null as "don't filter on weather").
+                val currentWeather = weatherCodeToRemoveSkyWeather(
+                    weatherRepository.getWeatherByLocationId(location.formattedId)?.current?.weatherCode
+                )
+
                 val file = wallpaperRepository.refreshFor(
                     latitude = latitude,
                     longitude = longitude,
                     place = place,
                     forceRefresh = true,
-                    activate = isActivating || activeRemoved
+                    activate = isActivating || activeRemoved,
+                    currentWeather = currentWeather,
                 )
                 if (file != null) {
                     store.setPhotoRefreshedAt(location.formattedId, now)
                     store.clearEmptyRetryCount(location.formattedId)
                     refreshedCount++
+                    // Warms the cache for this location's *next* pick ahead of time -- best
+                    // effort, never blocks the current tick's activation on it.
+                    wallpaperRepository.prefetchShowlist(latitude, longitude, place, currentWeather)
                 } else {
                     skippedCount++
                     // Neither the cache nor the server had anything usable for the location that

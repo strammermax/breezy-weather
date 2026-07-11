@@ -118,7 +118,9 @@ class RemoveSkyProvider(
                         resolvedCity = item.optStringOrNull("resolved_city"),
                         isCity = item.optBooleanOrNull("is_city"),
                         sceneType = item.optStringOrNull("scene_type"),
-                        weather = item.optStringOrNull("weather")
+                        weather = item.optStringOrNull("weather"),
+                        resolvedLatitude = item.optDoubleOrNull("resolved_lat"),
+                        resolvedLongitude = item.optDoubleOrNull("resolved_lon")
                     )
                 )
             }
@@ -283,7 +285,9 @@ class RemoveSkyProvider(
                     resolvedCity = item.optStringOrNull("resolved_city"),
                     isCity = item.optBooleanOrNull("is_city"),
                     sceneType = item.optStringOrNull("scene_type"),
-                    weather = item.optStringOrNull("weather")
+                    weather = item.optStringOrNull("weather"),
+                    resolvedLatitude = item.optDoubleOrNull("resolved_lat"),
+                    resolvedLongitude = item.optDoubleOrNull("resolved_lon")
                 )
             }
         }
@@ -325,7 +329,9 @@ class RemoveSkyProvider(
                 resolvedCity = item.optStringOrNull("resolved_city"),
                 isCity = item.optBooleanOrNull("is_city"),
                 sceneType = item.optStringOrNull("scene_type"),
-                weather = item.optStringOrNull("weather")
+                weather = item.optStringOrNull("weather"),
+                resolvedLatitude = item.optDoubleOrNull("resolved_lat"),
+                resolvedLongitude = item.optDoubleOrNull("resolved_lon")
             )
         }
         null
@@ -528,10 +534,15 @@ data class RemoveSkyEnabledPhoto(
     val description: String? = null,
     val resolvedCity: String? = null,
     val isCity: Boolean? = null,
-    /** Not yet populated by RemoveSky (no scene classifier exists server-side). Null for now. */
+    /** "urban"/"rural"/etc., as classified by RemoveSky. Null if unknown. */
     val sceneType: String? = null,
-    /** Not yet populated by RemoveSky (no weather classifier exists server-side). Null for now. */
+    /** "sunny"/"cloudy"/"rain"/"snow"/"windy"/"hail", as classified by RemoveSky. Null if unknown. */
     val weather: String? = null,
+    /** RemoveSky's resolved location coordinates (city/place center) -- distinct from
+     * [exifLatitude]/[exifLongitude] (the photo's own EXIF GPS, often absent). Used as the
+     * distance fallback when EXIF GPS is unknown. Null if unknown. */
+    val resolvedLatitude: Double? = null,
+    val resolvedLongitude: Double? = null,
 )
 
 /** Outcome of [RemoveSkyProvider.fetchEnabledPhotos]. */

@@ -59,10 +59,15 @@ data class WallpaperPhotoRecord(
     val resolvedCity: String? = null,
     /** Whether RemoveSky classified the scene as a city/urban shot. Null if unknown. */
     val isCity: Boolean? = null,
-    /** Not yet populated by RemoveSky (no scene classifier exists server-side). Null for now. */
+    /** "urban"/"rural"/etc., as classified by RemoveSky. Null if unknown. */
     val sceneType: String? = null,
-    /** Not yet populated by RemoveSky (no weather classifier exists server-side). Null for now. */
+    /** "sunny"/"cloudy"/"rain"/"snow"/"windy"/"hail", as classified by RemoveSky. Null if unknown. */
     val weather: String? = null,
+    /** RemoveSky's resolved location coordinates (city/place center) -- distinct from
+     * [exifLat]/[exifLon] (the photo's own EXIF GPS, often absent for curated landscape
+     * photos). Used as the distance fallback when EXIF GPS is unknown. Null if unknown. */
+    val resolvedLat: Double? = null,
+    val resolvedLon: Double? = null,
 )
 
 class WallpaperPhotoRepository(
@@ -112,6 +117,8 @@ class WallpaperPhotoRepository(
         isCity: Boolean? = null,
         sceneType: String? = null,
         weather: String? = null,
+        resolvedLat: Double? = null,
+        resolvedLon: Double? = null,
         now: Long = System.currentTimeMillis(),
     ) = handler.await {
         wallpaper_photosQueries.upsertDownloaded(
@@ -142,6 +149,8 @@ class WallpaperPhotoRepository(
             isCity = isCity,
             sceneType = sceneType,
             weather = weather,
+            resolvedLat = resolvedLat,
+            resolvedLon = resolvedLon,
             now = now
         )
     }
@@ -211,6 +220,8 @@ class WallpaperPhotoRepository(
         isCity: Boolean?,
         sceneType: String?,
         weather: String?,
+        resolvedLat: Double?,
+        resolvedLon: Double?,
     ) = WallpaperPhotoRecord(
         id = id,
         sourceUrl = sourceUrl,
@@ -244,6 +255,8 @@ class WallpaperPhotoRepository(
         resolvedCity = resolvedCity,
         isCity = isCity,
         sceneType = sceneType,
-        weather = weather
+        weather = weather,
+        resolvedLat = resolvedLat,
+        resolvedLon = resolvedLon
     )
 }

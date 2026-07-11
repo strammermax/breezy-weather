@@ -12,6 +12,7 @@ import com.liveweatherwallpaperapp.wallpaper.CelestialTiming
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSeasonGrading
 import livewallpaperweather.data.wallpaper.WallpaperPhotoRecord
 import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.reference.WeatherCode
 import java.time.Instant
 import java.time.ZoneId
 import kotlin.math.atan2
@@ -83,14 +84,101 @@ internal fun dayNightMatches(photo: WallpaperPhotoRecord, isNight: Boolean): Boo
     (photo.dayPeriod == "night") == isNight
 
 /**
- * Distance in km from [photo]'s own EXIF GPS to [latitude]/[longitude], or [Double.MAX_VALUE]
- * when unknown so it always sorts last in this tier rather than competing with real distances.
+ * Distance in km from [photo]'s location to [latitude]/[longitude], or [Double.MAX_VALUE] when
+ * unknown so it always sorts last in this tier rather than competing with real distances.
+ * Prefers the photo's own EXIF GPS (where the camera was); falls back to RemoveSky's resolved
+ * place coordinates (city/place center) since most curated landscape photos have no EXIF GPS
+ * at all.
  */
 internal fun gpsDistanceKmOrWorst(photo: WallpaperPhotoRecord, latitude: Double, longitude: Double): Double {
-    val photoLat = photo.exifLat ?: return Double.MAX_VALUE
-    val photoLon = photo.exifLon ?: return Double.MAX_VALUE
+    val photoLat = photo.exifLat ?: photo.resolvedLat ?: return Double.MAX_VALUE
+    val photoLon = photo.exifLon ?: photo.resolvedLon ?: return Double.MAX_VALUE
     return haversineKm(photoLat, photoLon, latitude, longitude)
 }
+
+/**
+ * Builds a showlist of at least [minSize] unique candidates among [photos] for this location,
+ * in priority order, via an escalating fallback ladder -- unlike [selectWallpaperPhoto]'s
+ * strict single-pass tiering, this widens the search (radius, then filters) only as far as
+ * needed to reach [minSize], so a location with plenty of matching photos never has to fall
+ * back to a looser match just because the ladder "ran the full course".
+ *
+ * Ladder (each step keeps day/night matching and non-disabled, always): radius 1/2/5 km with
+ * season+weather required, then radius 1/2/5 km dropping weather, then radius 1/2/5 km dropping
+ * season, then radius 1/2/5 km dropping both. Stops as soon as [minSize] is reached. Within each
+ * step, matches are ordered thumbs-up-not-down first, newest first, least-viewed first --
+ * matching the priority [selectWallpaperPhoto] uses standalone.
+ *
+ * [currentWeather] should already be RemoveSky's vocabulary (see [weatherCodeToRemoveSkyWeather])
+ * -- pass null to skip weather matching entirely (e.g. weather data not available yet).
+ */
+internal fun buildShowlist(
+    photos: List<WallpaperPhotoRecord>,
+    excludedUrls: Set<String>,
+    latitude: Double,
+    longitude: Double,
+    currentWeather: String?,
+    now: Long = System.currentTimeMillis(),
+    minSize: Int = 6,
+): List<WallpaperPhotoRecord> {
+    val isNight = isCurrentlyNight(latitude, longitude, now)
+    val currentSeason = WallpaperSeasonGrading.seasonFor(
+        Instant.ofEpochMilli(now).atZone(ZoneId.systemDefault()).toLocalDate(),
+        latitude
+    ).name.lowercase()
+
+    val eligible = photos
+        .asSequence()
+        .filterNot { it.disabled }
+        .filterNot { it.sourceUrl != null && it.sourceUrl in excludedUrls }
+        .filter { dayNightMatches(it, isNight) }
+        .toList()
+
+    val radii = listOf(1.0, 2.0, 5.0)
+    val filterStages = listOf(
+        true to true, // season + weather required
+        false to true, // weather only
+        true to false, // season only
+        false to false, // neither (day/night is all that's left)
+    )
+
+    val result = mutableListOf<WallpaperPhotoRecord>()
+    val usedIds = mutableSetOf<String>()
+    for ((requireSeason, requireWeather) in filterStages) {
+        for (radiusKm in radii) {
+            if (result.size >= minSize) return result
+            val matches = eligible
+                .asSequence()
+                .filter { it.id !in usedIds }
+                .filter { gpsDistanceKmOrWorst(it, latitude, longitude) <= radiusKm }
+                .filter { !requireSeason || seasonTier(it, currentSeason) == 2 }
+                .filter { !requireWeather || currentWeather == null || it.weather == currentWeather }
+                .sortedWith(
+                    compareByDescending<WallpaperPhotoRecord> { it.rating != -1 }
+                        .thenByDescending { it.createdAt }
+                        .thenBy { it.viewCount }
+                )
+                .toList()
+            matches.forEach { usedIds += it.id }
+            result += matches
+        }
+    }
+    return result
+}
+
+/** Maps the app's live weather condition to RemoveSky's photo `weather` vocabulary (sunny,
+ * cloudy, rain, snow, windy, hail) for [buildShowlist]'s weather tier. Null for codes with no
+ * clean match (fog/haze/sleet/thunder...) -- better to skip the weather filter than guess wrong. */
+internal fun weatherCodeToRemoveSkyWeather(code: WeatherCode?): String? =
+    when (code) {
+        WeatherCode.CLEAR -> "sunny"
+        WeatherCode.PARTLY_CLOUDY, WeatherCode.CLOUDY -> "cloudy"
+        WeatherCode.RAIN -> "rain"
+        WeatherCode.SNOW -> "snow"
+        WeatherCode.WIND -> "windy"
+        WeatherCode.HAIL -> "hail"
+        else -> null
+    }
 
 private fun haversineKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
     val dLat = Math.toRadians(lat2 - lat1)

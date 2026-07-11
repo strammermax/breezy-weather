@@ -196,6 +196,7 @@ class WallpaperRepository @Inject constructor(
         place: PlaceQuery,
         forceRefresh: Boolean = false,
         activate: Boolean = true,
+        currentWeather: String? = null,
     ): File? {
         val placeKey = place.cacheFileName()
         val locationKey = placeKey.substringBeforeLast('.')
@@ -204,14 +205,18 @@ class WallpaperRepository @Inject constructor(
         tried.addAll(photoCatalog.getDisabledSourceUrls())
         if (forceRefresh) tried.addAll(store.recentUrlsFor(placeKey))
 
-        val cachedCandidate = selectWallpaperPhoto(
+        // buildShowlist's ladder (radius 1/2/5km, season+weather relaxed step by step) picks
+        // the best-ranked candidate first; selectWallpaperPhoto's plain single-pass tiering
+        // is still used standalone by tests/other callers that don't need the ladder.
+        val cachedCandidate = buildShowlist(
             photoCatalog.getForLocation(locationKey).filter { photo ->
                 photo.sourceUrl != null && photo.filePath?.let { File(it).isFile } == true
             },
             tried,
             latitude = latitude,
-            longitude = longitude
-        )
+            longitude = longitude,
+            currentWeather = currentWeather,
+        ).firstOrNull()
         if (cachedCandidate != null) {
             val cachedFile = File(cachedCandidate.filePath!!)
             cachedFile.setLastModified(System.currentTimeMillis())
@@ -270,7 +275,9 @@ class WallpaperRepository @Inject constructor(
                 resolvedCity = result.resolvedCity,
                 isCity = result.isCity,
                 sceneType = result.sceneType,
-                weather = result.weather
+                weather = result.weather,
+                resolvedLat = result.resolvedLatitude,
+                resolvedLon = result.resolvedLongitude
             )
             store.recordRecentUrl(placeKey, url)
             if (activate) {
@@ -574,11 +581,142 @@ class WallpaperRepository @Inject constructor(
             resolvedCity = newPhoto.resolvedCity,
             isCity = newPhoto.isCity,
             sceneType = newPhoto.sceneType,
-            weather = newPhoto.weather
+            weather = newPhoto.weather,
+            resolvedLat = newPhoto.resolvedLatitude,
+            resolvedLon = newPhoto.resolvedLongitude
         )
         pruneLocationCache(cacheFile.parentFile, cacheFile)
         prunePhotoCache(cacheFile)
         return CheckForNewPhotosResult.FOUND
+    }
+
+    /**
+     * Downloads up to [maxToDownload] of the best-ranked not-yet-cached candidates for [place]
+     * (per [buildShowlist]'s radius/season/weather ladder, ranked together with what's already
+     * cached so a genuinely better new candidate can still outrank a mediocre cached one)
+     * without activating any of them -- warms the cache ahead of time so the next
+     * [refreshFor] pick doesn't need an on-demand download. See docs/UpdateFLow.md flow 2/3
+     * step 3.0. Returns how many were actually downloaded (0 on a failed request too --
+     * best-effort, same as [pruneDisabledPhotos]/[checkForNewPhotos]).
+     */
+    suspend fun prefetchShowlist(
+        latitude: Double,
+        longitude: Double,
+        place: PlaceQuery,
+        currentWeather: String? = null,
+        maxToDownload: Int = 4,
+    ): Int {
+        val placeKey = place.cacheFileName()
+        val locationKey = placeKey.substringBeforeLast('.')
+        synchronizePhotoCatalog()
+
+        val since = store.searchSinceFor(locationKey, PREFETCH_SINCE_PURPOSE)
+        val enabledPhotos = when (val result = removeSkyProvider().fetchEnabledPhotos(latitude, longitude, since)) {
+            is EnabledPhotosResult.Failed -> return 0
+            is EnabledPhotosResult.Unchanged -> {
+                result.checkedAt?.let { store.setSearchSince(locationKey, PREFETCH_SINCE_PURPOSE, it) }
+                return 0
+            }
+            is EnabledPhotosResult.Success -> {
+                result.checkedAt?.let { store.setSearchSince(locationKey, PREFETCH_SINCE_PURPOSE, it) }
+                result.photos
+            }
+        }
+
+        val cachedRecords = photoCatalog.getForLocation(locationKey)
+        val knownUrls = cachedRecords.mapNotNullTo(HashSet()) { it.sourceUrl }
+        val now = System.currentTimeMillis()
+        val uncachedByUrl = enabledPhotos.filter { it.url !in knownUrls }.associateBy { it.url }
+        // Placeholder rows (filePath = null) just so buildShowlist can rank not-yet-downloaded
+        // candidates alongside already-cached ones on equal footing -- never persisted as-is.
+        val placeholders = uncachedByUrl.values.map { photo ->
+            WallpaperPhotoRecord(
+                id = photoId(photo.url),
+                sourceUrl = photo.url,
+                locationKey = locationKey,
+                locationName = place.displayName,
+                filePath = null,
+                attribution = photo.attribution,
+                processed = true,
+                rating = 0,
+                disabled = false,
+                viewCount = 0,
+                createdAt = now,
+                updatedAt = now,
+                lastShownAt = null,
+                dayPeriod = photo.dayPeriod,
+                country = photo.country,
+                season = photo.season,
+                exifLat = photo.exifLatitude,
+                exifLon = photo.exifLongitude,
+                sceneType = photo.sceneType,
+                weather = photo.weather,
+                resolvedLat = photo.resolvedLatitude,
+                resolvedLon = photo.resolvedLongitude,
+            )
+        }
+
+        val disabledUrls = photoCatalog.getDisabledSourceUrls()
+        val showlist = buildShowlist(
+            cachedRecords + placeholders,
+            excludedUrls = disabledUrls,
+            latitude = latitude,
+            longitude = longitude,
+            currentWeather = currentWeather,
+        )
+
+        var downloaded = 0
+        for (candidate in showlist) {
+            if (downloaded >= maxToDownload) break
+            if (candidate.filePath != null) continue // already cached, nothing to prefetch
+            val photo = uncachedByUrl[candidate.sourceUrl] ?: continue
+
+            val bitmap = downloadSkyBitmap(photo.url, alreadyProcessed = true) ?: continue
+            val cacheFile = cacheFile(place, photo.url)
+            try {
+                val written = cacheFile.outputStream().use {
+                    bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it)
+                }
+                if (!written) {
+                    cacheFile.delete()
+                    continue
+                }
+            } finally {
+                bitmap.recycle()
+            }
+            cacheFile.setLastModified(System.currentTimeMillis())
+            photoCatalog.upsertDownloaded(
+                id = photoId(photo.url),
+                sourceUrl = photo.url,
+                locationKey = locationKey,
+                locationName = place.displayName,
+                filePath = cacheFile.absolutePath,
+                attribution = photo.attribution,
+                processed = true,
+                dayPeriod = photo.dayPeriod,
+                country = photo.country,
+                season = photo.season,
+                exifLat = photo.exifLatitude,
+                exifLon = photo.exifLongitude,
+                source = photo.source,
+                providerName = photo.provider,
+                title = photo.title,
+                status = photo.status,
+                sourceLocation = photo.location,
+                capturedAt = photo.capturedAt,
+                description = photo.description,
+                resolvedCity = photo.resolvedCity,
+                isCity = photo.isCity,
+                sceneType = photo.sceneType,
+                weather = photo.weather,
+                resolvedLat = photo.resolvedLatitude,
+                resolvedLon = photo.resolvedLongitude
+            )
+            pruneLocationCache(cacheFile.parentFile, cacheFile)
+            prunePhotoCache(cacheFile)
+            downloaded++
+        }
+        return downloaded
     }
 
     /** Back-compatible overload taking a single place name. */
@@ -900,6 +1038,7 @@ class WallpaperRepository @Inject constructor(
         private const val PRUNE_SINCE_PURPOSE = "prune"
         private const val CHECK_NEW_SINCE_PURPOSE = "checkNew"
         private const val REMOVED_SINCE_PURPOSE = "removedReconcile"
+        private const val PREFETCH_SINCE_PURPOSE = "prefetch"
         private const val BYTES_PER_MB = 1024L * 1024L
         private const val USER_AGENT =
             "LiveWallpaperWeather/1.0 (https://github.com/strammermax/breezy-weather; " +

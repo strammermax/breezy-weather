@@ -33,7 +33,9 @@ CREATE TABLE wallpaper_photos(
     resolved_city TEXT,
     is_city INTEGER AS Boolean,
     scene_type TEXT,
-    weather TEXT
+    weather TEXT,
+    resolved_lat REAL,
+    resolved_lon REAL
 );
 
 CREATE INDEX wallpaper_photos_location_idx ON wallpaper_photos(location_key);
@@ -62,7 +64,7 @@ INSERT INTO wallpaper_photos(
     day_period, country, season, exif_lat, exif_lon,
     source, provider_name, title, page_url, owner_name, license, processed_location,
     status, source_location, captured_at, description, resolved_city, is_city,
-    scene_type, weather
+    scene_type, weather, resolved_lat, resolved_lon
 )
 VALUES (
     :id, :sourceUrl, :locationKey, :locationName, :filePath, :attribution, :processed,
@@ -70,7 +72,7 @@ VALUES (
     :dayPeriod, :country, :season, :exifLat, :exifLon,
     :source, :providerName, :title, :pageUrl, :ownerName, :license, :processedLocation,
     :status, :sourceLocation, :capturedAt, :description, :resolvedCity, :isCity,
-    :sceneType, :weather
+    :sceneType, :weather, :resolvedLat, :resolvedLon
 )
 ON CONFLICT(id) DO UPDATE SET
     source_url = coalesce(excluded.source_url, source_url),
@@ -99,7 +101,9 @@ ON CONFLICT(id) DO UPDATE SET
     resolved_city = coalesce(excluded.resolved_city, resolved_city),
     is_city = coalesce(excluded.is_city, is_city),
     scene_type = coalesce(excluded.scene_type, scene_type),
-    weather = coalesce(excluded.weather, weather);
+    weather = coalesce(excluded.weather, weather),
+    resolved_lat = coalesce(excluded.resolved_lat, resolved_lat),
+    resolved_lon = coalesce(excluded.resolved_lon, resolved_lon);
 
 setRating:
 UPDATE wallpaper_photos
