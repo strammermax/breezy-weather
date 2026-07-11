@@ -145,9 +145,22 @@ fun NotificationsSettingsScreen(
                         SettingsManager.getInstance(context).updateInterval != UpdateInterval.INTERVAL_NEVER,
                     enabled = SettingsManager.getInstance(context).updateInterval != UpdateInterval.INTERVAL_NEVER &&
                         hasNotificationPermission,
-                    isLast = true,
                     onValueChanged = {
                         SettingsManager.getInstance(context).isPrecipitationPushEnabled = it
+                    }
+                )
+            }
+            smallSeparatorItem()
+            switchPreferenceItem(R.string.settings_notifications_app_update_title) { id ->
+                SwitchPreferenceView(
+                    titleId = id,
+                    summaryOnId = R.string.settings_enabled,
+                    summaryOffId = R.string.settings_disabled,
+                    checked = SettingsManager.getInstance(context).isAppUpdatePushEnabled,
+                    enabled = hasNotificationPermission,
+                    isLast = true,
+                    onValueChanged = {
+                        SettingsManager.getInstance(context).isAppUpdatePushEnabled = it
                     }
                 )
             }

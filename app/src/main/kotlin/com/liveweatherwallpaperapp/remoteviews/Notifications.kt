@@ -83,6 +83,13 @@ object Notifications {
     const val CHANNEL_CRASH_LOGS = "crash_logs"
     const val ID_CRASH_LOGS = -201
 
+    /**
+     * Notification channel used for the "new app version available" push (see
+     * RemoveSkyMessagingService / app/services/push.py send_update_notification).
+     */
+    const val CHANNEL_APP_UPDATE = "app_update"
+    const val ID_APP_UPDATE = -301
+
     private const val ALERT_GROUP_KEY = "breezy_weather_alert_notification_group"
     private const val PREFERENCE_NOTIFICATION = "NOTIFICATION_PREFERENCE"
     private const val KEY_NOTIFICATION_ID = "NOTIFICATION_ID"
@@ -133,8 +140,39 @@ object Notifications {
                 },
                 buildNotificationChannel(CHANNEL_CRASH_LOGS, IMPORTANCE_HIGH) {
                     setName(context.getString(R.string.notification_channel_crash_logs))
+                },
+                buildNotificationChannel(CHANNEL_APP_UPDATE, IMPORTANCE_DEFAULT) {
+                    setName(context.getString(R.string.notification_channel_app_update))
+                    setGroup(GROUP_BREEZY_WEATHER)
                 }
             )
+        )
+    }
+
+    /**
+     * Shows a visible "new app version available" notification, pushed via FCM by
+     * RemoveSky when a new build is published (see RemoveSkyMessagingService).
+     */
+    fun sendAppUpdateNotification(context: Context, message: String) {
+        if (!SettingsManager.getInstance(context).isAppUpdatePushEnabled) return
+        context.notify(
+            ID_APP_UPDATE,
+            context.notificationBuilder(CHANNEL_APP_UPDATE).apply {
+                setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                setSmallIcon(R.drawable.ic_alert)
+                setContentTitle(context.getString(R.string.brand_name))
+                setContentText(message)
+                setStyle(NotificationCompat.BigTextStyle().bigText(message))
+                setAutoCancel(true)
+                setContentIntent(
+                    PendingIntent.getActivity(
+                        context,
+                        ID_APP_UPDATE,
+                        IntentHelper.buildMainActivityIntent(),
+                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+                )
+            }.build()
         )
     }
 

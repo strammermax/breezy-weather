@@ -19,6 +19,7 @@ package com.liveweatherwallpaperapp.wallpaper.photo
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.liveweatherwallpaperapp.remoteviews.Notifications
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,7 +45,13 @@ class RemoveSkyMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
         Log.d(TAG, "onMessageReceived: from=${message.from} data=${message.data}")
-        if (message.data["action"] != "purge") return
+        when (message.data["action"]) {
+            "purge" -> handlePurge(message)
+            "update_available" -> handleUpdateAvailable(message)
+        }
+    }
+
+    private fun handlePurge(message: RemoteMessage) {
         // Normalize scheme/host/port to match this device's configured RemoveSky base --
         // the server may not know its own public scheme (e.g. plain HTTP behind a
         // TLS-terminating proxy), and an http/https mismatch must not break the exact
@@ -58,6 +65,12 @@ class RemoveSkyMessagingService : FirebaseMessagingService() {
         scope.launch {
             wallpaperRepository.purgeUrls(urls)
         }
+    }
+
+    private fun handleUpdateAvailable(message: RemoteMessage) {
+        val text = message.data["message"] ?: return
+        Log.d(TAG, "update available: version=${message.data["version"]} message=$text")
+        Notifications.sendAppUpdateNotification(applicationContext, text)
     }
 
     override fun onNewToken(token: String) {

@@ -10,6 +10,13 @@
 .PARAMETER Draft
     Create the GitHub release as a draft instead of publishing it immediately.
 
+.PARAMETER SkipNotify
+    Skip pushing the "new version available" notification to app users after publishing.
+
+.PARAMETER NotifyMessage
+    Custom notification text. Defaults to "Er is een nieuwe versie uit <version> - bugfixes ;-)".
+    Only sent when the release itself isn't a draft.
+
 .EXAMPLE
     ./scripts/release.ps1
     ./scripts/release.ps1 -Flavor freenet -Draft
@@ -17,7 +24,9 @@
 param(
     [ValidateSet("basic", "freenet")]
     [string]$Flavor = "basic",
-    [switch]$Draft
+    [switch]$Draft,
+    [switch]$SkipNotify,
+    [string]$NotifyMessage
 )
 
 $ErrorActionPreference = "Stop"
@@ -98,3 +107,26 @@ Write-Host "Publishing GitHub release $tag with $apkFile ..." -ForegroundColor C
 & gh @releaseArgs
 
 Write-Host "Done: https://github.com/strammermax/breezy-weather/releases/tag/$tag" -ForegroundColor Green
+
+# This script is the actual "new version is out" moment for testers (GitHub release, not
+# the Play Store) -- Play Store rollout is a separate manual Play Console upload this
+# script doesn't touch. Best-effort: a failed/skipped notification must never fail the
+# release itself, so this always runs last and only warns on problems.
+if (-not $Draft -and -not $SkipNotify) {
+    $adminKey = $env:REMOVESKY_ADMIN_API_KEY
+    if (-not $adminKey) {
+        Write-Warning "REMOVESKY_ADMIN_API_KEY not set - skipping the 'new version available' push notification."
+    } else {
+        $message = if ($NotifyMessage) { $NotifyMessage } else { "Er is een nieuwe versie uit $versionName - bugfixes ;-)" }
+        try {
+            Invoke-RestMethod -Method Post `
+                -Uri "https://removesky.vanburik.info/api/v1/admin/notify-update" `
+                -Headers @{ "x-api-key" = $adminKey } `
+                -ContentType "application/json" `
+                -Body (@{ version = $versionName; message = $message } | ConvertTo-Json) | Out-Null
+            Write-Host "Sent 'new version available' notification to app users." -ForegroundColor Green
+        } catch {
+            Write-Warning "Failed to send update notification: $_"
+        }
+    }
+}

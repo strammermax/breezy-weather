@@ -129,6 +129,13 @@ class SettingsManager private constructor(
         }
         get() = config.getBoolean("precipitation_notification_switch", false)
 
+    var isAppUpdatePushEnabled: Boolean
+        set(value) {
+            config.edit().putBoolean("app_update_notification_switch", value).apply()
+            notifySettingsChanged()
+        }
+        get() = config.getBoolean("app_update_notification_switch", true)
+
     var updateInterval: UpdateInterval
         set(value) {
             config.edit().putString("refresh_rate", value.id).apply()
