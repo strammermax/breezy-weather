@@ -428,15 +428,15 @@ class WallpaperRepository @Inject constructor(
     suspend fun pruneDisabledPhotos(latitude: Double, longitude: Double, place: PlaceQuery): Boolean {
         val placeKey = place.cacheFileName()
         val locationKey = placeKey.substringBeforeLast('.')
-        val since = store.searchSinceFor(locationKey)
+        val since = store.searchSinceFor(locationKey, PRUNE_SINCE_PURPOSE)
         val enabledPhotos = when (val result = removeSkyProvider().fetchEnabledPhotos(latitude, longitude, since)) {
             is EnabledPhotosResult.Failed -> return false
             is EnabledPhotosResult.Unchanged -> {
-                result.checkedAt?.let { store.setSearchSince(locationKey, it) }
+                result.checkedAt?.let { store.setSearchSince(locationKey, PRUNE_SINCE_PURPOSE, it) }
                 return false
             }
             is EnabledPhotosResult.Success -> {
-                result.checkedAt?.let { store.setSearchSince(locationKey, it) }
+                result.checkedAt?.let { store.setSearchSince(locationKey, PRUNE_SINCE_PURPOSE, it) }
                 result.photos
             }
         }
@@ -484,15 +484,15 @@ class WallpaperRepository @Inject constructor(
         val locationKey = placeKey.substringBeforeLast('.')
         synchronizePhotoCatalog()
 
-        val since = store.searchSinceFor(locationKey)
+        val since = store.searchSinceFor(locationKey, CHECK_NEW_SINCE_PURPOSE)
         val enabledPhotos = when (val result = removeSkyProvider().fetchEnabledPhotos(latitude, longitude, since)) {
             is EnabledPhotosResult.Failed -> return CheckForNewPhotosResult.REQUEST_FAILED
             is EnabledPhotosResult.Unchanged -> {
-                result.checkedAt?.let { store.setSearchSince(locationKey, it) }
+                result.checkedAt?.let { store.setSearchSince(locationKey, CHECK_NEW_SINCE_PURPOSE, it) }
                 return CheckForNewPhotosResult.NONE_FOUND
             }
             is EnabledPhotosResult.Success -> {
-                result.checkedAt?.let { store.setSearchSince(locationKey, it) }
+                result.checkedAt?.let { store.setSearchSince(locationKey, CHECK_NEW_SINCE_PURPOSE, it) }
                 result.photos
             }
         }
@@ -858,6 +858,10 @@ class WallpaperRepository @Inject constructor(
         /** How many candidate photos to try before giving up on finding one with enough sky. */
         private const val MAX_SKY_ATTEMPTS = 10
         private const val PHOTO_CACHE_DIR = "wallpaper_photo_cache"
+        // Separate `since` namespaces for pruneDisabledPhotos() vs checkForNewPhotos() -- see
+        // WallpaperImageStore.searchSinceFor's kdoc for why these must not share one value.
+        private const val PRUNE_SINCE_PURPOSE = "prune"
+        private const val CHECK_NEW_SINCE_PURPOSE = "checkNew"
         private const val BYTES_PER_MB = 1024L * 1024L
         private const val USER_AGENT =
             "LiveWallpaperWeather/1.0 (https://github.com/strammermax/breezy-weather; " +

@@ -244,19 +244,29 @@ class WallpaperImageStore(context: Context) {
 
     /**
      * Server-side `checked_at` (ISO 8601, RemoveSky clock) from the last successful
-     * `/search`/enabled-photos response for [locationId], or null if never synced.
+     * `/search`/enabled-photos response for [locationId] + [purpose], or null if never synced.
      *
      * Distinct from [photoRefreshedAtFor]: that one is this device's own epoch-millis
      * throttle bookkeeping. This is the server's own clock, sent back as `since` on the next
      * call so RemoveSky can answer "changed: false" (and skip re-sending the full photo
      * list) when nothing changed for this location since then.
+     *
+     * [purpose] namespaces this independently per caller (e.g. "prune" vs "checkNew"):
+     * pruneDisabledPhotos() and checkForNewPhotos() both call fetchEnabledPhotos() but do
+     * different things with a Success response (prune vs. download-if-new). Sharing one
+     * `since` meant whichever ran first on a given tick "consumed" the freshness signal --
+     * pruneDisabledPhotos() runs unconditionally on every tick and would silently swallow a
+     * "changed:true" it never actually inspected for new photos, so a manual "Check for new
+     * images" right after would see the already-advanced `since` and wrongly report nothing
+     * new, even though it never actually looked at the results that added them.
      */
-    fun searchSinceFor(locationId: String): String? = searchSinceMap().optString(locationId).takeIf { it.isNotBlank() }
+    fun searchSinceFor(locationId: String, purpose: String): String? =
+        searchSinceMap().optString("$purpose:$locationId").takeIf { it.isNotBlank() }
 
-    /** Records the server's `checked_at` from the last successful sync for [locationId]. */
-    fun setSearchSince(locationId: String, checkedAt: String) {
+    /** Records the server's `checked_at` from the last successful sync for [locationId] + [purpose]. */
+    fun setSearchSince(locationId: String, purpose: String, checkedAt: String) {
         val map = searchSinceMap()
-        map.put(locationId, checkedAt)
+        map.put("$purpose:$locationId", checkedAt)
         config.edit().putString(KEY_SEARCH_SINCE, map.toString()).apply()
     }
 
