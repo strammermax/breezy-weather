@@ -134,8 +134,13 @@ if (-not $Draft -and -not $SkipNotify) {
         }
         $message = "Er is een nieuwe versie uit $versionName - $changelog"
         try {
+            # The admin router only accepts requests whose real TCP peer is on the LAN
+            # (see require_local_network in removesky-service/app/api/deps.py) -- going
+            # through the public https://removesky.vanburik.info domain means Cloudflare's
+            # IP is the peer, not this machine's, and gets a 403. Must hit the LAN address
+            # directly instead.
             Invoke-RestMethod -Method Post `
-                -Uri "https://removesky.vanburik.info/api/v1/admin/notify-update" `
+                -Uri "http://192.168.1.154:12345/api/v1/admin/notify-update" `
                 -Headers @{ "x-api-key" = $adminKey } `
                 -ContentType "application/json" `
                 -Body (@{ version = $versionName; message = $message } | ConvertTo-Json) | Out-Null
