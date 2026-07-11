@@ -82,6 +82,7 @@ import com.liveweatherwallpaperapp.common.utils.helpers.LogHelper
 import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
 import com.liveweatherwallpaperapp.databinding.ActivityMainBinding
 import com.liveweatherwallpaperapp.domain.settings.SettingsChangedMessage
+import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.sources.SourceManager
 import com.liveweatherwallpaperapp.ui.common.composables.AlertDialogConfirmOnly
 import com.liveweatherwallpaperapp.ui.common.composables.AlertDialogNoPadding
@@ -251,6 +252,15 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
 
         if (isLaunch) {
             Migrations.upgrade(applicationContext, sourceManager, locationRepository, weatherRepository)
+
+            // Show the release notes once, the first time the app is opened after an update --
+            // never on a fresh install (empty lastSeenAppVersion), since there's nothing to diff.
+            val settings = SettingsManager.getInstance(this)
+            val currentVersion = BuildConfig.VERSION_NAME
+            if (settings.lastSeenAppVersion.isNotBlank() && settings.lastSeenAppVersion != currentVersion) {
+                IntentHelper.startReleaseNotesActivity(this)
+            }
+            settings.lastSeenAppVersion = currentVersion
         }
 
         binding = ActivityMainBinding.inflate(layoutInflater)

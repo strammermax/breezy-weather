@@ -245,6 +245,11 @@
             android:theme="@style/BreezyWeatherTheme" />
 
         <activity
+            android:name=".ui.settings.activities.ReleaseNotesActivity"
+            android:label="@string/about_release_notes"
+            android:theme="@style/BreezyWeatherTheme" />
+
+        <activity
             android:name=".ui.settings.activities.TileAppearanceActivity"
             android:label="@string/settings_tile_appearance_title"
             android:theme="@style/BreezyWeatherTheme" />

@@ -379,6 +379,15 @@ class SettingsManager private constructor(
         }
         get() = config.getString("radar_tile_map_style", null) ?: "auto"
 
+    // Tracks which app version last showed its release notes on launch (see ReleaseNotesActivity /
+    // MainActivity.onCreate), so it's shown once per update rather than on every cold start. No
+    // notifySettingsChanged() -- this is internal bookkeeping, not a user-facing setting.
+    var lastSeenAppVersion: String
+        set(value) {
+            config.edit().putString("last_seen_app_version", value).apply()
+        }
+        get() = config.getString("last_seen_app_version", null) ?: ""
+
     var isGravitySensorEnabled: Boolean
         set(value) {
             config.edit().putBoolean("gravity_sensor_switch", value).apply()

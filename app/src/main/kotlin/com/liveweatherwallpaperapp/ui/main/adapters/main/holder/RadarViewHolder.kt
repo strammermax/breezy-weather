@@ -38,8 +38,9 @@ class RadarViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
         radarMap.onResume()
         val settings = SettingsManager.getInstance(context)
         when (settings.radarTileSource) {
-            "buienradar" -> RadarWebMapLoader.loadBuienradar(radarMap, location.latitude, location.longitude)
-            "meteoblue" -> RadarWebMapLoader.loadMeteoblue(radarMap, location.latitude, location.longitude)
+            "buienradar" -> RadarWebMapLoader.loadBuienradar(radarMap)
+            "ventusky" ->
+                RadarWebMapLoader.loadVentusky(radarMap, location.latitude, location.longitude, compact = true)
             else -> {
                 val dark = when (settings.radarTileMapStyle) {
                     "dark" -> true

@@ -38,6 +38,12 @@ class AboutViewModel @Inject constructor() : ViewModel() {
                 titleId = R.string.about_dependencies
             ) {
                 IntentHelper.startDependenciesActivity(activity)
+            },
+            AboutAppLinkItem(
+                iconId = R.drawable.ic_code,
+                titleId = R.string.about_release_notes
+            ) {
+                IntentHelper.startReleaseNotesActivity(activity)
             }
         )
     }

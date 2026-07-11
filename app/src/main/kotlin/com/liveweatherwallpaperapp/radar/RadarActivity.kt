@@ -120,7 +120,7 @@ class RadarActivity : BreezyActivity() {
     private var rainTrend by mutableStateOf<List<RainTrendPoint>>(emptyList())
     private var hourlyTrend by mutableStateOf<List<RainTrendPoint>>(emptyList())
     private var trendRange by mutableStateOf(2)
-    private var radarSource by mutableStateOf("rainviewer") // "rainviewer" | "buienradar" | "windy"
+    private var radarSource by mutableStateOf("rainviewer") // "rainviewer" | "buienradar" | "ventusky"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -281,7 +281,14 @@ class RadarActivity : BreezyActivity() {
                             }
                         },
                         actions = {
-                            placeName?.let {
+                            // Buienradar's map always covers NL/BE regardless of the selected
+                            // location, so showing the location's own name there would be misleading.
+                            val badgeText = if (radarSource == "buienradar") {
+                                stringResource(R.string.radar_buienradar_coverage_area)
+                            } else {
+                                placeName?.takeIf { it.isNotBlank() }
+                            }
+                            badgeText?.let {
                                 Box(
                                     modifier = Modifier
                                         .padding(end = 12.dp)
@@ -311,7 +318,6 @@ class RadarActivity : BreezyActivity() {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
                         .padding(paddings)
                 ) {
                     if (loading) {
@@ -319,10 +325,10 @@ class RadarActivity : BreezyActivity() {
                         return@Column
                     }
 
-                    // The Meteoblue and Buienradar widgets render their maps via WebGL/canvas, which
-                    // appears to fight the animated background's hardware layer for the window's
-                    // surface and blanks the whole screen. Pausing that layer while either tab is
-                    // visible avoids it — RainViewer's Leaflet map doesn't have this conflict.
+                    // The Buienradar widget renders its map via canvas, which appears to fight the
+                    // animated background's hardware layer for the window's surface and blanks the
+                    // whole screen. Pausing that layer while either tab is visible avoids it —
+                    // RainViewer's Leaflet map doesn't have this conflict.
                     LaunchedEffect(radarSource) {
                         if (::effectView.isInitialized) {
                             effectView.setDrawable(radarSource == "rainviewer" && isBackgroundAnimationEnabled)
@@ -332,8 +338,8 @@ class RadarActivity : BreezyActivity() {
                     // Source selector
                     val radarTabs = listOf(
                         "rainviewer" to R.string.radar_source_world,
-                        "buienradar" to R.string.radar_source_nl,
-                        "meteoblue" to R.string.radar_source_meteoblue
+                        "buienradar" to R.string.radar_source_buienradar,
+                        "ventusky" to R.string.radar_source_ventusky
                     )
                     TabRow(
                         selectedTabIndex = radarTabs.indexOfFirst { it.first == radarSource }.coerceAtLeast(0),
@@ -351,63 +357,96 @@ class RadarActivity : BreezyActivity() {
                         }
                     }
 
-                    // Map — RainViewer (worldwide), Buienradar gadget (NL, 5 days) or Windy (wind/pressure)
-                    when (radarSource) {
-                        "rainviewer" -> {
-                            val lat = latitude
-                            val lon = longitude
-                            if (lat != null && lon != null) {
-                                RadarMap(lat, lon, modifier = Modifier.fillMaxWidth().height(480.dp))
-                            } else {
-                                Text(
-                                    text = stringResource(R.string.radar_frames_unavailable),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(16.dp)
-                                )
-                            }
-                        }
-                        "meteoblue" -> {
-                            MeteoblueMap(latitude, longitude, modifier = Modifier.fillMaxWidth().height(480.dp))
-                        }
-                        else -> BuienradarMap(latitude, longitude, modifier = Modifier.fillMaxWidth().height(480.dp))
-                    }
-
-                    // Rain trend chart — only shown for the RainViewer tab
-                    if (radarSource == "rainviewer") {
-                        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                            SectionTitle(stringResource(R.string.radar_section_rain_trend))
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                listOf(2, 3, 6, 12, 24).forEach { hours ->
-                                    FilterChip(
-                                        selected = trendRange == hours,
-                                        onClick = { trendRange = hours },
-                                        label = { Text("${hours}u") }
+                    if (radarSource == "ventusky") {
+                        // Ventusky's own date/time strip sits at the bottom of its page, so the map
+                        // fills the screen edge-to-edge with no attribution line pushing it up —
+                        // unlike RainViewer/Buienradar, it has no rain trend chart of its own.
+                        VentuskyMap(latitude, longitude, modifier = Modifier.fillMaxWidth().weight(1f))
+                    } else {
+                        // RainViewer and Buienradar both get the rain trend chart below the map, so
+                        // this tab scrolls with the map at a fixed height.
+                        Column(modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())) {
+                            if (radarSource == "rainviewer") {
+                                val lat = latitude
+                                val lon = longitude
+                                if (lat != null && lon != null) {
+                                    RadarMap(lat, lon, modifier = Modifier.fillMaxWidth().height(480.dp))
+                                } else {
+                                    Text(
+                                        text = stringResource(R.string.radar_frames_unavailable),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(16.dp)
                                     )
                                 }
+                            } else {
+                                // The animated GIF is square: at full screen width, a square (1:1)
+                                // box is taller than this, so WebView's built-in image viewer
+                                // letterboxes it with visible whitespace rather than filling the box.
+                                // A height shorter than the square instead lets the (wider-than-tall)
+                                // box crop the image's bottom edge, filling it completely.
+                                BuienradarMap(modifier = Modifier.fillMaxWidth().height(300.dp))
                             }
-                            RainTrendChart(
-                                points = if (trendRange <= 2) rainTrend else hourlyTrend.take(trendRange),
-                                modifier = Modifier.fillMaxWidth()
+
+                            // Same container as the main screen's "Details" card (ACT-013 glass-card
+                            // colors + Material3 "ExtraLarge" corner radius, i.e. 28dp) instead of a
+                            // bespoke panel, so the two look like the same design system.
+                            Column(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .padding(bottom = 12.dp)
+                                    .clip(RoundedCornerShape(28.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                                    .padding(16.dp)
+                            ) {
+                                SectionTitle(
+                                    stringResource(
+                                        if (radarSource == "rainviewer") {
+                                            R.string.radar_section_rain_trend_general
+                                        } else {
+                                            R.string.radar_section_rain_trend
+                                        }
+                                    )
+                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    listOf(2, 3, 6, 12, 24).forEach { hours ->
+                                        FilterChip(
+                                            selected = trendRange == hours,
+                                            onClick = { trendRange = hours },
+                                            label = { Text("${hours}u") }
+                                        )
+                                    }
+                                }
+                                RainTrendChart(
+                                    // The Buienradar tab still gets its own fine-grained 2h nowcast
+                                    // for the 2u range; RainViewer has no numeric trend API of its
+                                    // own, so it always uses the app's regular hourly forecast.
+                                    points = if (radarSource != "rainviewer" && trendRange <= 2) {
+                                        rainTrend
+                                    } else {
+                                        hourlyTrend.take(trendRange)
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+
+                            Text(
+                                text = stringResource(
+                                    if (radarSource == "rainviewer") {
+                                        R.string.radar_attribution
+                                    } else {
+                                        R.string.radar_attribution_buienradar
+                                    }
+                                ),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 16.dp).padding(top = 4.dp, bottom = 16.dp)
                             )
                         }
                     }
-
-                    Text(
-                        text = stringResource(
-                            when (radarSource) {
-                                "buienradar" -> R.string.radar_attribution_buienradar
-                                "meteoblue" -> R.string.radar_attribution_meteoblue
-                                else -> R.string.radar_attribution
-                            }
-                        ),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 16.dp).padding(top = 16.dp, bottom = 16.dp)
-                    )
                 }
             }
         }
@@ -445,12 +484,12 @@ class RadarActivity : BreezyActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     @Composable
-    private fun MeteoblueMap(latitude: Double?, longitude: Double?, modifier: Modifier = Modifier) {
+    private fun VentuskyMap(latitude: Double?, longitude: Double?, modifier: Modifier = Modifier) {
         AndroidView(
             modifier = modifier,
             factory = { ctx ->
                 WebView(ctx).apply {
-                    RadarWebMapLoader.loadMeteoblue(this, latitude, longitude)
+                    RadarWebMapLoader.loadVentusky(this, latitude, longitude)
                 }
             }
         )
@@ -458,12 +497,12 @@ class RadarActivity : BreezyActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     @Composable
-    private fun BuienradarMap(latitude: Double?, longitude: Double?, modifier: Modifier = Modifier) {
+    private fun BuienradarMap(modifier: Modifier = Modifier) {
         AndroidView(
             modifier = modifier,
             factory = { ctx ->
                 WebView(ctx).apply {
-                    RadarWebMapLoader.loadBuienradar(this, latitude, longitude)
+                    RadarWebMapLoader.loadBuienradar(this)
                 }
             }
         )
@@ -472,7 +511,7 @@ class RadarActivity : BreezyActivity() {
     companion object {
         private const val EXTRA_LOCATION_ID = "radar_location_id"
         private const val EXTRA_RADAR_SOURCE = "radar_source"
-        private val RADAR_SOURCES = setOf("rainviewer", "buienradar", "meteoblue")
+        private val RADAR_SOURCES = setOf("rainviewer", "buienradar", "ventusky")
 
         fun createIntent(context: Context, location: Location, radarSource: String? = null): Intent {
             return Intent(context, RadarActivity::class.java).apply {

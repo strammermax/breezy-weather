@@ -39,6 +39,7 @@ import com.liveweatherwallpaperapp.ui.settings.activities.HourlyTrendDisplayMana
 import com.liveweatherwallpaperapp.ui.settings.activities.PreviewIconActivity
 import com.liveweatherwallpaperapp.ui.settings.activities.PrivacyPolicyActivity
 import com.liveweatherwallpaperapp.ui.settings.activities.RadarTileSettingsActivity
+import com.liveweatherwallpaperapp.ui.settings.activities.ReleaseNotesActivity
 import com.liveweatherwallpaperapp.ui.settings.activities.SettingsActivity
 import com.liveweatherwallpaperapp.ui.settings.activities.TileAppearanceActivity
 import com.liveweatherwallpaperapp.ui.settings.activities.WidgetTileSelectActivity
@@ -221,6 +222,10 @@ object IntentHelper {
 
     fun startPrivacyPolicyActivity(activity: Activity) {
         activity.startActivity(Intent(activity, PrivacyPolicyActivity::class.java))
+    }
+
+    fun startReleaseNotesActivity(context: Context) {
+        context.startActivity(Intent(context, ReleaseNotesActivity::class.java))
     }
 
     fun startApplicationDetailsActivity(context: Context, pkgName: String? = context.packageName) {

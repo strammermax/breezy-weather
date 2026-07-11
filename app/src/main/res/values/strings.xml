@@ -798,18 +798,18 @@
     <string name="forecast_toggle_hourly" translatable="false">per uur</string>
     <string name="radar_title">Precipitation radar</string>
     <string name="radar_section_rain_trend">Rain trend (Buienradar)</string>
+    <string name="radar_section_rain_trend_general">Rain trend</string>
     <string name="radar_section_radar_map">Radar map (RainViewer)</string>
     <string name="radar_frames_available">%1$d frames available, latest %2$s</string>
     <string name="radar_frames_unavailable">Radar frames unavailable</string>
-    <string name="radar_attribution">Data: Buienradar.nl &amp; RainViewer.com</string>
+    <string name="radar_attribution">Data: RainViewer.com</string>
     <string name="radar_attribution_buienradar">Data: Buienradar.nl</string>
     <string name="radar_attribution_windy">Data: Windy.com</string>
-    <string name="radar_attribution_meteoblue">Data: Meteoblue.com</string>
-    <string name="radar_source_world">Worldwide</string>
-    <string name="radar_source_nl">Netherlands (5 days)</string>
+    <string name="radar_buienradar_coverage_area" translatable="false">NL/BE</string>
+    <string name="radar_source_world">RainViewer</string>
     <string name="radar_source_wind">Wind &amp; pressure</string>
-    <string name="radar_source_meteoblue">Meteoblue</string>
     <string name="radar_source_buienradar">Buienradar</string>
+    <string name="radar_source_ventusky">Ventusky</string>
     <string name="settings_radar_tile_title">Rain radar tile</string>
     <string name="settings_radar_tile_source">Radar source</string>
     <string name="settings_radar_tile_world_style">Worldwide map style</string>
@@ -1093,6 +1093,9 @@
     <string name="about_matrix">Matrix room</string>
     <string name="about_source_code">Source code</string>
     <string name="about_dependencies">Dependencies</string>
+    <string name="about_release_notes">Release notes</string>
+    <string name="release_notes_unavailable">Couldn\'t load release notes. Check your connection and try again later.</string>
+    <string name="release_notes_view_on_github">View on GitHub</string>
     <string name="about_contributors">Contributors</string>
     <string name="about_translators">Translators</string>
     <string name="about_fork_title">Based on</string>
