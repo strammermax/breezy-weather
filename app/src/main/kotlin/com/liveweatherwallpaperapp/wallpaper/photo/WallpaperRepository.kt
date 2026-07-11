@@ -678,6 +678,21 @@ class WallpaperRepository @Inject constructor(
 
     suspend fun synchronizePhotoCatalog() {
         val existing = photoCatalog.getAll()
+
+        // One-time cleanup: earlier versions of the loop at the bottom of this function
+        // registered depth-map sidecar files ("<hash>_depth.webp|png") as their own bogus
+        // "unknown local file" catalog rows (source_url = local-file://.../_depth.webp),
+        // which then surfaced in Manage/Preview as a raw depth-map "photo". Purge any that
+        // already exist; the check further down now prevents new ones.
+        existing.filter { photo ->
+            // Match on sourceUrl too, not just filePath: a row whose file was already
+            // cleaned up separately (e.g. by the "clear stale filePath" step just below,
+            // or by an earlier pruneLocationCache pass) still has this tell-tale
+            // "local-file://.../<hash>_depth.<ext>" sourceUrl even with filePath null.
+            val name = photo.filePath?.let { File(it).name } ?: photo.sourceUrl?.substringAfterLast('/')
+            name?.substringBeforeLast('.')?.endsWith("_depth") == true
+        }.forEach { photoCatalog.deleteById(it.id) }
+
         existing.filter { photo ->
             photo.filePath?.let { path -> !File(path).isFile } == true
         }.forEach {
@@ -716,6 +731,12 @@ class WallpaperRepository @Inject constructor(
         }
         photoCacheDir().walkTopDown().filter(File::isFile).forEach { file ->
             if (file.absolutePath in knownPaths) return@forEach
+            // Depth-map sidecar files (see depthCacheFile/depthFileFor: "<hash>_depth.webp|png",
+            // stored next to their photo, never inserted as their own wallpaper_photos row) are
+            // not a separate photo -- without this check they get re-registered here as a bogus
+            // "unknown local file" catalog entry (source_url = local-file://.../_depth.webp),
+            // which then shows up in Manage/Preview screens as a raw depth-map "photo".
+            if (file.name.substringBeforeLast('.').endsWith("_depth")) return@forEach
             val locationKey = file.parentFile?.name ?: "wallpaper_location"
             val locationName = locationKey.removePrefix("wallpaper_").replace('_', ' ')
             val sourceUrl = urlsByPath[file.absolutePath] ?: localFileUrl(file.absolutePath)

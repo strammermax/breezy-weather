@@ -173,6 +173,10 @@ class WallpaperPhotoRepository(
         wallpaper_photosQueries.deleteForLocation(locationKey)
     }
 
+    suspend fun deleteById(id: String) = handler.await {
+        wallpaper_photosQueries.deleteById(id)
+    }
+
     private fun map(
         id: String,
         sourceUrl: String?,

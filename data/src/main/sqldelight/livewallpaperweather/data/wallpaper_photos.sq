@@ -132,3 +132,6 @@ WHERE file_path IS NOT NULL;
 
 deleteForLocation:
 DELETE FROM wallpaper_photos WHERE location_key = :locationKey;
+
+deleteById:
+DELETE FROM wallpaper_photos WHERE id = :id;
