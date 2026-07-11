@@ -14,7 +14,7 @@
     Skip pushing the "new version available" notification to app users after publishing.
 
 .PARAMETER NotifyMessage
-    Custom notification text. Defaults to "Er is een nieuwe versie uit <version> - bugfixes ;-)".
+    Custom notification text, used as-is instead of prompting for changelog highlights.
     Only sent when the release itself isn't a draft.
 
 .EXAMPLE
@@ -127,7 +127,12 @@ if (-not $Draft -and -not $SkipNotify) {
     if (-not $adminKey) {
         Write-Warning "REMOVESKY_ADMIN_API_KEY not set (env var or local.properties) - skipping the 'new version available' push notification."
     } else {
-        $message = if ($NotifyMessage) { $NotifyMessage } else { "Er is een nieuwe versie uit $versionName - bugfixes ;-)" }
+        $changelog = if ($NotifyMessage) {
+            $NotifyMessage
+        } else {
+            Read-Host "Wat zijn de highlights van deze release? (voor de notificatie naar app-gebruikers)"
+        }
+        $message = "Er is een nieuwe versie uit $versionName - $changelog"
         try {
             Invoke-RestMethod -Method Post `
                 -Uri "https://removesky.vanburik.info/api/v1/admin/notify-update" `
