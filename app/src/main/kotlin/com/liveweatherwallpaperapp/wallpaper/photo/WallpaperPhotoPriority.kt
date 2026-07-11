@@ -103,11 +103,22 @@ internal fun gpsDistanceKmOrWorst(photo: WallpaperPhotoRecord, latitude: Double,
  * needed to reach [minSize], so a location with plenty of matching photos never has to fall
  * back to a looser match just because the ladder "ran the full course".
  *
- * Ladder (each step keeps day/night matching and non-disabled, always): radius 1/2/5 km with
- * season+weather required, then radius 1/2/5 km dropping weather, then radius 1/2/5 km dropping
- * season, then radius 1/2/5 km dropping both. Stops as soon as [minSize] is reached. Within each
- * step, matches are ordered thumbs-up-not-down first, newest first, least-viewed first --
- * matching the priority [selectWallpaperPhoto] uses standalone.
+ * [isCurrentPosition] controls whether the radius ladder runs at all: for the GPS-tracked
+ * "current location", (lat, lon) genuinely moves around, so "how close to me" is meaningful.
+ * For a manually-picked, fixed location (e.g. Barca), (lat, lon) is always that place's exact
+ * same center point -- ranking by distance from a point that never changes would return the
+ * same handful of closest photos every single time, with no variety. So a fixed location
+ * skips straight to the location-wide steps (no distance cutoff at all).
+ *
+ * Full ladder:
+ *  1. (only if [isCurrentPosition]) radius 1/2/5 km, season+weather required, then dropping
+ *     weather, then season, then both -- 12 attempts total.
+ *  2. Whole location (no radius), in the same season+weather relaxation order, and additionally
+ *     dropping day/night matching as the very last resort -- run whenever step 1 didn't reach
+ *     [minSize] (always, for a fixed location; only as a fallback for the current location).
+ *
+ * Within each step, matches are ordered thumbs-up-not-down first, newest first, least-viewed
+ * first -- matching the priority [selectWallpaperPhoto] uses standalone.
  *
  * [currentWeather] should already be RemoveSky's vocabulary (see [weatherCodeToRemoveSkyWeather])
  * -- pass null to skip weather matching entirely (e.g. weather data not available yet).
@@ -118,6 +129,7 @@ internal fun buildShowlist(
     latitude: Double,
     longitude: Double,
     currentWeather: String?,
+    isCurrentPosition: Boolean = true,
     now: Long = System.currentTimeMillis(),
     minSize: Int = 6,
 ): List<WallpaperPhotoRecord> {
@@ -127,41 +139,61 @@ internal fun buildShowlist(
         latitude
     ).name.lowercase()
 
-    val eligible = photos
+    val notDisabledOrExcluded = photos
         .asSequence()
         .filterNot { it.disabled }
         .filterNot { it.sourceUrl != null && it.sourceUrl in excludedUrls }
-        .filter { dayNightMatches(it, isNight) }
         .toList()
-
-    val radii = listOf(1.0, 2.0, 5.0)
-    val filterStages = listOf(
-        true to true, // season + weather required
-        false to true, // weather only
-        true to false, // season only
-        false to false, // neither (day/night is all that's left)
-    )
+    val dayNightMatching = notDisabledOrExcluded.filter { dayNightMatches(it, isNight) }
 
     val result = mutableListOf<WallpaperPhotoRecord>()
     val usedIds = mutableSetOf<String>()
-    for ((requireSeason, requireWeather) in filterStages) {
-        for (radiusKm in radii) {
-            if (result.size >= minSize) return result
-            val matches = eligible
-                .asSequence()
-                .filter { it.id !in usedIds }
-                .filter { gpsDistanceKmOrWorst(it, latitude, longitude) <= radiusKm }
-                .filter { !requireSeason || seasonTier(it, currentSeason) == 2 }
-                .filter { !requireWeather || currentWeather == null || it.weather == currentWeather }
-                .sortedWith(
-                    compareByDescending<WallpaperPhotoRecord> { it.rating != -1 }
-                        .thenByDescending { it.createdAt }
-                        .thenBy { it.viewCount }
+
+    fun sortedMatches(pool: List<WallpaperPhotoRecord>, requireSeason: Boolean, requireWeather: Boolean) =
+        pool.asSequence()
+            .filter { it.id !in usedIds }
+            .filter { !requireSeason || seasonTier(it, currentSeason) == 2 }
+            .filter { !requireWeather || currentWeather == null || it.weather == currentWeather }
+            .sortedWith(
+                compareByDescending<WallpaperPhotoRecord> { it.rating != -1 }
+                    .thenByDescending { it.createdAt }
+                    .thenBy { it.viewCount }
+            )
+            .toList()
+
+    fun append(matches: List<WallpaperPhotoRecord>) {
+        matches.forEach { usedIds += it.id }
+        result += matches
+    }
+
+    // Step 1: radius ladder, current-location only.
+    if (isCurrentPosition) {
+        val radii = listOf(1.0, 2.0, 5.0)
+        val filterStages = listOf(true to true, false to true, true to false, false to false)
+        for ((requireSeason, requireWeather) in filterStages) {
+            for (radiusKm in radii) {
+                if (result.size >= minSize) return result
+                append(
+                    sortedMatches(
+                        dayNightMatching.filter { gpsDistanceKmOrWorst(it, latitude, longitude) <= radiusKm },
+                        requireSeason,
+                        requireWeather,
+                    )
                 )
-                .toList()
-            matches.forEach { usedIds += it.id }
-            result += matches
+            }
         }
+    }
+
+    // Step 2: whole location, no distance cutoff -- always runs for a fixed location; only a
+    // fallback for the current location if the radius ladder above didn't reach minSize.
+    for ((requireSeason, requireWeather) in listOf(true to true, true to false, false to true, false to false)) {
+        if (result.size >= minSize) return result
+        append(sortedMatches(dayNightMatching, requireSeason, requireWeather))
+    }
+
+    // Last resort: drop day/night matching too, keeping only "not disabled/excluded".
+    if (result.size < minSize) {
+        append(sortedMatches(notDisabledOrExcluded, requireSeason = false, requireWeather = false))
     }
     return result
 }

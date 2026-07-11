@@ -197,6 +197,7 @@ class WallpaperRepository @Inject constructor(
         forceRefresh: Boolean = false,
         activate: Boolean = true,
         currentWeather: String? = null,
+        isCurrentPosition: Boolean = true,
     ): File? {
         val placeKey = place.cacheFileName()
         val locationKey = placeKey.substringBeforeLast('.')
@@ -216,6 +217,7 @@ class WallpaperRepository @Inject constructor(
             latitude = latitude,
             longitude = longitude,
             currentWeather = currentWeather,
+            isCurrentPosition = isCurrentPosition,
         ).firstOrNull()
         if (cachedCandidate != null) {
             val cachedFile = File(cachedCandidate.filePath!!)
@@ -604,6 +606,7 @@ class WallpaperRepository @Inject constructor(
         longitude: Double,
         place: PlaceQuery,
         currentWeather: String? = null,
+        isCurrentPosition: Boolean = true,
         maxToDownload: Int = 4,
     ): Int {
         val placeKey = place.cacheFileName()
@@ -663,6 +666,7 @@ class WallpaperRepository @Inject constructor(
             latitude = latitude,
             longitude = longitude,
             currentWeather = currentWeather,
+            isCurrentPosition = isCurrentPosition,
         )
 
         var downloaded = 0

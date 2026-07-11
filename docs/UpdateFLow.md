@@ -45,20 +45,26 @@ zelf iets nieuws te zien — waardoor de "Check for new images"-knop soms ten on
 
 ---
 
-## Flow 2/3 — Lokale selectie en weergave (ongewijzigd)
+## Flow 2/3 — Lokale selectie en weergave
 
-| nummer | omschrijving | verwijzing |
-|---|---|---|
-| 2.a | De app haalt de volgende gegevens op: is_dag, seizoen, GPS, locatie, land | → 2.a.1 |
-| 2.a.1 | Nacht/dag-foto: `is_dag = (datetime > sunrise and datetime < sunset)` | → 2.a.2 |
-| 2.a.2 | Seizoen: `season = winter` (nov–feb) / `lente` (mrt–mei) / `zomer` (jun–aug) / `herfst` (sep–okt) | → 2.a.3 |
-| 2.a.3 | `GPS = getGps()` | → 2.a.4 |
-| 2.a.4 | `_locatie = getLocatie(GPS)`; `_country = getCountry(GPS)` | → 2.a.5 |
-| 2.a.5 | Datalist = alle records uit database met `location = _locatie` en `country = _country` | → 2.a.6 |
-| 2.a.6 | Datalist bouwt showlist van minimaal 6 afbeeldingen | → 2.a.7 |
-| 2.a.7 – 2.a.18 | Oplopende fallback-ladder: radius 1km → 2km → 5km, filters (dag, status=enabled, seizoen, weer) worden stap voor stap losgelaten totdat er ≥6 unieke resultaten zijn; sortering steeds op nieuwste, minst gezien, "duim omlaag" laatst | → 3.0 zodra 6 beelden bereikt zijn |
-| 3.0 | Showlist (bv. 11 resultaten) → app laadt de eerste 4 nieuwe afbeeldingen die nog niet in de cache staan; bij overschrijding van max-per-locatie wordt de oudste in cache verwijderd | → 3.a |
-| 3.a | Toon afbeeldingen in volgorde van de showlist, voor zover ze al in cache staan | → 3.b |
+**Update:** dit bleek bij nader inzien géén "ongewijzigd" bestaand gedrag — de code deed
+tot voor kort een simpele, strikte sortering zonder radius-ladder, zonder weer-matching en
+zonder showlist (`WallpaperPhotoPriority.kt:selectWallpaperPhoto()`, één foto per keer).
+Nu herbouwd naar het oorspronkelijk bedoelde ontwerp.
+
+| nummer | omschrijving | status | verwijzing |
+|---|---|---|---|
+| 2.a | De app haalt de volgende gegevens op: is_dag, seizoen, GPS, locatie, land | ✅ | → 2.a.1 |
+| 2.a.1 | Nacht/dag-foto: `is_dag = (datetime > sunrise and datetime < sunset)` | ✅ | → 2.a.2 |
+| 2.a.2 | Seizoen: `season = winter` (nov–feb) / `lente` (mrt–mei) / `zomer` (jun–aug) / `herfst` (sep–okt) | ✅ | → 2.a.3 |
+| 2.a.3 | `GPS = getGps()` | ✅ | → 2.a.4 |
+| 2.a.4 | `_locatie = getLocatie(GPS)`; `_country = getCountry(GPS)` | ✅ | → 2.a.5 |
+| 2.a.5 | Datalist = alle records uit lokale database voor deze locatie | ✅ `photoCatalog.getForLocation()` | → 2.a.6 |
+| 2.a.6 | Datalist bouwt showlist van minimaal 6 afbeeldingen | ✅ `buildShowlist(minSize=6)` | → 2.a.7 |
+| 2.a.7 – 2.a.18 | Oplopende fallback-ladder: radius 1km → 2km → 5km, filters (seizoen, weer) worden stap voor stap losgelaten totdat er ≥6 unieke resultaten zijn; sortering steeds op nieuwste, minst gezien, "duim omlaag" laatst | ✅ `WallpaperPhotoPriority.kt:buildShowlist()` — gebruikt `resolved_lat`/`resolved_lon` als EXIF-GPS ontbreekt (de meeste gecureerde foto's), en `weatherCodeToRemoveSkyWeather()` voor de weer-tier | → 3.0 zodra 6 beelden bereikt zijn |
+| 2.a.19 – 2.a.20 | **Alleen bij een vaste, handmatig gekozen locatie** (niet "Current location"): radius-ladder wordt overgeslagen — een vast punt (stadscentrum) zou anders altijd exact dezelfde paar dichtstbijzijnde foto's opleveren, nooit variatie. In plaats daarvan direct naar de locatie-brede stappen (seizoen+weer → seizoen → weer → geen van beide), en als laatste redmiddel ook dag/nacht-matching loslaten. Deze zelfde locatie-brede stappen dienen ook als fallback voor "Current location" zélf, mocht de radius-ladder (2.a.7–18) niets vinden. | ✅ `buildShowlist(isCurrentPosition = location.isCurrentPosition)` | → 3.0 zodra 6 beelden bereikt zijn |
+| 3.0 | Showlist → app laadt de eerste 4 nieuwe afbeeldingen die nog niet in de cache staan (mét de al-gecachete samen gerangschikt), zonder ze te activeren; bij overschrijding van max-per-locatie wordt de oudste in cache verwijderd | ✅ `WallpaperRepository.prefetchShowlist()` | → 3.a |
+| 3.a | Toon afbeeldingen in volgorde van de showlist, voor zover ze al in cache staan | ✅ `refreshFor()` gebruikt `buildShowlist().firstOrNull()` | → 3.b |
 | 3.b | Elke x minuten wordt er van afbeelding gewisseld | — |
 | 3.c | Elke x minuten: als de locatie anders is dan de vorige keer → 1.c | → 1.c |
 | 3.c | Elke x minuten: als de locatie hetzelfde is **en** `lastRefreshedAt` ouder is dan 1 uur → 1.c (dankzij 1.d/1.j is dit een goedkope check, geen volledige herdownload) | → 1.c |
