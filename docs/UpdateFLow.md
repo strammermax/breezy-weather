@@ -160,10 +160,15 @@ naar 200 in `config.py`). Handmatig aangepast naar 200 + service herstart.
 ---
 
 ## Nog openstaand
-- `GET /removed` wordt nog niet door de app gebruikt (staat klaar voor eventueel
-  toekomstig gebruik).
+Niets meer — alle punten uit dit document zijn gebouwd, gedeployed en getest.
 
 ## Recent afgerond
+- ✅ `GET /removed` levert nu volledige `processed_url`'s i.p.v. onbruikbare `local-N`-ids,
+  en wordt bij app-start aangeroepen (`reconcileRemovalsOnStartup`, alleen als
+  `photoBackgroundEnabled`) als extra reconciliatie voor de actieve locatie — vangt een
+  curator-verwijdering op die gemist werd terwijl de app dicht stond (FCM bereikt alleen
+  een draaiende app). Eigen `since`-namespace ("removedReconcile"), los van
+  prune/checkNew.
 - ✅ Flow 1.f.8: oplopende back-off bij lege zoekresultaten (10m → 30m → 1u → daarna elke
   6u, per locatie bijgehouden via `WallpaperImageStore.emptyRetryCountFor`, reset zodra
   een refresh weer wél iets vindt).
