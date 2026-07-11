@@ -117,7 +117,7 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                     forceRefresh = true,
                     activate = isActivating || activeRemoved,
                     currentWeather = currentWeather,
-                    isCurrentPosition = location.isCurrentPosition,
+                    isCurrentPosition = location.isCurrentPosition
                 )
                 if (file != null) {
                     store.setPhotoRefreshedAt(location.formattedId, now)
@@ -126,8 +126,11 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                     // Warms the cache for this location's *next* pick ahead of time -- best
                     // effort, never blocks the current tick's activation on it.
                     wallpaperRepository.prefetchShowlist(
-                        latitude, longitude, place, currentWeather,
-                        isCurrentPosition = location.isCurrentPosition,
+                        latitude,
+                        longitude,
+                        place,
+                        currentWeather,
+                        isCurrentPosition = location.isCurrentPosition
                     )
                 } else {
                     skippedCount++

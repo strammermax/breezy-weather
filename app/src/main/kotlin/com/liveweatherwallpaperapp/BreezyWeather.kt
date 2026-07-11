@@ -26,6 +26,7 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.WorkInfo
 import androidx.work.WorkQuery
+import com.google.firebase.messaging.FirebaseMessaging
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.uiModeManager
 import com.liveweatherwallpaperapp.common.extensions.workManager
@@ -35,7 +36,6 @@ import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.remoteviews.Notifications
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
 import com.liveweatherwallpaperapp.wallpaper.photo.toWallpaperPlaceQuery
-import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -123,9 +123,18 @@ class BreezyWeather : Application(), Configuration.Provider {
      */
     private fun reconcileRemovalsOnStartup() {
         CoroutineScope(Dispatchers.IO).launch {
-            if (!com.liveweatherwallpaperapp.wallpaper.photo.WallpaperImageStore(this@BreezyWeather).photoBackgroundEnabled) return@launch
+            if (!com.liveweatherwallpaperapp.wallpaper.photo.WallpaperImageStore(
+                    this@BreezyWeather
+                ).photoBackgroundEnabled
+            ) {
+                return@launch
+            }
             val location = locationRepository.getFirstLocation(withParameters = false) ?: return@launch
-            wallpaperRepository.reconcileRemovals(location.latitude, location.longitude, location.toWallpaperPlaceQuery())
+            wallpaperRepository.reconcileRemovals(
+                location.latitude,
+                location.longitude,
+                location.toWallpaperPlaceQuery()
+            )
         }
     }
 
@@ -140,7 +149,10 @@ class BreezyWeather : Application(), Configuration.Provider {
     private fun registerFcmToken() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             val token = if (task.isSuccessful) task.result else null
-            android.util.Log.d("RemoveSkyMessaging", "fetched token: ${token?.take(12)}... success=${task.isSuccessful}")
+            android.util.Log.d(
+                "RemoveSkyMessaging",
+                "fetched token: ${token?.take(12)}... success=${task.isSuccessful}"
+            )
             if (token.isNullOrBlank()) return@addOnCompleteListener
             CoroutineScope(Dispatchers.IO).launch {
                 val ok = wallpaperRepository.registerFcmToken(token)

@@ -177,7 +177,7 @@ internal fun buildShowlist(
                     sortedMatches(
                         dayNightMatching.filter { gpsDistanceKmOrWorst(it, latitude, longitude) <= radiusKm },
                         requireSeason,
-                        requireWeather,
+                        requireWeather
                     )
                 )
             }

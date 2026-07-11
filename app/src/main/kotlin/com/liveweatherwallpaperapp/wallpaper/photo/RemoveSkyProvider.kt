@@ -455,7 +455,6 @@ class RemoveSkyProvider(
 
     private fun enc(value: String): String = URLEncoder.encode(value, "UTF-8")
 
-    /** Keeps API-returned service URLs on the configured HTTPS origin behind a TLS proxy. */
     /**
      * Rewrites [url]'s scheme/host/port to match this provider's configured [base] (when the
      * host already matches, otherwise returns [url] unchanged). Used both when parsing a

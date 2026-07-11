@@ -124,7 +124,8 @@ class WallpaperRepository @Inject constructor(
      */
     suspend fun reconcileRemovals(latitude: Double, longitude: Double, place: PlaceQuery) {
         val locationKey = place.cacheFileName().substringBeforeLast('.')
-        val since = store.searchSinceFor(locationKey, REMOVED_SINCE_PURPOSE) ?: return reconcileRemovalsFirstRun(locationKey)
+        val since =
+            store.searchSinceFor(locationKey, REMOVED_SINCE_PURPOSE) ?: return reconcileRemovalsFirstRun(locationKey)
         val (urls, checkedAt) = removeSkyProvider().fetchRemoved(latitude, longitude, since)
         if (checkedAt != null) store.setSearchSince(locationKey, REMOVED_SINCE_PURPOSE, checkedAt)
         if (urls.isNotEmpty()) purgeUrls(urls.map { normalizeServiceUrl(it) })
@@ -217,7 +218,7 @@ class WallpaperRepository @Inject constructor(
             latitude = latitude,
             longitude = longitude,
             currentWeather = currentWeather,
-            isCurrentPosition = isCurrentPosition,
+            isCurrentPosition = isCurrentPosition
         ).firstOrNull()
         if (cachedCandidate != null) {
             val cachedFile = File(cachedCandidate.filePath!!)
@@ -426,7 +427,7 @@ class WallpaperRepository @Inject constructor(
                     photoCatalog.getForLocation(locationKey).filter { photo ->
                         photo.sourceUrl != null && photo.filePath?.let { File(it).isFile } == true
                     },
-                    excludedUrls = urlSet,
+                    excludedUrls = urlSet
                 )
             }
             if (replacement != null) {
@@ -655,7 +656,7 @@ class WallpaperRepository @Inject constructor(
                 sceneType = photo.sceneType,
                 weather = photo.weather,
                 resolvedLat = photo.resolvedLatitude,
-                resolvedLon = photo.resolvedLongitude,
+                resolvedLon = photo.resolvedLongitude
             )
         }
 
@@ -666,7 +667,7 @@ class WallpaperRepository @Inject constructor(
             latitude = latitude,
             longitude = longitude,
             currentWeather = currentWeather,
-            isCurrentPosition = isCurrentPosition,
+            isCurrentPosition = isCurrentPosition
         )
 
         var downloaded = 0
@@ -1037,6 +1038,7 @@ class WallpaperRepository @Inject constructor(
         /** How many candidate photos to try before giving up on finding one with enough sky. */
         private const val MAX_SKY_ATTEMPTS = 10
         private const val PHOTO_CACHE_DIR = "wallpaper_photo_cache"
+
         // Separate `since` namespaces for pruneDisabledPhotos() vs checkForNewPhotos() -- see
         // WallpaperImageStore.searchSinceFor's kdoc for why these must not share one value.
         private const val PRUNE_SINCE_PURPOSE = "prune"
