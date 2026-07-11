@@ -91,6 +91,13 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
             }
         }
         loadPhotos()
+
+        // Reload if the catalog changes from something other than this screen's own actions
+        // (an FCM push purging a photo while this screen is already open) -- managedPhotos()
+        // is a one-time snapshot, not an observed Flow, so without this the list goes stale.
+        lifecycleScope.launch {
+            wallpaperRepository.catalogChanged.collect { loadPhotos() }
+        }
     }
 
     private fun loadPhotos() {

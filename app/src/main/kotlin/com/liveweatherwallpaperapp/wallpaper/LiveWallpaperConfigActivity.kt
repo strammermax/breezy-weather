@@ -197,6 +197,24 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         weatherRefreshedAtValue = mutableStateOf(null)
         photoRefreshedAtValue = mutableStateOf(null)
         // Preload the currently cached photo (decode off the main thread).
+        reloadPreview()
+
+        // Reload if the catalog changes from something other than this screen's own actions
+        // (an FCM push purging the currently-active photo while this screen is already open)
+        // -- the preview above is a one-time snapshot, not an observed Flow, so without this
+        // it silently keeps showing a photo that was just removed.
+        lifecycleScope.launch {
+            wallpaperRepository.catalogChanged.collect { reloadPreview() }
+        }
+
+        setContent {
+            BreezyWeatherTheme {
+                ContentView()
+            }
+        }
+    }
+
+    private fun reloadPreview() {
         lifecycleScope.launch {
             val (bitmap, location, cacheStats) = withContext(Dispatchers.IO) {
                 Triple(
@@ -217,12 +235,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 weatherRefreshedAtValue.value = withContext(Dispatchers.IO) {
                     weatherRepository.getWeatherByLocationId(location.formattedId)
                 }?.base?.refreshTime?.time
-            }
-        }
-
-        setContent {
-            BreezyWeatherTheme {
-                ContentView()
             }
         }
     }

@@ -23,6 +23,9 @@ import android.os.Build
 import com.liveweatherwallpaperapp.BuildConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.withContext
 import livewallpaperweather.data.wallpaper.WallpaperPhotoRecord
 import livewallpaperweather.data.wallpaper.WallpaperPhotoRepository
@@ -78,6 +81,16 @@ class WallpaperRepository @Inject constructor(
 ) {
     private val store: WallpaperImageStore = WallpaperImageStore(context)
     private val client: OkHttpClient = defaultClient(store)
+
+    /**
+     * Fires whenever the wallpaper photo catalog changes from something other than direct
+     * user action in the currently-open screen -- currently just [purgeUrls] (an FCM push
+     * can arrive while "Manage background images" is already open). Screens showing a
+     * snapshot of [managedPhotos] should collect this and reload, since that list is a
+     * one-time load, not an observed Flow.
+     */
+    private val _catalogChanged = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val catalogChanged: SharedFlow<Unit> = _catalogChanged.asSharedFlow()
 
     /** Distance under which a non-containing [LocationData] still counts as a match. */
     var maxMatchDistanceKm: Double = 50.0
@@ -396,6 +409,7 @@ class WallpaperRepository @Inject constructor(
             val kept = recent.filterNot { it in urlSet }
             if (kept != recent) store.setRecentUrls(placeKey, kept)
         }
+        _catalogChanged.tryEmit(Unit)
     }
 
     /**
