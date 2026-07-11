@@ -168,7 +168,7 @@ object Notifications {
                     PendingIntent.getActivity(
                         context,
                         ID_APP_UPDATE,
-                        IntentHelper.buildMainActivityIntent(),
+                        IntentHelper.buildMainActivityIntent(null),
                         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                     )
                 )

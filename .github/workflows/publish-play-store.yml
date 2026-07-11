@@ -54,6 +54,14 @@ jobs:
         env:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
 
+      - name: Write Firebase google-services.json
+        # Required by the com.google.gms.google-services plugin for any release build task
+        # (FCM push notifications, see docs/UpdateFLow.md flow 5) - gitignored, so CI needs
+        # its own copy from a secret.
+        run: echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+
       - name: Write RemoveSky config
         run: |
           set -e
@@ -98,4 +106,4 @@ jobs:
 
       - name: Remove secrets from workspace
         if: always()
-        run: rm -f app/release.jks keystore.properties play-service-account.json local.properties
+        run: rm -f app/release.jks keystore.properties play-service-account.json local.properties app/google-services.json
