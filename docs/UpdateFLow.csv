@@ -1,0 +1,47 @@
+﻿Column1;Column2;Column3;Column4
+nummer ; omschrijving ; verwijzing ; actie
+1. ; ALs gebruiker kom ik op een nieuwe locatie lisse  ; > ;1.a 
+1.a ; App lijkt naar GPS > converteert het naar locatie & land. ; > ;1.b 
+1.b ; App ziet dat hij nog geen records heeft  ; > ;1.c 
+1.c ; App haalt lijst van foto's via servce => /api/v1/Search = location:lisse, land:nederland   ; > ;1.f 
+1.e ;" De service kijkt of hij records heeft van location:lisse, land:nederland ;"; > ;ja = 1.e.2 else 1.e.1 
+1.e.1 ; zo nee, zal  De service een search force doen. ;> ;1.e.3 
+1.e.2 ; De service zal het resultaat in de databse updaten + en nieuwebeelden verwerken.; > ;1.e.3 
+1.e.3 ;De service  serveert alle records van lisse aan de app (gzip) ; > ;1.f 
+1.f ; App krijg resultaat terug (gzip) ; > ;1.f.1 
+1.f.1 ; De App VERgelijkt het resultaat met de records in zijn eigen database  ; > ;1.f.2 
+1.f.2 ; De App zal alle records met de location:lisse, land:nederland die niet in het aangeleverde resultaat komen in een delete lijst ; > ;i.f.3 
+i.f.3 ; De App zal alle afbeeldingen op de delete lijst worden verwijderd uit de cache ; > ;1.F.4 
+1.F.4 ; De App zal alle records op de delete lijst worden verwijderden uit de database. ; > ;1.f.5 
+1.f.5 ; De App zal alle records in het resultaat (gzip) verwerken in de database met addupsert(resultaat).; > ;1.f.6 
+1.f.6 ;" De App bekijkt het aantal records;"; > ;if 0 records = 1.f.7 else 2.a 
+1.f.7; Als het resultaat (gzip) leeg is zal De App over 10m mins nogmaals een call doen ; > ;1.c 
+2.a ; De App haal de volgende gevens op  is_dag ,Seizoen, GPS, location , land; > ;2.a.1 
+2.a.1 ; - Nacht / dag foto,  is_dag = (if daytime > sunrise  and datetime < sunset)   ; > ;2.a.2 
+2.a.2 ;" - Seizoen foto , season = if(date.month > 11 or  date.month  < 3) == true) return ""winter'; elseif(date.month > 3 or  date.month  < 6) == true) return ""lente'; elseif(date.month > 5 or  date.month  < 8) == true) return ""zomer'; elseif(date.month > 7 or  date.month  < 12) == true) return ""herfst' "; > ;2.a.3
+2.a.3;"GPS  =getgps();";>;2.a.4
+2.a.4;"_locatie = getLocatie(GPS); _country=getcountry(GPS)";>;2.a.5
+2.a.5;"Datalist = Get from database all records whet location =_locatie and county =  _country;";>;2.a.6
+2.a.6;Datalist create showlist of minimal 6 images;>;2.a.7
+2.a.7;poging 1 >  radius 1km waar is_day = true , status=enabled, seizoen=zomer weer=zoning and not dumpje -1 order order by newest and less seen and dumpje desc> result 0 > total result 0;>;if 6 images = 3.0 else 2.a.8
+2.a.8;poging 2 >  radius 2km waar is_day = true , status=enabled,  seizoen=zomer weer=zoning and not dumpje -1 order order by newest and less seen and dumpje desc> result 1 > ids=99> total result 1 > ids(99);>;2.a.9
+2.a.9;poging 3 >  radius 5km waar is_day = true , status=enabled,  seizoen=zomer weer=zoning and not dumpje -1 order order by newest and less seen and dumpje desc > result 0 > total result 1 > ids(99);>;2.a.10
+2.a.10;poging 4 >  radius 1km waar is_day = true , status=enabled,  seizoen=zomer  and not dumpje -1 order order by newest and less seen and dumpje desc> uniek result 1  ids=1 > total results 2 > ids(99,1);>;2.a.11
+2.a.11;poging 5 >  radius 1km waar is_day = true , status=enabled,  weer=zoning and not dumpje -1 order order by newest and less seen and dumpje desc> uniek result 1   ids=14 >total results 3 > ids(99,1,14);>;2.a.12
+2.a.12;poging 6 >  radius 2km waar is_day = true , status=enabled,  seizoen=zomer  and not dumpje -1 order order by newest and less seen and dumpje desc>same result as poging 4 > total results 3 > ids(99,1,14);>;2.a.13
+2.a.13;poging 7 >  radius 2km waar is_day = true , status=enabled,  weer=zoning and dumpje -1 order order by newest and less seen and dumpje desc> same result as poging 5 > total results 3 > ids(99,1,14);>;2.a.14
+2.a.14;poging 8 >  radius 5km waar is_day = true , status=enabled,  seizoen=zomer  and dumpje -1 order order by newest and less seen and dumpje desc >uniek results 2 ids=55,67 > total results 5 > ids(99,1,14,55,67);>;2.a.15
+2.a.15;poging 9 >  radius 5km waar is_day = true , status=enabled,  weer=zoning and notdumpje -1 order order by newest and less seen and dumpje desc > same result as poging 5 > total results 5 > ids(99,1,14,55,67);>;2.a.16
+2.a.16;poging 10 >  radius 1km waar is_day = true , status=enabled, and not dumpje -1 order order by newest and less seen and dumpje desc> uniek result 1 id=876 > total results 6 > ids(99,1,14,55,67,876);>;2.a.17
+2.a.17;poging 11 >  radius 2km waar is_day = true , status=enabled, and dumpje -1 order order by newest and less seen and dumpje desc> uniek result 2 ids=1024,13 > total results 8 > ids(99,1,14,55,67,876,1024,13);>;2.a.18
+2.a.18;poging 12 >  radius 5km waar is_day = true , status=enabled, and dumpje -1 order order by newest and less seen and dumpje desc> uniek result 3  ids=1031,84,94 > total results 11 > ids(99,1,14,55,67,876,1024,13,1031,84,94);>;3.0
+3.0;showlist = total results 11 > From showlist load 4 new images that are not in app cache and if exeed max images location delete oldes in cache;>;3.a
+3.a;show images in order ids(99,1,14,55,67,876,1024,13,1031,84,94) where images are in cache;>;3.b
+3.b;Elke x mins zal er een afbeelding worden gewisseld.;>;
+3.c;Elke x mins en als location is anders dan de vorige keer ;>;1.c 
+3.c;Elke x mins en als location is het zelfde is en de laatste service call is meer dan 1 uur ;>;1.c 
+;;;
+;;;
+;;;
+;;;
+;0;;
