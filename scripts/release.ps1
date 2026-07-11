@@ -115,7 +115,17 @@ Write-Host "Done: https://github.com/strammermax/breezy-weather/releases/tag/$ta
 if (-not $Draft -and -not $SkipNotify) {
     $adminKey = $env:REMOVESKY_ADMIN_API_KEY
     if (-not $adminKey) {
-        Write-Warning "REMOVESKY_ADMIN_API_KEY not set - skipping the 'new version available' push notification."
+        # local.properties is gitignored -- safe place for this secret, unlike this script.
+        $localPropsPath = Join-Path $repoRoot "local.properties"
+        if (Test-Path $localPropsPath) {
+            $line = Get-Content $localPropsPath | Where-Object { $_ -match "^REMOVESKY_ADMIN_API_KEY=" }
+            if ($line) {
+                $adminKey = $line.Substring($line.IndexOf("=") + 1).Trim()
+            }
+        }
+    }
+    if (-not $adminKey) {
+        Write-Warning "REMOVESKY_ADMIN_API_KEY not set (env var or local.properties) - skipping the 'new version available' push notification."
     } else {
         $message = if ($NotifyMessage) { $NotifyMessage } else { "Er is een nieuwe versie uit $versionName - bugfixes ;-)" }
         try {
