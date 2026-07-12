@@ -111,6 +111,8 @@ import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherViewController
 import com.liveweatherwallpaperapp.wallpaper.CelestialTiming
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSceneSnapshot
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSceneStateFactory
+import com.liveweatherwallpaperapp.wallpaper.toFrostedBackground
+import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -270,7 +272,12 @@ internal fun DailyWeatherScreen(
                         nearPhoto,
                         if (sceneState.usesGreyscalePhoto) sceneState.photoGreyscaleAmount else 0f
                     )
-                    activity.window.setBackgroundDrawable(BitmapDrawable(context.resources, bitmap))
+                    val background = if (SettingsManager.getInstance(context).appBackgroundFrosted) {
+                        bitmap.toFrostedBackground(SettingsManager.getInstance(context).appBackgroundFrostStrength)
+                    } else {
+                        bitmap
+                    }
+                    activity.window.setBackgroundDrawable(BitmapDrawable(context.resources, background))
                 }
 
                 // ACT-013: override the surface/outline colors so the cards and tab bar

@@ -136,6 +136,45 @@ fun MainScreenSettingsScreen(
                     }
                 )
             }
+            smallSeparatorItem()
+            switchPreferenceItem(R.string.settings_main_background_frosted_title) { id ->
+                SwitchPreferenceView(
+                    titleId = id,
+                    summaryOnId = R.string.settings_main_background_frosted_summary,
+                    summaryOffId = R.string.settings_main_background_frosted_summary,
+                    checked = SettingsManager.getInstance(context).appBackgroundFrosted,
+                    onValueChanged = {
+                        SettingsManager.getInstance(context).appBackgroundFrosted = it
+                    }
+                )
+            }
+            smallSeparatorItem()
+            listPreferenceItem(R.string.settings_main_background_blur_strength) { id ->
+                ListPreferenceView(
+                    titleId = id,
+                    selectedKey = SettingsManager.getInstance(context).appBackgroundFrostStrength.toString(),
+                    valueArrayId = R.array.app_background_blur_strength_values,
+                    nameArrayId = R.array.app_background_blur_strength,
+                    card = true,
+                    onValueChanged = {
+                        SettingsManager.getInstance(context).appBackgroundFrostStrength = it.toIntOrNull() ?: 2
+                    }
+                )
+            }
+            smallSeparatorItem()
+            listPreferenceItem(R.string.settings_main_background_frost_color) { id ->
+                ListPreferenceView(
+                    titleId = id,
+                    selectedKey = SettingsManager.getInstance(context).appBackgroundFrostTint,
+                    valueArrayId = R.array.app_background_frost_color_values,
+                    nameArrayId = R.array.app_background_frost_color,
+                    card = true,
+                    onValueChanged = {
+                        SettingsManager.getInstance(context).appBackgroundFrostTint = it
+                    }
+                )
+            }
+            smallSeparatorItem()
             switchPreferenceItem(R.string.settings_main_threshold_lines_on_charts) { id ->
                 SwitchPreferenceView(
                     titleId = id,

@@ -22,6 +22,10 @@ import android.graphics.Canvas
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
+import android.graphics.RenderEffect
+import android.graphics.Shader
+import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.util.AttributeSet
 import android.view.Choreographer
 import android.view.View
@@ -46,6 +50,25 @@ internal class WallpaperEffectView @JvmOverloads constructor(
     private var renderer: WallpaperWeatherEffectRenderer? = null
     private var shouldAnimate = false
     private var lastFrameNanos = 0L
+
+    /** Blurs only this background layer; UI and glass cards above it remain sharp. */
+    fun setFrosted(frosted: Boolean, strength: Int = 2, tint: String = "black") {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val radius = when (strength.coerceIn(1, 3)) {
+                1 -> 16f
+                3 -> 42f
+                else -> 28f
+            }
+            setRenderEffect(
+                if (frosted) RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.CLAMP) else null
+            )
+        }
+        foreground = if (frosted) {
+            ColorDrawable(if (tint == "white") 0x26FFFFFF else 0x38000000)
+        } else {
+            null
+        }
+    }
 
     /** Near/foreground photo content (e.g. a building), drawn between the two weather passes
      *  so clouds stay behind it — see [WallpaperSceneSnapshot.render]'s `depth` parameter. */

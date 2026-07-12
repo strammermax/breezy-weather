@@ -99,6 +99,7 @@ import com.liveweatherwallpaperapp.wallpaper.CelestialTiming
 import com.liveweatherwallpaperapp.wallpaper.WallpaperEffectView
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSceneSnapshot
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSceneStateFactory
+import com.liveweatherwallpaperapp.wallpaper.toFrostedBackground
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperImageStore
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
 import com.liveweatherwallpaperapp.wallpaper.photo.toWallpaperPlaceQuery
@@ -288,6 +289,7 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
             findHomeFragment()?.updateViews()
 
             refreshBackgroundViews(viewModel.validLocationList.value)
+            updateLiveWallpaperBackground()
         }
     }
 
@@ -390,6 +392,9 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
         // Animated weather effect overlay (clouds, rain, fog …) on top of the static snapshot
         // background. Insert at index 0 so it sits behind all fragment content.
         effectView = WallpaperEffectView(this)
+        SettingsManager.getInstance(this).let {
+            effectView.setFrosted(it.appBackgroundFrosted, it.appBackgroundFrostStrength, it.appBackgroundFrostTint)
+        }
         binding.root.addView(
             effectView,
             0,
@@ -973,12 +978,18 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
                             )
                     }
                 }
+                val settings = SettingsManager.getInstance(this@MainActivity)
+                val frosted = settings.appBackgroundFrosted
+                effectView.setFrosted(frosted, settings.appBackgroundFrostStrength, settings.appBackgroundFrostTint)
                 effectView.setForegroundPhoto(
-                    nearPhoto,
+                    if (frosted) nearPhoto?.toFrostedBackground(settings.appBackgroundFrostStrength) else nearPhoto,
                     if (sceneState.usesGreyscalePhoto) sceneState.photoGreyscaleAmount else 0f
                 )
                 if (this@MainActivity.getResources().configuration.orientation != 2) {
-                    binding.root.background = BitmapDrawable(resources, bitmap)
+                    binding.root.background = BitmapDrawable(
+                        resources,
+                        if (frosted) bitmap.toFrostedBackground(settings.appBackgroundFrostStrength) else bitmap
+                    )
                 }
             } finally {
                 if (forcePhotoRefresh) {

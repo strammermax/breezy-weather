@@ -834,6 +834,15 @@
     <string name="settings_source_api_key_invalid">De waarde is niet in de verwachte vorm</string>
     <string name="message_please_wait_refresh">Wacht tot de vernieuwing is voltooid</string>
     <string name="settings_main_background_title">Weergebaseerde achtergrond</string>
+    <string name="settings_main_background_frosted_title">Vervagende achtergrond</string>
+    <string name="settings_main_background_frosted_summary">Vervaag de weerachtergrond achter schermen en kaarten</string>
+    <string name="settings_main_background_blur_strength">Blursterkte</string>
+    <string name="settings_main_background_blur_light">Licht</string>
+    <string name="settings_main_background_blur_medium">Gemiddeld</string>
+    <string name="settings_main_background_blur_strong">Sterk</string>
+    <string name="settings_main_background_frost_color">Frostkleur</string>
+    <string name="settings_main_background_frost_white">Wit</string>
+    <string name="settings_main_background_frost_black">Zwart</string>
     <string name="settings_weather_source_no_longer_exists">%s (bestaat niet meer)</string>
     <!-- LiveWallpaperWeather: regenradar + wallpaper -->
     <string name="camera_set_live_wallpaper">Zet als live wallpaper</string>

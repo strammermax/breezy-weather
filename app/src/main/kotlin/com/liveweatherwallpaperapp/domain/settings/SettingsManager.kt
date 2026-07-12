@@ -327,6 +327,27 @@ class SettingsManager private constructor(
         }
         get() = config.getBoolean("main_screen_background", true)
 
+    var appBackgroundFrosted: Boolean
+        set(value) {
+            config.edit().putBoolean("app_background_frosted", value).apply()
+            notifySettingsChanged()
+        }
+        get() = config.getBoolean("app_background_frosted", false)
+
+    var appBackgroundFrostStrength: Int
+        set(value) {
+            config.edit().putInt("app_background_frost_strength", value.coerceIn(1, 3)).apply()
+            notifySettingsChanged()
+        }
+        get() = config.getInt("app_background_frost_strength", 2).coerceIn(1, 3)
+
+    var appBackgroundFrostTint: String
+        set(value) {
+            config.edit().putString("app_background_frost_tint", value).apply()
+            notifySettingsChanged()
+        }
+        get() = config.getString("app_background_frost_tint", "black") ?: "black"
+
     var isTrendHorizontalLinesEnabled: Boolean
         set(value) {
             config.edit().putBoolean("trend_horizontal_line_switch", value).apply()

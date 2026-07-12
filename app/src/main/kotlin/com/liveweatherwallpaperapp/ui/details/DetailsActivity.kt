@@ -25,7 +25,9 @@ import androidx.lifecycle.lifecycleScope
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.isBackgroundAnimationEnabled
+import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.wallpaper.WallpaperEffectView
+import com.liveweatherwallpaperapp.wallpaper.toFrostedBackground
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -49,6 +51,9 @@ class DetailsActivity : BreezyActivity() {
         // the static WallpaperSceneSnapshot backdrop and the transparent Compose
         // scaffold. Hardware acceleration is required for the AGSL shader to work.
         effectView = WallpaperEffectView(this)
+        SettingsManager.getInstance(this).let {
+            effectView.setFrosted(it.appBackgroundFrosted, it.appBackgroundFrostStrength, it.appBackgroundFrostTint)
+        }
 
         val contentFrame = window.decorView.findViewById<FrameLayout>(android.R.id.content)
         contentFrame.addView(
@@ -78,7 +83,15 @@ class DetailsActivity : BreezyActivity() {
 
     /** Lets [DetailsScreen]'s snapshot renderer hand the near/foreground photo layer to [effectView]. */
     fun setForegroundPhoto(bitmap: android.graphics.Bitmap?, greyscaleAmount: Float) {
-        if (::effectView.isInitialized) effectView.setForegroundPhoto(bitmap, greyscaleAmount)
+        if (::effectView.isInitialized) {
+            val frosted = SettingsManager.getInstance(this).appBackgroundFrosted
+            val settings = SettingsManager.getInstance(this)
+            effectView.setFrosted(frosted, settings.appBackgroundFrostStrength, settings.appBackgroundFrostTint)
+            effectView.setForegroundPhoto(
+                if (frosted) bitmap?.toFrostedBackground(settings.appBackgroundFrostStrength) else bitmap,
+                greyscaleAmount
+            )
+        }
     }
 
     companion object {
