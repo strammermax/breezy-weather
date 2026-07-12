@@ -116,10 +116,8 @@ class CloudEngineRenderer(private val context: Context) {
 
     private fun bankVariant(type: CloudTextureType): CloudAsset? {
         val options = cloudAssets.filter { it.type == type }
-        if (type == CloudTextureType.HORIZON_BANK) {
-            options.firstOrNull { it.fileName == "horizon-bank.webp" }?.let { return it }
-        }
-        return options.getOrNull(Math.floorMod(profile.hashCode(), options.size.coerceAtLeast(1)))
+        val variantSeed = profile.hashCode().toLong() xor randomSeed
+        return options.getOrNull(Math.floorMod(variantSeed, options.size.coerceAtLeast(1).toLong()).toInt())
     }
 
     private fun drawAsset(
@@ -323,7 +321,11 @@ class CloudEngineRenderer(private val context: Context) {
             drawAsset(canvas, bank, x, top, width, height, .96f)
         }
 
-        cloudAssets.firstOrNull { it.fileName == "dark-midfield-cloudy-01.webp" }?.let { bank ->
+        val midfieldBanks = cloudAssets.filter { it.fileName.startsWith("dark-midfield-cloudy-") }
+        val upperBank = midfieldBanks.getOrNull(
+            Math.floorMod(randomSeed, midfieldBanks.size.coerceAtLeast(1).toLong()).toInt()
+        )
+        upperBank?.let { bank ->
             val width = screenWidth * 1.72f
             val height = width / bank.aspectRatio
             val travel = screenWidth + width
@@ -335,14 +337,17 @@ class CloudEngineRenderer(private val context: Context) {
 
             // Onderste tussendek: overlapt zowel de brede middenplaat als de horizonbank, zodat
             // er tijdens het drijven geen grijze/blauwe sleuf tussen beide lagen kan ontstaan.
+            val lowerBank = midfieldBanks.getOrNull(
+                Math.floorMod(randomSeed + 1L, midfieldBanks.size.coerceAtLeast(1).toLong()).toInt()
+            ) ?: bank
             val lowerWidth = screenWidth * 1.52f
-            val lowerHeight = lowerWidth / bank.aspectRatio
+            val lowerHeight = lowerWidth / lowerBank.aspectRatio
             val lowerTravel = screenWidth + lowerWidth
             val lowerX = -lowerWidth + (
                 (time * .24f * pxPerDp * windSpeedMultiplier + lowerTravel * .76f) % lowerTravel
                 )
             val lowerTop = screenHeight * .70f - lowerHeight / 2f
-            drawAsset(canvas, bank, lowerX, lowerTop, lowerWidth, lowerHeight, .97f)
+            drawAsset(canvas, lowerBank, lowerX, lowerTop, lowerWidth, lowerHeight, .97f)
         }
     }
 
