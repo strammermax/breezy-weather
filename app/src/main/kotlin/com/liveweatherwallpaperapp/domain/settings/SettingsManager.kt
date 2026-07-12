@@ -332,7 +332,7 @@ class SettingsManager private constructor(
             config.edit().putBoolean("app_background_frosted", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("app_background_frosted", false)
+        get() = config.getBoolean("app_background_frosted", true)
 
     var appBackgroundFrostStrength: Int
         set(value) {
@@ -346,7 +346,11 @@ class SettingsManager private constructor(
             config.edit().putString("app_background_frost_tint", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getString("app_background_frost_tint", "black") ?: "black"
+        get() = when (val value = config.getString("app_background_frost_tint", "system") ?: "system") {
+            "white" -> "light"
+            "black" -> "dark"
+            else -> value
+        }
 
     var isTrendHorizontalLinesEnabled: Boolean
         set(value) {

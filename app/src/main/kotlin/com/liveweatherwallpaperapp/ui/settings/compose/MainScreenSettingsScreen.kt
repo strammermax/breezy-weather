@@ -20,6 +20,10 @@ import android.app.Activity
 import android.content.Context
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
@@ -63,6 +67,9 @@ fun MainScreenSettingsScreen(
     modifier: Modifier = Modifier,
 ) {
     val scrollBehavior = generateCollapsedScrollBehavior()
+    var frostedBackgroundEnabled by remember {
+        mutableStateOf(SettingsManager.getInstance(context).appBackgroundFrosted)
+    }
 
     Material3Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -142,37 +149,40 @@ fun MainScreenSettingsScreen(
                     titleId = id,
                     summaryOnId = R.string.settings_main_background_frosted_summary,
                     summaryOffId = R.string.settings_main_background_frosted_summary,
-                    checked = SettingsManager.getInstance(context).appBackgroundFrosted,
+                    checked = frostedBackgroundEnabled,
                     onValueChanged = {
+                        frostedBackgroundEnabled = it
                         SettingsManager.getInstance(context).appBackgroundFrosted = it
                     }
                 )
             }
-            smallSeparatorItem()
-            listPreferenceItem(R.string.settings_main_background_blur_strength) { id ->
-                ListPreferenceView(
-                    titleId = id,
-                    selectedKey = SettingsManager.getInstance(context).appBackgroundFrostStrength.toString(),
-                    valueArrayId = R.array.app_background_blur_strength_values,
-                    nameArrayId = R.array.app_background_blur_strength,
-                    card = true,
-                    onValueChanged = {
-                        SettingsManager.getInstance(context).appBackgroundFrostStrength = it.toIntOrNull() ?: 2
-                    }
-                )
-            }
-            smallSeparatorItem()
-            listPreferenceItem(R.string.settings_main_background_frost_color) { id ->
-                ListPreferenceView(
-                    titleId = id,
-                    selectedKey = SettingsManager.getInstance(context).appBackgroundFrostTint,
-                    valueArrayId = R.array.app_background_frost_color_values,
-                    nameArrayId = R.array.app_background_frost_color,
-                    card = true,
-                    onValueChanged = {
-                        SettingsManager.getInstance(context).appBackgroundFrostTint = it
-                    }
-                )
+            if (frostedBackgroundEnabled) {
+                smallSeparatorItem()
+                listPreferenceItem(R.string.settings_main_background_blur_strength) { id ->
+                    ListPreferenceView(
+                        titleId = id,
+                        selectedKey = SettingsManager.getInstance(context).appBackgroundFrostStrength.toString(),
+                        valueArrayId = R.array.app_background_blur_strength_values,
+                        nameArrayId = R.array.app_background_blur_strength,
+                        card = true,
+                        onValueChanged = {
+                            SettingsManager.getInstance(context).appBackgroundFrostStrength = it.toIntOrNull() ?: 2
+                        }
+                    )
+                }
+                smallSeparatorItem()
+                listPreferenceItem(R.string.settings_main_background_frost_color) { id ->
+                    ListPreferenceView(
+                        titleId = id,
+                        selectedKey = SettingsManager.getInstance(context).appBackgroundFrostTint,
+                        valueArrayId = R.array.app_background_frost_color_values,
+                        nameArrayId = R.array.app_background_frost_color,
+                        card = true,
+                        onValueChanged = {
+                            SettingsManager.getInstance(context).appBackgroundFrostTint = it
+                        }
+                    )
+                }
             }
             smallSeparatorItem()
             switchPreferenceItem(R.string.settings_main_threshold_lines_on_charts) { id ->

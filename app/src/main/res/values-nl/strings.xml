@@ -841,8 +841,9 @@
     <string name="settings_main_background_blur_medium">Gemiddeld</string>
     <string name="settings_main_background_blur_strong">Sterk</string>
     <string name="settings_main_background_frost_color">Frostkleur</string>
-    <string name="settings_main_background_frost_white">Wit</string>
-    <string name="settings_main_background_frost_black">Zwart</string>
+    <string name="settings_main_background_frost_system">Volg systeem</string>
+    <string name="settings_main_background_frost_light">Licht</string>
+    <string name="settings_main_background_frost_dark">Donker</string>
     <string name="settings_weather_source_no_longer_exists">%s (bestaat niet meer)</string>
     <!-- LiveWallpaperWeather: regenradar + wallpaper -->
     <string name="camera_set_live_wallpaper">Zet als live wallpaper</string>

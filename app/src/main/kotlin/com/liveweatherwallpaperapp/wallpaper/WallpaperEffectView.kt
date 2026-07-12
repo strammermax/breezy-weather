@@ -26,6 +26,7 @@ import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
+import android.content.res.Configuration
 import android.util.AttributeSet
 import android.view.Choreographer
 import android.view.View
@@ -52,7 +53,7 @@ internal class WallpaperEffectView @JvmOverloads constructor(
     private var lastFrameNanos = 0L
 
     /** Blurs only this background layer; UI and glass cards above it remain sharp. */
-    fun setFrosted(frosted: Boolean, strength: Int = 2, tint: String = "black") {
+    fun setFrosted(frosted: Boolean, strength: Int = 2, tint: String = "system") {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val radius = when (strength.coerceIn(1, 3)) {
                 1 -> 16f
@@ -63,8 +64,14 @@ internal class WallpaperEffectView @JvmOverloads constructor(
                 if (frosted) RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.CLAMP) else null
             )
         }
+        val useLightFrost = when (tint) {
+            "light" -> true
+            "dark" -> false
+            else -> resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK !=
+                Configuration.UI_MODE_NIGHT_YES
+        }
         foreground = if (frosted) {
-            ColorDrawable(if (tint == "white") 0x26FFFFFF else 0x38000000)
+            ColorDrawable(if (useLightFrost) 0x26FFFFFF else 0x38000000)
         } else {
             null
         }

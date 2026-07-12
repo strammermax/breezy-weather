@@ -977,7 +977,6 @@
     <string name="settings_main_threshold_lines_on_charts">Threshold lines on charts</string>
     <string name="settings_main_section_animations">Animations</string>
     <string name="settings_main_background_title">Weather-based background</string>
-    <string name="settings_main_background_animation_title">Background animation</string>
     <string name="settings_main_background_frosted_title">Frosted background</string>
     <string name="settings_main_background_frosted_summary">Blur the weather background behind screens and cards</string>
     <string name="settings_main_background_blur_strength">Blur strength</string>
@@ -985,8 +984,10 @@
     <string name="settings_main_background_blur_medium">Medium</string>
     <string name="settings_main_background_blur_strong">Strong</string>
     <string name="settings_main_background_frost_color">Frost color</string>
-    <string name="settings_main_background_frost_white">White</string>
-    <string name="settings_main_background_frost_black">Black</string>
+    <string name="settings_main_background_frost_system">Follow system</string>
+    <string name="settings_main_background_frost_light">Light</string>
+    <string name="settings_main_background_frost_dark">Dark</string>
+    <string name="settings_main_background_animation_title">Background animation</string>
     <string name="settings_main_background_animation_enabled">Enabled</string>
     <string name="settings_main_background_animation_disabled">Disabled</string>
     <string name="settings_main_gravity_sensor_switch">Gravity sensor</string>
