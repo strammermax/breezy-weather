@@ -249,7 +249,9 @@ class CloudEngineRenderer(private val context: Context) {
         val slotSeed = daySeed * 31L + activeSlot * 997L + randomSeed
         val regularAssets = easterEggAssets.dropLast(1).ifEmpty { easterEggAssets }
         val isWeeklySpecial = activeSlot == 1 && Math.floorMod(daySeed, 7L) == 0L
-        val asset = if (isWeeklySpecial) easterEggAssets.last() else {
+        val asset = if (isWeeklySpecial) {
+            easterEggAssets.last()
+        } else {
             regularAssets[Math.floorMod(slotSeed, regularAssets.size.toLong()).toInt()]
         }
         val sizeVariation = Math.floorMod(slotSeed shr 8, 21L).toFloat() / 100f
