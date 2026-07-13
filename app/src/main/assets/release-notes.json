@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+15)",
+    "version": "Niet uitgebracht (+16)",
     "date": "",
     "changes": [
+      "fix release notes change detection",
       "fix release about icon resource",
       "fix cloud renderer formatting",
       "add implementation documentation",
