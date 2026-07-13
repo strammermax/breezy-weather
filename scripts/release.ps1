@@ -51,8 +51,12 @@ if ($branchStatus -notmatch "\[.*ahead") {
 }
 $behind = git rev-list --count HEAD..origin/main
 if ($behind -gt 0) {
-    Write-Error "Local main is $behind commit(s) behind origin/main. Pull first."
-    exit 1
+    Write-Host "Local main is $behind commit(s) behind origin/main; updating with fast-forward ..." -ForegroundColor Cyan
+    git pull --ff-only origin main
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Could not fast-forward local main. Resolve the branch difference before releasing."
+        exit 1
+    }
 }
 
 Write-Host "Updating the in-app release history ..." -ForegroundColor Cyan
