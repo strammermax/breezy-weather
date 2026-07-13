@@ -61,7 +61,9 @@ if ($LASTEXITCODE -ne 0) {
     Write-Error "Could not generate the in-app release history."
     exit 1
 }
-if (-not (git diff --quiet -- app/src/main/assets/release-notes.json)) {
+git diff --quiet -- app/src/main/assets/release-notes.json
+$releaseNotesChanged = $LASTEXITCODE -ne 0
+if ($releaseNotesChanged) {
     git add app/src/main/assets/release-notes.json
     git commit -m "Update app information"
     if ($LASTEXITCODE -ne 0) {
