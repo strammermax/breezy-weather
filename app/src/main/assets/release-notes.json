@@ -1,8 +1,11 @@
 [
   {
-    "version": "Niet uitgebracht (+10)",
+    "version": "Niet uitgebracht (+13)",
     "date": "",
     "changes": [
+      "add implementation documentation",
+      "CI: volledige git-historie ophalen zodat versionCode/versionName niet stil op 0 terugvallen",
+      "Fix ktlint/spotless-opmaakviolaties (CI spotlessXmlCheck faalde op ic_launcher.xml)",
       "add offline in-app release history",
       "Camera-upload stuurt lokale datum/tijd mee als EXIF-fallback voor day/night- en season-classificatie",
       "versie is gewijzigd in yyyy.MM.dd.buildnr (bv. 2026.07.13.842).",
