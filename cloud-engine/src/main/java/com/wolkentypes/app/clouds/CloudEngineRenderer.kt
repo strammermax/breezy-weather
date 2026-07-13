@@ -7,6 +7,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.RuntimeShader
 import android.os.Build
+import java.util.Calendar
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
@@ -23,6 +24,7 @@ class CloudEngineRenderer(private val context: Context) {
     var profile: CloudProfile = cloudProfileFor("partly_cloudy")
         set(value) {
             field = value
+            rebuildAssetPools()
             rebuildInstances()
         }
     var weatherId: String? = null
@@ -31,6 +33,7 @@ class CloudEngineRenderer(private val context: Context) {
             reloadAssets()
         }
     var windSpeedMultiplier: Float = 1f
+    var easterEggsEnabled: Boolean = true
     var densityMultiplier: Float = 1f
         set(value) {
             field = value
@@ -44,8 +47,10 @@ class CloudEngineRenderer(private val context: Context) {
         }
 
     private var cloudAssets: List<CloudAsset> = emptyList()
+    private val easterEggAssets: List<CloudAsset> = loadEasterEggAssets(context)
     private var assetsByLayer: Map<CloudLayer, List<CloudAsset>> = emptyMap()
     private var instances: List<CloudInstance> = emptyList()
+    private val forcedAssetIndex = mutableMapOf<CloudLayer, Int>()
 
     private val spriteTypes = setOf(CloudTextureType.WHITE, CloudTextureType.DARK, CloudTextureType.SMOKE)
     private val overcastFamily = setOf("overcast", "drizzle", "rain", "snow", "snow_showers")
@@ -72,13 +77,17 @@ class CloudEngineRenderer(private val context: Context) {
 
     private fun reloadAssets() {
         cloudAssets = loadCloudAssets(context, weatherId)
+        rebuildAssetPools()
+        rebuildInstances()
+    }
+
+    private fun rebuildAssetPools() {
         assetsByLayer = CloudLayer.entries.associateWith { layer ->
             val selected = profile.layers[layer]?.types.orEmpty().intersect(spriteTypes).let {
                 if (layer == CloudLayer.OVERHEAD) it - CloudTextureType.SMOKE else it
             }
             cloudAssets.filter { it.type in selected && (it.targetLayer == null || it.targetLayer == layer) }
         }
-        rebuildInstances()
     }
 
     private fun rebuildInstances() {
@@ -104,7 +113,8 @@ class CloudEngineRenderer(private val context: Context) {
                             ).coerceIn(-.2f, .9f),
                         scale = layer.scaleRange.start + rnd.nextFloat() *
                             (layer.scaleRange.endInclusive - layer.scaleRange.start),
-                        assetIndex = rnd.nextInt(pool.size),
+                        assetIndex = forcedAssetIndex[layer]?.let { Math.floorMod(it, pool.size) }
+                            ?: rnd.nextInt(pool.size),
                         baseWidthDp = 230f + rnd.nextFloat() * 160f,
                         rotationDegrees = -2f + rnd.nextFloat() * 4f,
                         alpha = (layer.alpha * config.alphaMultiplier).coerceIn(0f, 1f)
@@ -114,12 +124,51 @@ class CloudEngineRenderer(private val context: Context) {
         }
     }
 
+    fun assetNames(layer: CloudLayer): List<String> = assetsByLayer[layer].orEmpty().map { it.fileName }
+
+    fun selectedAssetName(layer: CloudLayer): String? {
+        val pool = assetsByLayer[layer].orEmpty()
+        if (pool.isEmpty()) return null
+        val index = forcedAssetIndex[layer]?.let { Math.floorMod(it, pool.size) }
+            ?: instances.firstOrNull { it.layer == layer }?.assetIndex
+            ?: 0
+        return pool.getOrNull(index)?.fileName
+    }
+
+    private fun selectedLayerAsset(layer: CloudLayer, seedOffset: Long = 0L): CloudAsset? {
+        val pool = assetsByLayer[layer].orEmpty()
+        if (pool.isEmpty()) return null
+        val index = forcedAssetIndex[layer]?.let { Math.floorMod(it, pool.size) }
+            ?: Math.floorMod(randomSeed + seedOffset, pool.size.toLong()).toInt()
+        return pool[index]
+    }
+
+    fun cycleAsset(layer: CloudLayer, delta: Int): String? {
+        val pool = assetsByLayer[layer].orEmpty()
+        if (pool.isEmpty()) return null
+        val current = forcedAssetIndex[layer]
+            ?: instances.firstOrNull { it.layer == layer }?.assetIndex
+            ?: 0
+        forcedAssetIndex[layer] = Math.floorMod(current + delta, pool.size)
+        rebuildInstances()
+        return selectedAssetName(layer)
+    }
+
+    fun useAutomaticAsset(layer: CloudLayer): String? {
+        forcedAssetIndex.remove(layer)
+        rebuildInstances()
+        return selectedAssetName(layer)
+    }
+
+    fun randomizeAssets() {
+        forcedAssetIndex.clear()
+        randomSeed += 1L
+    }
+
     private fun bankVariant(type: CloudTextureType): CloudAsset? {
         val options = cloudAssets.filter { it.type == type }
-        if (type == CloudTextureType.HORIZON_BANK) {
-            options.firstOrNull { it.fileName == "horizon-bank.webp" }?.let { return it }
-        }
-        return options.getOrNull(Math.floorMod(profile.hashCode(), options.size.coerceAtLeast(1)))
+        val variantSeed = profile.hashCode().toLong() xor randomSeed
+        return options.getOrNull(Math.floorMod(variantSeed, options.size.coerceAtLeast(1).toLong()).toInt())
     }
 
     private fun drawAsset(
@@ -165,8 +214,55 @@ class CloudEngineRenderer(private val context: Context) {
         drawOverheadVeilAndBank(canvas, screenWidth, screenHeight, pxPerDp, time, isOvercastFamily)
         if (weatherId in setOf("rain", "showers")) drawRainFront(canvas, screenWidth, screenHeight, pxPerDp, time)
         if (!isOvercastFamily) drawBillboardInstances(canvas, screenWidth, screenHeight, pxPerDp, time)
+        drawDailyEasterEgg(canvas, screenWidth, screenHeight, pxPerDp)
 
         if (shaderPaint != null) drawHazeShader(canvas, screenWidth, screenHeight, time)
+    }
+
+    /**
+     * Laat maximaal twee gedeelde easter eggs per lokale kalenderdag door het volledige beeld
+     * reizen. De dag bepaalt de twee tijdstippen, zodat hertekenen geen extra egg spawnt.
+     */
+    private fun drawDailyEasterEgg(
+        canvas: Canvas,
+        screenWidth: Float,
+        screenHeight: Float,
+        pxPerDp: Float,
+    ) {
+        if (!easterEggsEnabled || weatherId == "clear" || easterEggAssets.isEmpty()) return
+
+        val nowMillis = System.currentTimeMillis()
+        val calendar = Calendar.getInstance().apply { timeInMillis = nowMillis }
+        val daySeed = calendar.get(Calendar.YEAR) * 400L + calendar.get(Calendar.DAY_OF_YEAR)
+        val minuteOfDay = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
+        val secondFraction = calendar.get(Calendar.SECOND) / 60f + calendar.get(Calendar.MILLISECOND) / 60_000f
+        val firstStart = 9 * 60 + Math.floorMod(daySeed * 17L, 180L).toInt()
+        val secondStart = 14 * 60 + Math.floorMod(daySeed * 29L, 180L).toInt()
+        val activeSlot = listOf(firstStart, secondStart).indexOfFirst { start ->
+            minuteOfDay + secondFraction in start.toFloat()..(start + EASTER_EGG_TRAVEL_MINUTES)
+        }
+        if (activeSlot < 0) return
+        val startMinute = if (activeSlot == 0) firstStart else secondStart
+        val progress = (minuteOfDay + secondFraction - startMinute) / EASTER_EGG_TRAVEL_MINUTES
+        if (progress !in 0f..1f) return
+
+        val slotSeed = daySeed * 31L + activeSlot * 997L + randomSeed
+        val regularAssets = easterEggAssets.dropLast(1).ifEmpty { easterEggAssets }
+        val isWeeklySpecial = activeSlot == 1 && Math.floorMod(daySeed, 7L) == 0L
+        val asset = if (isWeeklySpecial) easterEggAssets.last() else {
+            regularAssets[Math.floorMod(slotSeed, regularAssets.size.toLong()).toInt()]
+        }
+        val sizeVariation = Math.floorMod(slotSeed shr 8, 21L).toFloat() / 100f
+        val width = screenWidth * (.42f + sizeVariation)
+        val height = width / asset.aspectRatio
+        val padding = maxOf(screenWidth * .08f, 24f * pxPerDp)
+        val left = -width - padding + progress * (screenWidth + width + padding * 2f)
+        val verticalRange = (screenHeight * .62f - height).coerceAtLeast(screenHeight * .12f)
+        val topSeed = Math.floorMod(slotSeed shr 16, 10_000L).toFloat() / 10_000f
+        val top = screenHeight * .10f + verticalRange * topSeed
+        val fade = minOf((progress / .06f).coerceAtMost(1f), ((1f - progress) / .06f).coerceAtMost(1f))
+
+        drawAsset(canvas, asset, left, top, width, height, .94f * fade)
     }
 
     private fun drawHorizonBank(
@@ -210,7 +306,7 @@ class CloudEngineRenderer(private val context: Context) {
         fun plate(layer: CloudLayer, centerFraction: Float, widthFactor: Float, phase: Float) {
             val config = profile.layers[layer] ?: return
             if (config.amount == CloudAmount.NONE) return
-            val bank = cloudAssets.firstOrNull { it.targetLayer == layer } ?: return
+            val bank = selectedLayerAsset(layer) ?: return
             val width = screenWidth * widthFactor * config.sizeMultiplier
             val height = width / bank.aspectRatio
             val x = -(width - screenWidth) / 2f +
@@ -323,7 +419,11 @@ class CloudEngineRenderer(private val context: Context) {
             drawAsset(canvas, bank, x, top, width, height, .96f)
         }
 
-        cloudAssets.firstOrNull { it.fileName == "dark-midfield-cloudy-01.webp" }?.let { bank ->
+        val midfieldBanks = cloudAssets.filter { it.fileName.startsWith("dark-midfield-cloudy-") }
+        val upperBank = midfieldBanks.getOrNull(
+            Math.floorMod(randomSeed, midfieldBanks.size.coerceAtLeast(1).toLong()).toInt()
+        )
+        upperBank?.let { bank ->
             val width = screenWidth * 1.72f
             val height = width / bank.aspectRatio
             val travel = screenWidth + width
@@ -335,14 +435,17 @@ class CloudEngineRenderer(private val context: Context) {
 
             // Onderste tussendek: overlapt zowel de brede middenplaat als de horizonbank, zodat
             // er tijdens het drijven geen grijze/blauwe sleuf tussen beide lagen kan ontstaan.
+            val lowerBank = midfieldBanks.getOrNull(
+                Math.floorMod(randomSeed + 1L, midfieldBanks.size.coerceAtLeast(1).toLong()).toInt()
+            ) ?: bank
             val lowerWidth = screenWidth * 1.52f
-            val lowerHeight = lowerWidth / bank.aspectRatio
+            val lowerHeight = lowerWidth / lowerBank.aspectRatio
             val lowerTravel = screenWidth + lowerWidth
             val lowerX = -lowerWidth + (
                 (time * .24f * pxPerDp * windSpeedMultiplier + lowerTravel * .76f) % lowerTravel
                 )
             val lowerTop = screenHeight * .70f - lowerHeight / 2f
-            drawAsset(canvas, bank, lowerX, lowerTop, lowerWidth, lowerHeight, .97f)
+            drawAsset(canvas, lowerBank, lowerX, lowerTop, lowerWidth, lowerHeight, .97f)
         }
     }
 
@@ -377,13 +480,16 @@ class CloudEngineRenderer(private val context: Context) {
             val height = width / asset.aspectRatio
             val layerSpeed = profile.layers[cloud.layer]?.speedMultiplier ?: 1f
             val speed = cloud.layer.baseSpeedDpPerSec * pxPerDp * windSpeedMultiplier * profile.speed * layerSpeed
-            // Marge ruim voorbij het scherm (i.p.v. exact de wolkbreedte): anders kan de
-            // wrap-around net op de rand vallen, wat als een zichtbare "pop" oogt.
-            val margin = width + screenWidth * .5f
-            val travel = screenWidth + margin * 2f
-            val startX = cloud.laneOffsetFraction * travel - margin
-            val rawX = startX + time * speed
-            val x = ((rawX % travel) + travel) % travel - margin
+            // De bitmap begint volledig buiten de linker schermrand en wordt pas hergebruikt
+            // nadat ook zijn achterrand rechts buiten beeld is. Een kleine extra veiligheidszone
+            // voorkomt afrondings-/rotatiepops, zonder de lange onzichtbare halve-schermmarge die
+            // eerder gaten in een wolkenlaag veroorzaakte.
+            val offscreenPadding = maxOf(screenWidth * .08f, 24f * pxPerDp)
+            val cycleStart = -width - offscreenPadding
+            val travel = screenWidth + width + offscreenPadding * 2f
+            val phase = cloud.laneOffsetFraction * travel + time * speed
+            val wrappedPhase = ((phase % travel) + travel) % travel
+            val x = cycleStart + wrappedPhase
             val top = cloud.yFraction * screenHeight - height / 2f
             drawAsset(canvas, asset, x, top, width, height, cloud.alpha, cloud.rotationDegrees)
         }
@@ -404,6 +510,8 @@ class CloudEngineRenderer(private val context: Context) {
     }
 
     private companion object {
+        const val EASTER_EGG_TRAVEL_MINUTES = 5f
+
         // Eenvoudige waarde-ruis (hash + bilineaire interpolatie) + fbm van twee octaven,
         // standaardtechniek uit shader-programmering (geen overgenomen broncode) — tekent een
         // zachte, langzaam driftende sluier met lage dekking boven de sprite-wolken.

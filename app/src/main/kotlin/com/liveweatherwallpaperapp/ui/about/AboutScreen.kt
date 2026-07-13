@@ -16,6 +16,8 @@
 
 package com.liveweatherwallpaperapp.ui.about
 
+import android.os.SystemClock
+import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -36,11 +38,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -54,6 +59,7 @@ import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.plus
+import com.liveweatherwallpaperapp.domain.settings.TesterModeStore
 import com.liveweatherwallpaperapp.ui.common.composables.AlertDialogLink
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3ExpressiveCardListItem
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3Scaffold
@@ -83,6 +89,11 @@ internal fun AboutScreen(
 
     val linkToOpen = rememberSaveable { mutableStateOf("") }
     val dialogLinkOpenState = rememberSaveable { mutableStateOf(false) }
+    val testerModeStore = remember { TesterModeStore(context) }
+    var testerModeUnlocked by remember { mutableStateOf(testerModeStore.isUnlocked) }
+    var testerModeEnabled by remember { mutableStateOf(testerModeStore.isEnabled) }
+    var iconTapCount by remember { mutableStateOf(0) }
+    var previousIconTapAt by remember { mutableStateOf(0L) }
 
     val contactLinks = buildList {
         BuildConfig.SOURCE_CODE_LINK.takeIf {
@@ -140,7 +151,22 @@ internal fun AboutScreen(
             )
         ) {
             item {
-                Header()
+                Header {
+                    val now = SystemClock.elapsedRealtime()
+                    iconTapCount = if (now - previousIconTapAt <= TESTER_TAP_TIMEOUT_MILLIS) {
+                        iconTapCount + 1
+                    } else {
+                        1
+                    }
+                    previousIconTapAt = now
+                    if (iconTapCount >= TESTER_TAP_COUNT) {
+                        testerModeStore.unlock()
+                        testerModeUnlocked = true
+                        testerModeEnabled = true
+                        iconTapCount = 0
+                        Toast.makeText(context, R.string.about_tester_mode_unlocked, Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
             largeSeparatorItem()
 
@@ -176,6 +202,18 @@ internal fun AboutScreen(
                     if (index != aboutViewModel.getAboutAppLinks(activity).lastIndex) {
                         SmallSeparatorItem()
                     }
+                }
+            }
+            if (testerModeUnlocked) {
+                item { SmallSeparatorItem() }
+                item {
+                    TesterModeToggle(
+                        checked = testerModeEnabled,
+                        onCheckedChange = {
+                            testerModeEnabled = it
+                            testerModeStore.isEnabled = it
+                        }
+                    )
                 }
             }
 
@@ -217,7 +255,7 @@ internal fun AboutScreen(
 }
 
 @Composable
-private fun Header() {
+private fun Header(onIconClick: () -> Unit) {
     Column(
         modifier = Modifier.padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -225,7 +263,7 @@ private fun Header() {
         Image(
             painter = painterResource(R.drawable.ic_about_app_icon),
             contentDescription = null,
-            modifier = Modifier.size(72.dp)
+            modifier = Modifier.size(72.dp).clickable(onClick = onIconClick)
         )
         Spacer(
             modifier = Modifier
@@ -244,6 +282,35 @@ private fun Header() {
         )
     }
 }
+
+@Composable
+private fun TesterModeToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Material3ExpressiveCardListItem(isLast = true) {
+        Row(
+            modifier = Modifier.fillMaxWidth().clickable { onCheckedChange(!checked) }.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_bug_report),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.about_tester_debug_mode))
+                Text(
+                    stringResource(R.string.about_tester_debug_mode_summary),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(checked = checked, onCheckedChange = onCheckedChange)
+        }
+    }
+}
+
+private const val TESTER_TAP_COUNT = 7
+private const val TESTER_TAP_TIMEOUT_MILLIS = 700L
 
 @Composable
 private fun SectionTitle(title: String) {

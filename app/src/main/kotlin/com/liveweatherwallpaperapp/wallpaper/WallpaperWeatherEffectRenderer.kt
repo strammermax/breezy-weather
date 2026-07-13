@@ -132,6 +132,7 @@ internal class WallpaperWeatherEffectRenderer(
                     baseProfile
                 }
                 weatherId = newCloudsParams.weatherId
+                easterEggsEnabled = newCloudsParams.daytime && newCloudsParams.weatherId != "clear"
                 windSpeedMultiplier = preset?.wind ?: newCloudsParams.windSpeedMultiplier
                 layerDepthMultiplier = preset?.depth ?: 1f
             }

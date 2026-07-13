@@ -52,6 +52,17 @@ class CloudSurfaceView @JvmOverloads constructor(
             renderer.randomSeed = value
         }
 
+    fun selectedAssetName(layer: CloudLayer): String? = renderer.selectedAssetName(layer)
+
+    fun cycleAsset(layer: CloudLayer, delta: Int): String? = renderer.cycleAsset(layer, delta).also { invalidate() }
+
+    fun useAutomaticAsset(layer: CloudLayer): String? = renderer.useAutomaticAsset(layer).also { invalidate() }
+
+    fun randomizeAssets() {
+        renderer.randomizeAssets()
+        invalidate()
+    }
+
     private var startNanos = -1L
 
     private val frameCallback = object : Choreographer.FrameCallback {

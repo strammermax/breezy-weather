@@ -114,6 +114,19 @@ class WallpaperRepository @Inject constructor(
     /** See [RemoveSkyProvider.normalizeServiceUrl]. */
     fun normalizeServiceUrl(url: String): String = removeSkyProvider().normalizeServiceUrl(url)
 
+    /** See [RemoveSkyProvider.fetchNearbyWeetjes]. */
+    suspend fun fetchNearbyWeetjes(latitude: Double, longitude: Double, taal: String): List<RemoveSkyWeetje> =
+        removeSkyProvider().fetchNearbyWeetjes(latitude, longitude, taal)
+
+    /** See [RemoveSkyProvider.requestMoreWeetjes]. */
+    suspend fun requestMoreWeetjes(
+        land: String,
+        locatie: String,
+        latitude: Double,
+        longitude: Double,
+        taal: String,
+    ): RequestMoreWeetjesResult? = removeSkyProvider().requestMoreWeetjes(land, locatie, latitude, longitude, taal)
+
     /**
      * Startup-only reconciliation: purges anything RemoveSky reports as removed near
      * (latitude, longitude) since this location's last such check -- catches a curator

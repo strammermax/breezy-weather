@@ -56,6 +56,7 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
     private val wallpaperRepository: WallpaperRepository,
     private val wallpaperLocationResolver: WallpaperLocationResolver,
     private val weatherRepository: WeatherRepository,
+    private val weetjeManager: WeetjeManager,
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
@@ -88,6 +89,31 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                 val latitude = fix?.latitude ?: location.latitude
                 val longitude = fix?.longitude ?: location.longitude
                 val place = fix?.place ?: location.toWallpaperPlaceQuery()
+
+                // Weetje dwell-notification check: only for the activating location (the one
+                // with a live GPS fix this tick, i.e. "where the user actually is now") --
+                // the other up-to-4 locations here are just the user's saved weather
+                // locations, not necessarily where they currently are. Best-effort: a failure
+                // here must never break the photo refresh below.
+                if (isActivating) {
+                    val needsWeetjeRetry = try {
+                        weetjeManager.checkAndNotify(latitude, longitude, place)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Throwable) {
+                        if (BuildConfig.DEBUG) {
+                            Log.w(TAG, "weetje check failed: ${e.javaClass.simpleName}")
+                        }
+                        false
+                    }
+                    // A fresh weetje generation was likely just kicked off server-side (known
+                    // to take at least ~1 minute) -- don't wait for the next regular
+                    // photoRefreshIntervalMinutes tick (up to 3 hours), same idea as the
+                    // photo empty-result retry below.
+                    if (needsWeetjeRetry) {
+                        scheduleRetrySoon(context, WEETJE_RETRY_DELAY_MINUTES)
+                    }
+                }
 
                 val activeRemoved = wallpaperRepository.pruneDisabledPhotos(
                     latitude = latitude,
@@ -171,6 +197,15 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
         private const val WORK_NAME_MANUAL = "WallpaperPhotoRefresh-manual"
         private const val WORK_NAME_RETRY = "WallpaperPhotoRefresh-retry"
         private const val BACKOFF_DELAY_MINUTES = 30L
+
+        /**
+         * Retry delay used when a weetje was due but the server had to start generating fresh
+         * ones on demand ([WeetjeManager]) -- known to take at least ~1 minute, so a flat
+         * 15-minute retry (no escalating backoff needed, unlike
+         * [WallpaperImageStore.RETRY_BACKOFF_MINUTES]: this isn't a "genuinely empty location"
+         * situation, generation just needs a bit of time).
+         */
+        private const val WEETJE_RETRY_DELAY_MINUTES = 15L
 
         /** Cap on the number of locations checked per run, mirroring [livewallpaperweather.data.location.LocationRepository]'s usage in WeatherUpdateJob. */
         private const val MAX_LOCATIONS = 5

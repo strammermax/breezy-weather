@@ -98,6 +98,7 @@ import com.liveweatherwallpaperapp.wallpaper.photo.PlaceQuery
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperImageStore
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperPhotoRefreshWorker
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
+import com.liveweatherwallpaperapp.wallpaper.photo.WeetjeStore
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -146,6 +147,11 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
     private lateinit var photoBackgroundEnabledValue: MutableState<Boolean>
     private lateinit var photoRefreshIntervalMinutesValue: MutableState<Float>
 
+    private lateinit var weetjeStore: WeetjeStore
+    private lateinit var weetjeNotificationsEnabledValue: MutableState<Boolean>
+    private lateinit var weetjeMaxPerDayValue: MutableState<Float>
+    private lateinit var weetjeDwellMinutesValue: MutableState<Float>
+
     /** ACT-011: when the current location's weather/photo were last refreshed, or null if unknown. */
     private lateinit var weatherRefreshedAtValue: MutableState<Long?>
     private lateinit var photoRefreshedAtValue: MutableState<Long?>
@@ -181,6 +187,11 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         photoBackgroundEnabledValue = mutableStateOf(wallpaperImageStore.photoBackgroundEnabled)
         photoRefreshIntervalMinutesValue =
             mutableFloatStateOf(wallpaperImageStore.photoRefreshIntervalMinutes.toFloat())
+
+        weetjeStore = WeetjeStore(this)
+        weetjeNotificationsEnabledValue = mutableStateOf(weetjeStore.notificationsEnabled)
+        weetjeMaxPerDayValue = mutableFloatStateOf(weetjeStore.maxNotificationsPerDay.toFloat())
+        weetjeDwellMinutesValue = mutableFloatStateOf(weetjeStore.dwellThresholdMinutes.toFloat())
 
         previewBitmapValue = mutableStateOf(null)
         refreshBusyValue = mutableStateOf(false)
@@ -370,6 +381,18 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         }
     }
 
+    private fun persistWeetjeNotificationsEnabled(enabled: Boolean) {
+        weetjeStore.notificationsEnabled = enabled
+    }
+
+    private fun persistWeetjeMaxPerDay(maxPerDay: Int) {
+        weetjeStore.maxNotificationsPerDay = maxPerDay
+    }
+
+    private fun persistWeetjeDwellMinutes(minutes: Int) {
+        weetjeStore.dwellThresholdMinutes = minutes
+    }
+
     @OptIn(ExperimentalPermissionsApi::class)
     @Composable
     private fun ContentView() {
@@ -533,6 +556,65 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                     }
                 }
                 item {
+                    SwitchPreferenceView(
+                        title = stringResource(R.string.widget_live_wallpaper_weetje_notifications),
+                        summary = { _: Context, _: Boolean ->
+                            this@LiveWallpaperConfigActivity
+                                .getString(R.string.widget_live_wallpaper_weetje_notifications_summary)
+                        },
+                        checked = weetjeNotificationsEnabledValue.value,
+                        withState = false,
+                        card = false
+                    ) { newValue ->
+                        weetjeNotificationsEnabledValue.value = newValue
+                        persistWeetjeNotificationsEnabled(newValue)
+                    }
+                }
+                if (weetjeNotificationsEnabledValue.value) {
+                    item {
+                        Column(
+                            modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    R.string.widget_live_wallpaper_weetje_max_per_day,
+                                    weetjeMaxPerDayValue.value.roundToInt()
+                                ),
+                                fontWeight = FontWeight.Bold
+                            )
+                            val weetjeMaxPerDayMin = WeetjeStore.MIN_MAX_PER_DAY.toFloat()
+                            val weetjeMaxPerDayMax = WeetjeStore.MAX_MAX_PER_DAY.toFloat()
+                            Slider(
+                                value = weetjeMaxPerDayValue.value,
+                                onValueChange = { value -> weetjeMaxPerDayValue.value = value.roundToInt().toFloat() },
+                                valueRange = weetjeMaxPerDayMin..weetjeMaxPerDayMax,
+                                steps = WeetjeStore.MAX_MAX_PER_DAY - WeetjeStore.MIN_MAX_PER_DAY - 1,
+                                onValueChangeFinished = {
+                                    persistWeetjeMaxPerDay(weetjeMaxPerDayValue.value.roundToInt())
+                                }
+                            )
+                            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.small_margin)))
+                            Text(
+                                text = stringResource(
+                                    R.string.widget_live_wallpaper_weetje_dwell_minutes,
+                                    weetjeDwellMinutesValue.value.roundToInt()
+                                ),
+                                fontWeight = FontWeight.Bold
+                            )
+                            val weetjeDwellMin = WeetjeStore.MIN_DWELL_THRESHOLD_MINUTES.toFloat()
+                            val weetjeDwellMax = WeetjeStore.MAX_DWELL_THRESHOLD_MINUTES.toFloat()
+                            Slider(
+                                value = weetjeDwellMinutesValue.value,
+                                onValueChange = { value -> weetjeDwellMinutesValue.value = value.roundToInt().toFloat() },
+                                valueRange = weetjeDwellMin..weetjeDwellMax,
+                                onValueChangeFinished = {
+                                    persistWeetjeDwellMinutes(weetjeDwellMinutesValue.value.roundToInt())
+                                }
+                            )
+                        }
+                    }
+                }
+                item {
                     Column(
                         modifier = Modifier.padding(
                             horizontal = dimensionResource(R.dimen.normal_margin)
@@ -594,9 +676,15 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         persistCoreSettings()
                     }
                 }
-                // wolke-refactor-plan Stap 6: the tuning screen is deliberately debug-build-only,
-                // not just hidden-by-default, so it can never ship reachable in a release build.
-                if (BuildConfig.DEBUG && newCloudsEnabledValue.value) {
+                // Debug builds always expose tuning. Release testers can explicitly unlock the
+                // same UI through About without enabling internal backend/debug-build behavior.
+                if (
+                    (BuildConfig.DEBUG ||
+                        com.liveweatherwallpaperapp.domain.settings.TesterModeStore(
+                            this@LiveWallpaperConfigActivity
+                        ).isEnabled) &&
+                    newCloudsEnabledValue.value
+                ) {
                     item {
                         OutlinedButton(
                             onClick = {
