@@ -24,15 +24,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,6 +44,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,6 +57,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -124,20 +129,51 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
     var wind by remember(selected.id) { mutableFloatStateOf(savedPreset?.wind ?: baseProfile.speed) }
     var depth by remember(selected.id) { mutableFloatStateOf(savedPreset?.depth ?: 1f) }
     var cloudView by remember { mutableStateOf<CloudSurfaceView?>(null) }
-    var assetLabels by remember(selected.id) { mutableStateOf(emptyMap<CloudLayer, String>()) }
     val liveProfile = baseProfile.copy(layers = layerConfigs, density = density, speed = baseProfile.speed)
 
     LaunchedEffect(selected.id, layerConfigs, density, wind, depth) {
         savePreset(context, selected.id, layerConfigs, density, wind, depth)
     }
 
-    Column(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize()) {
+        Box(
+            Modifier.fillMaxSize()
+                .background(Brush.verticalGradient(listOf(selected.skyTop, selected.skyBottom)))
+        )
+        AndroidView(
+            modifier = Modifier.fillMaxSize(),
+            factory = { ctx -> CloudSurfaceView(ctx) },
+            update = { view ->
+                cloudView = view
+                view.profile = liveProfile
+                view.weatherId = selected.id
+                view.windSpeedMultiplier = wind
+                view.densityMultiplier = 1f
+                view.layerDepthMultiplier = depth
+            }
+        )
+        // Same composition as the real live wallpaper: sky+clouds fill the screen, the
+        // cached location photo (if any) sits in the foreground third so the tuning preview
+        // matches what actually ends up on the home screen instead of a flat gradient.
+        if (backgroundBitmap != null) {
+            Image(
+                bitmap = backgroundBitmap.asImageBitmap(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().fillMaxHeight(.35f)
+            )
+        }
         Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(12.dp)
+                .background(Color(0xB3303A50), RoundedCornerShape(12.dp)).padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.White
+                )
             }
             Box(Modifier.width(8.dp))
             ExposedDropdownMenuBox(
@@ -151,6 +187,7 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
                     onValueChange = {},
                     label = { Text("Weather type") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(weatherMenuExpanded) },
+                    colors = cloudWeatherTypeFieldColors(),
                     modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
                 ExposedDropdownMenu(weatherMenuExpanded, { weatherMenuExpanded = false }) {
@@ -166,74 +203,37 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
                 }
             }
         }
-
-        Box(Modifier.fillMaxSize()) {
-            Box(
-                Modifier.fillMaxSize()
-                    .background(Brush.verticalGradient(listOf(selected.skyTop, selected.skyBottom)))
-            )
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { ctx -> CloudSurfaceView(ctx) },
-                update = { view ->
-                    cloudView = view
-                    view.profile = liveProfile
-                    view.weatherId = selected.id
-                    view.windSpeedMultiplier = wind
-                    view.densityMultiplier = 1f
-                    view.layerDepthMultiplier = depth
-                }
-            )
-            // Same composition as the real live wallpaper: sky+clouds fill the screen, the
-            // cached location photo (if any) sits in the foreground third so the tuning preview
-            // matches what actually ends up on the home screen instead of a flat gradient.
-            if (backgroundBitmap != null) {
-                Image(
-                    bitmap = backgroundBitmap.asImageBitmap(),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().fillMaxHeight(.35f)
+        val controlsHeight = if (controlsExpanded) Modifier.fillMaxHeight(.82f) else Modifier
+        Column(
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth().then(controlsHeight)
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (controlsExpanded) {
+                CloudLayerControlPanel(
+                    configs = layerConfigs,
+                    onConfigChange = { layer, config -> layerConfigs = layerConfigs + (layer to config) },
+                    density = density,
+                    onDensityChange = { density = it },
+                    depth = depth,
+                    onDepthChange = { depth = it },
+                    wind = wind,
+                    onWindChange = { wind = it },
+                    onRandomizeAssets = {
+                        cloudView?.randomizeAssets()
+                    },
+                    modifier = Modifier.weight(1f).padding(bottom = 8.dp)
                 )
             }
-            Column(
-                Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Button(
+                onClick = { controlsExpanded = !controlsExpanded },
+                colors = cloudActionButtonColors(),
+                shape = RoundedCornerShape(10.dp)
             ) {
-                if (controlsExpanded) {
-                    CloudLayerControlPanel(
-                        configs = layerConfigs,
-                        onConfigChange = { layer, config -> layerConfigs = layerConfigs + (layer to config) },
-                        density = density,
-                        onDensityChange = { density = it },
-                        depth = depth,
-                        onDepthChange = { depth = it },
-                        wind = wind,
-                        onWindChange = { wind = it },
-                        assetLabels = assetLabels,
-                        onPreviousAsset = { layer ->
-                            cloudView?.cycleAsset(layer, -1)?.let { assetLabels = assetLabels + (layer to it) }
-                        },
-                        onNextAsset = { layer ->
-                            cloudView?.cycleAsset(layer, 1)?.let { assetLabels = assetLabels + (layer to it) }
-                        },
-                        onAutomaticAsset = { layer ->
-                            cloudView?.useAutomaticAsset(layer)?.let {
-                                assetLabels =
-                                    assetLabels + (layer to "Auto · $it")
-                            }
-                        },
-                        onRandomizeAssets = {
-                            cloudView?.randomizeAssets()
-                            assetLabels = CloudLayer.entries.mapNotNull { layer ->
-                                cloudView?.selectedAssetName(layer)?.let { layer to "Auto · $it" }
-                            }.toMap()
-                        },
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                }
-                Button(onClick = { controlsExpanded = !controlsExpanded }) {
-                    Text(if (controlsExpanded) "Close settings  ↓" else "Cloud settings  ↑")
-                }
+                Text(
+                    if (controlsExpanded) "Hide cloud settings  ↓" else "Show cloud settings  ↑",
+                    fontSize = 11.sp
+                )
             }
         }
     }
@@ -249,10 +249,6 @@ private fun CloudLayerControlPanel(
     onDepthChange: (Float) -> Unit,
     wind: Float,
     onWindChange: (Float) -> Unit,
-    assetLabels: Map<CloudLayer, String>,
-    onPreviousAsset: (CloudLayer) -> Unit,
-    onNextAsset: (CloudLayer) -> Unit,
-    onAutomaticAsset: (CloudLayer) -> Unit,
     onRandomizeAssets: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -267,14 +263,24 @@ private fun CloudLayerControlPanel(
             Modifier.verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Cloud layers", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(
+                "Cloud layers",
+                color = CLOUD_PANEL_TEXT_COLOR,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
             Text(
                 "Pick type, amount, position and movement per layer",
                 color = Color(0xFF53627A),
                 fontSize = 13.sp
             )
-            Button(onClick = onRandomizeAssets, modifier = Modifier.fillMaxWidth()) {
-                Text("Randomize all cloud assets")
+            Button(
+                onClick = onRandomizeAssets,
+                modifier = Modifier.fillMaxWidth(),
+                colors = cloudActionButtonColors(),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text("Randomize all cloud assets", fontSize = 11.sp)
             }
             CloudLayer.entries.reversed().forEach { layer ->
                 val isExpanded = layer in expandedLayers
@@ -292,11 +298,7 @@ private fun CloudLayerControlPanel(
                     CloudLayerSection(
                         layer,
                         configs[layer] ?: LayerCloudConfig(),
-                        onChange = { onConfigChange(layer, it) },
-                        assetLabel = assetLabels[layer] ?: "Auto",
-                        onPreviousAsset = { onPreviousAsset(layer) },
-                        onNextAsset = { onNextAsset(layer) },
-                        onAutomaticAsset = { onAutomaticAsset(layer) }
+                        onChange = { onConfigChange(layer, it) }
                     )
                 }
                 HorizontalDivider(color = Color(0xFFD8DEEA))
@@ -314,18 +316,8 @@ private fun CloudLayerSection(
     layer: CloudLayer,
     config: LayerCloudConfig,
     onChange: (LayerCloudConfig) -> Unit,
-    assetLabel: String,
-    onPreviousAsset: () -> Unit,
-    onNextAsset: () -> Unit,
-    onAutomaticAsset: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-        Text("Asset: $assetLabel", fontSize = 11.sp, color = Color(0xFF53627A))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-            Button(onClick = onPreviousAsset, modifier = Modifier.weight(1f)) { Text("Previous") }
-            Button(onClick = onAutomaticAsset, modifier = Modifier.weight(1f)) { Text("Auto") }
-            Button(onClick = onNextAsset, modifier = Modifier.weight(1f)) { Text("Next") }
-        }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
             CloudTypeChip("White", CloudTextureType.WHITE, config, onChange, Modifier.weight(1f))
             CloudTypeChip("Dark", CloudTextureType.DARK, config, onChange, Modifier.weight(1f))
@@ -365,6 +357,7 @@ private fun CloudLayerSection(
                     selected = config.amount == amount,
                     onClick = { onChange(config.copy(amount = amount)) },
                     label = { Text(labels[index], fontSize = 10.sp) },
+                    colors = cloudFilterChipColors(),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -429,9 +422,38 @@ private fun CloudTypeChip(
             onChange(config.copy(types = types))
         },
         label = { Text(label, fontSize = 11.sp) },
+        colors = cloudFilterChipColors(),
         modifier = modifier
     )
 }
+
+@Composable
+private fun cloudFilterChipColors() = FilterChipDefaults.filterChipColors(
+    containerColor = Color(0x99303A50),
+    labelColor = Color.White,
+    selectedContainerColor = Color(0xDD303A50),
+    selectedLabelColor = Color.White
+)
+
+@Composable
+private fun cloudActionButtonColors() = ButtonDefaults.buttonColors(
+    containerColor = Color(0xDD303A50),
+    contentColor = Color.White
+)
+
+@Composable
+private fun cloudWeatherTypeFieldColors() = TextFieldDefaults.colors(
+    focusedTextColor = Color.White,
+    unfocusedTextColor = Color.White,
+    focusedContainerColor = Color.Transparent,
+    unfocusedContainerColor = Color.Transparent,
+    focusedLabelColor = Color.White,
+    unfocusedLabelColor = Color.White.copy(alpha = 0.8f),
+    focusedIndicatorColor = Color.White,
+    unfocusedIndicatorColor = Color.White.copy(alpha = 0.7f),
+    focusedTrailingIconColor = Color.White,
+    unfocusedTrailingIconColor = Color.White
+)
 
 @Composable
 private fun CloudTuningSlider(
@@ -443,9 +465,16 @@ private fun CloudTuningSlider(
 ) {
     Column {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(label, fontWeight = FontWeight.SemiBold)
-            Text(valueText, fontWeight = FontWeight.Bold)
+            Text(label, color = CLOUD_PANEL_TEXT_COLOR, fontWeight = FontWeight.SemiBold)
+            Text(valueText, color = CLOUD_PANEL_TEXT_COLOR, fontWeight = FontWeight.Bold)
         }
-        Slider(value, onChange, valueRange = range)
+        Slider(
+            value,
+            onChange,
+            modifier = Modifier.graphicsLayer(scaleY = 0.6f),
+            valueRange = range
+        )
     }
 }
+
+private val CLOUD_PANEL_TEXT_COLOR = Color(0xFF23324A)
