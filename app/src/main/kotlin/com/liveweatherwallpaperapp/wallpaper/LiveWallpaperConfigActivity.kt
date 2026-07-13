@@ -605,7 +605,9 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             val weetjeDwellMax = WeetjeStore.MAX_DWELL_THRESHOLD_MINUTES.toFloat()
                             Slider(
                                 value = weetjeDwellMinutesValue.value,
-                                onValueChange = { value -> weetjeDwellMinutesValue.value = value.roundToInt().toFloat() },
+                                onValueChange = { value ->
+                                    weetjeDwellMinutesValue.value = value.roundToInt().toFloat()
+                                },
                                 valueRange = weetjeDwellMin..weetjeDwellMax,
                                 onValueChangeFinished = {
                                     persistWeetjeDwellMinutes(weetjeDwellMinutesValue.value.roundToInt())
@@ -679,10 +681,12 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 // Debug builds always expose tuning. Release testers can explicitly unlock the
                 // same UI through About without enabling internal backend/debug-build behavior.
                 if (
-                    (BuildConfig.DEBUG ||
-                        com.liveweatherwallpaperapp.domain.settings.TesterModeStore(
-                            this@LiveWallpaperConfigActivity
-                        ).isEnabled) &&
+                    (
+                        BuildConfig.DEBUG ||
+                            com.liveweatherwallpaperapp.domain.settings.TesterModeStore(
+                                this@LiveWallpaperConfigActivity
+                            ).isEnabled
+                        ) &&
                     newCloudsEnabledValue.value
                 ) {
                     item {

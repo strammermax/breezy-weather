@@ -217,7 +217,10 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
                             cloudView?.cycleAsset(layer, 1)?.let { assetLabels = assetLabels + (layer to it) }
                         },
                         onAutomaticAsset = { layer ->
-                            cloudView?.useAutomaticAsset(layer)?.let { assetLabels = assetLabels + (layer to "Auto · $it") }
+                            cloudView?.useAutomaticAsset(layer)?.let {
+                                assetLabels =
+                                    assetLabels + (layer to "Auto · $it")
+                            }
                         },
                         onRandomizeAssets = {
                             cloudView?.randomizeAssets()

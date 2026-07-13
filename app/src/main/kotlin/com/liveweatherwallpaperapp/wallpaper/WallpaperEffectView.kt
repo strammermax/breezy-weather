@@ -17,6 +17,7 @@
 package com.liveweatherwallpaperapp.wallpaper
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.ColorMatrix
@@ -26,7 +27,6 @@ import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
-import android.content.res.Configuration
 import android.util.AttributeSet
 import android.view.Choreographer
 import android.view.View
@@ -67,8 +67,9 @@ internal class WallpaperEffectView @JvmOverloads constructor(
         val useLightFrost = when (tint) {
             "light" -> true
             "dark" -> false
-            else -> resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK !=
-                Configuration.UI_MODE_NIGHT_YES
+            else ->
+                resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK !=
+                    Configuration.UI_MODE_NIGHT_YES
         }
         foreground = if (frosted) {
             ColorDrawable(if (useLightFrost) 0x26FFFFFF else 0x38000000)

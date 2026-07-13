@@ -99,10 +99,10 @@ import com.liveweatherwallpaperapp.wallpaper.CelestialTiming
 import com.liveweatherwallpaperapp.wallpaper.WallpaperEffectView
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSceneSnapshot
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSceneStateFactory
-import com.liveweatherwallpaperapp.wallpaper.toFrostedBackground
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperImageStore
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
 import com.liveweatherwallpaperapp.wallpaper.photo.toWallpaperPlaceQuery
+import com.liveweatherwallpaperapp.wallpaper.toFrostedBackground
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
