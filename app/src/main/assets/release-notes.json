@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+4)",
+    "version": "Niet uitgebracht (+5)",
     "date": "",
     "changes": [
+      "Refine tester, cache and notification settings",
       "Improve daily temperature and precipitation chart",
       "Performance: minder per-frame allocaties en disk-I/O in de wallpaper render-loop",
       "Simplify cloud tuning controls",
