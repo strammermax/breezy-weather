@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+9)",
+    "version": "Niet uitgebracht (+10)",
     "date": "",
     "changes": [
+      "add offline in-app release history",
       "Camera-upload stuurt lokale datum/tijd mee als EXIF-fallback voor day/night- en season-classificatie",
       "versie is gewijzigd in yyyy.MM.dd.buildnr (bv. 2026.07.13.842).",
       "iets leuks toegevoegd",
