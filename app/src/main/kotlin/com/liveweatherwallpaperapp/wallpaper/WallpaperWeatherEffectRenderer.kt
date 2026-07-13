@@ -97,7 +97,7 @@ internal class WallpaperWeatherEffectRenderer(
     /**
      * Experimental: render the background weather pass's clouds via the `:cloud-engine` module
      * (the wolkentypes prototype) instead of the built-in AGSL/Canvas cloud renderer. Backed by
-     * [LiveWallpaperConfigManager.newCloudsEnabled], off by default. Every other pass (fog,
+     * [LiveWallpaperConfigManager.newCloudsEnabled], on by default. Every other pass (fog,
      * precipitation, glass rain, stars) is unaffected — see [draw].
      */
     private val useNewClouds: Boolean = false,
@@ -152,6 +152,7 @@ internal class WallpaperWeatherEffectRenderer(
         } else {
             null
         }
+    private val standaloneStarPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var canvasRenderer: CanvasRenderer? = null
     private val cloudAtlasBitmap = loadMaskBitmap(resources, R.drawable.wallpaper_cloud_atlas)
     private val overcastMaskBitmap = loadMaskBitmap(resources, R.drawable.wallpaper_overcast_mask)
@@ -325,6 +326,11 @@ internal class WallpaperWeatherEffectRenderer(
         if (alpha <= 0f) return
 
         if (pass == WEATHER_PASS_BACKGROUND && cloudEngineRenderer != null) {
+            // The cloud engine only renders cloud sprites and haze, while the legacy background
+            // pass also owns the night sky's stars. Draw them explicitly first so cloud sprites
+            // still occlude them naturally instead of the default cloud-engine path losing the
+            // star field entirely.
+            drawStandaloneStars(canvas, alpha)
             cloudEngineRenderer.draw(canvas, alpha)
             return
         }
@@ -419,6 +425,25 @@ internal class WallpaperWeatherEffectRenderer(
             } else {
                 canvasRenderer?.drawGlassRainDrops(canvas, alpha)
             }
+        }
+    }
+
+    private fun drawStandaloneStars(canvas: Canvas, contribution: Float) {
+        val visibility = StarFieldFactory.starVisibility(daylight)
+        if (visibility <= 0f) return
+        for (star in starField.stars) {
+            val twinkle =
+                0.65f + 0.35f * kotlin.math.sin(elapsedSeconds * star.twinkleSpeed + star.twinklePhase)
+            val alpha = star.brightness * twinkle * visibility * contribution
+            if (alpha <= 0f) continue
+            standaloneStarPaint.color = Color.WHITE
+            standaloneStarPaint.alpha = (alpha * 255).toInt().coerceIn(0, 255)
+            canvas.drawCircle(
+                star.x * canvas.width,
+                star.y * canvas.height,
+                star.size * (canvas.width / 400f),
+                standaloneStarPaint
+            )
         }
     }
 
