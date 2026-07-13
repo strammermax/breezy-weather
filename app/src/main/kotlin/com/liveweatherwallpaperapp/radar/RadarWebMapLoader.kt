@@ -59,7 +59,14 @@ internal object RadarWebMapLoader {
     fun loadVentusky(webView: WebView, latitude: Double? = null, longitude: Double? = null, compact: Boolean = false) {
         configureVentusky(webView, compact)
         val url = if (latitude != null && longitude != null) {
-            String.format(Locale.US, "%s?p=%.4f;%.4f;%d", VENTUSKY_RADAR_URL, latitude, longitude, VENTUSKY_DEFAULT_ZOOM)
+            String.format(
+                Locale.US,
+                "%s?p=%.4f;%.4f;%d",
+                VENTUSKY_RADAR_URL,
+                latitude,
+                longitude,
+                VENTUSKY_DEFAULT_ZOOM
+            )
         } else {
             VENTUSKY_RADAR_URL
         }

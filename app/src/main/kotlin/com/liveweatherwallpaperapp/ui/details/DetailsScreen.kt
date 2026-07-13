@@ -89,6 +89,7 @@ import com.liveweatherwallpaperapp.common.extensions.toTimezoneSpecificHour
 import com.liveweatherwallpaperapp.common.options.appearance.CalendarHelper
 import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.common.source.PollenIndexSource
+import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.domain.weather.index.PollutantIndex
 import com.liveweatherwallpaperapp.domain.weather.model.getConcentration
 import com.liveweatherwallpaperapp.domain.weather.model.isToday
@@ -112,7 +113,6 @@ import com.liveweatherwallpaperapp.wallpaper.CelestialTiming
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSceneSnapshot
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSceneStateFactory
 import com.liveweatherwallpaperapp.wallpaper.toFrostedBackground
-import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList

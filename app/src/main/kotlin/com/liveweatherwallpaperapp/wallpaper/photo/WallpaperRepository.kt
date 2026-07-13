@@ -328,7 +328,13 @@ class WallpaperRepository @Inject constructor(
         /** Tag so an in-flight upload can be aborted via [cancelCameraUpload]. */
         cancelTag: Any? = null,
     ): CameraUploadResult {
-        val upload = removeSkyProvider().uploadFile(file, latitude, longitude, capturedAt = capturedAt, cancelTag = cancelTag)
+        val upload = removeSkyProvider().uploadFile(
+            file,
+            latitude,
+            longitude,
+            capturedAt = capturedAt,
+            cancelTag = cancelTag
+        )
         val place = PlaceQuery(city = upload.location)
         val bitmap = downloadSkyBitmap(upload.processedUrl, alreadyProcessed = true)
             ?: throw IllegalStateException("Processed RemoveSky image could not be downloaded")
