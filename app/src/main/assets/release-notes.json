@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+6)",
+    "version": "Niet uitgebracht (+7)",
     "date": "",
     "changes": [
+      "Add support for fictional locations",
       "Reduce sky renderer frame allocations",
       "Refine tester, cache and notification settings",
       "Improve daily temperature and precipitation chart",
