@@ -1,7 +1,7 @@
 [
   {
-    "version": "Niet uitgebracht (+16)",
-    "date": "",
+    "version": "2026.07.13.238",
+    "date": "2026-07-13",
     "changes": [
       "fix release notes change detection",
       "fix release about icon resource",
