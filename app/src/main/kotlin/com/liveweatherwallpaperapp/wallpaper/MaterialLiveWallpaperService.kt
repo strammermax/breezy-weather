@@ -28,6 +28,7 @@ import android.graphics.ColorMatrixColorFilter
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
@@ -1137,27 +1138,32 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private fun buildSkyBackground(): Drawable = object : Drawable() {
             private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
             private var cachedMinute = Long.MIN_VALUE
-            private var cachedBounds = RectF()
+
+            // Rect (not RectF) so the per-frame "did bounds change" check is a plain field
+            // compare (Rect.equals) against the Drawable's own `bounds` -- the old RectF(bounds)
+            // conversion allocated a new object every single frame just to run that comparison.
+            private val cachedBounds = Rect()
+            private val drawBoundsF = RectF()
 
             override fun draw(canvas: Canvas) {
                 val now = System.currentTimeMillis()
                 val minute = now / 60_000L
-                val drawBounds = RectF(bounds)
-                if (minute != cachedMinute || drawBounds != cachedBounds) {
+                if (minute != cachedMinute || bounds != cachedBounds) {
+                    drawBoundsF.set(bounds)
                     val colors = skyColors(now)
                     paint.shader = LinearGradient(
                         0f,
-                        drawBounds.top,
+                        drawBoundsF.top,
                         0f,
-                        drawBounds.bottom,
+                        drawBoundsF.bottom,
                         colors[0],
                         colors[1],
                         Shader.TileMode.CLAMP
                     )
                     cachedMinute = minute
-                    cachedBounds = drawBounds
+                    cachedBounds.set(bounds)
                 }
-                canvas.drawRect(drawBounds, paint)
+                canvas.drawRect(drawBoundsF, paint)
             }
 
             override fun setAlpha(alpha: Int) {
