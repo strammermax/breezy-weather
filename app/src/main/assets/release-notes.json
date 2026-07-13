@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+14)",
+    "version": "Niet uitgebracht (+15)",
     "date": "",
     "changes": [
+      "fix release about icon resource",
       "fix cloud renderer formatting",
       "add implementation documentation",
       "CI: volledige git-historie ophalen zodat versionCode/versionName niet stil op 0 terugvallen",
