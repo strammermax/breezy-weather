@@ -1,6 +1,7 @@
 @file:Suppress("ChromeOsAbiSupport")
 
 import breezy.buildlogic.Config
+import breezy.buildlogic.getBuildDate
 import breezy.buildlogic.getCommitCount
 import breezy.buildlogic.getGitSha
 import breezy.buildlogic.getLwwPatch
@@ -28,10 +29,12 @@ configure<ApplicationExtension> {
     defaultConfig {
         applicationId = "com.liveweatherwallpaperapp"
         // LiveWallpaperWeather's own version (fork of Breezy Weather 6.2.2).
-        // Auto-bumped: the patch = commits since the fork base, so each commit raises the
-        // version by one (1.0.0 -> 1.0.1 -> ...). versionCode stays above the Breezy base.
+        // versionCode stays a monotonically increasing int (commits since the fork base +
+        // Breezy base offset) - required by the Play Store, must never be derived from the date.
+        // versionName is the user-visible yyyy.MM.dd.buildnr (e.g. 2026.07.13.842); the last
+        // segment is the same commit counter, so it stays unique even across same-day builds.
         versionCode = 60200 + getLwwPatch()
-        versionName = "1.1.${getLwwPatch()}"
+        versionName = "${getBuildDate()}.${getLwwPatch()}"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
