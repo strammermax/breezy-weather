@@ -425,9 +425,11 @@
     <string name="about_release_notes">Release notes</string>
     <string name="release_notes_whats_new">Wat is er nieuw?</string>
     <string name="release_notes_no_details">Geen aanvullende details beschikbaar.</string>
-    <string name="about_tester_debug_mode">Debugmodus</string>
-    <string name="about_tester_debug_mode_summary">Toon test- en diagnoseschermen</string>
-    <string name="about_tester_mode_unlocked">Debugmodus voor testers ontgrendeld</string>
+    <string name="about_tester_mode">Testmodus</string>
+    <string name="about_tester_mode_summary">Toon extra instellingen en testschermen</string>
+    <string name="about_tester_mode_unlocked">Testmodus ontgrendeld</string>
+    <string name="about_tester_mode_hidden">Testmodus verborgen</string>
+    <string name="widget_live_wallpaper_new_clouds_tuning">Wolken afstellen</string>
     <string name="release_notes_unavailable">Kan de release notes niet laden. Controleer je verbinding en probeer het later opnieuw.</string>
     <string name="release_notes_view_on_github">Bekijk op GitHub</string>
     <string name="air_quality_index">Luchtkwaliteitsindex</string>

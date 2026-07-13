@@ -16,6 +16,7 @@
 
 package com.liveweatherwallpaperapp.ui.about
 
+import android.media.MediaPlayer
 import android.os.SystemClock
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
@@ -160,11 +161,31 @@ internal fun AboutScreen(
                     }
                     previousIconTapAt = now
                     if (iconTapCount >= TESTER_TAP_COUNT) {
-                        testerModeStore.unlock()
-                        testerModeUnlocked = true
-                        testerModeEnabled = true
+                        when {
+                            testerModeUnlocked && !testerModeEnabled -> {
+                                testerModeStore.lock()
+                                testerModeUnlocked = false
+                                testerModeEnabled = false
+                                playSound(context, R.raw.tester_mode_hidden)
+                                Toast.makeText(
+                                    context,
+                                    R.string.about_tester_mode_hidden,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            !testerModeUnlocked -> {
+                                testerModeStore.unlock()
+                                testerModeUnlocked = true
+                                testerModeEnabled = true
+                                playSound(context, R.raw.tester_mode_unlocked)
+                                Toast.makeText(
+                                    context,
+                                    R.string.about_tester_mode_unlocked,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
                         iconTapCount = 0
-                        Toast.makeText(context, R.string.about_tester_mode_unlocked, Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -297,9 +318,9 @@ private fun TesterModeToggle(checked: Boolean, onCheckedChange: (Boolean) -> Uni
             )
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.about_tester_debug_mode))
+                Text(stringResource(R.string.about_tester_mode))
                 Text(
-                    stringResource(R.string.about_tester_debug_mode_summary),
+                    stringResource(R.string.about_tester_mode_summary),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -311,6 +332,13 @@ private fun TesterModeToggle(checked: Boolean, onCheckedChange: (Boolean) -> Uni
 
 private const val TESTER_TAP_COUNT = 7
 private const val TESTER_TAP_TIMEOUT_MILLIS = 700L
+
+private fun playSound(context: android.content.Context, soundId: Int) {
+    MediaPlayer.create(context, soundId)?.apply {
+        setOnCompletionListener { it.release() }
+        start()
+    }
+}
 
 @Composable
 private fun SectionTitle(title: String) {

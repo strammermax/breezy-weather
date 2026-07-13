@@ -97,6 +97,7 @@
 
     <application
         android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/brand_name"
         android:name=".BreezyWeather"
         android:supportsRtl="true"

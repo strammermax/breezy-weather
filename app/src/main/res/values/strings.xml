@@ -741,7 +741,7 @@
     <string name="widget_live_wallpaper_grading_strength">Grading strength: %1$d%%</string>
     <string name="widget_live_wallpaper_new_clouds">Real Clouds</string>
     <string name="widget_live_wallpaper_new_clouds_summary">Renders clouds using Real Clouds instead of the built-in cloud renderer.</string>
-    <string name="widget_live_wallpaper_new_clouds_tuning">New clouds tuning (debug build only)</string>
+    <string name="widget_live_wallpaper_new_clouds_tuning">Clouds tuning</string>
     <string name="widget_live_wallpaper_photo_cache">Photo cache: %1$d MB</string>
     <string name="widget_live_wallpaper_recent_photos_skipped">The last %1$d photos per location are skipped when choosing a new background.</string>
     <string name="widget_live_wallpaper_max_per_location">Maximum per location: %1$d photos</string>
@@ -1112,9 +1112,10 @@
     <string name="about_release_notes">Release notes</string>
     <string name="release_notes_whats_new">What’s new?</string>
     <string name="release_notes_no_details">No additional details available.</string>
-    <string name="about_tester_debug_mode">Debug mode</string>
-    <string name="about_tester_debug_mode_summary">Show tester and diagnostic screens</string>
-    <string name="about_tester_mode_unlocked">Tester debug mode unlocked</string>
+    <string name="about_tester_mode">Tester mode</string>
+    <string name="about_tester_mode_summary">Show additional settings and test screens</string>
+    <string name="about_tester_mode_unlocked">Tester mode unlocked</string>
+    <string name="about_tester_mode_hidden">Tester mode hidden</string>
     <string name="release_notes_unavailable">Couldn\'t load release notes. Check your connection and try again later.</string>
     <string name="release_notes_view_on_github">View on GitHub</string>
     <string name="about_contributors">Contributors</string>

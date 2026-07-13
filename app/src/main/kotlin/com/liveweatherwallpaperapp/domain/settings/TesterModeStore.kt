@@ -22,6 +22,13 @@ class TesterModeStore(context: Context) {
             .apply()
     }
 
+    fun lock() {
+        preferences.edit()
+            .putBoolean(KEY_UNLOCKED, false)
+            .putBoolean(KEY_ENABLED, false)
+            .apply()
+    }
+
     companion object {
         private const val PREFERENCES = "tester_mode"
         private const val KEY_UNLOCKED = "unlocked"
