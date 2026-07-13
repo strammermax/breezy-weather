@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+7)",
+    "version": "Niet uitgebracht (+8)",
     "date": "",
     "changes": [
+      "Update release notes checkout action",
       "Add support for fictional locations",
       "Reduce sky renderer frame allocations",
       "Refine tester, cache and notification settings",
