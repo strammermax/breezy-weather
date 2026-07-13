@@ -175,7 +175,8 @@ class DailyTemperatureAdapter(
                     unitWidth = UnitWidth.SHORT
                 ),
                 mHighestDailyPrecipitation,
-                0f
+                0f,
+                asBars = true
             )
             val lightTheme = ThemeManager.isLightTheme(itemView.context, location)
             val dayColor = ContextCompat.getColor(itemView.context, R.color.colorTemperatureDay)

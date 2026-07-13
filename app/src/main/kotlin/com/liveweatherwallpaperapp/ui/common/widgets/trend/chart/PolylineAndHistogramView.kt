@@ -70,6 +70,7 @@ class PolylineAndHistogramView @JvmOverloads constructor(
     private var mHighestPrecipValue: Float? = null
     private var mLowestPrecipValue: Float? = null
     private var mPrecipRegionTopFraction: Float = PRECIP_REGION_TOP_FRACTION
+    private var mPrecipAsBars = false
     private val mHighPolylineY = IntArray(3)
     private val mLowPolylineY = IntArray(3)
     private val mPrecipPolylineY = IntArray(3)
@@ -138,7 +139,11 @@ class PolylineAndHistogramView @JvmOverloads constructor(
             mHighestPrecipValue != null &&
             mLowestPrecipValue != null
         ) {
-            drawPrecipPolyline(canvas)
+            if (mPrecipAsBars) {
+                drawPrecipBar(canvas)
+            } else {
+                drawPrecipPolyline(canvas)
+            }
         }
     }
 
@@ -288,7 +293,10 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         canvas.drawText(
             mHighPolylineValueStr ?: "",
             getRTLCompactX((measuredWidth / 2.0).toFloat()),
-            if (mHighPolylineY[1] > mLowPolylineY[1]) {
+            if (mHighPolylineY[1] <= mPolylineTextSize + mTextMargin) {
+                // The highest point touches the top of the chart; keep its label inside.
+                mHighPolylineY[1] - mPaint.fontMetrics.top + mTextMargin
+            } else if (mHighPolylineY[1] > mLowPolylineY[1]) {
                 mHighPolylineY[1] - mPaint.fontMetrics.top + mTextMargin
             } else {
                 mHighPolylineY[1] - mPaint.fontMetrics.bottom - mTextMargin
@@ -301,6 +309,7 @@ class PolylineAndHistogramView @JvmOverloads constructor(
     private fun drawLowPolyline(canvas: Canvas) {
         assert(mLowPolylineValues != null)
         assert(mLowPolylineValueStr != null)
+        drawLowPolylineGlow(canvas)
         if (mLowPolylineValues!![0] != null && mLowPolylineValues!![2] != null) {
             mPaint.apply {
                 shader = null
@@ -380,14 +389,65 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         canvas.drawText(
             mLowPolylineValueStr ?: "",
             getRTLCompactX((measuredWidth / 2.0).toFloat()),
-            if (mHighPolylineY[1] > mLowPolylineY[1]) {
-                mLowPolylineY[1] - mPaint.fontMetrics.bottom - mTextMargin
-            } else {
-                mLowPolylineY[1] - mPaint.fontMetrics.top + mTextMargin
-            },
+            mLowPolylineY[1] - mPaint.fontMetrics.bottom - mTextMargin,
             mPaint
         )
         mPaint.setShadowLayer(0f, 0f, 0f, Color.TRANSPARENT)
+    }
+
+    /** Adds the same subtle area glow below the minimum-temperature line as the maximum line. */
+    private fun drawLowPolylineGlow(canvas: Canvas) {
+        val values = mLowPolylineValues ?: return
+        val centerX = measuredWidth / 2f
+        val chartBottom = (measuredHeight - marginBottom).toFloat()
+        val startX = if (values[0] == null) centerX else 0f
+        val startY = if (values[0] == null) mLowPolylineY[1].toFloat() else mLowPolylineY[0].toFloat()
+        val endX = if (values[2] == null) centerX else measuredWidth.toFloat()
+        val endY = if (values[2] == null) mLowPolylineY[1].toFloat() else mLowPolylineY[2].toFloat()
+        val glowTop = minOf(startY, mLowPolylineY[1].toFloat(), endY)
+
+        mPaint.apply {
+            alpha = 255
+            style = Paint.Style.FILL
+            shader = LinearGradient(
+                0f,
+                glowTop,
+                0f,
+                chartBottom,
+                ColorUtils.setAlphaComponent(mLineColors[1], LOW_GLOW_ALPHA),
+                Color.TRANSPARENT,
+                Shader.TileMode.CLAMP
+            )
+        }
+        mPath.apply {
+            reset()
+            moveTo(getRTLCompactX(startX), startY)
+            if (values[0] != null && values[2] != null) {
+                smoothLineTo(
+                    getRTLCompactX(startX),
+                    startY,
+                    getRTLCompactX(centerX),
+                    mLowPolylineY[1].toFloat()
+                )
+                smoothLineTo(
+                    getRTLCompactX(centerX),
+                    mLowPolylineY[1].toFloat(),
+                    getRTLCompactX(endX),
+                    endY
+                )
+            } else {
+                smoothLineTo(
+                    getRTLCompactX(startX),
+                    startY,
+                    getRTLCompactX(endX),
+                    endY
+                )
+            }
+            lineTo(getRTLCompactX(endX), chartBottom)
+            lineTo(getRTLCompactX(startX), chartBottom)
+            close()
+        }
+        canvas.drawPath(mPath, mPaint)
     }
 
     private fun drawHistogram(canvas: Canvas) {
@@ -498,6 +558,76 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         mPaint.setShadowLayer(0f, 0f, 0f, Color.TRANSPARENT)
     }
 
+    /** Draws one daily precipitation bar in the center of this chart item. */
+    private fun drawPrecipBar(canvas: Canvas) {
+        val value = mPrecipPolylineValues?.get(1) ?: return
+        val centerX = getRTLCompactX(measuredWidth / 2f)
+        val verticalOffset = context.dpToPx(PRECIP_BAR_VERTICAL_OFFSET_DIP)
+        val baseline = measuredHeight - marginBottom + verticalOffset
+        val scaledBarTop = mPrecipPolylineY[1] + verticalOffset
+        val minimumBarHeight = context.dpToPx(PRECIP_BAR_MIN_HEIGHT_DIP)
+        val minimumTemperatureGap = context.dpToPx(PRECIP_TEMP_GAP_DIP)
+        val barTop = if (value > 0f) {
+            maxOf(
+                minOf(scaledBarTop, baseline - minimumBarHeight),
+                minOf(mLowPolylineY[1] + minimumTemperatureGap, baseline - minimumBarHeight)
+            )
+        } else {
+            scaledBarTop
+        }
+
+        mPaint.apply {
+            shader = LinearGradient(
+                centerX,
+                barTop,
+                centerX,
+                baseline,
+                Color.WHITE,
+                mPrecipColor,
+                Shader.TileMode.CLAMP
+            )
+            style = Paint.Style.FILL
+            alpha = PRECIP_BAR_ALPHA
+        }
+        if (value > 0f && barTop < baseline) {
+            val halfWidth = context.dpToPx(PRECIP_BAR_WIDTH_DIP) / 2f
+            val cornerRadius = context.dpToPx(PRECIP_BAR_CORNER_RADIUS_DIP)
+            canvas.drawRoundRect(
+                centerX - halfWidth,
+                barTop,
+                centerX + halfWidth,
+                baseline,
+                cornerRadius,
+                cornerRadius,
+                mPaint
+            )
+        } else {
+            canvas.drawCircle(
+                centerX,
+                baseline,
+                context.dpToPx(PRECIP_ZERO_DOT_RADIUS_DIP),
+                mPaint
+            )
+        }
+
+        mPaint.apply {
+            shader = null
+            alpha = 255
+            color = mPrecipTextColor
+            style = Paint.Style.FILL
+            textAlign = Paint.Align.CENTER
+            textSize = mHistogramTextSize.toFloat()
+            setShadowLayer(2f, 0f, 1f, mTextShadowColor)
+        }
+        canvas.drawText(
+            mPrecipPolylineValueStr ?: "",
+            centerX,
+            baseline - mPaint.fontMetrics.top + mTextMargin,
+            mPaint
+        )
+        mPaint.setShadowLayer(0f, 0f, 0f, Color.TRANSPARENT)
+    }
+
     // control.
     fun setData(
         @Size(3) highPolylineValues: Array<Float?>?,
@@ -587,12 +717,14 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         highestValue: Float?,
         lowestValue: Float?,
         @FloatRange(from = 0.0, to = 1.0) regionTopFraction: Float = PRECIP_REGION_TOP_FRACTION,
+        asBars: Boolean = false,
     ) {
         mPrecipPolylineValues = values
         mPrecipPolylineValueStr = valueStr
         mHighestPrecipValue = highestValue
         mLowestPrecipValue = lowestValue
         mPrecipRegionTopFraction = regionTopFraction
+        mPrecipAsBars = asBars
         invalidate()
     }
 
@@ -713,7 +845,7 @@ class PolylineAndHistogramView @JvmOverloads constructor(
     }
 
     companion object {
-        private const val MARGIN_TOP_DIP = 24f
+        private const val MARGIN_TOP_DIP = 0f
         private const val MARGIN_BOTTOM_DIP = 36f
         private const val POLYLINE_SIZE_DIP = 1.5f
         private const val POLYLINE_TEXT_SIZE_DIP = 14f
@@ -722,6 +854,14 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         private const val CHART_LINE_SIZE_DIP = 1f
         private const val TEXT_MARGIN_DIP = 2f
         private const val DOT_RADIUS_DIP = 3f
+        private const val PRECIP_BAR_WIDTH_DIP = 5.5f
+        private const val PRECIP_BAR_CORNER_RADIUS_DIP = 1.5f
+        private const val PRECIP_BAR_MIN_HEIGHT_DIP = 4f
+        private const val PRECIP_ZERO_DOT_RADIUS_DIP = 2f
+        private const val PRECIP_BAR_ALPHA = 170
+        private const val PRECIP_BAR_VERTICAL_OFFSET_DIP = 6f
+        private const val PRECIP_TEMP_GAP_DIP = 7f
+        private const val LOW_GLOW_ALPHA = 34
 
         // ACT-013: glass cards show the live-wallpaper snapshot through their
         // transparent background, so the high/low-temperature area shading (which
@@ -730,8 +870,8 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         private const val SHADOW_ALPHA_FACTOR_LIGHT = 0.08f
         private const val SHADOW_ALPHA_FACTOR_DARK = 0.12f
 
-        // The precipitation polyline only uses the bottom 45% of the chart's height, keeping
+        // The precipitation display only uses the bottom 24% of the chart's height, keeping
         // it visually separate from the temperature lines above it.
-        private const val PRECIP_REGION_TOP_FRACTION = 0.55f
+        private const val PRECIP_REGION_TOP_FRACTION = 0.76f
     }
 }
