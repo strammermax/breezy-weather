@@ -20,6 +20,7 @@ import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
@@ -29,6 +30,7 @@ import androidx.core.app.NotificationManagerCompat.IMPORTANCE_DEFAULT
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_HIGH
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_MIN
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.text.parseAsHtml
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.buildNotificationChannel
@@ -90,6 +92,14 @@ object Notifications {
     const val CHANNEL_APP_UPDATE = "app_update"
     const val ID_APP_UPDATE = -301
 
+    /**
+     * Notification channel for the weetjes (location fun-fact) dwell feature -- see
+     * [WeetjeManager]. IMPORTANCE_DEFAULT: informative but not urgent, similar to
+     * [CHANNEL_FORECAST].
+     */
+    const val CHANNEL_WEETJE = "weetje"
+    const val ID_WEETJE = -401
+
     private const val ALERT_GROUP_KEY = "breezy_weather_alert_notification_group"
     private const val PREFERENCE_NOTIFICATION = "NOTIFICATION_PREFERENCE"
     private const val KEY_NOTIFICATION_ID = "NOTIFICATION_ID"
@@ -144,6 +154,10 @@ object Notifications {
                 buildNotificationChannel(CHANNEL_APP_UPDATE, IMPORTANCE_DEFAULT) {
                     setName(context.getString(R.string.notification_channel_app_update))
                     setGroup(GROUP_BREEZY_WEATHER)
+                },
+                buildNotificationChannel(CHANNEL_WEETJE, IMPORTANCE_DEFAULT) {
+                    setName(context.getString(R.string.notification_channel_weetje))
+                    setGroup(GROUP_BREEZY_WEATHER)
                 }
             )
         )
@@ -169,6 +183,40 @@ object Notifications {
                         context,
                         ID_APP_UPDATE,
                         IntentHelper.buildMainActivityIntent(null),
+                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+                )
+            }.build()
+        )
+    }
+
+    /**
+     * Shows a "wist je dat...?" fact about the place the user has been dwelling in -- see
+     * [WeetjeManager]. Tapping opens [url] (the Wikipedia source) when present, otherwise
+     * just opens the app.
+     */
+    fun sendWeetjeNotification(context: Context, title: String, body: String?, url: String?) {
+        val intent = if (!url.isNullOrBlank()) {
+            Intent(Intent.ACTION_VIEW, url.toUri())
+        } else {
+            IntentHelper.buildMainActivityIntent(null)
+        }
+        context.notify(
+            ID_WEETJE,
+            context.notificationBuilder(CHANNEL_WEETJE).apply {
+                setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                setSmallIcon(R.drawable.ic_alert)
+                setContentTitle(title)
+                body?.let {
+                    setContentText(it)
+                    setStyle(NotificationCompat.BigTextStyle().bigText(it))
+                }
+                setAutoCancel(true)
+                setContentIntent(
+                    PendingIntent.getActivity(
+                        context,
+                        ID_WEETJE,
+                        intent,
                         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                     )
                 )

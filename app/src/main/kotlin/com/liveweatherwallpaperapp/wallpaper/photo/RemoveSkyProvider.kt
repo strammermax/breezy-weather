@@ -176,6 +176,82 @@ class RemoveSkyProvider(
             .forEach { it.cancel() }
     }
 
+    /**
+     * All enabled weetjes (fun facts) RemoveSky has near (latitude, longitude) in [taal] --
+     * meant to be fetched once per new location and cached locally (see [WeetjeStore]), not
+     * re-fetched on every dwell check. Empty list on any failure or when nothing is nearby
+     * yet, same "no error handling needed" contract as the server side.
+     */
+    suspend fun fetchNearbyWeetjes(latitude: Double, longitude: Double, taal: String): List<RemoveSkyWeetje> =
+        withContext(Dispatchers.IO) {
+            val url = "$apiBase/weetjes/nearby?lat=$latitude&lon=$longitude&taal=${enc(taal)}"
+            val json = searchRaw(url) ?: return@withContext emptyList()
+            json.optJSONArray("weetjes")?.let(::parseWeetjes).orEmpty()
+        }
+
+    /**
+     * Called when the app has already shown every locally-cached weetje for a location and
+     * wants fresh ones. The server rate-limits actual generation per place (see
+     * REQUEST_MORE_COOLDOWN_HOURS server-side); [RequestMoreWeetjesResult.generated] tells
+     * the caller whether it got genuinely new content or just the existing set again.
+     */
+    suspend fun requestMoreWeetjes(
+        land: String,
+        locatie: String,
+        latitude: Double,
+        longitude: Double,
+        taal: String,
+        count: Int = 5,
+    ): RequestMoreWeetjesResult? = withContext(Dispatchers.IO) {
+        try {
+            val body = JSONObject()
+                .put("land", land)
+                .put("locatie", locatie)
+                .put("gps_lat", latitude)
+                .put("gps_lon", longitude)
+                .put("taal", taal)
+                .put("count", count)
+                .toString()
+                .toRequestBody("application/json".toMediaTypeOrNull())
+            val request = Request.Builder()
+                .url("$apiBase/weetjes/request-more")
+                .post(body)
+                .header("User-Agent", USER_AGENT)
+                .build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext null
+                val json = response.body?.string()?.let(::JSONObject) ?: return@withContext null
+                RequestMoreWeetjesResult(
+                    generated = json.optBoolean("generated"),
+                    weetjes = json.optJSONArray("weetjes")?.let(::parseWeetjes).orEmpty()
+                )
+            }
+        } catch (e: Throwable) {
+            log("request-more weetjes error: ${e.message}")
+            null
+        }
+    }
+
+    private fun parseWeetjes(array: JSONArray): List<RemoveSkyWeetje> = buildList {
+        for (i in 0 until array.length()) {
+            val item = array.getJSONObject(i)
+            val id = item.optInt("id", -1)
+            val weetje = item.optStringOrNull("weetje")
+            if (id < 0 || weetje == null) continue
+            add(
+                RemoveSkyWeetje(
+                    id = id,
+                    land = item.optString("land"),
+                    locatie = item.optString("locatie"),
+                    taal = item.optString("taal", "nl"),
+                    weetje = weetje,
+                    omschrijving = item.optStringOrNull("omschrijving"),
+                    linkDetail = item.optStringOrNull("link_detail")
+                )
+            )
+        }
+    }
+
     suspend fun healthStatus(): String? = withContext(Dispatchers.IO) {
         try {
             client.newCall(get("$apiBase/health")).execute().use { response ->
@@ -580,4 +656,25 @@ data class RemoveSkyChecks(
     val hasDate: Boolean?,
     val isNightVisual: Boolean?,
     val seasonVisual: String?,
+)
+
+/** One "wist je dat" fun fact about a location, as returned by [RemoveSkyProvider.fetchNearbyWeetjes]
+ * and [RemoveSkyProvider.requestMoreWeetjes]. [id] is the server's row id -- used as the local
+ * cache key (see [WeetjeStore]) so a re-fetch doesn't create duplicates or reset shown-state. */
+data class RemoveSkyWeetje(
+    val id: Int,
+    val land: String,
+    val locatie: String,
+    val taal: String,
+    val weetje: String,
+    val omschrijving: String?,
+    val linkDetail: String?,
+)
+
+/** Result of [RemoveSkyProvider.requestMoreWeetjes]. */
+data class RequestMoreWeetjesResult(
+    /** False when the server's cooldown blocked a fresh generation -- [weetjes] is then just
+     * the location's existing set, not new content. */
+    val generated: Boolean,
+    val weetjes: List<RemoveSkyWeetje>,
 )

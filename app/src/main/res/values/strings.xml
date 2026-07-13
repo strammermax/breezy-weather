@@ -711,6 +711,10 @@
     <!-- Location photo background -->
     <string name="widget_live_wallpaper_photo_background">Location photo background</string>
     <string name="widget_live_wallpaper_photo_background_summary">Use a photo of where you are as the wallpaper background, with the weather animation on top</string>
+    <string name="widget_live_wallpaper_weetje_notifications">Location fun-fact notifications</string>
+    <string name="widget_live_wallpaper_weetje_notifications_summary">Get a notification with a fun fact once you\'ve stayed at a location for a while. Never sent between 20:00 and 08:00.</string>
+    <string name="widget_live_wallpaper_weetje_max_per_day">Max %1$d per day</string>
+    <string name="widget_live_wallpaper_weetje_dwell_minutes">Wait %1$d minutes at a location first</string>
     <string name="widget_live_wallpaper_unsplash_key">Unsplash access key</string>
     <string name="widget_live_wallpaper_unsplash_key_hint">Paste your Unsplash access key (Client-ID)</string>
     <string name="widget_live_wallpaper_bg_source">Background source</string>
@@ -761,8 +765,9 @@
     <string name="camera_gallery_photo_label">Photo %1$d/%2$d</string>
     <string name="camera_gallery_preparing">%1$s: preparing…</string>
     <string name="camera_gallery_cannot_read">%1$s: ✗ could not read file</string>
-    <string name="camera_gallery_no_exif_gps">%1$s: ✗ no EXIF GPS in photo; skipped</string>
+    <string name="camera_gallery_no_exif_gps">%1$s: ✗ no EXIF GPS in photo and current location unavailable; skipped</string>
     <string name="camera_gallery_exif_gps_found">%1$s: EXIF GPS found: %2$.5f, %3$.5f</string>
+    <string name="camera_gallery_using_current_location">%1$s: no EXIF GPS in photo; using current location: %2$.5f, %3$.5f</string>
     <string name="camera_gallery_processing">%1$s: uploading and checking on server…</string>
     <string name="camera_gallery_saved">%1$s: ✓ saved</string>
     <string name="camera_gallery_failed">%1$s: ✗ %2$s</string>
@@ -1084,6 +1089,7 @@
     <string name="notification_channel_background_services">Background services</string>
     <string name="notification_channel_crash_logs">Crash logs</string>
     <string name="notification_channel_app_update">App updates</string>
+    <string name="notification_channel_weetje">Location fun facts</string>
     <string name="notification_running_in_background">Running in background to keep updating</string>
     <string name="notification_updating_weather_data">Updating weather data (%1$d/%2$d)</string>
     <string name="notification_precipitation_starting">Precipitation soon</string>
@@ -1104,6 +1110,9 @@
     <string name="about_source_code">Source code</string>
     <string name="about_dependencies">Dependencies</string>
     <string name="about_release_notes">Release notes</string>
+    <string name="about_tester_debug_mode">Debug mode</string>
+    <string name="about_tester_debug_mode_summary">Show tester and diagnostic screens</string>
+    <string name="about_tester_mode_unlocked">Tester debug mode unlocked</string>
     <string name="release_notes_unavailable">Couldn\'t load release notes. Check your connection and try again later.</string>
     <string name="release_notes_view_on_github">View on GitHub</string>
     <string name="about_contributors">Contributors</string>

@@ -423,6 +423,9 @@
     <string name="settings_debug">Foutopsporing</string>
     <string name="about_dependencies">Afhankelijkheden</string>
     <string name="about_release_notes">Release notes</string>
+    <string name="about_tester_debug_mode">Debugmodus</string>
+    <string name="about_tester_debug_mode_summary">Toon test- en diagnoseschermen</string>
+    <string name="about_tester_mode_unlocked">Debugmodus voor testers ontgrendeld</string>
     <string name="release_notes_unavailable">Kan de release notes niet laden. Controleer je verbinding en probeer het later opnieuw.</string>
     <string name="release_notes_view_on_github">Bekijk op GitHub</string>
     <string name="air_quality_index">Luchtkwaliteitsindex</string>
@@ -577,6 +580,7 @@
     <string name="settings_notifications_app_updates_check">Meldingen van app-updates</string>
     <string name="about_no_new_updates">Geen nieuwe updates beschikbaar</string>
     <string name="notification_channel_app_updates">App-updates</string>
+    <string name="notification_channel_weetje">Weetjes over locaties</string>
     <string name="notification_app_update_available">Nieuwe versie beschikbaar!</string>
     <string name="common_weather_text_sand_storm">Zandstorm</string>
     <string name="common_weather_text_smoke">Rook</string>
@@ -867,6 +871,10 @@
     <string name="radar_map_style_light">Wit</string>
     <string name="widget_live_wallpaper_photo_background">Foto-achtergrond van locatie</string>
     <string name="widget_live_wallpaper_photo_background_summary">Gebruik een foto van waar je bent als achtergrond, met de weer-animatie eroverheen</string>
+    <string name="widget_live_wallpaper_weetje_notifications">Weetjes over locaties</string>
+    <string name="widget_live_wallpaper_weetje_notifications_summary">Ontvang een melding met een weetje zodra je een tijdje op een locatie bent geweest. Nooit tussen 20:00 en 08:00.</string>
+    <string name="widget_live_wallpaper_weetje_max_per_day">Max %1$d per dag</string>
+    <string name="widget_live_wallpaper_weetje_dwell_minutes">Eerst %1$d minuten op een locatie wachten</string>
     <string name="widget_live_wallpaper_cache_usage">%1$d achtergrondfoto’s gecachet · %2$.1f MB gebruikt</string>
     <string name="widget_live_wallpaper_preview">Voorbeeld</string>
     <string name="widget_live_wallpaper_refresh_now">Nu vernieuwen</string>
@@ -909,8 +917,9 @@
     <string name="camera_gallery_photo_label">Foto %1$d/%2$d</string>
     <string name="camera_gallery_preparing">%1$s: voorbereiden…</string>
     <string name="camera_gallery_cannot_read">%1$s: ✗ kon bestand niet lezen</string>
-    <string name="camera_gallery_no_exif_gps">%1$s: ✗ geen EXIF-GPS in foto; overgeslagen</string>
+    <string name="camera_gallery_no_exif_gps">%1$s: ✗ geen EXIF-GPS in foto en huidige locatie onbekend; overgeslagen</string>
     <string name="camera_gallery_exif_gps_found">%1$s: EXIF-GPS gevonden: %2$.5f, %3$.5f</string>
+    <string name="camera_gallery_using_current_location">%1$s: geen EXIF-GPS in foto; huidige locatie gebruikt: %2$.5f, %3$.5f</string>
     <string name="camera_gallery_processing">%1$s: uploaden en controleren op server…</string>
     <string name="camera_gallery_saved">%1$s: ✓ opgeslagen</string>
     <string name="camera_gallery_failed">%1$s: ✗ %2$s</string>
