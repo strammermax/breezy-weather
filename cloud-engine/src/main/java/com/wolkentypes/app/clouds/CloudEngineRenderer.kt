@@ -7,6 +7,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.RuntimeShader
 import android.os.Build
+import java.util.Calendar
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
@@ -32,6 +33,7 @@ class CloudEngineRenderer(private val context: Context) {
             reloadAssets()
         }
     var windSpeedMultiplier: Float = 1f
+    var easterEggsEnabled: Boolean = true
     var densityMultiplier: Float = 1f
         set(value) {
             field = value
@@ -45,6 +47,7 @@ class CloudEngineRenderer(private val context: Context) {
         }
 
     private var cloudAssets: List<CloudAsset> = emptyList()
+    private val easterEggAssets: List<CloudAsset> = loadEasterEggAssets(context)
     private var assetsByLayer: Map<CloudLayer, List<CloudAsset>> = emptyMap()
     private var instances: List<CloudInstance> = emptyList()
     private val forcedAssetIndex = mutableMapOf<CloudLayer, Int>()
@@ -211,8 +214,55 @@ class CloudEngineRenderer(private val context: Context) {
         drawOverheadVeilAndBank(canvas, screenWidth, screenHeight, pxPerDp, time, isOvercastFamily)
         if (weatherId in setOf("rain", "showers")) drawRainFront(canvas, screenWidth, screenHeight, pxPerDp, time)
         if (!isOvercastFamily) drawBillboardInstances(canvas, screenWidth, screenHeight, pxPerDp, time)
+        drawDailyEasterEgg(canvas, screenWidth, screenHeight, pxPerDp)
 
         if (shaderPaint != null) drawHazeShader(canvas, screenWidth, screenHeight, time)
+    }
+
+    /**
+     * Laat maximaal twee gedeelde easter eggs per lokale kalenderdag door het volledige beeld
+     * reizen. De dag bepaalt de twee tijdstippen, zodat hertekenen geen extra egg spawnt.
+     */
+    private fun drawDailyEasterEgg(
+        canvas: Canvas,
+        screenWidth: Float,
+        screenHeight: Float,
+        pxPerDp: Float,
+    ) {
+        if (!easterEggsEnabled || weatherId == "clear" || easterEggAssets.isEmpty()) return
+
+        val nowMillis = System.currentTimeMillis()
+        val calendar = Calendar.getInstance().apply { timeInMillis = nowMillis }
+        val daySeed = calendar.get(Calendar.YEAR) * 400L + calendar.get(Calendar.DAY_OF_YEAR)
+        val minuteOfDay = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
+        val secondFraction = calendar.get(Calendar.SECOND) / 60f + calendar.get(Calendar.MILLISECOND) / 60_000f
+        val firstStart = 9 * 60 + Math.floorMod(daySeed * 17L, 180L).toInt()
+        val secondStart = 14 * 60 + Math.floorMod(daySeed * 29L, 180L).toInt()
+        val activeSlot = listOf(firstStart, secondStart).indexOfFirst { start ->
+            minuteOfDay + secondFraction in start.toFloat()..(start + EASTER_EGG_TRAVEL_MINUTES)
+        }
+        if (activeSlot < 0) return
+        val startMinute = if (activeSlot == 0) firstStart else secondStart
+        val progress = (minuteOfDay + secondFraction - startMinute) / EASTER_EGG_TRAVEL_MINUTES
+        if (progress !in 0f..1f) return
+
+        val slotSeed = daySeed * 31L + activeSlot * 997L + randomSeed
+        val regularAssets = easterEggAssets.dropLast(1).ifEmpty { easterEggAssets }
+        val isWeeklySpecial = activeSlot == 1 && Math.floorMod(daySeed, 7L) == 0L
+        val asset = if (isWeeklySpecial) easterEggAssets.last() else {
+            regularAssets[Math.floorMod(slotSeed, regularAssets.size.toLong()).toInt()]
+        }
+        val sizeVariation = Math.floorMod(slotSeed shr 8, 21L).toFloat() / 100f
+        val width = screenWidth * (.42f + sizeVariation)
+        val height = width / asset.aspectRatio
+        val padding = maxOf(screenWidth * .08f, 24f * pxPerDp)
+        val left = -width - padding + progress * (screenWidth + width + padding * 2f)
+        val verticalRange = (screenHeight * .62f - height).coerceAtLeast(screenHeight * .12f)
+        val topSeed = Math.floorMod(slotSeed shr 16, 10_000L).toFloat() / 10_000f
+        val top = screenHeight * .10f + verticalRange * topSeed
+        val fade = minOf((progress / .06f).coerceAtMost(1f), ((1f - progress) / .06f).coerceAtMost(1f))
+
+        drawAsset(canvas, asset, left, top, width, height, .94f * fade)
     }
 
     private fun drawHorizonBank(
@@ -460,6 +510,8 @@ class CloudEngineRenderer(private val context: Context) {
     }
 
     private companion object {
+        const val EASTER_EGG_TRAVEL_MINUTES = 5f
+
         // Eenvoudige waarde-ruis (hash + bilineaire interpolatie) + fbm van twee octaven,
         // standaardtechniek uit shader-programmering (geen overgenomen broncode) — tekent een
         // zachte, langzaam driftende sluier met lage dekking boven de sprite-wolken.

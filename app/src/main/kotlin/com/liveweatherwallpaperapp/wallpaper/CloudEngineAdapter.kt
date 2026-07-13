@@ -25,6 +25,7 @@ data class CloudEngineSceneParams(
     val weatherId: String,
     val windSpeedMultiplier: Float,
     val densityMultiplier: Float,
+    val daytime: Boolean,
 )
 
 /** How much to darken/desaturate the background photo, see [CloudEngineAdapter.photoTint]. */
@@ -37,7 +38,8 @@ object CloudEngineAdapter {
     fun sceneParams(state: WallpaperSceneState): CloudEngineSceneParams = CloudEngineSceneParams(
         weatherId = weatherId(state),
         windSpeedMultiplier = state.windFactor,
-        densityMultiplier = state.cloudDensity.coerceIn(0f, 1f)
+        densityMultiplier = state.cloudDensity.coerceIn(0f, 1f),
+        daytime = state.daytime
     )
 
     /**

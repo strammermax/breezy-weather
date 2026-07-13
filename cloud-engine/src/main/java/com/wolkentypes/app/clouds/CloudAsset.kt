@@ -17,6 +17,7 @@ internal data class CloudAsset(
 )
 
 private const val SHARED_FOLDER = "clouds/generated"
+private const val EASTER_EGG_FOLDER = "$SHARED_FOLDER/Eeggs"
 
 /**
  * De transparante voorbeeldwolken uit assets worden eenmaal gedecodeerd en daarna door
@@ -47,10 +48,18 @@ internal fun loadCloudAssets(context: Context, weatherId: String? = null): List<
     return loadCloudAssetsFromFolder(context, folder)
 }
 
+/** Easter eggs staan los van een weertype en kunnen daardoor in ieder wolkenprofiel verschijnen. */
+internal fun loadEasterEggAssets(context: Context): List<CloudAsset> =
+    loadCloudAssetsFromFolder(context, EASTER_EGG_FOLDER, fallbackType = CloudTextureType.WHITE)
+
 private fun hasWebpFiles(context: Context, folder: String): Boolean =
     context.assets.list(folder).orEmpty().any { it.endsWith(".webp", ignoreCase = true) }
 
-private fun loadCloudAssetsFromFolder(context: Context, folder: String): List<CloudAsset> {
+private fun loadCloudAssetsFromFolder(
+    context: Context,
+    folder: String,
+    fallbackType: CloudTextureType? = null,
+): List<CloudAsset> {
     // Bestandsnamen zijn het contract: hierdoor worden nieuwe, zelf gegenereerde assets
     // automatisch gevonden zonder de Kotlin-code opnieuw aan te passen. Assets zijn lossy WebP
     // (niet PNG) om de APK-grootte te beperken -- 34 bestanden gingen van 23MB naar 1,5MB.
@@ -64,7 +73,7 @@ private fun loadCloudAssetsFromFolder(context: Context, folder: String): List<Cl
                 name.startsWith("veil-") -> CloudTextureType.SMOKE
                 name.startsWith("horizon-bank") -> CloudTextureType.HORIZON_BANK
                 name.startsWith("overhead-bank") -> CloudTextureType.OVERHEAD_BANK
-                else -> null
+                else -> fallbackType
             }
             type?.let { "$folder/$name" to it }
         }
