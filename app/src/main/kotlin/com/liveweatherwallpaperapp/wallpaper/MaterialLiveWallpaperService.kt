@@ -146,6 +146,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
     companion object {
         private const val ROTATING_WEATHER_INTERVAL_MILLIS = 10_000L
+        private const val FOREGROUND_FILE_CHECK_INTERVAL_MILLIS = 1_000L
     }
 
     private inner class WeatherEngine(
@@ -192,6 +193,12 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mGravitySensor: Sensor? = null
 
         private var mParallaxEnabled = false
+
+        // Cached alongside mParallaxEnabled/mSeasonGradingEnabled at the same refresh points
+        // (surfaceChanged, onVisibilityChanged(true)) -- updateForegroundNightTint() runs every
+        // frame and used to construct a fresh LiveWallpaperConfigManager (7 SharedPreferences
+        // reads) just to read this one boolean, unlike every other config-derived field here.
+        private var mNewCloudsEnabled = true
         private var mXOffset = 0.5f
 
         // Identity of the currently built photo foreground (path|mtime|size|parallax).
@@ -202,6 +209,15 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mForegroundGreyscaleAmount = 0f
         private var mCurrentLocationData: Location? = null
         private var mLoggedForegroundMissing = false
+
+        // ensureForeground() runs every frame, but the cached photo file only ever changes from
+        // an app-side event (new download, curator delete/disable push) -- stat()ing it on every
+        // single frame was pure disk-I/O waste. Throttled to at most once per this interval;
+        // reuses the last known (exists, lastModified) result in between.
+        private var mForegroundFileCheckedAtMillis = 0L
+        private var mForegroundFileCheckedPath: String? = null
+        private var mForegroundFileExists = false
+        private var mForegroundFileLastModified = 0L
 
         // ACT-012: experimental seasonal colour/light grading, applied as the last layer on top
         // of the scene (sky through glass rain drops), before the rotating test label.
@@ -893,12 +909,32 @@ class MaterialLiveWallpaperService : WallpaperService() {
             if (mSizes[0] <= 0 || mSizes[1] <= 0) return // recovers when a real size arrives
 
             val path = mWallpaperImageStore.cachedPhotoPath
-            val file = path?.let(::File)
-            if (file == null || !file.exists()) {
-                if (file != null) {
-                    lwwLog { "stale cachedPhotoPath $path, clearing" }
-                    mWallpaperImageStore.cachedPhotoPath = null
+            if (path == null) {
+                if (mForeground != null) {
+                    mForeground = null
+                    mForegroundKey = null
                 }
+                lwwLog { "no cached photo; waiting for app data layer" }
+                return
+            }
+
+            // stat()ing the file is real disk I/O; this runs every frame (30x/sec while
+            // visible), so the actual exists()/lastModified() check is throttled and reused
+            // between calls instead of hitting the filesystem every single frame.
+            val now = System.currentTimeMillis()
+            if (path != mForegroundFileCheckedPath ||
+                now - mForegroundFileCheckedAtMillis >= FOREGROUND_FILE_CHECK_INTERVAL_MILLIS
+            ) {
+                val file = File(path)
+                mForegroundFileExists = file.exists()
+                mForegroundFileLastModified = if (mForegroundFileExists) file.lastModified() else 0L
+                mForegroundFileCheckedPath = path
+                mForegroundFileCheckedAtMillis = now
+            }
+
+            if (!mForegroundFileExists) {
+                lwwLog { "stale cachedPhotoPath $path, clearing" }
+                mWallpaperImageStore.cachedPhotoPath = null
                 // Without this, a photo purged via RemoveSkyMessagingService (curator
                 // delete/disable push) keeps being drawn from the stale mForeground bitmap
                 // forever, since nothing else ever clears it once cachedPhotoPath is gone.
@@ -910,7 +946,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 return
             }
 
-            val key = "$path|${file.lastModified()}|${mSizes[0]}x${mSizes[1]}|$mParallaxEnabled"
+            val key = "$path|$mForegroundFileLastModified|${mSizes[0]}x${mSizes[1]}|$mParallaxEnabled"
             if (key == mForegroundKey && mForeground != null) return
 
             mForeground = buildPhotoForeground()
@@ -1061,7 +1097,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             // the legacy cloudDensity/cloudDarkness this dimming was originally derived from --
             // without this, cranking a weather type's cloud coverage up/down in the debug tuning
             // screen would visibly change the sky but leave the photo looking untouched.
-            val tint = if (LiveWallpaperConfigManager(applicationContext).newCloudsEnabled) {
+            val tint = if (mNewCloudsEnabled) {
                 CloudEngineAdapter.photoTint(mSceneState, applicationContext)
             } else {
                 CloudEnginePhotoTint(mSceneState.photoDimming, mSceneState.photoGreyscaleAmount)
@@ -1397,6 +1433,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                             mParallaxEnabled = configManager.parallaxEnabled
                             mSeasonGradingEnabled = configManager.seasonGradingEnabled
                             mSeasonGradingStrength = configManager.seasonGradingStrength
+                            mNewCloudsEnabled = configManager.newCloudsEnabled
                             setWeatherImplementor(SceneTransitionReason.SURFACE_RECREATED)
 
                             // Drawables are owned by the render thread; serialize mutations there
@@ -1529,6 +1566,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mParallaxEnabled = configManager.parallaxEnabled
             mSeasonGradingEnabled = configManager.seasonGradingEnabled
             mSeasonGradingStrength = configManager.seasonGradingStrength
+            mNewCloudsEnabled = configManager.newCloudsEnabled
             mCurrentLocationData = location
             lwwLog {
                 "onVisibilityChanged visible=true parallax=$mParallaxEnabled " +

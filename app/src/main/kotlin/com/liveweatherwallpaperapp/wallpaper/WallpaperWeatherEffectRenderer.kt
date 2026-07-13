@@ -112,6 +112,19 @@ internal class WallpaperWeatherEffectRenderer(
     private var glassShader: RuntimeShader? = null
     private var glassShaderPaint: Paint? = null
 
+    // Reused scratch buffers for the per-frame setFloatUniform(...) calls in [draw] -- these ran
+    // at up to ~60 calls/sec (background + foreground pass) and each allocated 9 new FloatArrays
+    // just to hand them to the shader, which is pure GC churn since the shader only reads them.
+    private val cloudLayerScale = FloatArray(CLOUD_LAYER_COUNT)
+    private val cloudLayerSpeed = FloatArray(CLOUD_LAYER_COUNT)
+    private val cloudLayerAlpha = FloatArray(CLOUD_LAYER_COUNT)
+    private val cloudLayerDarkness = FloatArray(CLOUD_LAYER_COUNT)
+    private val cloudLayerVerticalOffset = FloatArray(CLOUD_LAYER_COUNT)
+    private val fogBandVerticalCenter = FloatArray(4)
+    private val fogBandHeight = FloatArray(4)
+    private val fogBandAlpha = FloatArray(4)
+    private val fogBandSpeed = FloatArray(4)
+
     // Stars are normally baked into the same background pass as the legacy clouds (in the AGSL
     // uber-shader, or CanvasRenderer.drawClouds); cloud-engine only draws clouds, so enabling it
     // trades away the night starfield for as long as it's active. Acceptable for an
@@ -347,38 +360,37 @@ internal class WallpaperWeatherEffectRenderer(
                 "layerCount",
                 activeCloudLayerCount.toFloat()
             )
-            s.setFloatUniform("layerScale", FloatArray(5) { cloudField.layers[it].scale })
-            s.setFloatUniform("layerSpeed", FloatArray(5) { cloudField.layers[it].speedFactor })
-            s.setFloatUniform(
-                "layerAlpha",
-                FloatArray(5) {
-                    if (isCloudLayerEnabled(it, qualityBudget.cloudLayers)) cloudField.layers[it].alpha else 0f
-                }
-            )
-            s.setFloatUniform("layerDarkness", FloatArray(5) { cloudField.layers[it].darkness })
-            s.setFloatUniform("layerVerticalOffset", FloatArray(5) { cloudField.layers[it].verticalOffset })
+            for (i in 0 until CLOUD_LAYER_COUNT) {
+                val layer = cloudField.layers[i]
+                cloudLayerScale[i] = layer.scale
+                cloudLayerSpeed[i] = layer.speedFactor
+                cloudLayerAlpha[i] = if (isCloudLayerEnabled(i, qualityBudget.cloudLayers)) layer.alpha else 0f
+                cloudLayerDarkness[i] = layer.darkness
+                cloudLayerVerticalOffset[i] = layer.verticalOffset
+            }
+            s.setFloatUniform("layerScale", cloudLayerScale)
+            s.setFloatUniform("layerSpeed", cloudLayerSpeed)
+            s.setFloatUniform("layerAlpha", cloudLayerAlpha)
+            s.setFloatUniform("layerDarkness", cloudLayerDarkness)
+            s.setFloatUniform("layerVerticalOffset", cloudLayerVerticalOffset)
             s.setFloatUniform("windDirection", cloudField.directionDegrees)
+            var activeFogBandCount = 0
+            for (i in 0 until 4) {
+                val band = fogField.bands[i]
+                if (band.baseAlpha > 0f) activeFogBandCount++
+                fogBandVerticalCenter[i] = band.verticalCenter
+                fogBandHeight[i] = band.height
+                fogBandAlpha[i] = if (i < qualityBudget.fogBands) band.baseAlpha * qualityBudget.blurStrength else 0f
+                fogBandSpeed[i] = band.speedFactor
+            }
             s.setFloatUniform(
                 "fogBandCount",
-                fogField.bands.count {
-                    it.baseAlpha > 0f
-                }.toFloat().coerceAtMost(qualityBudget.fogBands.toFloat())
+                activeFogBandCount.toFloat().coerceAtMost(qualityBudget.fogBands.toFloat())
             )
-            s.setFloatUniform("fogVerticalCenter", FloatArray(4) { fogField.bands[it].verticalCenter })
-            s.setFloatUniform("fogHeight", FloatArray(4) { fogField.bands[it].height })
-            s.setFloatUniform(
-                "fogBandAlpha",
-                FloatArray(4) {
-                    if (it <
-                        qualityBudget.fogBands
-                    ) {
-                        fogField.bands[it].baseAlpha * qualityBudget.blurStrength
-                    } else {
-                        0f
-                    }
-                }
-            )
-            s.setFloatUniform("fogSpeed", FloatArray(4) { fogField.bands[it].speedFactor })
+            s.setFloatUniform("fogVerticalCenter", fogBandVerticalCenter)
+            s.setFloatUniform("fogHeight", fogBandHeight)
+            s.setFloatUniform("fogBandAlpha", fogBandAlpha)
+            s.setFloatUniform("fogSpeed", fogBandSpeed)
             s.setFloatUniform("fogIsHaze", if (fogField.isHaze) 1f else 0f)
             s.setFloatUniform(
                 "fogColor",
