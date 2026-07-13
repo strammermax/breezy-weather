@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+13)",
+    "version": "Niet uitgebracht (+14)",
     "date": "",
     "changes": [
+      "fix cloud renderer formatting",
       "add implementation documentation",
       "CI: volledige git-historie ophalen zodat versionCode/versionName niet stil op 0 terugvallen",
       "Fix ktlint/spotless-opmaakviolaties (CI spotlessXmlCheck faalde op ic_launcher.xml)",
