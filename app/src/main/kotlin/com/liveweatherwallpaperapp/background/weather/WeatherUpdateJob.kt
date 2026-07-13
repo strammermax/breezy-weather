@@ -206,7 +206,7 @@ class WeatherUpdateJob @AssistedInject constructor(
         /**
          * Update coordinates if locations to update contains a current location
          */
-        val updateCoordinatesErrors = if (locationsToUpdate.any { it.isCurrentPosition }) {
+        val updateCoordinatesErrors = if (locationsToUpdate.any { it.isCurrentPosition || it.isFictional }) {
             updateCoordinates()
         } else {
             emptyList()

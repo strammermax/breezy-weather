@@ -80,7 +80,11 @@ class SearchViewModel @Inject constructor(
                         it.filter { locAddrInfo ->
                             locAddrInfo.longitude != null &&
                                 locAddrInfo.latitude != null &&
-                                (locAddrInfo.longitude != 0.0 || locAddrInfo.latitude != 0.0)
+                                (
+                                    locAddrInfo.longitude != 0.0 ||
+                                        locAddrInfo.latitude != 0.0 ||
+                                        locAddrInfo.countryCode.equals("ZZ", ignoreCase = true)
+                                    )
                         }
                             .map { locAddrInfo ->
                                 Location().toLocationWithAddressInfo(

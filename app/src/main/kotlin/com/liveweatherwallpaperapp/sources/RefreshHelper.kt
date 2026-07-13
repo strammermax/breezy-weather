@@ -521,10 +521,11 @@ class RefreshHelper @Inject constructor(
 
     suspend fun getWeather(
         context: Context,
-        location: Location,
+        requestedLocation: Location,
         coordinatesChanged: Boolean,
         ignoreCaching: Boolean = false,
     ): WeatherResult {
+        val location = resolveWeatherLocation(context, requestedLocation)
         try {
             if (!location.isUsable || location.needsGeocodeRefresh) {
                 return WeatherResult(
@@ -1050,6 +1051,37 @@ class RefreshHelper @Inject constructor(
                 listOf(RefreshError(RefreshErrorType.DATA_REFRESH_FAILED))
             )
         }
+    }
+
+    /**
+     * Fictional places keep their own identity (and therefore their own wallpaper/photo cache),
+     * while their weather follows the device's current position.
+     */
+    private suspend fun resolveWeatherLocation(
+        context: Context,
+        location: Location,
+    ): Location {
+        if (!location.isFictional || !currentLocationStore.isUsable) return location
+
+        val currentPosition = locationRepository.getAllLocations()
+            .firstOrNull { it.isCurrentPosition }
+            ?: return location
+        val resolvedCurrentPosition = getLocation(context, currentPosition).location
+        if (!resolvedCurrentPosition.isUsable) return location
+
+        return location.copy(
+            latitude = resolvedCurrentPosition.latitude,
+            longitude = resolvedCurrentPosition.longitude,
+            timeZone = resolvedCurrentPosition.timeZone,
+            forecastSource = resolvedCurrentPosition.forecastSource,
+            currentSource = resolvedCurrentPosition.currentSource,
+            airQualitySource = resolvedCurrentPosition.airQualitySource,
+            pollenSource = resolvedCurrentPosition.pollenSource,
+            minutelySource = resolvedCurrentPosition.minutelySource,
+            alertSource = resolvedCurrentPosition.alertSource,
+            normalsSource = resolvedCurrentPosition.normalsSource,
+            parameters = resolvedCurrentPosition.parameters
+        )
     }
 
     private suspend fun requestFallbackForecast(

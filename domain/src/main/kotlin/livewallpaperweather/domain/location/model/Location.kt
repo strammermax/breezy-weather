@@ -70,6 +70,8 @@ data class Location(
     val formattedId: String
         get() = if (isCurrentPosition) {
             CURRENT_POSITION_ID
+        } else if (isFictional) {
+            "FICTIONAL&${city.lowercase(Locale.ROOT)}&$forecastSource"
         } else {
             String.format(Locale.US, "%f", latitude) +
                 "&" +
@@ -80,7 +82,10 @@ data class Location(
 
     val isUsable: Boolean
         // Sorry people living exactly at 0,0
-        get() = latitude != 0.0 || longitude != 0.0
+        get() = isFictional || latitude != 0.0 || longitude != 0.0
+
+    val isFictional: Boolean
+        get() = country.equals("Fictief", ignoreCase = true) || countryCode.equals("ZZ", ignoreCase = true)
 
     val isTimeZoneInvalid: Boolean
         get() = timeZone.id == "GMT"

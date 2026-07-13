@@ -681,7 +681,7 @@ class MainActivityViewModel @Inject constructor(
         callback: WeatherRequestCallback,
     ) {
         try {
-            val locationPositionErrors = if (location.isCurrentPosition) {
+            val locationPositionErrors = if (location.isCurrentPosition || location.isFictional) {
                 refreshHelper.updateCurrentCoordinates(context, false)
             } else {
                 emptyList()

@@ -27,21 +27,35 @@ import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.sources.RefreshHelper
 import com.liveweatherwallpaperapp.sources.SourceManager
 import com.liveweatherwallpaperapp.ui.main.utils.RefreshErrorType
+import com.liveweatherwallpaperapp.wallpaper.photo.RemoveSkyInterceptor
+import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperImageStore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.observers.DisposableObserver
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.location.model.LocationAddressInfo
 import livewallpaperweather.domain.source.SourceFeature
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONObject
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class SearchActivityRepository @Inject internal constructor(
-    @ApplicationContext context: Context,
+    @ApplicationContext private val context: Context,
     private val mRefreshHelper: RefreshHelper,
     private val mSourceManager: SourceManager,
     private val mCompositeDisposable: CompositeDisposable,
 ) {
     private val mConfig: ConfigStore = ConfigStore(context, PREFERENCE_SEARCH_CONFIG)
+    private val wallpaperImageStore = WallpaperImageStore(context)
+    private val fictionalLocationClient = OkHttpClient.Builder()
+        .addInterceptor(RemoveSkyInterceptor(wallpaperImageStore))
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(15, TimeUnit.SECONDS)
+        .build()
 
     fun searchLocationList(
         context: Context,
@@ -49,8 +63,15 @@ class SearchActivityRepository @Inject internal constructor(
         locationSearchSource: String,
         callback: (t: Pair<List<LocationAddressInfo>?, RefreshErrorType?>?, done: Boolean) -> Unit,
     ) {
-        mRefreshHelper
-            .requestSearchLocations(context, query, locationSearchSource)
+        Observable.zip(
+            mRefreshHelper.requestSearchLocations(context, query, locationSearchSource),
+            Observable.fromCallable { searchFictionalCities(query) }
+                .onErrorReturnItem(emptyList())
+        ) { regular, fictional ->
+            (regular + fictional).distinctBy {
+                "${it.city?.lowercase()}|${it.country?.lowercase()}|${it.latitude}|${it.longitude}"
+            }
+        }
             .compose(SchedulerTransformer.create())
             .subscribe(
                 ObserverContainer(
@@ -87,6 +108,7 @@ class SearchActivityRepository @Inject internal constructor(
         locationSearchSource: LocationSearchSource,
         context: Context,
     ): Location {
+        if (location.isFictional) return location
         return if (locationSearchSource.knownAmbiguousCountryCodes?.any { cc ->
                 location.countryCode.equals(cc, ignoreCase = true)
             } != false ||
@@ -198,8 +220,45 @@ class SearchActivityRepository @Inject internal constructor(
         mCompositeDisposable.clear()
     }
 
+    private fun searchFictionalCities(query: String): List<LocationAddressInfo> {
+        val baseUrl = wallpaperImageStore.removeSkyBaseUrl.toHttpUrlOrNull() ?: return emptyList()
+        val url = baseUrl.newBuilder()
+            .addPathSegments("api/v1/manage/cities/table")
+            .addQueryParameter("q", query)
+            .addQueryParameter("is_fictional", "1")
+            .build()
+        val request = Request.Builder().url(url).get().build()
+        return fictionalLocationClient.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) return emptyList()
+            val cities = JSONObject(response.body.string()).optJSONArray("results") ?: return emptyList()
+            buildList {
+                for (index in 0 until cities.length()) {
+                    val city = cities.optJSONObject(index) ?: continue
+                    val name = city.optString("city").trim()
+                    if (name.isEmpty()) continue
+                    add(
+                        LocationAddressInfo(
+                            latitude = city.optDouble("lat", 0.0),
+                            longitude = city.optDouble("lng", 0.0),
+                            timeZoneId = "UTC",
+                            country = city.optString("country").ifBlank { FICTIONAL_COUNTRY },
+                            // This endpoint is explicitly filtered by is_fictional=1. Keep one
+                            // stable internal marker; the user-facing country may be any name.
+                            countryCode = FICTIONAL_COUNTRY_CODE,
+                            admin1 = city.optString("admin_name").takeIf { it.isNotBlank() },
+                            city = name,
+                            cityCode = city.optLong("id").takeIf { it != 0L }?.toString()
+                        )
+                    )
+                }
+            }
+        }
+    }
+
     companion object {
         private const val PREFERENCE_SEARCH_CONFIG = "SEARCH_CONFIG"
         private const val KEY_LAST_DEFAULT_SOURCE = "LAST_DEFAULT_SOURCE"
+        private const val FICTIONAL_COUNTRY = "Fictief"
+        private const val FICTIONAL_COUNTRY_CODE = "ZZ"
     }
 }
