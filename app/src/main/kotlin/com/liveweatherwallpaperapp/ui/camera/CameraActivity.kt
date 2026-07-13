@@ -50,6 +50,8 @@ import org.json.JSONObject
 import java.io.File
 import java.io.InputStream
 import java.text.SimpleDateFormat
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -364,7 +366,11 @@ class CameraActivity : AppCompatActivity() {
         binding.horizonGuideLine.visibility = View.GONE
         binding.horizonGuideLabel.visibility = View.GONE
         binding.captureButton.visibility = View.GONE
-        binding.resultImageView.visibility = View.VISIBLE
+        // Left GONE until a bitmap is actually set (e.g. per-photo in uploadGalleryPhotos) --
+        // making it visible empty painted a black rectangle whenever a photo was skipped
+        // before ever being decoded.
+        binding.resultImageView.setImageDrawable(null)
+        binding.resultImageView.visibility = View.GONE
         binding.resultTextScroll.visibility = View.VISIBLE
         binding.resultTextView.visibility = View.VISIBLE
         binding.uploadResultCardsScroll.visibility = View.GONE
@@ -544,9 +550,10 @@ class CameraActivity : AppCompatActivity() {
         currentUploadCancelTag = Any()
         binding.stopUploadButton.text = getString(R.string.camera_stop_upload)
         binding.stopUploadButton.isEnabled = true
-        binding.resultImageView.setImageBitmap(bitmap)
         binding.progressBar.visibility = View.VISIBLE
         showResultView()
+        binding.resultImageView.setImageBitmap(bitmap)
+        binding.resultImageView.visibility = View.VISIBLE
         // "Stoppen" (not "Herkansing") is the relevant action while the upload is in flight —
         // retake would leave the upload running unattended in the background.
         binding.retakeButton.visibility = View.GONE
@@ -640,6 +647,13 @@ class CameraActivity : AppCompatActivity() {
                     // The camera flow activates explicitly via the "Verwerk" button once the
                     // user has seen the suitability check, not automatically on upload.
                     activate = false,
+                    // Fresh capture: the device's local clock IS the capture time, so it's a
+                    // safe fallback for when the photo itself has no EXIF date (some phones
+                    // don't write one). Includes the UTC offset so a photo taken abroad (e.g.
+                    // in the US) still resolves to the correct local time, not this device's
+                    // home timezone. Deliberately NOT sent from the gallery-import flow below,
+                    // where "now" has nothing to do with when the photo was actually taken.
+                    capturedAt = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
                     cancelTag = currentUploadCancelTag
                 )
             }

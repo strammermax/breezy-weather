@@ -320,10 +320,15 @@ class WallpaperRepository @Inject constructor(
         latitude: Double?,
         longitude: Double?,
         activate: Boolean = true,
+        /**
+         * Fallback capture timestamp for when the photo has no EXIF date - only pass this from
+         * the fresh-capture flow, never from a gallery import (see [RemoveSkyProvider.uploadFile]).
+         */
+        capturedAt: String? = null,
         /** Tag so an in-flight upload can be aborted via [cancelCameraUpload]. */
         cancelTag: Any? = null,
     ): CameraUploadResult {
-        val upload = removeSkyProvider().uploadFile(file, latitude, longitude, cancelTag = cancelTag)
+        val upload = removeSkyProvider().uploadFile(file, latitude, longitude, capturedAt = capturedAt, cancelTag = cancelTag)
         val place = PlaceQuery(city = upload.location)
         val bitmap = downloadSkyBitmap(upload.processedUrl, alreadyProcessed = true)
             ?: throw IllegalStateException("Processed RemoveSky image could not be downloaded")

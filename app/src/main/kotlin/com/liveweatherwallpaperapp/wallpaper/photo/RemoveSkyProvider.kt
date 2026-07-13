@@ -269,6 +269,14 @@ class RemoveSkyProvider(
         latitude: Double?,
         longitude: Double?,
         location: String? = null,
+        /**
+         * ISO-8601 timestamp (with UTC offset, e.g. "2026-07-13T14:23:01-05:00") used by the
+         * server as a fallback for [captured_at] when the photo's own EXIF has no date - only
+         * meaningful for a fresh camera capture (device clock = capture time); the gallery
+         * import flow must NOT pass this, since an imported photo's "now" has nothing to do
+         * with when it was actually taken.
+         */
+        capturedAt: String? = null,
         /** Tag applied to the request so [cancelTaggedCalls] can abort it mid-flight. */
         cancelTag: Any? = null,
     ): RemoveSkyUploadResult = withContext(Dispatchers.IO) {
@@ -286,6 +294,7 @@ class RemoveSkyProvider(
                 location?.takeIf { it.isNotBlank() }?.let { addFormDataPart("location", it) }
                 latitude?.let { addFormDataPart("lat", it.toString()) }
                 longitude?.let { addFormDataPart("lon", it.toString()) }
+                capturedAt?.takeIf { it.isNotBlank() }?.let { addFormDataPart("captured_at", it) }
             }
             .build()
         val request = Request.Builder()
