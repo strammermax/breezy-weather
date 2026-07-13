@@ -423,6 +423,8 @@
     <string name="settings_debug">Foutopsporing</string>
     <string name="about_dependencies">Afhankelijkheden</string>
     <string name="about_release_notes">Release notes</string>
+    <string name="release_notes_whats_new">Wat is er nieuw?</string>
+    <string name="release_notes_no_details">Geen aanvullende details beschikbaar.</string>
     <string name="about_tester_debug_mode">Debugmodus</string>
     <string name="about_tester_debug_mode_summary">Toon test- en diagnoseschermen</string>
     <string name="about_tester_mode_unlocked">Debugmodus voor testers ontgrendeld</string>
