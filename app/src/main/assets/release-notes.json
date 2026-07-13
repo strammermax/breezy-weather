@@ -1,7 +1,14 @@
 [
   {
-    "version": "Niet uitgebracht (+8)",
+    "version": "Niet uitgebracht (+1)",
     "date": "",
+    "changes": [
+      "Fix stars with new cloud renderer"
+    ]
+  },
+  {
+    "version": "2026.07.13.255",
+    "date": "2026-07-13",
     "changes": [
       "Update release notes checkout action",
       "Add support for fictional locations",
@@ -99,22 +106,6 @@
     "date": "2026-07-08",
     "changes": [
       "Voeg RemoveSky-secrets toe aan Play Store release-workflow"
-    ]
-  },
-  {
-    "version": "1.1.188",
-    "date": "2026-07-08",
-    "changes": [
-      "Verwijder GitHub-updatechecker en voeg icon-pack compatibiliteit toe",
-      "Verkort animatie-countdown en zet foto/grading/Real Clouds standaard aan",
-      "Verander standaard eerste-launch instellingen en animatie-waarschuwing",
-      "Bump CameraX 1.4.2->1.5.1 en TensorFlow Lite 2.16.1->2.17.0",
-      "Verwijder depth-split foreground: clouds blijven achter het complete foto-laag",
-      "Fix Play Store publish workflow: keystore path resolves relative to app/",
-      "Fix Play Store publish workflow: use full git history for checkout",
-      "Los repo-brede spotless-violations op zodat CI weer groen wordt",
-      "Verwijder hardcoded lokaal JDK-pad uit gradle.properties",
-      "Voeg automatisch publiceren naar Play Store toe (interne testtrack)"
     ]
   }
 ]
