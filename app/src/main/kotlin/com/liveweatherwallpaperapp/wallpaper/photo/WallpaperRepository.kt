@@ -971,12 +971,13 @@ class WallpaperRepository @Inject constructor(
         photoCatalog.markShown(photo.id)
     }
 
-    /** Clears the active photo and all downloaded wallpaper-photo cache files. */
-    fun clearCache() {
+    /** Clears all downloaded wallpaper photos, their catalog rows and recent-photo history. */
+    suspend fun clearCache() = withContext(Dispatchers.IO) {
         photoCacheDir().deleteRecursively()
-        store.cachedPhotoPath = null
-        store.cachedPhotoUrl = null
-        store.cachedPhotoAttribution = null
+        store.deactivatePhoto()
+        store.allRecentUrls().keys.forEach { store.setRecentUrls(it, emptyList()) }
+        photoCatalog.deleteAll()
+        _catalogChanged.tryEmit(Unit)
     }
 
     fun enforceCacheLimit() {

@@ -258,7 +258,11 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
             // never on a fresh install (empty lastSeenAppVersion), since there's nothing to diff.
             val settings = SettingsManager.getInstance(this)
             val currentVersion = BuildConfig.VERSION_NAME
-            if (settings.lastSeenAppVersion.isNotBlank() && settings.lastSeenAppVersion != currentVersion) {
+            if (
+                !BuildConfig.DEBUG &&
+                settings.lastSeenAppVersion.isNotBlank() &&
+                settings.lastSeenAppVersion != currentVersion
+            ) {
                 IntentHelper.startReleaseNotesActivity(this)
             }
             settings.lastSeenAppVersion = currentVersion

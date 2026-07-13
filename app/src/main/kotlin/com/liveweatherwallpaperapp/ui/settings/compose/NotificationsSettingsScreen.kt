@@ -18,16 +18,29 @@ package com.liveweatherwallpaperapp.ui.settings.compose
 
 import android.content.Context
 import android.os.Build
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.background.forecast.TodayForecastNotificationJob
 import com.liveweatherwallpaperapp.background.forecast.TomorrowForecastNotificationJob
@@ -50,6 +63,8 @@ import com.liveweatherwallpaperapp.ui.settings.preference.sectionHeaderItem
 import com.liveweatherwallpaperapp.ui.settings.preference.smallSeparatorItem
 import com.liveweatherwallpaperapp.ui.settings.preference.switchPreferenceItem
 import com.liveweatherwallpaperapp.ui.settings.preference.timePickerPreferenceItem
+import com.liveweatherwallpaperapp.wallpaper.photo.WeetjeStore
+import kotlin.math.roundToInt
 
 @Composable
 fun NotificationsSettingsScreen(
@@ -62,6 +77,10 @@ fun NotificationsSettingsScreen(
     modifier: Modifier = Modifier,
 ) {
     val scrollBehavior = generateCollapsedScrollBehavior()
+    val weetjeStore = remember(context) { WeetjeStore(context) }
+    var weetjeEnabled by remember { mutableStateOf(weetjeStore.notificationsEnabled) }
+    var weetjeMaxPerDay by remember { mutableFloatStateOf(weetjeStore.maxNotificationsPerDay.toFloat()) }
+    var weetjeDwellMinutes by remember { mutableFloatStateOf(weetjeStore.dwellThresholdMinutes.toFloat()) }
 
     Material3Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -158,11 +177,70 @@ fun NotificationsSettingsScreen(
                     summaryOffId = R.string.settings_disabled,
                     checked = SettingsManager.getInstance(context).isAppUpdatePushEnabled,
                     enabled = hasNotificationPermission,
-                    isLast = true,
                     onValueChanged = {
                         SettingsManager.getInstance(context).isAppUpdatePushEnabled = it
                     }
                 )
+            }
+            smallSeparatorItem()
+            switchPreferenceItem(R.string.widget_live_wallpaper_weetje_notifications) { id ->
+                SwitchPreferenceView(
+                    titleId = id,
+                    summaryOnId = R.string.widget_live_wallpaper_weetje_notifications_summary,
+                    summaryOffId = R.string.settings_disabled,
+                    checked = weetjeEnabled,
+                    withState = false,
+                    enabled = hasNotificationPermission,
+                    isLast = true,
+                    onValueChanged = {
+                        weetjeEnabled = it
+                        weetjeStore.notificationsEnabled = it
+                    }
+                )
+            }
+            if (weetjeEnabled) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(dimensionResource(R.dimen.normal_margin))
+                    ) {
+                        Text(
+                            text = stringResource(
+                                R.string.widget_live_wallpaper_weetje_max_per_day,
+                                weetjeMaxPerDay.roundToInt()
+                            ),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Slider(
+                            value = weetjeMaxPerDay,
+                            onValueChange = { weetjeMaxPerDay = it.roundToInt().toFloat() },
+                            valueRange = WeetjeStore.MIN_MAX_PER_DAY.toFloat()..WeetjeStore.MAX_MAX_PER_DAY.toFloat(),
+                            steps = WeetjeStore.MAX_MAX_PER_DAY - WeetjeStore.MIN_MAX_PER_DAY - 1,
+                            onValueChangeFinished = {
+                                weetjeStore.maxNotificationsPerDay = weetjeMaxPerDay.roundToInt()
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(
+                                R.string.widget_live_wallpaper_weetje_dwell_minutes,
+                                weetjeDwellMinutes.roundToInt()
+                            ),
+                            fontWeight = FontWeight.Bold
+                        )
+                        val dwellRangeStart = WeetjeStore.MIN_DWELL_THRESHOLD_MINUTES.toFloat()
+                        val dwellRangeEnd = WeetjeStore.MAX_DWELL_THRESHOLD_MINUTES.toFloat()
+                        Slider(
+                            value = weetjeDwellMinutes,
+                            onValueChange = { weetjeDwellMinutes = it.roundToInt().toFloat() },
+                            valueRange = dwellRangeStart..dwellRangeEnd,
+                            onValueChangeFinished = {
+                                weetjeStore.dwellThresholdMinutes = weetjeDwellMinutes.roundToInt()
+                            }
+                        )
+                    }
+                }
             }
             sectionFooterItem(R.string.settings_notifications_section_general)
 

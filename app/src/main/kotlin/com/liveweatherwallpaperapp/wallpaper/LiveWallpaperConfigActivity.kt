@@ -98,7 +98,6 @@ import com.liveweatherwallpaperapp.wallpaper.photo.PlaceQuery
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperImageStore
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperPhotoRefreshWorker
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
-import com.liveweatherwallpaperapp.wallpaper.photo.WeetjeStore
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -147,11 +146,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
     private lateinit var photoBackgroundEnabledValue: MutableState<Boolean>
     private lateinit var photoRefreshIntervalMinutesValue: MutableState<Float>
 
-    private lateinit var weetjeStore: WeetjeStore
-    private lateinit var weetjeNotificationsEnabledValue: MutableState<Boolean>
-    private lateinit var weetjeMaxPerDayValue: MutableState<Float>
-    private lateinit var weetjeDwellMinutesValue: MutableState<Float>
-
     /** ACT-011: when the current location's weather/photo were last refreshed, or null if unknown. */
     private lateinit var weatherRefreshedAtValue: MutableState<Long?>
     private lateinit var photoRefreshedAtValue: MutableState<Long?>
@@ -167,9 +161,28 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         super.onCreate(savedInstanceState)
 
         val liveWallpaperConfigManager = LiveWallpaperConfigManager(this)
-        weatherKindValueNow = mutableStateOf(liveWallpaperConfigManager.weatherKind)
-        weatherKinds = resources.getStringArray(R.array.live_wallpaper_weather_kinds)
-        weatherKindValues = resources.getStringArray(R.array.live_wallpaper_weather_kind_values)
+        // "Rotating" (WEATHER_TYPE_ROTATING_TEST) forces a full redraw every 10s forever while
+        // visible -- a debug/QA tool, not something a regular user should be able to pick and
+        // silently leave running (battery drain for no benefit). Same debug/tester gate used
+        // for the cloud-tuning screen below.
+        val isDebugOrTester = BuildConfig.DEBUG ||
+            com.liveweatherwallpaperapp.domain.settings.TesterModeStore(this).isEnabled
+        val rawWeatherKinds = resources.getStringArray(R.array.live_wallpaper_weather_kinds)
+        val rawWeatherKindValues = resources.getStringArray(R.array.live_wallpaper_weather_kind_values)
+        if (isDebugOrTester) {
+            weatherKinds = rawWeatherKinds
+            weatherKindValues = rawWeatherKindValues
+            weatherKindValueNow = mutableStateOf(liveWallpaperConfigManager.weatherKind)
+        } else {
+            val rotatingIndex = rawWeatherKindValues.indexOf(WEATHER_TYPE_ROTATING_TEST)
+            weatherKinds = rawWeatherKinds.filterIndexed { i, _ -> i != rotatingIndex }.toTypedArray()
+            weatherKindValues = rawWeatherKindValues.filterIndexed { i, _ -> i != rotatingIndex }.toTypedArray()
+            // A value that predates this gate (or was restored from a backup) shouldn't leave
+            // a regular user stuck on a Spinner selection that no longer exists in its list.
+            val storedKind = liveWallpaperConfigManager.weatherKind
+            val initialKind = if (storedKind == WEATHER_TYPE_ROTATING_TEST) "auto" else storedKind
+            weatherKindValueNow = mutableStateOf(initialKind)
+        }
 
         dayNightTypeValueNow = mutableStateOf(liveWallpaperConfigManager.dayNightType)
         dayNightTypeKinds = resources.getStringArray(R.array.live_wallpaper_day_night_types)
@@ -187,11 +200,6 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         photoBackgroundEnabledValue = mutableStateOf(wallpaperImageStore.photoBackgroundEnabled)
         photoRefreshIntervalMinutesValue =
             mutableFloatStateOf(wallpaperImageStore.photoRefreshIntervalMinutes.toFloat())
-
-        weetjeStore = WeetjeStore(this)
-        weetjeNotificationsEnabledValue = mutableStateOf(weetjeStore.notificationsEnabled)
-        weetjeMaxPerDayValue = mutableFloatStateOf(weetjeStore.maxNotificationsPerDay.toFloat())
-        weetjeDwellMinutesValue = mutableFloatStateOf(weetjeStore.dwellThresholdMinutes.toFloat())
 
         previewBitmapValue = mutableStateOf(null)
         refreshBusyValue = mutableStateOf(false)
@@ -338,6 +346,32 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         }
     }
 
+    private fun clearPhotoCache(clearAll: Boolean) {
+        lifecycleScope.launch {
+            if (clearAll) {
+                wallpaperRepository.clearCache()
+            } else {
+                val location = withContext(Dispatchers.IO) {
+                    locationRepository.getFirstLocation(withParameters = false)
+                }
+                if (location != null) {
+                    wallpaperRepository.clearLocation(
+                        PlaceQuery(
+                            city = location.city.ifBlank { null },
+                            municipality = location.admin2,
+                            state = location.admin1,
+                            country = location.country.ifBlank { null }
+                        )
+                    )
+                }
+            }
+            previewBitmapValue.value = null
+            attributionValue.value = ""
+            refreshCacheStats()
+            runRefresh()
+        }
+    }
+
     /**
      * Compact "X ago"-style label for [refreshedAtMillis], with a stale marker (ACT-011 section 9).
      * Never shows an exact timestamp or location.
@@ -381,22 +415,13 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         }
     }
 
-    private fun persistWeetjeNotificationsEnabled(enabled: Boolean) {
-        weetjeStore.notificationsEnabled = enabled
-    }
-
-    private fun persistWeetjeMaxPerDay(maxPerDay: Int) {
-        weetjeStore.maxNotificationsPerDay = maxPerDay
-    }
-
-    private fun persistWeetjeDwellMinutes(minutes: Int) {
-        weetjeStore.dwellThresholdMinutes = minutes
-    }
-
     @OptIn(ExperimentalPermissionsApi::class)
     @Composable
     private fun ContentView() {
         val dialogOpenState = remember { mutableStateOf(false) }
+        val clearCacheDialogStep = remember { mutableIntStateOf(0) }
+        val isDebugOrTester = BuildConfig.DEBUG ||
+            com.liveweatherwallpaperapp.domain.settings.TesterModeStore(this).isEnabled
         val backgroundLocationPermissionState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             rememberPermissionState(permission = Manifest.permission.ACCESS_BACKGROUND_LOCATION)
         } else {
@@ -555,150 +580,71 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         }
                     }
                 }
-                item {
-                    SwitchPreferenceView(
-                        title = stringResource(R.string.widget_live_wallpaper_weetje_notifications),
-                        summary = { _: Context, _: Boolean ->
-                            this@LiveWallpaperConfigActivity
-                                .getString(R.string.widget_live_wallpaper_weetje_notifications_summary)
-                        },
-                        checked = weetjeNotificationsEnabledValue.value,
-                        withState = false,
-                        card = false
-                    ) { newValue ->
-                        weetjeNotificationsEnabledValue.value = newValue
-                        persistWeetjeNotificationsEnabled(newValue)
-                    }
-                }
-                if (weetjeNotificationsEnabledValue.value) {
+                if (isDebugOrTester) {
                     item {
-                        Column(
-                            modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
-                        ) {
-                            Text(
-                                text = stringResource(
-                                    R.string.widget_live_wallpaper_weetje_max_per_day,
-                                    weetjeMaxPerDayValue.value.roundToInt()
-                                ),
-                                fontWeight = FontWeight.Bold
-                            )
-                            val weetjeMaxPerDayMin = WeetjeStore.MIN_MAX_PER_DAY.toFloat()
-                            val weetjeMaxPerDayMax = WeetjeStore.MAX_MAX_PER_DAY.toFloat()
-                            Slider(
-                                value = weetjeMaxPerDayValue.value,
-                                onValueChange = { value -> weetjeMaxPerDayValue.value = value.roundToInt().toFloat() },
-                                valueRange = weetjeMaxPerDayMin..weetjeMaxPerDayMax,
-                                steps = WeetjeStore.MAX_MAX_PER_DAY - WeetjeStore.MIN_MAX_PER_DAY - 1,
-                                onValueChangeFinished = {
-                                    persistWeetjeMaxPerDay(weetjeMaxPerDayValue.value.roundToInt())
-                                }
-                            )
-                            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.small_margin)))
-                            Text(
-                                text = stringResource(
-                                    R.string.widget_live_wallpaper_weetje_dwell_minutes,
-                                    weetjeDwellMinutesValue.value.roundToInt()
-                                ),
-                                fontWeight = FontWeight.Bold
-                            )
-                            val weetjeDwellMin = WeetjeStore.MIN_DWELL_THRESHOLD_MINUTES.toFloat()
-                            val weetjeDwellMax = WeetjeStore.MAX_DWELL_THRESHOLD_MINUTES.toFloat()
-                            Slider(
-                                value = weetjeDwellMinutesValue.value,
-                                onValueChange = { value ->
-                                    weetjeDwellMinutesValue.value = value.roundToInt().toFloat()
-                                },
-                                valueRange = weetjeDwellMin..weetjeDwellMax,
-                                onValueChangeFinished = {
-                                    persistWeetjeDwellMinutes(weetjeDwellMinutesValue.value.roundToInt())
-                                }
-                            )
-                        }
-                    }
-                }
-                item {
-                    Column(
-                        modifier = Modifier.padding(
-                            horizontal = dimensionResource(R.dimen.normal_margin)
-                        )
-                    ) {
-                        Text(
-                            text = stringResource(R.string.widget_live_wallpaper_experimental),
-                            color = MaterialTheme.colorScheme.secondary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-                item {
-                    SwitchPreferenceView(
-                        title = stringResource(R.string.widget_live_wallpaper_seasonal_grading),
-                        summary = { context: Context, _: Boolean ->
-                            context.getString(R.string.widget_live_wallpaper_seasonal_grading_summary)
-                        },
-                        checked = seasonGradingEnabledValue.value,
-                        withState = false,
-                        card = false
-                    ) { newValue ->
-                        seasonGradingEnabledValue.value = newValue
-                        persistCoreSettings()
-                    }
-                }
-                if (seasonGradingEnabledValue.value) {
-                    item {
-                        Column(
-                            modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
-                        ) {
-                            Text(
-                                text = stringResource(
-                                    R.string.widget_live_wallpaper_grading_strength,
-                                    (seasonGradingStrengthValue.value * 100).roundToInt()
-                                ),
-                                fontWeight = FontWeight.Bold
-                            )
-                            Slider(
-                                value = seasonGradingStrengthValue.value,
-                                onValueChange = { seasonGradingStrengthValue.value = it },
-                                valueRange = 0f..1f,
-                                onValueChangeFinished = { persistCoreSettings() }
-                            )
-                        }
-                    }
-                }
-                item {
-                    SwitchPreferenceView(
-                        title = stringResource(R.string.widget_live_wallpaper_new_clouds),
-                        summary = { context: Context, _: Boolean ->
-                            context.getString(R.string.widget_live_wallpaper_new_clouds_summary)
-                        },
-                        checked = newCloudsEnabledValue.value,
-                        withState = false,
-                        card = false
-                    ) { newValue ->
-                        newCloudsEnabledValue.value = newValue
-                        persistCoreSettings()
-                    }
-                }
-                // Debug builds always expose tuning. Release testers can explicitly unlock the
-                // same UI through About without enabling internal backend/debug-build behavior.
-                if (
-                    (
-                        BuildConfig.DEBUG ||
-                            com.liveweatherwallpaperapp.domain.settings.TesterModeStore(
-                                this@LiveWallpaperConfigActivity
-                            ).isEnabled
-                        ) &&
-                    newCloudsEnabledValue.value
-                ) {
-                    item {
-                        OutlinedButton(
-                            onClick = {
-                                startActivity(Intent(this@LiveWallpaperConfigActivity, CloudTuningActivity::class.java))
+                        SwitchPreferenceView(
+                            title = stringResource(R.string.widget_live_wallpaper_seasonal_grading),
+                            summary = { context: Context, _: Boolean ->
+                                context.getString(R.string.widget_live_wallpaper_seasonal_grading_summary)
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = dimensionResource(R.dimen.normal_margin))
-                        ) {
-                            Text(stringResource(R.string.widget_live_wallpaper_new_clouds_tuning))
+                            checked = seasonGradingEnabledValue.value,
+                            withState = false,
+                            card = false
+                        ) { newValue ->
+                            seasonGradingEnabledValue.value = newValue
+                            persistCoreSettings()
+                        }
+                    }
+                    if (seasonGradingEnabledValue.value) {
+                        item {
+                            Column(modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))) {
+                                Text(
+                                    text = stringResource(
+                                        R.string.widget_live_wallpaper_grading_strength,
+                                        (seasonGradingStrengthValue.value * 100).roundToInt()
+                                    ),
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Slider(
+                                    value = seasonGradingStrengthValue.value,
+                                    onValueChange = { seasonGradingStrengthValue.value = it },
+                                    valueRange = 0f..1f,
+                                    onValueChangeFinished = { persistCoreSettings() }
+                                )
+                            }
+                        }
+                    }
+                    item {
+                        SwitchPreferenceView(
+                            title = stringResource(R.string.widget_live_wallpaper_new_clouds),
+                            summary = { context: Context, _: Boolean ->
+                                context.getString(R.string.widget_live_wallpaper_new_clouds_summary)
+                            },
+                            checked = newCloudsEnabledValue.value,
+                            withState = false,
+                            card = false
+                        ) { newValue ->
+                            newCloudsEnabledValue.value = newValue
+                            persistCoreSettings()
+                        }
+                    }
+                    if (newCloudsEnabledValue.value) {
+                        item {
+                            OutlinedButton(
+                                onClick = {
+                                    startActivity(
+                                        Intent(
+                                            this@LiveWallpaperConfigActivity,
+                                            CloudTuningActivity::class.java
+                                        )
+                                    )
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = dimensionResource(R.dimen.normal_margin))
+                            ) {
+                                Text(stringResource(R.string.widget_live_wallpaper_new_clouds_tuning))
+                            }
                         }
                     }
                 }
@@ -740,19 +686,29 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             drawStopIndicator = {}
                         )
                         OutlinedButton(
-                            onClick = {
-                                startActivity(
-                                    Intent(
-                                        this@LiveWallpaperConfigActivity,
-                                        WallpaperPhotoManagerActivity::class.java
-                                    )
-                                )
-                            },
+                            onClick = { clearCacheDialogStep.intValue = 1 },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 6.dp)
                         ) {
-                            Text(stringResource(R.string.wallpaper_photo_manager_title))
+                            Text(stringResource(R.string.widget_live_wallpaper_clear_cache))
+                        }
+                        if (isDebugOrTester) {
+                            OutlinedButton(
+                                onClick = {
+                                    startActivity(
+                                        Intent(
+                                            this@LiveWallpaperConfigActivity,
+                                            WallpaperPhotoManagerActivity::class.java
+                                        )
+                                    )
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 6.dp)
+                            ) {
+                                Text(stringResource(R.string.wallpaper_photo_manager_title))
+                            }
                         }
                         val recentUrlCount = recentUrlCountValue.value.roundToInt()
                         Text(
@@ -776,6 +732,13 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         )
                         val cacheLimitMinMb = WallpaperImageStore.MIN_CACHE_LIMIT_MB.toFloat()
                         val cacheLimitMaxMb = WallpaperImageStore.MAX_CACHE_LIMIT_MB.toFloat()
+                        Text(
+                            text = stringResource(
+                                R.string.widget_live_wallpaper_adjust_cache_size,
+                                photoCacheLimitMbValue.value.roundToInt()
+                            ),
+                            fontWeight = FontWeight.Bold
+                        )
                         Slider(
                             value = photoCacheLimitMbValue.value,
                             onValueChange = { value ->
@@ -906,6 +869,61 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                         }
                     }
                 }
+            }
+            if (clearCacheDialogStep.intValue == 1) {
+                AlertDialog(
+                    onDismissRequest = { clearCacheDialogStep.intValue = 0 },
+                    title = { Text(stringResource(R.string.widget_live_wallpaper_clear_cache)) },
+                    text = { Text(stringResource(R.string.widget_live_wallpaper_clear_cache_confirm)) },
+                    confirmButton = {
+                        TextButton(onClick = { clearCacheDialogStep.intValue = 2 }) {
+                            Text(stringResource(R.string.widget_live_wallpaper_clear_cache_yes))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { clearCacheDialogStep.intValue = 0 }) {
+                            Text(stringResource(R.string.widget_live_wallpaper_clear_cache_no))
+                        }
+                    }
+                )
+            }
+            if (clearCacheDialogStep.intValue == 2) {
+                val locationName = currentLocationValue.value.ifBlank {
+                    stringResource(R.string.widget_live_wallpaper_cache_selected_location)
+                }
+                AlertDialog(
+                    onDismissRequest = { clearCacheDialogStep.intValue = 0 },
+                    title = { Text(stringResource(R.string.widget_live_wallpaper_clear_cache_scope_title)) },
+                    text = { Text(stringResource(R.string.widget_live_wallpaper_clear_cache_scope_text)) },
+                    confirmButton = {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            TextButton(
+                                onClick = {
+                                    clearCacheDialogStep.intValue = 0
+                                    clearPhotoCache(clearAll = false)
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(locationName)
+                            }
+                            TextButton(
+                                onClick = {
+                                    clearCacheDialogStep.intValue = 0
+                                    clearPhotoCache(clearAll = true)
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(stringResource(R.string.widget_live_wallpaper_clear_cache_all))
+                            }
+                            TextButton(
+                                onClick = { clearCacheDialogStep.intValue = 0 },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(stringResource(R.string.widget_live_wallpaper_clear_cache_cancel))
+                            }
+                        }
+                    }
+                )
             }
             if (dialogOpenState.value) {
                 var timeLeft by remember { mutableIntStateOf(3) }

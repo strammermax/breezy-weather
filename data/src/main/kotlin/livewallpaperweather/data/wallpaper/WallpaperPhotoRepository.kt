@@ -182,6 +182,10 @@ class WallpaperPhotoRepository(
         wallpaper_photosQueries.deleteForLocation(locationKey)
     }
 
+    suspend fun deleteAll() = handler.await {
+        wallpaper_photosQueries.deleteAll()
+    }
+
     suspend fun deleteById(id: String) = handler.await {
         wallpaper_photosQueries.deleteById(id)
     }
