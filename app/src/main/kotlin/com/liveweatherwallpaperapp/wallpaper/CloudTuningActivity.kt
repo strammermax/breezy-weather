@@ -123,6 +123,8 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
     var density by remember(selected.id) { mutableFloatStateOf(savedPreset?.density ?: baseProfile.density) }
     var wind by remember(selected.id) { mutableFloatStateOf(savedPreset?.wind ?: baseProfile.speed) }
     var depth by remember(selected.id) { mutableFloatStateOf(savedPreset?.depth ?: 1f) }
+    var cloudView by remember { mutableStateOf<CloudSurfaceView?>(null) }
+    var assetLabels by remember(selected.id) { mutableStateOf(emptyMap<CloudLayer, String>()) }
     val liveProfile = baseProfile.copy(layers = layerConfigs, density = density, speed = baseProfile.speed)
 
     LaunchedEffect(selected.id, layerConfigs, density, wind, depth) {
@@ -174,6 +176,7 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
                 modifier = Modifier.fillMaxSize(),
                 factory = { ctx -> CloudSurfaceView(ctx) },
                 update = { view ->
+                    cloudView = view
                     view.profile = liveProfile
                     view.weatherId = selected.id
                     view.windSpeedMultiplier = wind
@@ -206,6 +209,22 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
                         onDepthChange = { depth = it },
                         wind = wind,
                         onWindChange = { wind = it },
+                        assetLabels = assetLabels,
+                        onPreviousAsset = { layer ->
+                            cloudView?.cycleAsset(layer, -1)?.let { assetLabels = assetLabels + (layer to it) }
+                        },
+                        onNextAsset = { layer ->
+                            cloudView?.cycleAsset(layer, 1)?.let { assetLabels = assetLabels + (layer to it) }
+                        },
+                        onAutomaticAsset = { layer ->
+                            cloudView?.useAutomaticAsset(layer)?.let { assetLabels = assetLabels + (layer to "Auto · $it") }
+                        },
+                        onRandomizeAssets = {
+                            cloudView?.randomizeAssets()
+                            assetLabels = CloudLayer.entries.mapNotNull { layer ->
+                                cloudView?.selectedAssetName(layer)?.let { layer to "Auto · $it" }
+                            }.toMap()
+                        },
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
@@ -227,6 +246,11 @@ private fun CloudLayerControlPanel(
     onDepthChange: (Float) -> Unit,
     wind: Float,
     onWindChange: (Float) -> Unit,
+    assetLabels: Map<CloudLayer, String>,
+    onPreviousAsset: (CloudLayer) -> Unit,
+    onNextAsset: (CloudLayer) -> Unit,
+    onAutomaticAsset: (CloudLayer) -> Unit,
+    onRandomizeAssets: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var expandedLayers by remember { mutableStateOf(setOf<CloudLayer>()) }
@@ -246,6 +270,9 @@ private fun CloudLayerControlPanel(
                 color = Color(0xFF53627A),
                 fontSize = 13.sp
             )
+            Button(onClick = onRandomizeAssets, modifier = Modifier.fillMaxWidth()) {
+                Text("Randomize all cloud assets")
+            }
             CloudLayer.entries.reversed().forEach { layer ->
                 val isExpanded = layer in expandedLayers
                 Row(
@@ -262,7 +289,11 @@ private fun CloudLayerControlPanel(
                     CloudLayerSection(
                         layer,
                         configs[layer] ?: LayerCloudConfig(),
-                        onChange = { onConfigChange(layer, it) }
+                        onChange = { onConfigChange(layer, it) },
+                        assetLabel = assetLabels[layer] ?: "Auto",
+                        onPreviousAsset = { onPreviousAsset(layer) },
+                        onNextAsset = { onNextAsset(layer) },
+                        onAutomaticAsset = { onAutomaticAsset(layer) }
                     )
                 }
                 HorizontalDivider(color = Color(0xFFD8DEEA))
@@ -276,8 +307,22 @@ private fun CloudLayerControlPanel(
 }
 
 @Composable
-private fun CloudLayerSection(layer: CloudLayer, config: LayerCloudConfig, onChange: (LayerCloudConfig) -> Unit) {
+private fun CloudLayerSection(
+    layer: CloudLayer,
+    config: LayerCloudConfig,
+    onChange: (LayerCloudConfig) -> Unit,
+    assetLabel: String,
+    onPreviousAsset: () -> Unit,
+    onNextAsset: () -> Unit,
+    onAutomaticAsset: () -> Unit,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+        Text("Asset: $assetLabel", fontSize = 11.sp, color = Color(0xFF53627A))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+            Button(onClick = onPreviousAsset, modifier = Modifier.weight(1f)) { Text("Previous") }
+            Button(onClick = onAutomaticAsset, modifier = Modifier.weight(1f)) { Text("Auto") }
+            Button(onClick = onNextAsset, modifier = Modifier.weight(1f)) { Text("Next") }
+        }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
             CloudTypeChip("White", CloudTextureType.WHITE, config, onChange, Modifier.weight(1f))
             CloudTypeChip("Dark", CloudTextureType.DARK, config, onChange, Modifier.weight(1f))

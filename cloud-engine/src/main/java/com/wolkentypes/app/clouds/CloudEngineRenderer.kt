@@ -23,6 +23,7 @@ class CloudEngineRenderer(private val context: Context) {
     var profile: CloudProfile = cloudProfileFor("partly_cloudy")
         set(value) {
             field = value
+            rebuildAssetPools()
             rebuildInstances()
         }
     var weatherId: String? = null
@@ -46,6 +47,7 @@ class CloudEngineRenderer(private val context: Context) {
     private var cloudAssets: List<CloudAsset> = emptyList()
     private var assetsByLayer: Map<CloudLayer, List<CloudAsset>> = emptyMap()
     private var instances: List<CloudInstance> = emptyList()
+    private val forcedAssetIndex = mutableMapOf<CloudLayer, Int>()
 
     private val spriteTypes = setOf(CloudTextureType.WHITE, CloudTextureType.DARK, CloudTextureType.SMOKE)
     private val overcastFamily = setOf("overcast", "drizzle", "rain", "snow", "snow_showers")
@@ -72,13 +74,17 @@ class CloudEngineRenderer(private val context: Context) {
 
     private fun reloadAssets() {
         cloudAssets = loadCloudAssets(context, weatherId)
+        rebuildAssetPools()
+        rebuildInstances()
+    }
+
+    private fun rebuildAssetPools() {
         assetsByLayer = CloudLayer.entries.associateWith { layer ->
             val selected = profile.layers[layer]?.types.orEmpty().intersect(spriteTypes).let {
                 if (layer == CloudLayer.OVERHEAD) it - CloudTextureType.SMOKE else it
             }
             cloudAssets.filter { it.type in selected && (it.targetLayer == null || it.targetLayer == layer) }
         }
-        rebuildInstances()
     }
 
     private fun rebuildInstances() {
@@ -104,7 +110,8 @@ class CloudEngineRenderer(private val context: Context) {
                             ).coerceIn(-.2f, .9f),
                         scale = layer.scaleRange.start + rnd.nextFloat() *
                             (layer.scaleRange.endInclusive - layer.scaleRange.start),
-                        assetIndex = rnd.nextInt(pool.size),
+                        assetIndex = forcedAssetIndex[layer]?.let { Math.floorMod(it, pool.size) }
+                            ?: rnd.nextInt(pool.size),
                         baseWidthDp = 230f + rnd.nextFloat() * 160f,
                         rotationDegrees = -2f + rnd.nextFloat() * 4f,
                         alpha = (layer.alpha * config.alphaMultiplier).coerceIn(0f, 1f)
@@ -112,6 +119,47 @@ class CloudEngineRenderer(private val context: Context) {
                 }
             }
         }
+    }
+
+    fun assetNames(layer: CloudLayer): List<String> = assetsByLayer[layer].orEmpty().map { it.fileName }
+
+    fun selectedAssetName(layer: CloudLayer): String? {
+        val pool = assetsByLayer[layer].orEmpty()
+        if (pool.isEmpty()) return null
+        val index = forcedAssetIndex[layer]?.let { Math.floorMod(it, pool.size) }
+            ?: instances.firstOrNull { it.layer == layer }?.assetIndex
+            ?: 0
+        return pool.getOrNull(index)?.fileName
+    }
+
+    private fun selectedLayerAsset(layer: CloudLayer, seedOffset: Long = 0L): CloudAsset? {
+        val pool = assetsByLayer[layer].orEmpty()
+        if (pool.isEmpty()) return null
+        val index = forcedAssetIndex[layer]?.let { Math.floorMod(it, pool.size) }
+            ?: Math.floorMod(randomSeed + seedOffset, pool.size.toLong()).toInt()
+        return pool[index]
+    }
+
+    fun cycleAsset(layer: CloudLayer, delta: Int): String? {
+        val pool = assetsByLayer[layer].orEmpty()
+        if (pool.isEmpty()) return null
+        val current = forcedAssetIndex[layer]
+            ?: instances.firstOrNull { it.layer == layer }?.assetIndex
+            ?: 0
+        forcedAssetIndex[layer] = Math.floorMod(current + delta, pool.size)
+        rebuildInstances()
+        return selectedAssetName(layer)
+    }
+
+    fun useAutomaticAsset(layer: CloudLayer): String? {
+        forcedAssetIndex.remove(layer)
+        rebuildInstances()
+        return selectedAssetName(layer)
+    }
+
+    fun randomizeAssets() {
+        forcedAssetIndex.clear()
+        randomSeed += 1L
     }
 
     private fun bankVariant(type: CloudTextureType): CloudAsset? {
@@ -208,7 +256,7 @@ class CloudEngineRenderer(private val context: Context) {
         fun plate(layer: CloudLayer, centerFraction: Float, widthFactor: Float, phase: Float) {
             val config = profile.layers[layer] ?: return
             if (config.amount == CloudAmount.NONE) return
-            val bank = cloudAssets.firstOrNull { it.targetLayer == layer } ?: return
+            val bank = selectedLayerAsset(layer) ?: return
             val width = screenWidth * widthFactor * config.sizeMultiplier
             val height = width / bank.aspectRatio
             val x = -(width - screenWidth) / 2f +
@@ -382,13 +430,16 @@ class CloudEngineRenderer(private val context: Context) {
             val height = width / asset.aspectRatio
             val layerSpeed = profile.layers[cloud.layer]?.speedMultiplier ?: 1f
             val speed = cloud.layer.baseSpeedDpPerSec * pxPerDp * windSpeedMultiplier * profile.speed * layerSpeed
-            // Marge ruim voorbij het scherm (i.p.v. exact de wolkbreedte): anders kan de
-            // wrap-around net op de rand vallen, wat als een zichtbare "pop" oogt.
-            val margin = width + screenWidth * .5f
-            val travel = screenWidth + margin * 2f
-            val startX = cloud.laneOffsetFraction * travel - margin
-            val rawX = startX + time * speed
-            val x = ((rawX % travel) + travel) % travel - margin
+            // De bitmap begint volledig buiten de linker schermrand en wordt pas hergebruikt
+            // nadat ook zijn achterrand rechts buiten beeld is. Een kleine extra veiligheidszone
+            // voorkomt afrondings-/rotatiepops, zonder de lange onzichtbare halve-schermmarge die
+            // eerder gaten in een wolkenlaag veroorzaakte.
+            val offscreenPadding = maxOf(screenWidth * .08f, 24f * pxPerDp)
+            val cycleStart = -width - offscreenPadding
+            val travel = screenWidth + width + offscreenPadding * 2f
+            val phase = cloud.laneOffsetFraction * travel + time * speed
+            val wrappedPhase = ((phase % travel) + travel) % travel
+            val x = cycleStart + wrappedPhase
             val top = cloud.yFraction * screenHeight - height / 2f
             drawAsset(canvas, asset, x, top, width, height, cloud.alpha, cloud.rotationDegrees)
         }
