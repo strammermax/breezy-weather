@@ -25,6 +25,13 @@ fun Project.getLwwPatch(): Int {
     }
 }
 
+// LiveWallpaperWeather: build date for the versionName (yyyy.MM.dd.buildnr), so the visible
+// version reads as a date instead of a semver-like number. Kept separate from versionCode,
+// which must stay a monotonically increasing integer for the Play Store.
+fun getBuildDate(): String {
+    return java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd"))
+}
+
 fun Project.runCommand(command: String): String {
     return providers.exec {
         commandLine = command.split(" ")

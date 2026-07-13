@@ -1110,6 +1110,8 @@
     <string name="about_source_code">Source code</string>
     <string name="about_dependencies">Dependencies</string>
     <string name="about_release_notes">Release notes</string>
+    <string name="release_notes_whats_new">What’s new?</string>
+    <string name="release_notes_no_details">No additional details available.</string>
     <string name="about_tester_debug_mode">Debug mode</string>
     <string name="about_tester_debug_mode_summary">Show tester and diagnostic screens</string>
     <string name="about_tester_mode_unlocked">Tester debug mode unlocked</string>

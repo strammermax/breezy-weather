@@ -55,6 +55,26 @@ if ($behind -gt 0) {
     exit 1
 }
 
+Write-Host "Updating the in-app release history ..." -ForegroundColor Cyan
+python "$repoRoot/scripts/generate_release_notes.py"
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Could not generate the in-app release history."
+    exit 1
+}
+if (-not (git diff --quiet -- app/src/main/assets/release-notes.json)) {
+    git add app/src/main/assets/release-notes.json
+    git commit -m "Update app information"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Could not commit the updated in-app release history."
+        exit 1
+    }
+    git push origin HEAD
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Could not push the updated in-app release history."
+        exit 1
+    }
+}
+
 $buildType = "release"
 $capFlavor = $Flavor.Substring(0,1).ToUpper() + $Flavor.Substring(1)
 $assembleTask = "assemble$capFlavor$($buildType.Substring(0,1).ToUpper() + $buildType.Substring(1))"
