@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+5)",
+    "version": "Niet uitgebracht (+6)",
     "date": "",
     "changes": [
+      "Fix adding a current location silently failing when a fictional location exists",
       "Fix fictional locations using device GPS for wallpaper photo fetching",
       "Centralize default settings in JSON and auto-select best weather source per location",
       "Add live wallpaper test options link to Test settings screen",
