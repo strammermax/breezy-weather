@@ -169,6 +169,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mCurrentRendererWindFactor = Float.NaN
         private var mCurrentRendererPrecipitationIntensity = Float.NaN
         private var mCurrentRendererGlassRainIntensity = Float.NaN
+        // Tracks the CloudTuningActivity preset baked into the current renderer so a tester
+        // adjusting sliders (savePreset() writes immediately) sees it on the next visibility
+        // change instead of only after fully re-selecting the wallpaper -- without this the
+        // early-return below would keep reusing the renderer built with the stale preset.
+        private var mCurrentRendererCloudPreset: com.wolkentypes.app.clouds.PersistedPreset? = null
         private var mHasSceneTarget = false
         private val mTransitionManager = TransitionManager()
         private var mBackground: Drawable? = null
@@ -772,18 +777,25 @@ class MaterialLiveWallpaperService : WallpaperService() {
             if (!mHasSceneTarget) return
             hasDrawn = false
             val sceneState = mSceneState
+            val liveWallpaperConfig = LiveWallpaperConfigManager(applicationContext)
+            val cloudSceneParams = CloudEngineAdapter.sceneParams(sceneState)
+            val cloudPreset = if (liveWallpaperConfig.newCloudsEnabled && cloudSceneParams != null) {
+                com.wolkentypes.app.clouds.loadPreset(applicationContext, cloudSceneParams.weatherId)
+            } else {
+                null
+            }
             val rendererMatchesTarget = mCurrentEffectRenderer != null &&
                 mCurrentRendererWeatherKind == sceneState.weatherKind &&
                 mCurrentRendererCondition == sceneState.condition &&
                 mCurrentRendererRichSky == sceneState.richSky &&
                 abs(mCurrentRendererWindFactor - sceneState.windFactor) < 0.001f &&
                 abs(mCurrentRendererPrecipitationIntensity - sceneState.precipitationIntensity) < 0.001f &&
-                abs(mCurrentRendererGlassRainIntensity - sceneState.glassRainIntensity) < 0.001f
+                abs(mCurrentRendererGlassRainIntensity - sceneState.glassRainIntensity) < 0.001f &&
+                mCurrentRendererCloudPreset == cloudPreset
             if (rendererMatchesTarget) {
                 updateRendererDaylight(sceneState.daylight)
                 return
             }
-            val liveWallpaperConfig = LiveWallpaperConfigManager(applicationContext)
             val newRenderer = if (WallpaperWeatherEffectRenderer.supports(sceneState.weatherKind)) {
                 WallpaperWeatherEffectRenderer(
                     sceneState.weatherKind,
@@ -815,7 +827,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     richSky = sceneState.richSky,
                     fairSky = sceneState.condition.sky == WallpaperSkyCondition.FAIR,
                     useNewClouds = liveWallpaperConfig.newCloudsEnabled,
-                    newCloudsParams = CloudEngineAdapter.sceneParams(sceneState),
+                    newCloudsParams = cloudSceneParams,
                     cloudEngineContext = applicationContext
                 )
             } else {
@@ -855,6 +867,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mCurrentRendererWindFactor = sceneState.windFactor
             mCurrentRendererPrecipitationIntensity = sceneState.precipitationIntensity
             mCurrentRendererGlassRainIntensity = sceneState.glassRainIntensity
+            mCurrentRendererCloudPreset = cloudPreset
 
             // The scene layer draws its own time-positioned sun. Avoid the old fixed clear-day sun.
             mImplementor = if (mCurrentEffectRenderer != null ||
