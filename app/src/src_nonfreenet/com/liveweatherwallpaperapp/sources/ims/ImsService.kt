@@ -215,7 +215,7 @@ class ImsService @Inject constructor(
             weatherCode = getWeatherCode(data.analysis.weatherCode),
             temperature = data.analysis.temperature?.toDoubleOrNull()?.let {
                 TemperatureWrapper(
-                    temperature = it?.celsius,
+                    temperature = it.celsius,
                     feelsLike = data.analysis.feelsLike?.toDoubleOrNull()?.celsius
                 )
             },

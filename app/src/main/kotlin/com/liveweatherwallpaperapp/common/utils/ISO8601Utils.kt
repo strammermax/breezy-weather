@@ -305,7 +305,7 @@ object ISO8601Utils {
             fail = e
         }
         val input = if (date == null) null else '"'.toString() + date + '"'
-        var msg = fail!!.message
+        var msg = fail.message
         if (msg.isNullOrEmpty()) {
             msg = "(" + fail.javaClass.name + ")"
         }

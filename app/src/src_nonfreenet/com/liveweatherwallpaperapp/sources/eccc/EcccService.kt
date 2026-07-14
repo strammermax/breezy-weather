@@ -187,67 +187,65 @@ class EcccService @Inject constructor(
         val dailyFirstDay = dailyResult.dailyIssuedTimeEpoch!!.toLong().seconds.inWholeMilliseconds.toDate()
             .toTimezoneSpecificHour(location.timeZone, hour = 0)
         val dailyList = mutableListOf<DailyWrapper>()
-        if (dailyFirstDay != null) {
-            val firstDayIsNight = dailyResult.daily!![0].temperature?.periodLow != null
-            for (i in 0 until 6) {
-                val daytime = if (!firstDayIsNight) {
-                    dailyResult.daily.getOrNull(i * 2)
+        val firstDayIsNight = dailyResult.daily!![0].temperature?.periodLow != null
+        for (i in 0 until 6) {
+            val daytime = if (!firstDayIsNight) {
+                dailyResult.daily.getOrNull(i * 2)
+            } else {
+                if (i != 0) {
+                    dailyResult.daily.getOrNull((i * 2) - 1)
                 } else {
-                    if (i != 0) {
-                        dailyResult.daily.getOrNull((i * 2) - 1)
-                    } else {
-                        null
-                    }
+                    null
                 }
-                val nighttime = if (!firstDayIsNight) {
-                    dailyResult.daily.getOrNull((i * 2) + 1)
+            }
+            val nighttime = if (!firstDayIsNight) {
+                dailyResult.daily.getOrNull((i * 2) + 1)
+            } else {
+                dailyResult.daily.getOrNull(i * 2)
+            }
+
+            if ((daytime != null && nighttime != null) || (firstDayIsNight && i == 0 && nighttime != null)) {
+                val currentDay = if (i != 0) {
+                    val cal = Calendar.getInstance()
+                    cal.setTime(dailyFirstDay)
+                    cal.add(Calendar.DAY_OF_YEAR, i)
+                    cal.time
                 } else {
-                    dailyResult.daily.getOrNull(i * 2)
+                    dailyFirstDay
                 }
 
-                if ((daytime != null && nighttime != null) || (firstDayIsNight && i == 0 && nighttime != null)) {
-                    val currentDay = if (i != 0) {
-                        val cal = Calendar.getInstance()
-                        cal.setTime(dailyFirstDay)
-                        cal.add(Calendar.DAY_OF_YEAR, i)
-                        cal.time
-                    } else {
-                        dailyFirstDay
-                    }
-
-                    dailyList.add(
-                        DailyWrapper(
-                            date = currentDay,
-                            day = if (daytime != null) {
-                                HalfDayWrapper(
-                                    weatherCode = getWeatherCode(daytime.iconCode),
-                                    weatherText = daytime.summary,
-                                    weatherSummary = daytime.text,
-                                    temperature = TemperatureWrapper(
-                                        temperature = daytime.temperature?.periodHigh?.celsius
-                                    ),
-                                    precipitationProbability = PrecipitationProbability(
-                                        total = daytime.precip?.toDoubleOrNull()?.percent
-                                    )
-                                )
-                            } else {
-                                null
-                            },
-                            night = HalfDayWrapper(
-                                weatherCode = getWeatherCode(nighttime.iconCode),
-                                weatherText = nighttime.summary,
-                                weatherSummary = nighttime.text,
+                dailyList.add(
+                    DailyWrapper(
+                        date = currentDay,
+                        day = if (daytime != null) {
+                            HalfDayWrapper(
+                                weatherCode = getWeatherCode(daytime.iconCode),
+                                weatherText = daytime.summary,
+                                weatherSummary = daytime.text,
                                 temperature = TemperatureWrapper(
-                                    temperature = nighttime.temperature?.periodLow?.celsius
+                                    temperature = daytime.temperature?.periodHigh?.celsius
                                 ),
                                 precipitationProbability = PrecipitationProbability(
-                                    total = nighttime.precip?.toDoubleOrNull()?.percent
+                                    total = daytime.precip?.toDoubleOrNull()?.percent
                                 )
+                            )
+                        } else {
+                            null
+                        },
+                        night = HalfDayWrapper(
+                            weatherCode = getWeatherCode(nighttime.iconCode),
+                            weatherText = nighttime.summary,
+                            weatherSummary = nighttime.text,
+                            temperature = TemperatureWrapper(
+                                temperature = nighttime.temperature?.periodLow?.celsius
                             ),
-                            sunshineDuration = daytime?.sun?.value?.toDoubleOrNull()?.hours
-                        )
+                            precipitationProbability = PrecipitationProbability(
+                                total = nighttime.precip?.toDoubleOrNull()?.percent
+                            )
+                        ),
+                        sunshineDuration = daytime?.sun?.value?.toDoubleOrNull()?.hours
                     )
-                }
+                )
             }
         }
         return dailyList

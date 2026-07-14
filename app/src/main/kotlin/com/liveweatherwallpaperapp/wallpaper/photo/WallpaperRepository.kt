@@ -1051,7 +1051,7 @@ class WallpaperRepository @Inject constructor(
                     android.util.Log.w("LWWPhoto", "download HTTP ${response.code} for $url")
                     return@withContext null
                 }
-                response.body?.bytes()
+                response.body.bytes()
             }
         } catch (e: Throwable) {
             android.util.Log.w("LWWPhoto", "download error for $url", e)

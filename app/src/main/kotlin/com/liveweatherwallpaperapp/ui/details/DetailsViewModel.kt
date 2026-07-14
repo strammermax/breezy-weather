@@ -117,8 +117,8 @@ class DetailsViewModel @Inject constructor(
                 location = locationC.copy(weather = weather),
                 selectedChart = selectedChart,
                 initialIndex = dailyIndex.let {
-                    if (it == null || it == -1 || it >= weather!!.dailyForecast.size) {
-                        weather!!.todayIndex ?: 0
+                    if (it == null || it == -1 || it >= weather.dailyForecast.size) {
+                        weather.todayIndex ?: 0
                     } else {
                         it
                     }

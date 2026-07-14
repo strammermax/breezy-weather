@@ -62,7 +62,7 @@ open class IconPackResourcesProvider(
                 val fallbackResId = getMetaDataResource(Constants.GEOMETRIC_META_DATA_PROVIDER_CONFIG)
                     .takeIf { it != 0 }
                     ?: getMetaDataResource(Constants.BREEZY_META_DATA_PROVIDER_CONFIG)
-                if (fallbackResId != null && fallbackResId != 0) {
+                if (fallbackResId != 0) {
                     XmlHelper.getConfig(res.getXml(fallbackResId))
                 } else {
                     Config()
@@ -75,7 +75,7 @@ open class IconPackResourcesProvider(
                 val fallbackResId = getMetaDataResource(Constants.GEOMETRIC_META_DATA_DRAWABLE_FILTER)
                     .takeIf { it != 0 }
                     ?: getMetaDataResource(Constants.BREEZY_META_DATA_DRAWABLE_FILTER)
-                if (fallbackResId != null && fallbackResId != 0) {
+                if (fallbackResId != 0) {
                     XmlHelper.getFilterMap(res.getXml(fallbackResId))
                 } else {
                     HashMap()
@@ -88,7 +88,7 @@ open class IconPackResourcesProvider(
                 val fallbackResId = getMetaDataResource(Constants.GEOMETRIC_META_DATA_ANIMATOR_FILTER)
                     .takeIf { it != 0 }
                     ?: getMetaDataResource(Constants.BREEZY_META_DATA_ANIMATOR_FILTER)
-                if (fallbackResId != null && fallbackResId != 0) {
+                if (fallbackResId != 0) {
                     XmlHelper.getFilterMap(res.getXml(fallbackResId))
                 } else {
                     HashMap()
@@ -101,7 +101,7 @@ open class IconPackResourcesProvider(
                 val fallbackResId = getMetaDataResource(Constants.GEOMETRIC_META_DATA_SHORTCUT_FILTER)
                     .takeIf { it != 0 }
                     ?: getMetaDataResource(Constants.BREEZY_META_DATA_SHORTCUT_FILTER)
-                if (fallbackResId != null && fallbackResId != 0) {
+                if (fallbackResId != 0) {
                     XmlHelper.getFilterMap(res.getXml(fallbackResId))
                 } else {
                     HashMap()
@@ -114,7 +114,7 @@ open class IconPackResourcesProvider(
                 val fallbackResId = getMetaDataResource(Constants.GEOMETRIC_META_DATA_SUN_MOON_FILTER)
                     .takeIf { it != 0 }
                     ?: getMetaDataResource(Constants.BREEZY_META_DATA_SUN_MOON_FILTER)
-                if (fallbackResId != null && fallbackResId != 0) {
+                if (fallbackResId != 0) {
                     XmlHelper.getFilterMap(res.getXml(fallbackResId))
                 } else {
                     HashMap()

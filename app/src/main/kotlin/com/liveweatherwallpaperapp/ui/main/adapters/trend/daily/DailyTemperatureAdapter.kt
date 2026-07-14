@@ -218,12 +218,12 @@ class DailyTemperatureAdapter(
             )
             val dayWind = daily.day?.wind
             val dayWindIcon = dayWind?.drawableArrow?.let { AppCompatResources.getDrawable(activity, it) }
-            dayWindIcon?.colorFilter = PorterDuffColorFilter(dayWind?.getColor(activity) ?: 0, PorterDuff.Mode.SRC_ATOP)
+            dayWindIcon?.colorFilter = PorterDuffColorFilter(dayWind.getColor(activity), PorterDuff.Mode.SRC_ATOP)
             dailyItem.setWindDirectionDay(dayWindIcon, dayWind?.speed?.inBeaufort?.toString())
             val nightWind = daily.night?.wind
             val nightWindIcon = nightWind?.drawableArrow?.let { AppCompatResources.getDrawable(activity, it) }
             nightWindIcon?.colorFilter =
-                PorterDuffColorFilter(nightWind?.getColor(activity) ?: 0, PorterDuff.Mode.SRC_ATOP)
+                PorterDuffColorFilter(nightWind.getColor(activity), PorterDuff.Mode.SRC_ATOP)
             dailyItem.setWindDirectionNight(nightWindIcon, nightWind?.speed?.inBeaufort?.toString())
             dailyItem.setNightIconDrawable(
                 daily.night?.weatherCode?.let { ResourceHelper.getWeatherIcon(mResourceProvider, it, false) },

@@ -163,7 +163,7 @@ class HourlyTemperatureAdapter(
             val windIcon = wind?.drawableArrow?.let {
                 AppCompatResources.getDrawable(activity, it)
             }
-            windIcon?.colorFilter = PorterDuffColorFilter(wind?.getColor(activity) ?: 0, PorterDuff.Mode.SRC_ATOP)
+            windIcon?.colorFilter = PorterDuffColorFilter(wind.getColor(activity), PorterDuff.Mode.SRC_ATOP)
             hourlyItem.setWindDirection(windIcon, wind?.speed?.inBeaufort?.toString())
             hourlyItem.setWindForceTextColor(
                 activity.getThemeColor(R.attr.colorTitleText)

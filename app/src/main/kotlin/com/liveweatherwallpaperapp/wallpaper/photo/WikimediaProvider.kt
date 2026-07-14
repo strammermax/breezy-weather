@@ -69,7 +69,7 @@ class WikimediaProvider(
                     android.util.Log.w("LWWPhoto", "wikimedia HTTP ${response.code} for $url")
                     return@withContext null
                 }
-                val body = response.body?.string() ?: return@withContext null
+                val body = response.body.string()
                 parse(body)
             }
         } catch (e: Throwable) {

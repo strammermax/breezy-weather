@@ -138,7 +138,7 @@ class RemoveSkyProvider(
             val request = get("$apiBase/check?url=${enc(url)}")
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return@withContext null
-                val body = response.body?.string() ?: return@withContext null
+                val body = response.body.string()
                 val json = JSONObject(body)
                 val info = json.optJSONObject("info")
                 val checksJson = info?.optJSONObject("checks")
@@ -220,7 +220,7 @@ class RemoveSkyProvider(
                 .build()
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return@withContext null
-                val json = response.body?.string()?.let(::JSONObject) ?: return@withContext null
+                val json = response.body.string().let(::JSONObject)
                 RequestMoreWeetjesResult(
                     generated = json.optBoolean("generated"),
                     weetjes = json.optJSONArray("weetjes")?.let(::parseWeetjes).orEmpty()
@@ -256,7 +256,7 @@ class RemoveSkyProvider(
         try {
             client.newCall(get("$apiBase/health")).execute().use { response ->
                 if (!response.isSuccessful) return@withContext null
-                response.body?.string()?.let { JSONObject(it).optString("status").ifBlank { null } }
+                response.body.string().let { JSONObject(it).optString("status").ifBlank { null } }
             }
         } catch (e: Throwable) {
             log("health error for $apiBase/health: ${e.message}")
@@ -305,7 +305,7 @@ class RemoveSkyProvider(
             .build()
 
         client.newCall(request).execute().use { response ->
-            val body = response.body?.string().orEmpty()
+            val body = response.body.string()
             if (!response.isSuccessful) {
                 throw RemoveSkyHttpException(response.code, body)
             }
@@ -431,7 +431,7 @@ class RemoveSkyProvider(
             if (!response.isSuccessful) {
                 null
             } else {
-                response.body?.string()?.let(::JSONObject)
+                response.body.string().let(::JSONObject)
             }
         }
     } catch (e: Throwable) {
@@ -455,7 +455,7 @@ class RemoveSkyProvider(
                 log("upload HTTP ${response.code} for $imageUrl")
                 null
             } else {
-                response.body?.string()?.let { body ->
+                response.body.string().let { body ->
                     val json = JSONObject(body)
                     val processedUrl = json.optString("url").ifBlank { null }
                         ?.let(::normalizeServiceUrl) ?: return@let null

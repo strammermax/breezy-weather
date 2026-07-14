@@ -63,7 +63,7 @@ class UnsplashPhotoSource(
 
                 client.newCall(request).execute().use { response ->
                     if (!response.isSuccessful) return@use null
-                    val body = response.body?.string() ?: return@use null
+                    val body = response.body.string()
                     val results = JSONObject(body).optJSONArray("results")
                     if (results == null || results.length() == 0) return@use null
                     // Prefer "regular" (~1080px wide); fall back to "full".

@@ -57,7 +57,7 @@ class FlickrProvider(
                 .build()
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return@withContext null
-                val body = response.body?.string() ?: return@withContext null
+                val body = response.body.string()
                 parse(body)
             }
         } catch (e: Throwable) {

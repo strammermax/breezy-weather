@@ -489,8 +489,7 @@ kotlin {
             "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
             "-opt-in=androidx.compose.material3.ExperimentalMaterial3ExpressiveApi",
             "-opt-in=com.google.accompanist.permissions.ExperimentalPermissionsApi",
-            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
-            "-Xannotation-default-target=param-property"
+            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi"
         )
     }
 }

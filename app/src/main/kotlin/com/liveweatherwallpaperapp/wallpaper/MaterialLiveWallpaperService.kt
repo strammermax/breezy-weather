@@ -780,7 +780,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val sceneState = mSceneState
             val liveWallpaperConfig = LiveWallpaperConfigManager(applicationContext)
             val cloudSceneParams = CloudEngineAdapter.sceneParams(sceneState)
-            val cloudPreset = if (liveWallpaperConfig.newCloudsEnabled && cloudSceneParams != null) {
+            val cloudPreset = if (liveWallpaperConfig.newCloudsEnabled) {
                 com.wolkentypes.app.clouds.loadPreset(applicationContext, cloudSceneParams.weatherId)
             } else {
                 null
