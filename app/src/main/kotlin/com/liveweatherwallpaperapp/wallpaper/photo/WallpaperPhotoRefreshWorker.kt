@@ -85,7 +85,14 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                 // network-based fix over the (possibly stale) stored coordinates: this worker
                 // runs far more often than the app's regular weather/location refresh, and a
                 // missing/denied permission just falls back to the stored location below.
-                val fix = if (isActivating) wallpaperLocationResolver.resolve() else null
+                // Fictional locations (e.g. Ghibli) are the exception: their weather follows
+                // the device's GPS position, but their photos must keep following their own
+                // fixed identity/place query, never the device's real-world location.
+                val fix = if (isActivating && !location.isFictional) {
+                    wallpaperLocationResolver.resolve()
+                } else {
+                    null
+                }
                 val latitude = fix?.latitude ?: location.latitude
                 val longitude = fix?.longitude ?: location.longitude
                 val place = fix?.place ?: location.toWallpaperPlaceQuery()
