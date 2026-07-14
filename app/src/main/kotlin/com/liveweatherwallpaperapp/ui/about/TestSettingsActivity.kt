@@ -34,6 +34,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -55,6 +56,7 @@ import com.liveweatherwallpaperapp.ui.common.widgets.insets.bottomInsetItem
 import com.liveweatherwallpaperapp.ui.settings.preference.SmallSeparatorItem
 import com.liveweatherwallpaperapp.ui.theme.compose.themeRipple
 import com.liveweatherwallpaperapp.wallpaper.CloudTuningActivity
+import com.liveweatherwallpaperapp.wallpaper.LiveWallpaperConfigActivity
 import com.liveweatherwallpaperapp.wallpaper.WallpaperPhotoManagerActivity
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -103,6 +105,13 @@ private fun TestSettingsScreen(onBackPressed: () -> Unit) {
                 summaryId = R.string.test_settings_manage_backgrounds_summary
             ) {
                 context.startActivity(Intent(context, WallpaperPhotoManagerActivity::class.java))
+            },
+            TestSettingsItem(
+                icon = Icons.Filled.Settings,
+                titleId = R.string.test_settings_live_wallpaper,
+                summaryId = R.string.test_settings_live_wallpaper_summary
+            ) {
+                context.startActivity(Intent(context, LiveWallpaperConfigActivity::class.java))
             }
         )
     }
