@@ -383,6 +383,7 @@ object ClockDayVerticalWidgetIMP : AbstractRemoteViewsPresenter() {
                     setViewVisibility(R.id.widget_clock_day_clock_lightContainer, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_clock_normalContainer, View.VISIBLE)
                     setViewVisibility(R.id.widget_clock_day_clock_blackContainer, View.GONE)
+                    setViewVisibility(R.id.widget_clock_day_clock_boldContainer, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_clock_analogContainer_auto, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_clock_analogContainer_light, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_clock_analogContainer_dark, View.GONE)
@@ -393,6 +394,18 @@ object ClockDayVerticalWidgetIMP : AbstractRemoteViewsPresenter() {
                     setViewVisibility(R.id.widget_clock_day_clock_lightContainer, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_clock_normalContainer, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_clock_blackContainer, View.VISIBLE)
+                    setViewVisibility(R.id.widget_clock_day_clock_boldContainer, View.GONE)
+                    setViewVisibility(R.id.widget_clock_day_clock_analogContainer_auto, View.GONE)
+                    setViewVisibility(R.id.widget_clock_day_clock_analogContainer_light, View.GONE)
+                    setViewVisibility(R.id.widget_clock_day_clock_analogContainer_dark, View.GONE)
+                }
+            }
+            "bold" -> {
+                views.apply {
+                    setViewVisibility(R.id.widget_clock_day_clock_lightContainer, View.GONE)
+                    setViewVisibility(R.id.widget_clock_day_clock_normalContainer, View.GONE)
+                    setViewVisibility(R.id.widget_clock_day_clock_blackContainer, View.GONE)
+                    setViewVisibility(R.id.widget_clock_day_clock_boldContainer, View.VISIBLE)
                     setViewVisibility(R.id.widget_clock_day_clock_analogContainer_auto, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_clock_analogContainer_light, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_clock_analogContainer_dark, View.GONE)
@@ -403,6 +416,7 @@ object ClockDayVerticalWidgetIMP : AbstractRemoteViewsPresenter() {
                     setViewVisibility(R.id.widget_clock_day_clock_lightContainer, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_clock_normalContainer, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_clock_blackContainer, View.GONE)
+                    setViewVisibility(R.id.widget_clock_day_clock_boldContainer, View.GONE)
                     setViewVisibility(
                         R.id.widget_clock_day_clock_analogContainer_auto,
                         if (color.backgroundType == WidgetColor.WidgetBackgroundType.AUTO) {
@@ -438,6 +452,7 @@ object ClockDayVerticalWidgetIMP : AbstractRemoteViewsPresenter() {
                     setViewVisibility(R.id.widget_clock_day_clock_lightContainer, View.VISIBLE)
                     setViewVisibility(R.id.widget_clock_day_clock_normalContainer, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_clock_blackContainer, View.GONE)
+                    setViewVisibility(R.id.widget_clock_day_clock_boldContainer, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_clock_analogContainer_auto, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_clock_analogContainer_light, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_clock_analogContainer_dark, View.GONE)

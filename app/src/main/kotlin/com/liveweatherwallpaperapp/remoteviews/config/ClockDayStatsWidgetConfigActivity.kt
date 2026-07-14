@@ -59,8 +59,8 @@ class ClockDayStatsWidgetConfigActivity : AbstractWidgetConfigActivity() {
         val clockFonts = resources.getStringArray(R.array.widget_clock_fonts)
         val clockFontValues = resources.getStringArray(R.array.widget_clock_font_values)
         clockFontValueNow = "light"
-        this.clockFonts = arrayOf(clockFonts[0], clockFonts[1], clockFonts[2])
-        this.clockFontValues = arrayOf(clockFontValues[0], clockFontValues[1], clockFontValues[2])
+        this.clockFonts = arrayOf(clockFonts[0], clockFonts[1], clockFonts[2], clockFonts[3])
+        this.clockFontValues = arrayOf(clockFontValues[0], clockFontValues[1], clockFontValues[2], clockFontValues[3])
     }
 
     override fun initView() {

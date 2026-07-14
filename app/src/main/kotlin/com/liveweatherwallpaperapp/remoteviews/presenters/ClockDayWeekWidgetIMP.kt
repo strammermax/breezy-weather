@@ -316,6 +316,7 @@ object ClockDayWeekWidgetIMP : AbstractRemoteViewsPresenter() {
                     setViewVisibility(R.id.widget_clock_day_week_clock_lightContainer, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_week_clock_normalContainer, View.VISIBLE)
                     setViewVisibility(R.id.widget_clock_day_week_clock_blackContainer, View.GONE)
+                    setViewVisibility(R.id.widget_clock_day_week_clock_boldContainer, View.GONE)
                 }
             }
             "black" -> {
@@ -323,6 +324,15 @@ object ClockDayWeekWidgetIMP : AbstractRemoteViewsPresenter() {
                     setViewVisibility(R.id.widget_clock_day_week_clock_lightContainer, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_week_clock_normalContainer, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_week_clock_blackContainer, View.VISIBLE)
+                    setViewVisibility(R.id.widget_clock_day_week_clock_boldContainer, View.GONE)
+                }
+            }
+            "bold" -> {
+                views.apply {
+                    setViewVisibility(R.id.widget_clock_day_week_clock_lightContainer, View.GONE)
+                    setViewVisibility(R.id.widget_clock_day_week_clock_normalContainer, View.GONE)
+                    setViewVisibility(R.id.widget_clock_day_week_clock_blackContainer, View.GONE)
+                    setViewVisibility(R.id.widget_clock_day_week_clock_boldContainer, View.VISIBLE)
                 }
             }
             else -> {
@@ -330,6 +340,7 @@ object ClockDayWeekWidgetIMP : AbstractRemoteViewsPresenter() {
                     setViewVisibility(R.id.widget_clock_day_week_clock_lightContainer, View.VISIBLE)
                     setViewVisibility(R.id.widget_clock_day_week_clock_normalContainer, View.GONE)
                     setViewVisibility(R.id.widget_clock_day_week_clock_blackContainer, View.GONE)
+                    setViewVisibility(R.id.widget_clock_day_week_clock_boldContainer, View.GONE)
                 }
             }
         }

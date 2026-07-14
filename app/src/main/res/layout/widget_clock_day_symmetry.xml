@@ -114,6 +114,40 @@
                 tools:ignore="RelativeOverlap,RtlHardcoded" />
 
         </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/widget_clock_day_clock_boldContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextClock
+                android:id="@+id/widget_clock_day_clock_bold"
+                android:fontFamily="sans-serif-bold"
+                android:layout_centerInParent="true"
+                android:layout_marginStart="@dimen/small_margin"
+                android:layout_marginEnd="@dimen/small_margin"
+                android:shadowColor="@color/colorWidgetTextShadow"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                style="@style/widget_text_clock"
+                tools:text="9:10"
+                tools:ignore="RelativeOverlap,RtlHardcoded" />
+
+            <TextClock
+                android:id="@+id/widget_clock_day_clock_aa_bold"
+                android:layout_toEndOf="@id/widget_clock_day_clock_bold"
+                android:layout_alignBaseline="@id/widget_clock_day_clock_bold"
+                android:shadowColor="@color/colorWidgetTextShadow"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                style="@style/widget_text_clock_aa"
+                tools:text="AM"
+                tools:ignore="RelativeOverlap,RtlHardcoded" />
+
+        </RelativeLayout>
 
         <RelativeLayout
             android:id="@+id/widget_clock_day_clock_analogContainer_auto"

@@ -149,12 +149,14 @@
         <item>@string/widget_clock_font_sans_serif_light</item>
         <item>@string/widget_clock_font_sans_serif</item>
         <item>@string/widget_clock_font_sans_serif_black</item>
+        <item>@string/widget_clock_font_sans_serif_bold</item>
         <item>@string/widget_clock_font_analog</item>
     </string-array>
     <string-array name="widget_clock_font_values">
         <item>light</item>
         <item>normal</item>
         <item>black</item>
+        <item>bold</item>
         <item>analog</item>
     </string-array>
 

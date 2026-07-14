@@ -119,6 +119,40 @@
                 tools:text="10" />
 
         </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/widget_clock_day_clock_boldContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextClock
+                android:id="@+id/widget_clock_day_clock_1_bold"
+                android:textSize="64sp"
+                android:textAlignment="center"
+                android:format24Hour="HH"
+                android:format12Hour="hh"
+                android:fontFamily="sans-serif-bold"
+                android:layout_marginTop="-8dp"
+                android:layout_centerHorizontal="true"
+                style="@style/widget_text_clock"
+                tools:text="09" />
+
+            <TextClock
+                android:id="@+id/widget_clock_day_clock_2_bold"
+                android:textSize="64sp"
+                android:textAlignment="center"
+                android:format24Hour="mm"
+                android:format12Hour="mm"
+                android:fontFamily="sans-serif-bold"
+                android:layout_marginTop="-16dp"
+                android:layout_marginBottom="-4dp"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/widget_clock_day_clock_1_bold"
+                style="@style/widget_text_clock"
+                tools:text="10" />
+
+        </RelativeLayout>
 
         <RelativeLayout
             android:id="@+id/widget_clock_day_clock_analogContainer_auto"
