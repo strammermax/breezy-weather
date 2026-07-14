@@ -250,6 +250,7 @@
     <string name="widget_custom_subtitle_keyword_als_description">Waarschuwingen (kort)</string>
     <string name="widget_custom_subtitle_keyword_xdtd_description">Dagtemperatuur van vandaag, morgen, …, 4 dagen later (°)</string>
     <string name="widget_clock_font_sans_serif_black">Sans Serif Zwaar</string>
+    <string name="widget_clock_font_sans_serif_bold">Sans Serif Vet</string>
     <string name="widget_clock_font_analog">Analoog</string>
     <string name="settings_automatic">Automatisch</string>
     <string name="widget_custom_subtitle_keyword_ctd_description">Huidige temperatuur (°)</string>
