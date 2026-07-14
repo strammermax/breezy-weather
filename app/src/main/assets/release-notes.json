@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+4)",
+    "version": "Niet uitgebracht (+5)",
     "date": "",
     "changes": [
+      "Fix fictional locations using device GPS for wallpaper photo fetching",
       "Centralize default settings in JSON and auto-select best weather source per location",
       "Add live wallpaper test options link to Test settings screen",
       "Add Test settings overview screen for tester mode",
