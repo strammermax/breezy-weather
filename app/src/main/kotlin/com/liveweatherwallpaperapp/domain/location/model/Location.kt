@@ -72,6 +72,36 @@ fun Location.applyDefaultPreset(sourceManager: SourceManager): Location {
     )
 }
 
+/**
+ * Fills in feature sources with the best source now available for this location. Meant to be
+ * called on every refresh, since source coverage can change once the location's country/region
+ * becomes known (e.g. right after the first reverse geocoding) or as new sources are added.
+ *
+ * @param overrideExisting when `false` (default), only sources still set to "None" (null) are
+ * filled in, so a source the user explicitly picked is never touched. When `true` (the
+ * "automatically set the best weather source per location" setting), a source already set is
+ * also replaced if a better one is now available for this location - e.g. switching from a
+ * worldwide alert source to a national one once it becomes available.
+ *
+ * Unlike [applyDefaultPreset], [currentSource] is intentionally left untouched: null there means
+ * "fall back to the forecast source", which is already a valid, deliberate choice.
+ */
+fun Location.fillMissingSources(sourceManager: SourceManager, overrideExisting: Boolean = false): Location {
+    fun bestOrKeep(current: String?, feature: SourceFeature): String? {
+        val best = sourceManager.getBestSourceForFeatureOrDefault(this, feature)?.id
+        return if (overrideExisting) best ?: current else current ?: best
+    }
+
+    return copy(
+        forecastSource = bestOrKeep(forecastSource, SourceFeature.FORECAST) ?: forecastSource,
+        airQualitySource = bestOrKeep(airQualitySource, SourceFeature.AIR_QUALITY),
+        pollenSource = bestOrKeep(pollenSource, SourceFeature.POLLEN),
+        minutelySource = bestOrKeep(minutelySource, SourceFeature.MINUTELY),
+        alertSource = bestOrKeep(alertSource, SourceFeature.ALERT),
+        normalsSource = bestOrKeep(normalsSource, SourceFeature.NORMALS)
+    )
+}
+
 fun Location.isCloseTo(location: Location): Boolean {
     return cityId == location.cityId ||
         SphericalUtil.computeDistanceBetween(

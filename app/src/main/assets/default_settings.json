@@ -1,0 +1,61 @@
+{
+  "global": {
+    "todayForecastTime": "07:00",
+    "tomorrowForecastTime": "21:00"
+  },
+  "notifications": {
+    "alertPushEnabled": true,
+    "precipitationPushEnabled": false,
+    "appUpdatePushEnabled": true,
+    "todayForecastEnabled": false,
+    "tomorrowForecastEnabled": false,
+    "widgetNotificationEnabled": false,
+    "widgetNotificationPersistent": true,
+    "widgetNotificationStyle": "daily",
+    "widgetNotificationTemperatureIconEnabled": false,
+    "widgetNotificationUsingFeelsLike": false
+  },
+  "backgroundUpdates": {
+    "ignoreUpdatesWhenBatteryLow": true
+  },
+  "appearance": {
+    "mainScreenBackgroundEnabled": true,
+    "appBackgroundFrosted": true,
+    "appBackgroundFrostStrength": 2,
+    "appBackgroundFrostTint": "system",
+    "trendHorizontalLinesEnabled": true,
+    "backgroundAnimationMode": "system",
+    "tileCardStyle": "auto",
+    "tileCardAlpha": 40,
+    "tileTextColor": "auto",
+    "gravitySensorEnabled": true,
+    "cardsFadeInEnabled": true,
+    "elementsAnimationEnabled": true,
+    "useNumberFormatter": true,
+    "useMeasureFormat": true
+  },
+  "weatherSources": {
+    "radarTileSource": "rainviewer",
+    "radarTileMapStyle": "auto",
+    "autoUpdateSourcesPerLocation": false
+  },
+  "wallpaper": {
+    "weatherKind": "auto",
+    "dayNightType": "auto",
+    "animationsEnabled": false,
+    "parallaxEnabled": false,
+    "seasonGradingEnabled": true,
+    "seasonGradingStrength": 0.5,
+    "newCloudsEnabled": true,
+    "cloudDirectionDegrees": 70,
+    "fogDirectionDegrees": 70,
+    "precipitationLayers": 16
+  },
+  "widget": {
+    "widgetWeekIconMode": "auto",
+    "widgetMonochromeIcons": false
+  },
+  "debug": {
+    "maxTelemetryEvents": 20
+  }
+}

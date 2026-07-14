@@ -227,18 +227,70 @@ class SourceManager @Inject constructor(
 
     // Worldwide weather sources, excluding national sources with worldwide support,
     // with the exception of MET Norway.
-    // LiveWallpaperWeather: trimmed to the free, key-less sources relevant for NL/EU.
+    // LiveWallpaperWeather: trimmed to the free, key-less sources.
     // The other services are still injected above (harmless) but hidden from the chooser.
     private val worldwideWeatherSourceList = persistentListOf(
         openMeteoService,
         metNoService,
-        wmoSevereWeatherService
+        wmoSevereWeatherService,
+        fpasService
     )
 
     // Region-specific or national weather sources.
-    // LiveWallpaperWeather: NL-focused — only KNMI is kept here.
+    // LiveWallpaperWeather: only key-less national sources are exposed, so "current location"
+    // (e.g. while travelling) always has a working best-source pick without asking the user to
+    // configure an API key. Sources requiring a key (AccuWeather, AEMET, Atmo*, OpenWeather,
+    // PirateWeather, ECCC, CWA, Météo-France, Met Office, MET Éireann, Infoplaza, BMKG, ...)
+    // are intentionally left out.
     private val nationalWeatherSourceList = persistentListOf(
-        knmiService
+        knmiService,
+        bmdService,
+        brightSkyService,
+        chinaService,
+        dmiService,
+        ekukService,
+        epdHkService,
+        fmiService,
+        geoSphereAtService,
+        hkoService,
+        ilmateenistusService,
+        imdService,
+        imsService,
+        ipmaService,
+        jmaService,
+        lhmtService,
+        lvgmcService,
+        meteoAmService,
+        meteoLuxService,
+        mgmService,
+        namemService,
+        ncdrService,
+        nceiService,
+        nlscService,
+        nwsService,
+        pagasaService,
+        recosanteService,
+        smgService,
+        smhiService,
+        vedurIsService,
+        // ClimWeb network (Africa) — shared implementation, key-less for all countries
+        anamBfService,
+        anametService,
+        dccmsService,
+        dmnNeService,
+        dwrGmService,
+        ethioMetService,
+        gMetService,
+        igebuService,
+        inmgbService,
+        maliMeteoService,
+        meteoBeninService,
+        meteoTchadService,
+        mettelsatService,
+        msdZwService,
+        smaScService,
+        smaSuService,
+        ssmsService
     )
 
     // Broadcast sources
@@ -429,7 +481,9 @@ class SourceManager @Inject constructor(
      * - Open-Meteo in Europe
      * - AccuWeather in USA/Canada
      * - None in other countries
-     * For alerts, default source is AccuWeather (may be FPAS or WMO SWIC in the future)
+     * For alerts, default source is AccuWeather if configured, otherwise WMO Severe Weather
+     * Information Centre (keyless, no configuration required) so alerts have a working default
+     * out of the box
      * For normals, default source is AccuWeather (may be NCEI in the future), unless:
      * - In China: no normals source, due to firewall
      * For other cases, default source is Open-Meteo
@@ -453,7 +507,18 @@ class SourceManager @Inject constructor(
                 it.isFeatureSupportedForLocation(location, feature) && BuildConfig.FLAVOR != "freenet"
             }
 
-            SourceFeature.ALERT -> if (BuildConfig.FLAVOR != "freenet") getWeatherSource("accu") else null
+            SourceFeature.ALERT -> {
+                val accu = if (BuildConfig.FLAVOR != "freenet") {
+                    getWeatherSource("accu")?.takeIf {
+                        it is ConfigurableSource && it.isConfigured && !it.isRestricted
+                    }
+                } else {
+                    null
+                }
+                accu ?: getWeatherSource("wmosevereweather")?.takeIf {
+                    it.isFeatureSupportedForLocation(location, feature)
+                }
+            }
             SourceFeature.NORMALS -> if (!location.countryCode.equals("CN", ignoreCase = true) &&
                 BuildConfig.FLAVOR != "freenet"
             ) {

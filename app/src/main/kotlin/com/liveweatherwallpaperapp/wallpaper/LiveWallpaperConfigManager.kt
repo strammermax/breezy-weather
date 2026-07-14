@@ -17,6 +17,7 @@
 package com.liveweatherwallpaperapp.wallpaper
 
 import android.content.Context
+import com.liveweatherwallpaperapp.domain.settings.AppDefaults
 import com.liveweatherwallpaperapp.domain.settings.ConfigStore
 
 internal const val WEATHER_TYPE_ROTATING_TEST = "200"
@@ -50,15 +51,22 @@ class LiveWallpaperConfigManager(context: Context) {
 
     init {
         val config = ConfigStore(context, SP_LIVE_WALLPAPER_CONFIG)
-        weatherKind = normalizeWallpaperWeatherType(config.getString(KEY_WEATHER_KIND, null) ?: "auto")
-        dayNightType = config.getString(KEY_DAY_NIGHT_TYPE, null) ?: "auto"
-        animationsEnabled = config.getBoolean(KEY_ANIMATIONS_ENABLED, false)
-        parallaxEnabled = config.getBoolean(KEY_PARALLAX_ENABLED, false)
+        weatherKind = normalizeWallpaperWeatherType(
+            config.getString(KEY_WEATHER_KIND, null) ?: AppDefaults.wallpaper.weatherKind
+        )
+        dayNightType = config.getString(KEY_DAY_NIGHT_TYPE, null) ?: AppDefaults.wallpaper.dayNightType
+        animationsEnabled = config.getBoolean(KEY_ANIMATIONS_ENABLED, AppDefaults.wallpaper.animationsEnabled)
+        parallaxEnabled = config.getBoolean(KEY_PARALLAX_ENABLED, AppDefaults.wallpaper.parallaxEnabled)
         qualityProfile = WallpaperQualityProfileFactory.fromName(config.getString(KEY_QUALITY_PROFILE, null))
-        seasonGradingEnabled = config.getBoolean(KEY_SEASON_GRADING_ENABLED, true)
-        seasonGradingStrength = config.getFloat(KEY_SEASON_GRADING_STRENGTH, DEFAULT_SEASON_GRADING_STRENGTH)
-            .coerceIn(0f, 1f)
-        newCloudsEnabled = config.getBoolean(KEY_NEW_CLOUDS_ENABLED, true)
+        seasonGradingEnabled = config.getBoolean(
+            KEY_SEASON_GRADING_ENABLED,
+            AppDefaults.wallpaper.seasonGradingEnabled
+        )
+        seasonGradingStrength = config.getFloat(
+            KEY_SEASON_GRADING_STRENGTH,
+            AppDefaults.wallpaper.seasonGradingStrength
+        ).coerceIn(0f, 1f)
+        newCloudsEnabled = config.getBoolean(KEY_NEW_CLOUDS_ENABLED, AppDefaults.wallpaper.newCloudsEnabled)
     }
 
     companion object {
@@ -70,7 +78,6 @@ class LiveWallpaperConfigManager(context: Context) {
         private const val KEY_QUALITY_PROFILE = "quality_profile"
         private const val KEY_SEASON_GRADING_ENABLED = "season_grading_enabled"
         private const val KEY_SEASON_GRADING_STRENGTH = "season_grading_strength"
-        private const val DEFAULT_SEASON_GRADING_STRENGTH = 0.5f
         private const val KEY_NEW_CLOUDS_ENABLED = "new_clouds_enabled"
 
         fun update(

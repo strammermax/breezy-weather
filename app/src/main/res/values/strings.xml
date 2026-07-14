@@ -882,6 +882,8 @@
     <string name="settings_weather_sources_summary">Default weather source for new locations, custom API keys, other source settings</string>
     <string name="settings_weather_sources_section_general" translatable="false">@string/settings_section_general</string>
     <string name="settings_weather_sources_default_source">Default source for new locations</string>
+    <string name="settings_weather_sources_auto_update_per_location">Automatically set the best weather source for current location</string>
+    <string name="settings_weather_sources_auto_update_per_location_summary">Keeps the best available source per data type updated for your current (GPS) location, even if a source is already set. Fixed locations only get their best sources picked once, when added, and are left unchanged after that</string>
     <string name="settings_weather_source_non_freenet">%s (non-free network service)</string>
     <string name="settings_weather_source_unavailable">%s (unavailable)</string>
     <string name="settings_weather_source_not_configured">%s (not configured)</string>

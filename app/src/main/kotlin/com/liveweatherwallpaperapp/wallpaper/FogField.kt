@@ -8,6 +8,8 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
+import com.liveweatherwallpaperapp.domain.settings.AppDefaults
+
 /**
  * Render parameters for a single horizontal fog/haze depth band.
  *
@@ -50,7 +52,7 @@ data class FogFieldParams(
  */
 object FogFieldFactory {
     private const val BAND_COUNT = 4
-    private const val DEFAULT_DIRECTION_DEGREES = 70f
+    private val DEFAULT_DIRECTION_DEGREES get() = AppDefaults.wallpaper.fogDirectionDegrees
     private const val FOG_MAX_ALPHA = 0.68f
     private const val HAZE_MAX_ALPHA = 0.66f
 

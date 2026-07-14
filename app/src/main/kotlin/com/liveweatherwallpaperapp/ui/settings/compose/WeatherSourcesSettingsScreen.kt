@@ -64,6 +64,8 @@ import com.liveweatherwallpaperapp.ui.settings.preference.listPreferenceItem
 import com.liveweatherwallpaperapp.ui.settings.preference.sectionFooterItem
 import com.liveweatherwallpaperapp.ui.settings.preference.sectionHeaderItem
 import com.liveweatherwallpaperapp.ui.settings.preference.smallSeparatorItem
+import com.liveweatherwallpaperapp.ui.settings.preference.switchPreferenceItem
+import com.liveweatherwallpaperapp.ui.settings.preference.composables.SwitchPreferenceView
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import java.text.Collator
@@ -176,6 +178,19 @@ fun WeatherSourcesSettingsScreen(
                 ) { defaultSource ->
                     SettingsManager.getInstance(context).defaultForecastSource = defaultSource
                 }
+            }
+            smallSeparatorItem()
+            switchPreferenceItem(R.string.settings_weather_sources_auto_update_per_location) { id ->
+                SwitchPreferenceView(
+                    titleId = id,
+                    summaryOnId = R.string.settings_weather_sources_auto_update_per_location_summary,
+                    summaryOffId = R.string.settings_weather_sources_auto_update_per_location_summary,
+                    checked = SettingsManager.getInstance(context).autoUpdateSourcesPerLocation,
+                    isLast = true,
+                    onValueChanged = {
+                        SettingsManager.getInstance(context).autoUpdateSourcesPerLocation = it
+                    }
+                )
             }
             sectionFooterItem(R.string.settings_weather_sources_section_general)
 

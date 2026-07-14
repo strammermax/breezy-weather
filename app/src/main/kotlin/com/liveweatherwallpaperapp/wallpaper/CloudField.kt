@@ -8,6 +8,8 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
+import com.liveweatherwallpaperapp.domain.settings.AppDefaults
+
 /**
  * Render parameters for a single procedural cloud mass layer.
  *
@@ -42,7 +44,7 @@ data class CloudFieldParams(
  */
 object CloudFieldFactory {
     private const val LAYER_COUNT = 5
-    private const val DEFAULT_DIRECTION_DEGREES = 70f
+    private val DEFAULT_DIRECTION_DEGREES get() = AppDefaults.wallpaper.cloudDirectionDegrees
     private const val MIN_LAYER_DARKNESS = 0.05f
 
     // Back-to-front parallax: distant layers are smaller, higher, lighter and slower.

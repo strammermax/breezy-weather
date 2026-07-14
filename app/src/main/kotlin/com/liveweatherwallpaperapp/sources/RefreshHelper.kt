@@ -59,6 +59,7 @@ import com.liveweatherwallpaperapp.common.source.WeatherResult
 import com.liveweatherwallpaperapp.common.utils.helpers.IntentHelper
 import com.liveweatherwallpaperapp.common.utils.helpers.LogHelper
 import com.liveweatherwallpaperapp.common.utils.helpers.ShortcutsHelper
+import com.liveweatherwallpaperapp.domain.location.model.fillMissingSources
 import com.liveweatherwallpaperapp.domain.location.model.getPlace
 import com.liveweatherwallpaperapp.domain.location.model.isDaylight
 import com.liveweatherwallpaperapp.domain.settings.CurrentLocationStore
@@ -368,12 +369,27 @@ class RefreshHelper @Inject constructor(
             locationInfoFromDefaultSource
         }
 
-        // STEP 5 - If there was any change, update in database
-        if (needsSavingToDb) {
-            locationRepository.update(locationWithTimeZone)
+        // STEP 5 - Fill in feature sources with what's now available for this location
+        // (e.g. right after the country becomes known via reverse geocoding, or a new source
+        // gets added for this region). If the user enabled "automatically set the best weather
+        // source per location", sources already set are also updated, not just "None" ones - but
+        // only for the current position, since it moves and its best sources can change. Fixed
+        // locations just get their best sources picked once, when the location is added.
+        val locationWithFilledSources = locationWithTimeZone.fillMissingSources(
+            sourceManager,
+            overrideExisting = locationWithTimeZone.isCurrentPosition &&
+                SettingsManager.getInstance(context).autoUpdateSourcesPerLocation
+        )
+        if (locationWithFilledSources != locationWithTimeZone) {
+            needsSavingToDb = true
         }
 
-        return LocationResult(locationWithTimeZone, currentErrors)
+        // STEP 6 - If there was any change, update in database
+        if (needsSavingToDb) {
+            locationRepository.update(locationWithFilledSources)
+        }
+
+        return LocationResult(locationWithFilledSources, currentErrors)
     }
 
     /**

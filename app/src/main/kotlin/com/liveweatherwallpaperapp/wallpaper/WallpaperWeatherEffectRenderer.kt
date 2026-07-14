@@ -26,6 +26,7 @@ import android.graphics.Shader
 import android.os.Build
 import android.util.Log
 import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.domain.settings.AppDefaults
 import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView
 import com.wolkentypes.app.clouds.CloudEngineRenderer
 import com.wolkentypes.app.clouds.cloudProfileFor
@@ -990,7 +991,7 @@ internal class WallpaperWeatherEffectRenderer(
         private const val QUALITY_EVALUATION_MILLIS = 3_000L
         private const val QUALITY_INCREASE_MILLIS = 10_000L
         private const val MIN_PRECIPITATION_LAYERS = 10f
-        private const val DEFAULT_PRECIPITATION_LAYERS = 16f
+        private val DEFAULT_PRECIPITATION_LAYERS get() = AppDefaults.wallpaper.precipitationLayers
         private const val MAX_PRECIPITATION_LAYERS = 20f
         private const val LOG_TAG = "LWW"
         private const val WEATHER_PASS_BACKGROUND = 0f

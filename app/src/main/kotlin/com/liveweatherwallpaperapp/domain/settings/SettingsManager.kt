@@ -82,8 +82,6 @@ class SettingsManager private constructor(
             "&cloud_cover" +
             "&visibility"
 
-        const val DEFAULT_TODAY_FORECAST_TIME = "07:00"
-        const val DEFAULT_TOMORROW_FORECAST_TIME = "21:00"
     }
 
     private val config = ConfigStore(context)
@@ -120,21 +118,24 @@ class SettingsManager private constructor(
             config.edit().putBoolean("alert_notification_switch", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("alert_notification_switch", true)
+        get() = config.getBoolean("alert_notification_switch", AppDefaults.notifications.alertPushEnabled)
 
     var isPrecipitationPushEnabled: Boolean
         set(value) {
             config.edit().putBoolean("precipitation_notification_switch", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("precipitation_notification_switch", false)
+        get() = config.getBoolean(
+            "precipitation_notification_switch",
+            AppDefaults.notifications.precipitationPushEnabled
+        )
 
     var isAppUpdatePushEnabled: Boolean
         set(value) {
             config.edit().putBoolean("app_update_notification_switch", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("app_update_notification_switch", true)
+        get() = config.getBoolean("app_update_notification_switch", AppDefaults.notifications.appUpdatePushEnabled)
 
     var updateInterval: UpdateInterval
         set(value) {
@@ -150,7 +151,10 @@ class SettingsManager private constructor(
             config.edit().putBoolean("refresh_ignore_battery_low", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("refresh_ignore_battery_low", true)
+        get() = config.getBoolean(
+            "refresh_ignore_battery_low",
+            AppDefaults.backgroundUpdates.ignoreUpdatesWhenBatteryLow
+        )
 
     var darkMode: DarkMode
         set(value) {
@@ -184,6 +188,16 @@ class SettingsManager private constructor(
             notifySettingsChanged()
         }
         get() = config.getString("default_weather_source", null) ?: BuildConfig.DEFAULT_FORECAST_SOURCE
+
+    var autoUpdateSourcesPerLocation: Boolean
+        set(value) {
+            config.edit().putBoolean("auto_update_sources_per_location", value).apply()
+            notifySettingsChanged()
+        }
+        get() = config.getBoolean(
+            "auto_update_sources_per_location",
+            AppDefaults.weatherSources.autoUpdateSourcesPerLocation
+        )
 
     // unit.
     var temperatureUnit: TemperatureUnit?
@@ -325,28 +339,36 @@ class SettingsManager private constructor(
             config.edit().putBoolean("main_screen_background", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("main_screen_background", true)
+        get() = config.getBoolean("main_screen_background", AppDefaults.appearance.mainScreenBackgroundEnabled)
 
     var appBackgroundFrosted: Boolean
         set(value) {
             config.edit().putBoolean("app_background_frosted", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("app_background_frosted", true)
+        get() = config.getBoolean("app_background_frosted", AppDefaults.appearance.appBackgroundFrosted)
 
     var appBackgroundFrostStrength: Int
         set(value) {
             config.edit().putInt("app_background_frost_strength", value.coerceIn(1, 3)).apply()
             notifySettingsChanged()
         }
-        get() = config.getInt("app_background_frost_strength", 2).coerceIn(1, 3)
+        get() = config.getInt(
+            "app_background_frost_strength",
+            AppDefaults.appearance.appBackgroundFrostStrength
+        ).coerceIn(1, 3)
 
     var appBackgroundFrostTint: String
         set(value) {
             config.edit().putString("app_background_frost_tint", value).apply()
             notifySettingsChanged()
         }
-        get() = when (val value = config.getString("app_background_frost_tint", "system") ?: "system") {
+        get() = when (
+            val value = config.getString(
+                "app_background_frost_tint",
+                AppDefaults.appearance.appBackgroundFrostTint
+            ) ?: AppDefaults.appearance.appBackgroundFrostTint
+        ) {
             "white" -> "light"
             "black" -> "dark"
             else -> value
@@ -357,7 +379,7 @@ class SettingsManager private constructor(
             config.edit().putBoolean("trend_horizontal_line_switch", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("trend_horizontal_line_switch", true)
+        get() = config.getBoolean("trend_horizontal_line_switch", AppDefaults.appearance.trendHorizontalLinesEnabled)
 
     var backgroundAnimationMode: BackgroundAnimationMode
         set(value) {
@@ -365,7 +387,7 @@ class SettingsManager private constructor(
             notifySettingsChanged()
         }
         get() = BackgroundAnimationMode.getInstance(
-            config.getString("background_animation_mode", "system") ?: ""
+            config.getString("background_animation_mode", AppDefaults.appearance.backgroundAnimationMode) ?: ""
         )
 
     // Tile card appearance
@@ -374,35 +396,35 @@ class SettingsManager private constructor(
             config.edit().putString("tile_card_style", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getString("tile_card_style", null) ?: "auto"
+        get() = config.getString("tile_card_style", null) ?: AppDefaults.appearance.tileCardStyle
 
     var tileCardAlpha: Int
         set(value) {
             config.edit().putInt("tile_card_alpha", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getInt("tile_card_alpha", 40)
+        get() = config.getInt("tile_card_alpha", AppDefaults.appearance.tileCardAlpha)
 
     var tileTextColor: String
         set(value) {
             config.edit().putString("tile_text_color", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getString("tile_text_color", null) ?: "auto"
+        get() = config.getString("tile_text_color", null) ?: AppDefaults.appearance.tileTextColor
 
     var radarTileSource: String
         set(value) {
             config.edit().putString("radar_tile_source", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getString("radar_tile_source", null) ?: "rainviewer"
+        get() = config.getString("radar_tile_source", null) ?: AppDefaults.weatherSources.radarTileSource
 
     var radarTileMapStyle: String
         set(value) {
             config.edit().putString("radar_tile_map_style", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getString("radar_tile_map_style", null) ?: "auto"
+        get() = config.getString("radar_tile_map_style", null) ?: AppDefaults.weatherSources.radarTileMapStyle
 
     // Tracks which app version last showed its release notes on launch (see ReleaseNotesActivity /
     // MainActivity.onCreate), so it's shown once per update rather than on every cold start. No
@@ -418,21 +440,21 @@ class SettingsManager private constructor(
             config.edit().putBoolean("gravity_sensor_switch", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("gravity_sensor_switch", true)
+        get() = config.getBoolean("gravity_sensor_switch", AppDefaults.appearance.gravitySensorEnabled)
 
     var isCardsFadeInEnabled: Boolean
         set(value) {
             config.edit().putBoolean("list_animation_switch", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("list_animation_switch", true)
+        get() = config.getBoolean("list_animation_switch", AppDefaults.appearance.cardsFadeInEnabled)
 
     var isElementsAnimationEnabled: Boolean
         set(value) {
             config.edit().putBoolean("item_animation_switch", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("item_animation_switch", true)
+        get() = config.getBoolean("item_animation_switch", AppDefaults.appearance.elementsAnimationEnabled)
 
     var languageUpdateLastTimestamp: Long
         set(value) {
@@ -452,7 +474,7 @@ class SettingsManager private constructor(
             config.edit().putBoolean("timing_forecast_switch_today", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("timing_forecast_switch_today", false)
+        get() = config.getBoolean("timing_forecast_switch_today", AppDefaults.notifications.todayForecastEnabled)
 
     var todayForecastTime: String
         set(value) {
@@ -460,15 +482,18 @@ class SettingsManager private constructor(
             notifySettingsChanged()
         }
         get() = config
-            .getString("forecast_time_today", DEFAULT_TODAY_FORECAST_TIME)
-            ?: DEFAULT_TODAY_FORECAST_TIME
+            .getString("forecast_time_today", AppDefaults.global.todayForecastTime)
+            ?: AppDefaults.global.todayForecastTime
 
     var isTomorrowForecastEnabled: Boolean
         set(value) {
             config.edit().putBoolean("timing_forecast_switch_tomorrow", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("timing_forecast_switch_tomorrow", false)
+        get() = config.getBoolean(
+            "timing_forecast_switch_tomorrow",
+            AppDefaults.notifications.tomorrowForecastEnabled
+        )
 
     var tomorrowForecastTime: String
         set(value) {
@@ -476,8 +501,8 @@ class SettingsManager private constructor(
             notifySettingsChanged()
         }
         get() = config
-            .getString("forecast_time_tomorrow", DEFAULT_TOMORROW_FORECAST_TIME)
-            ?: DEFAULT_TOMORROW_FORECAST_TIME
+            .getString("forecast_time_tomorrow", AppDefaults.global.tomorrowForecastTime)
+            ?: AppDefaults.global.tomorrowForecastTime
 
     // widget.
 
@@ -487,7 +512,7 @@ class SettingsManager private constructor(
             notifySettingsChanged()
         }
         get() = WidgetWeekIconMode.getInstance(
-            config.getString("widget_week_icon_mode", "auto") ?: ""
+            config.getString("widget_week_icon_mode", AppDefaults.widget.widgetWeekIconMode) ?: ""
         )
 
     var isWidgetUsingMonochromeIcons: Boolean
@@ -495,7 +520,7 @@ class SettingsManager private constructor(
             config.edit().putBoolean("widget_monochrome_icons", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("widget_monochrome_icons", false)
+        get() = config.getBoolean("widget_monochrome_icons", AppDefaults.widget.widgetMonochromeIcons)
 
     // notification widget
     var isWidgetNotificationEnabled: Boolean
@@ -503,14 +528,17 @@ class SettingsManager private constructor(
             config.edit().putBoolean("notification_widget_switch", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("notification_widget_switch", false)
+        get() = config.getBoolean("notification_widget_switch", AppDefaults.notifications.widgetNotificationEnabled)
 
     var isWidgetNotificationPersistent: Boolean
         set(value) {
             config.edit().putBoolean("notification_widget_persistent_switch", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("notification_widget_persistent_switch", true)
+        get() = config.getBoolean(
+            "notification_widget_persistent_switch",
+            AppDefaults.notifications.widgetNotificationPersistent
+        )
 
     var widgetNotificationStyle: NotificationStyle
         set(value) {
@@ -518,7 +546,7 @@ class SettingsManager private constructor(
             notifySettingsChanged()
         }
         get() = NotificationStyle.getInstance(
-            config.getString("notification_widget_style", "daily") ?: ""
+            config.getString("notification_widget_style", AppDefaults.notifications.widgetNotificationStyle) ?: ""
         )
 
     var isWidgetNotificationTemperatureIconEnabled: Boolean
@@ -526,28 +554,34 @@ class SettingsManager private constructor(
             config.edit().putBoolean("notification_widget_temp_icon_switch", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("notification_widget_temp_icon_switch", false)
+        get() = config.getBoolean(
+            "notification_widget_temp_icon_switch",
+            AppDefaults.notifications.widgetNotificationTemperatureIconEnabled
+        )
 
     var isWidgetNotificationUsingFeelsLike: Boolean
         set(value) {
             config.edit().putBoolean("notification_widget_feelslike", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("notification_widget_feelslike", false)
+        get() = config.getBoolean(
+            "notification_widget_feelslike",
+            AppDefaults.notifications.widgetNotificationUsingFeelsLike
+        )
 
     var useNumberFormatter: Boolean
         set(value) {
             config.edit().putBoolean("use_number_formatter", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("use_number_formatter", true)
+        get() = config.getBoolean("use_number_formatter", AppDefaults.appearance.useNumberFormatter)
 
     var useMeasureFormat: Boolean
         set(value) {
             config.edit().putBoolean("use_measure_format", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("use_measure_format", true)
+        get() = config.getBoolean("use_measure_format", AppDefaults.appearance.useMeasureFormat)
 
     private fun notifySettingsChanged() {
         EventBus

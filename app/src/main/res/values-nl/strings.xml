@@ -547,6 +547,8 @@
     <string name="location_message_already_exists">Locatielijst bevat deze locatie met deze weersvoorspellingsbron al.</string>
     <string name="settings_weather_source_none">Geen</string>
     <string name="settings_weather_sources_default_source">Standaardbron voor nieuwe locaties</string>
+    <string name="settings_weather_sources_auto_update_per_location">Automatisch beste weerbron instellen voor huidige locatie</string>
+    <string name="settings_weather_sources_auto_update_per_location_summary">Werkt per gegevenstype automatisch de beste beschikbare bron bij voor je huidige (GPS-)locatie, ook als er al een bron is ingesteld. Vaste locaties krijgen alleen bij toevoegen hun beste bronnen; die blijven daarna ongewijzigd</string>
     <string name="settings_weather_source_unavailable">%s (niet beschikbaar)</string>
     <string name="settings_color_app">Automatisch</string>
     <string name="settings_unavailable_no_background_updates">Niet beschikbaar, sta achtergrond updates eerst toe</string>

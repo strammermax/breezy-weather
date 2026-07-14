@@ -8,6 +8,8 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
+import com.liveweatherwallpaperapp.domain.settings.AppDefaults
+
 /**
  * Debug-only frame time and quality aggregator for the live wallpaper render loop (ACT-009).
  *
@@ -130,7 +132,7 @@ data class FrameTelemetrySnapshot(
  * the real wall clock.
  */
 class WallpaperLifecycleTelemetry(
-    private val maxEvents: Int = DEFAULT_MAX_EVENTS,
+    private val maxEvents: Int = AppDefaults.debug.maxTelemetryEvents,
     private val clockMillis: () -> Long = System::currentTimeMillis,
 ) {
     data class Event(val visible: Boolean, val timestampMillis: Long)
@@ -152,9 +154,5 @@ class WallpaperLifecycleTelemetry(
 
     fun reset() {
         events.clear()
-    }
-
-    companion object {
-        const val DEFAULT_MAX_EVENTS = 20
     }
 }
