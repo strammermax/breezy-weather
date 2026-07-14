@@ -6,6 +6,9 @@
 
 # Version 6.2.2 (unreleased)
 
+**Sources**
+- Met Office (UK) - Fix shifted day sequence in locations with a different timezone than UTC
+- NCEI - Fix parsing error
 
 
 # Version 6.2.1 (2026-06-07)

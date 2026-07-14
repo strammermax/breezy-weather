@@ -20,6 +20,7 @@ import android.content.Context
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.exceptions.InvalidOrIncompleteDataException
+import com.liveweatherwallpaperapp.common.extensions.toCalendarWithTimeZone
 import com.liveweatherwallpaperapp.common.preference.EditTextPreference
 import com.liveweatherwallpaperapp.common.preference.Preference
 import com.liveweatherwallpaperapp.domain.settings.SourceConfigStore
@@ -47,6 +48,8 @@ import livewallpaperweather.domain.weather.wrappers.HourlyWrapper
 import livewallpaperweather.domain.weather.wrappers.TemperatureWrapper
 import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
 import retrofit2.Retrofit
+import java.util.Calendar
+import java.util.TimeZone
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -83,7 +86,7 @@ class MetOfficeService @Inject constructor(
                 throw InvalidOrIncompleteDataException()
             }
             WeatherWrapper(
-                dailyForecast = getDailyForecast(daily, context),
+                dailyForecast = getDailyForecast(daily, location, context),
                 hourlyForecast = getHourlyForecast(hourly, context)
             )
         }
@@ -91,6 +94,7 @@ class MetOfficeService @Inject constructor(
 
     private fun getDailyForecast(
         dailyResult: MetOfficeForecast<MetOfficeDaily>,
+        location: Location,
         context: Context,
     ): List<DailyWrapper> {
         val feature = dailyResult.features[0] // should only be one feature for this kind of API call
@@ -99,8 +103,22 @@ class MetOfficeService @Inject constructor(
                 ?: Pair(null, null)
             val (nightText, nightCode) = convertWeatherCode(result.nightSignificantWeatherCode, context)
                 ?: Pair(null, null)
+
+            // Given as UTC, we need to convert in the correct timezone at 00:00
+            val dayInUTCCalendar = result.time.toCalendarWithTimeZone(TimeZone.getTimeZone("UTC"))
+            val dayInLocalCalendar = Calendar.getInstance(location.timeZone).apply {
+                set(Calendar.YEAR, dayInUTCCalendar[Calendar.YEAR])
+                set(Calendar.MONTH, dayInUTCCalendar[Calendar.MONTH])
+                set(Calendar.DAY_OF_MONTH, dayInUTCCalendar[Calendar.DAY_OF_MONTH])
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            val theDayInLocal = dayInLocalCalendar.time
+
             DailyWrapper(
-                date = result.time,
+                date = theDayInLocal,
                 day = HalfDayWrapper(
                     weatherText = dayText,
                     weatherCode = dayCode,

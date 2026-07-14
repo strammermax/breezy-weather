@@ -182,7 +182,6 @@ Pull requests are welcome. You can have a look at [issues opened to contribution
 ## Features that will not be implemented
 
 - Paid-only sources, too limited free-tier, or free-tier that requires privacy-invasive information (credit card info, phone number, etc)
-- Radar; [please check out this document for alternatives](docs/RADAR.md)
 - Adding `standard` flavor or non-free sources to the F-Droid default repo: please use the `standard` flavor from a different store/source instead
 - Backport features/fixes from latest Android versions to older Android versions
 - Donations: if you have extra money to spare, consider [donating to Open-Meteo](https://github.com/sponsors/open-meteo) to support infrastructure costs and future developments (we currently lack a libre and gratis worldwide alternative for the following features: [Reverse geocoding](https://github.com/open-meteo/geocoding-api/issues/6), [Alerts](https://github.com/open-meteo/open-meteo/issues/351), [Normals](https://github.com/open-meteo/open-meteo/issues/361))
