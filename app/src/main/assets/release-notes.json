@@ -1,8 +1,11 @@
 [
   {
-    "version": "Niet uitgebracht (+2)",
+    "version": "Niet uitgebracht (+5)",
     "date": "",
     "changes": [
+      "Remove BUGS.md, tracked on GitHub instead",
+      "Restore BUGS.md",
+      "Show app warnings and weetjes as a card on the main screen",
       "Add direct link to live wallpaper settings from root Settings screen",
       "Fix cloud amount alpha normalization and height clamp in cloud-engine"
     ]
