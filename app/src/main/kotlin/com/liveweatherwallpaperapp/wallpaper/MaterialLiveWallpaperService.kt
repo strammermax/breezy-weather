@@ -169,6 +169,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mCurrentRendererWindFactor = Float.NaN
         private var mCurrentRendererPrecipitationIntensity = Float.NaN
         private var mCurrentRendererGlassRainIntensity = Float.NaN
+
         // Tracks the CloudTuningActivity preset baked into the current renderer so a tester
         // adjusting sliders (savePreset() writes immediately) sees it on the next visibility
         // change instead of only after fully re-selecting the wallpaper -- without this the

@@ -58,6 +58,7 @@ import com.liveweatherwallpaperapp.ui.settings.preference.composables.ListPrefer
 import com.liveweatherwallpaperapp.ui.settings.preference.composables.PreferenceScreen
 import com.liveweatherwallpaperapp.ui.settings.preference.composables.SectionFooter
 import com.liveweatherwallpaperapp.ui.settings.preference.composables.SectionHeader
+import com.liveweatherwallpaperapp.ui.settings.preference.composables.SwitchPreferenceView
 import com.liveweatherwallpaperapp.ui.settings.preference.editTextPreferenceItem
 import com.liveweatherwallpaperapp.ui.settings.preference.largeSeparatorItem
 import com.liveweatherwallpaperapp.ui.settings.preference.listPreferenceItem
@@ -65,7 +66,6 @@ import com.liveweatherwallpaperapp.ui.settings.preference.sectionFooterItem
 import com.liveweatherwallpaperapp.ui.settings.preference.sectionHeaderItem
 import com.liveweatherwallpaperapp.ui.settings.preference.smallSeparatorItem
 import com.liveweatherwallpaperapp.ui.settings.preference.switchPreferenceItem
-import com.liveweatherwallpaperapp.ui.settings.preference.composables.SwitchPreferenceView
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import java.text.Collator

@@ -81,7 +81,6 @@ class SettingsManager private constructor(
             "&pressure" +
             "&cloud_cover" +
             "&visibility"
-
     }
 
     private val config = ConfigStore(context)
