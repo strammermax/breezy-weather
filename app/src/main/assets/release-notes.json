@@ -1,7 +1,14 @@
 [
   {
-    "version": "Niet uitgebracht (+6)",
+    "version": "Niet uitgebracht (+1)",
     "date": "",
+    "changes": [
+      "Fix spotless formatting violations from source auto-fill changes"
+    ]
+  },
+  {
+    "version": "2026.07.14.269",
+    "date": "2026-07-14",
     "changes": [
       "Fix adding a current location silently failing when a fictional location exists",
       "Fix fictional locations using device GPS for wallpaper photo fetching",
@@ -104,14 +111,6 @@
     "date": "2026-07-09",
     "changes": [
       "modified readme"
-    ]
-  },
-  {
-    "version": "1.1.191",
-    "date": "2026-07-09",
-    "changes": [
-      "How many of the most recently shown photo URLs per location are skipped before repeating",
-      "Verifieer RemoveSky-secrets tegen de live service vóór Play Store publish"
     ]
   }
 ]
