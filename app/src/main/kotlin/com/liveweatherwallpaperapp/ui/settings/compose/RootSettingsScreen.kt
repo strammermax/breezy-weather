@@ -16,6 +16,7 @@
 
 package com.liveweatherwallpaperapp.ui.settings.compose
 
+import android.content.Intent
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -35,6 +36,7 @@ import com.liveweatherwallpaperapp.ui.settings.preference.composables.Preference
 import com.liveweatherwallpaperapp.ui.settings.preference.composables.PreferenceViewWithCard
 import com.liveweatherwallpaperapp.ui.settings.preference.largeSeparatorItem
 import com.liveweatherwallpaperapp.ui.settings.preference.smallSeparatorItem
+import com.liveweatherwallpaperapp.wallpaper.LiveWallpaperConfigActivity
 import com.liveweatherwallpaperapp.wallpaper.launchLiveWallpaperPicker
 
 @Composable
@@ -65,8 +67,7 @@ fun RootSettingsView(
                     titleId = id,
                     iconId = R.drawable.ic_home,
                     summaryId = R.string.settings_set_live_wallpaper_summary,
-                    isFirst = true,
-                    isLast = true
+                    isFirst = true
                 ) {
                     if (!launchLiveWallpaperPicker(context)) {
                         SnackbarHelper.showSnackbar(
@@ -76,6 +77,17 @@ fun RootSettingsView(
                             )
                         )
                     }
+                }
+            }
+            smallSeparatorItem()
+            clickablePreferenceItem(R.string.settings_modules_live_wallpaper_title) { id ->
+                PreferenceViewWithCard(
+                    titleId = id,
+                    iconId = R.drawable.ic_palette,
+                    summaryId = R.string.settings_live_wallpaper_location_summary,
+                    isLast = true
+                ) {
+                    context.startActivity(Intent(context, LiveWallpaperConfigActivity::class.java))
                 }
             }
             largeSeparatorItem()
