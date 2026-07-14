@@ -1,8 +1,10 @@
 [
   {
-    "version": "Niet uitgebracht (+5984)",
+    "version": "Niet uitgebracht (+5986)",
     "date": "",
     "changes": [
+      "Add Dutch translation for Sans Serif Bold widget font",
+      "Add Sans Serif Bold widget clock font option",
       "Fix spotless formatting violations from source auto-fill changes",
       "Fix #2870 - NCEI parsing error",
       "Translated using Weblate (Slovak)",
