@@ -106,11 +106,15 @@ class CloudEngineRenderer(private val context: Context) {
                     CloudInstance(
                         layer = layer,
                         laneOffsetFraction = .5f + (lane - .5f) * config.horizontalSpread,
+                        // Wide enough that the Height/Vertical spread sliders (up to +-.22 offset,
+                        // up to 2x spread) never get silently clipped before reaching the screen
+                        // edges, e.g. OVERHEAD's band center sits near 0 so a negative Height
+                        // offset combined with max spread can reach well below the old -.2 floor.
                         yFraction = (
                             bandCenter +
                                 (rnd.nextFloat() * 2f - 1f) * bandHalfHeight * config.verticalSpread +
                                 config.heightOffset
-                            ).coerceIn(-.2f, .9f),
+                            ).coerceIn(-.5f, 1.15f),
                         scale = layer.scaleRange.start + rnd.nextFloat() *
                             (layer.scaleRange.endInclusive - layer.scaleRange.start),
                         assetIndex = forcedAssetIndex[layer]?.let { Math.floorMod(it, pool.size) }
@@ -298,7 +302,10 @@ class CloudEngineRenderer(private val context: Context) {
             top,
             width,
             height,
-            (horizonConfig.amount.weight / 4f * .82f * horizonConfig.alphaMultiplier).coerceIn(0f, 1f)
+            (
+                horizonConfig.amount.weight / CloudAmount.A_LOT.weight.toFloat() *
+                    .82f * horizonConfig.alphaMultiplier
+                ).coerceIn(0f, 1f)
         )
     }
 
@@ -381,7 +388,10 @@ class CloudEngineRenderer(private val context: Context) {
                     top,
                     width,
                     height,
-                    (overheadConfig.amount.weight / 4f * .48f * overheadConfig.alphaMultiplier).coerceIn(0f, 1f)
+                    (
+                        overheadConfig.amount.weight / CloudAmount.A_LOT.weight.toFloat() *
+                            .48f * overheadConfig.alphaMultiplier
+                        ).coerceIn(0f, 1f)
                 )
             }
         }
@@ -405,7 +415,10 @@ class CloudEngineRenderer(private val context: Context) {
                 top,
                 width,
                 height,
-                (overheadConfig.amount.weight / 4f * .9f * overheadConfig.alphaMultiplier).coerceIn(0f, 1f)
+                (
+                    overheadConfig.amount.weight / CloudAmount.A_LOT.weight.toFloat() *
+                        .9f * overheadConfig.alphaMultiplier
+                    ).coerceIn(0f, 1f)
             )
         }
 
