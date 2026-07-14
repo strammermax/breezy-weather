@@ -29,6 +29,10 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkerParameters
 import com.liveweatherwallpaperapp.BuildConfig
+import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.common.AppMessage
+import com.liveweatherwallpaperapp.common.AppMessageKind
+import com.liveweatherwallpaperapp.common.AppMessageStore
 import com.liveweatherwallpaperapp.common.extensions.isOnline
 import com.liveweatherwallpaperapp.common.extensions.isRunning
 import com.liveweatherwallpaperapp.common.extensions.workManager
@@ -73,6 +77,34 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
         val now = System.currentTimeMillis()
         var refreshedCount = 0
         var skippedCount = 0
+
+        // Piggyback the RemoveSky health check on this worker's regular tick (low frequency --
+        // it only ran manually before, see LiveWallpaperConfigActivity.runRefresh()) so a
+        // sustained outage surfaces as a warning card without needing a separate WorkManager
+        // job. Best-effort: a failure here must never break the photo refresh below.
+        if (now - store.lastHealthCheckAtMillis >= HEALTH_CHECK_INTERVAL_MILLIS) {
+            try {
+                store.lastHealthCheckAtMillis = now
+                if (wallpaperRepository.removeSkyHealthStatus() == "ok") {
+                    AppMessageStore(context).clear(WARNING_KEY_REMOVESKY_HEALTH_FAILED)
+                } else {
+                    AppMessageStore(context).setMessage(
+                        AppMessage(
+                            kind = AppMessageKind.WARNING,
+                            key = WARNING_KEY_REMOVESKY_HEALTH_FAILED,
+                            title = context.getString(R.string.warning_removesky_health_failed),
+                            body = context.getString(R.string.warning_removesky_health_failed_body)
+                        )
+                    )
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                if (BuildConfig.DEBUG) {
+                    Log.w(TAG, "health check failed: ${e.javaClass.simpleName}")
+                }
+            }
+        }
 
         return try {
             val locations = WallpaperPhotoRefreshPlanner.locationsToProcess(
@@ -155,6 +187,9 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                 if (file != null) {
                     store.setPhotoRefreshedAt(location.formattedId, now)
                     store.clearEmptyRetryCount(location.formattedId)
+                    if (isActivating) {
+                        AppMessageStore(context).clear(WARNING_KEY_PHOTO_REFRESH_FAILED)
+                    }
                     refreshedCount++
                     // Warms the cache for this location's *next* pick ahead of time -- best
                     // effort, never blocks the current tick's activation on it.
@@ -178,6 +213,16 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                             (attempt - 1).coerceAtMost(WallpaperImageStore.RETRY_BACKOFF_MINUTES.lastIndex)
                         ]
                         scheduleRetrySoon(context, delayMinutes)
+                        if (attempt >= EMPTY_RETRY_WARNING_THRESHOLD) {
+                            AppMessageStore(context).setMessage(
+                                AppMessage(
+                                    kind = AppMessageKind.WARNING,
+                                    key = WARNING_KEY_PHOTO_REFRESH_FAILED,
+                                    title = context.getString(R.string.warning_photo_refresh_failed),
+                                    body = context.getString(R.string.warning_photo_refresh_failed_body)
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -204,6 +249,12 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
         private const val WORK_NAME_MANUAL = "WallpaperPhotoRefresh-manual"
         private const val WORK_NAME_RETRY = "WallpaperPhotoRefresh-retry"
         private const val BACKOFF_DELAY_MINUTES = 30L
+        private const val WARNING_KEY_PHOTO_REFRESH_FAILED = "photo_refresh_failed"
+        private const val WARNING_KEY_REMOVESKY_HEALTH_FAILED = "removesky_health_failed"
+        private const val HEALTH_CHECK_INTERVAL_MILLIS = 24L * 60 * 60 * 1000
+
+        /** Consecutive empty-result retries before surfacing a warning card (avoids flagging a one-off hiccup). */
+        private const val EMPTY_RETRY_WARNING_THRESHOLD = 3
 
         /**
          * Retry delay used when a weetje was due but the server had to start generating fresh

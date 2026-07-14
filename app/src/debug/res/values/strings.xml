@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Debug-only override so the debug build is easy to tell apart from the release
+         install in the app drawer/recents (same device, same launcher icon otherwise). -->
+    <string name="brand_name" translatable="false">Deb.LWWApp</string>
+
+</resources>

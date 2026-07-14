@@ -17,6 +17,9 @@
 package com.liveweatherwallpaperapp.wallpaper.photo
 
 import android.content.Context
+import com.liveweatherwallpaperapp.common.AppMessage
+import com.liveweatherwallpaperapp.common.AppMessageKind
+import com.liveweatherwallpaperapp.common.AppMessageStore
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import com.liveweatherwallpaperapp.remoteviews.Notifications
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -122,6 +125,19 @@ class WeetjeManager @Inject constructor(
         val weetje = pick ?: return false
 
         Notifications.sendWeetjeNotification(context, weetje.weetje, weetje.omschrijving, weetje.url)
+        // Also surface it as a card on the main screen (AppMessageViewHolder) -- the push
+        // notification alone is easy to miss/swipe away, unlike a card on the screen the user
+        // already opens daily.
+        AppMessageStore(context).setMessage(
+            AppMessage(
+                kind = AppMessageKind.WEETJE,
+                key = "weetje",
+                title = weetje.weetje,
+                body = weetje.omschrijving,
+                url = weetje.url,
+                timestampMillis = now
+            )
+        )
         store.markShown(locationKey, weetje.id, now)
         store.recordNotificationShown(now)
         // Deliberately NOT clearing the dwell session: the user may still be at this same

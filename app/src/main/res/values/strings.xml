@@ -39,6 +39,13 @@
     <!-- Ex: 4 weather alerts -->
     <string name="alerts_to_follow">Upcoming alerts, tap here to see them.</string>
     <string name="alert_source">Source: %s</string>
+    <!-- App warnings shown on the main screen (AppMessageViewHolder) -->
+    <string name="warning_weather_update_failed">Weather update failed</string>
+    <string name="warning_weather_update_failed_body">Tap to try refreshing the weather again.</string>
+    <string name="warning_photo_refresh_failed">Wallpaper photo couldn\'t be refreshed</string>
+    <string name="warning_photo_refresh_failed_body">Tap to check your wallpaper photo settings.</string>
+    <string name="warning_removesky_health_failed">Wallpaper photo service unavailable</string>
+    <string name="warning_removesky_health_failed_body">Tap to check your wallpaper photo settings.</string>
     <!-- Daily/hourly forecast columns, must be as short as possible. -->
     <string name="daily_yesterday">Yesterday</string>
     <string name="daily_today">Today</string>

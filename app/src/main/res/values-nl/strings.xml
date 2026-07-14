@@ -87,6 +87,12 @@
     <string name="widget_style_vertical">Verticaal</string>
     <string name="widget_subtitle_data_feels_like">Gevoelstemperatuur</string>
     <string name="alerts_to_follow">Aankomende waarschuwingen, tik hier om ze te bekijken.</string>
+    <string name="warning_weather_update_failed">Weerupdate mislukt</string>
+    <string name="warning_weather_update_failed_body">Tik om het weer opnieuw te verversen.</string>
+    <string name="warning_photo_refresh_failed">Achtergrondfoto kon niet ververst worden</string>
+    <string name="warning_photo_refresh_failed_body">Tik om de instellingen van de achtergrondfoto te bekijken.</string>
+    <string name="warning_removesky_health_failed">Achtergrondfoto-service niet beschikbaar</string>
+    <string name="warning_removesky_health_failed_body">Tik om de instellingen van de achtergrondfoto te bekijken.</string>
     <string name="temperature">Temperatuur</string>
     <string name="temperature_apparent">Gevoeld</string>
     <string name="temperature_wind_chill">Windkou</string>

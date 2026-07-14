@@ -21,6 +21,7 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.liveweatherwallpaperapp.common.AppMessageStore
 import com.liveweatherwallpaperapp.common.extensions.toCalendarWithTimeZone
 import com.liveweatherwallpaperapp.common.options.appearance.CardDisplay
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
@@ -32,6 +33,7 @@ import com.liveweatherwallpaperapp.ui.main.adapters.main.holder.AbstractMainCard
 import com.liveweatherwallpaperapp.ui.main.adapters.main.holder.AbstractMainViewHolder
 import com.liveweatherwallpaperapp.ui.main.adapters.main.holder.AirQualityViewHolder
 import com.liveweatherwallpaperapp.ui.main.adapters.main.holder.AlertViewHolder
+import com.liveweatherwallpaperapp.ui.main.adapters.main.holder.AppMessageViewHolder
 import com.liveweatherwallpaperapp.ui.main.adapters.main.holder.ClockViewHolder
 import com.liveweatherwallpaperapp.ui.main.adapters.main.holder.DailyViewHolder
 import com.liveweatherwallpaperapp.ui.main.adapters.main.holder.DetailsOverviewViewHolder
@@ -109,6 +111,9 @@ class MainAdapter(
             mViewTypeList.add(ViewType.HEADER)
             if (location.weather?.alertList?.any { it.endDate == null || it.endDate!!.time > Date().time } == true) {
                 mViewTypeList.add(ViewType.ALERT)
+            }
+            if (AppMessageStore(activity).activeMessages().isNotEmpty()) {
+                mViewTypeList.add(ViewType.APP_MESSAGE)
             }
             for (c in cardDisplayList) {
                 if (c === CardDisplay.CARD_NOWCAST &&
@@ -190,6 +195,7 @@ class MainAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AbstractMainViewHolder = when (viewType) {
         ViewType.HEADER -> HeaderViewHolder(parent)
         ViewType.ALERT -> AlertViewHolder(parent)
+        ViewType.APP_MESSAGE -> AppMessageViewHolder(parent)
         ViewType.PRECIPITATION_NOWCAST -> PrecipitationNowcastViewHolder(parent)
         ViewType.DAILY -> DailyViewHolder(parent)
         ViewType.HOURLY -> HourlyViewHolder(parent)

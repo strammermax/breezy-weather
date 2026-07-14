@@ -89,6 +89,17 @@ class WallpaperImageStore(context: Context) {
         }
 
     /**
+     * Epoch millis of the last automatic RemoveSky `/health` check performed by
+     * [WallpaperPhotoRefreshWorker] (piggybacked on its regular tick, low frequency), or 0 if
+     * never checked automatically yet.
+     */
+    var lastHealthCheckAtMillis: Long
+        get() = config.getLong(KEY_LAST_HEALTH_CHECK_AT, 0L)
+        set(value) {
+            config.edit().putLong(KEY_LAST_HEALTH_CHECK_AT, value).apply()
+        }
+
+    /**
      * Base URL from `local.properties`, with the public service as fallback.
      */
     val removeSkyBaseUrl: String
@@ -323,6 +334,7 @@ class WallpaperImageStore(context: Context) {
         private const val KEY_SEARCH_SINCE = "search_since_checked_at"
         private const val KEY_EMPTY_RETRY_COUNT = "empty_retry_count"
         private const val KEY_REFRESH_INTERVAL_MINUTES = "photo_refresh_interval_minutes"
+        private const val KEY_LAST_HEALTH_CHECK_AT = "last_health_check_at"
 
         /** File name used for the cached background bitmap inside the app files dir. */
         const val CACHE_FILE_NAME = "wallpaper_location_photo.jpg"

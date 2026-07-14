@@ -37,11 +37,14 @@ interface ViewType {
         const val RADAR = 16
         const val WIDGET = 17
         const val DETAILS_OVERVIEW = 18
+        const val APP_MESSAGE = 19
         const val FOOTER = -1
 
         fun isHalfSizeableBlock(viewType: Int): Boolean? {
             return when (viewType) {
-                HEADER, ALERT, PRECIPITATION_NOWCAST, DAILY, HOURLY, RADAR, WIDGET, DETAILS_OVERVIEW, FOOTER -> false
+                HEADER, ALERT, APP_MESSAGE, PRECIPITATION_NOWCAST, DAILY, HOURLY, RADAR, WIDGET,
+                DETAILS_OVERVIEW, FOOTER,
+                -> false
                 PRECIPITATION, WIND, AIR_QUALITY, POLLEN, HUMIDITY, UV, VISIBILITY, PRESSURE, SUN, MOON, CLOCK -> true
                 else -> null
             }

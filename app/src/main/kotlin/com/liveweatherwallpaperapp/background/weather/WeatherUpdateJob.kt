@@ -35,6 +35,10 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.google.maps.android.SphericalUtil
 import com.google.maps.android.model.LatLng
+import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.common.AppMessage
+import com.liveweatherwallpaperapp.common.AppMessageKind
+import com.liveweatherwallpaperapp.common.AppMessageStore
 import com.liveweatherwallpaperapp.common.bus.EventBus
 import com.liveweatherwallpaperapp.common.extensions.createFileInCacheDir
 import com.liveweatherwallpaperapp.common.extensions.getFormattedDate
@@ -334,6 +338,16 @@ class WeatherUpdateJob @AssistedInject constructor(
                 failedUpdates.groupBy { it.first }.size,
                 errorFile.getUriCompat(context)
             )
+            AppMessageStore(context).setMessage(
+                AppMessage(
+                    kind = AppMessageKind.WARNING,
+                    key = WARNING_KEY_WEATHER_UPDATE_FAILED,
+                    title = context.getString(R.string.warning_weather_update_failed),
+                    body = context.getString(R.string.warning_weather_update_failed_body)
+                )
+            )
+        } else {
+            AppMessageStore(context).clear(WARNING_KEY_WEATHER_UPDATE_FAILED)
         }
         /*if (skippedUpdates.isNotEmpty()) {
             notifier.showUpdateSkippedNotification(skippedUpdates.size)
@@ -437,6 +451,7 @@ class WeatherUpdateJob @AssistedInject constructor(
         private const val TAG = "WeatherUpdate"
         private const val WORK_NAME_AUTO = "WeatherUpdate-auto"
         private const val WORK_NAME_MANUAL = "WeatherUpdate-manual"
+        private const val WARNING_KEY_WEATHER_UPDATE_FAILED = "weather_update_failed"
 
         /**
          * Key for location to update.
