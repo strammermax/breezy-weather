@@ -585,10 +585,13 @@ class MainActivityViewModel @Inject constructor(
     }
 
     fun locationExists(location: Location): Boolean {
+        // formattedId (not raw lat/lon) is the source of truth for a location's identity: it
+        // already distinguishes "current position" and fictional locations (e.g. Ghibli) from
+        // real coordinates. Comparing lat/lon directly used to falsely match a not-yet-resolved
+        // "add current location" placeholder (0.0, 0.0) against a fictional location, which also
+        // sits at (0.0, 0.0), turning "add" into a silent no-op "update".
         return validLocationList.value.firstOrNull { item ->
-            item.longitude == location.longitude &&
-                item.latitude == location.latitude &&
-                item.forecastSource == location.forecastSource
+            item.formattedId == location.formattedId
         } != null
     }
 
