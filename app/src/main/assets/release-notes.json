@@ -1,8 +1,10 @@
 [
   {
-    "version": "Niet uitgebracht (+5986)",
+    "version": "Niet uitgebracht (+5988)",
     "date": "",
     "changes": [
+      "Fix mechanical Kotlin compiler warnings",
+      "Enable full release flow in push.yml for our own fork",
       "Add Dutch translation for Sans Serif Bold widget font",
       "Add Sans Serif Bold widget clock font option",
       "Fix spotless formatting violations from source auto-fill changes",
