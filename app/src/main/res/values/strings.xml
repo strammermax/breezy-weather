@@ -1126,6 +1126,13 @@
     <string name="about_tester_mode_summary">Show additional settings and test screens</string>
     <string name="about_tester_mode_unlocked">Tester mode unlocked</string>
     <string name="about_tester_mode_hidden">Tester mode hidden</string>
+    <string name="about_test_settings">Test settings</string>
+    <string name="about_test_settings_summary">Overview of every tester screen</string>
+    <string name="test_settings_title">Test settings</string>
+    <string name="test_settings_cloud_tuning">Cloud tuning</string>
+    <string name="test_settings_cloud_tuning_summary">Adjust cloud layers per weather type</string>
+    <string name="test_settings_manage_backgrounds">Manage background images</string>
+    <string name="test_settings_manage_backgrounds_summary">Review and curate cached photos</string>
     <string name="release_notes_unavailable">Couldn\'t load release notes. Check your connection and try again later.</string>
     <string name="release_notes_view_on_github">View on GitHub</string>
     <string name="about_contributors">Contributors</string>

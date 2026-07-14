@@ -274,6 +274,12 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.about.TestSettingsActivity"
+            android:label="@string/test_settings_title"
+            android:theme="@style/BreezyWeatherTheme"
+            android:exported="false" />
+
+        <activity
             android:name=".radar.RadarActivity"
             android:label="@string/radar_title"
             android:theme="@style/BreezyWeatherTheme"

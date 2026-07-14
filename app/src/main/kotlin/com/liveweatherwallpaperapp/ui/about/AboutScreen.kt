@@ -236,6 +236,22 @@ internal fun AboutScreen(
                         }
                     )
                 }
+                if (testerModeEnabled) {
+                    item { SmallSeparatorItem() }
+                    item {
+                        AboutAppLink(
+                            iconId = R.drawable.ic_bug_report,
+                            title = stringResource(R.string.about_test_settings),
+                            isFirst = true,
+                            isLast = true,
+                            onClick = {
+                                context.startActivity(
+                                    android.content.Intent(context, TestSettingsActivity::class.java)
+                                )
+                            }
+                        )
+                    }
+                }
             }
 
             largeSeparatorItem()
