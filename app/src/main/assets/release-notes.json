@@ -1,7 +1,16 @@
 [
   {
-    "version": "Niet uitgebracht (+2)",
+    "version": "Niet uitgebracht (+3)",
     "date": "",
+    "changes": [
+      "Add live wallpaper test options link to Test settings screen",
+      "Add Test settings overview screen for tester mode",
+      "Fix cloud tuning presets not applying live to wallpaper"
+    ]
+  },
+  {
+    "version": "2026.07.13.259",
+    "date": "2026-07-13",
     "changes": [
       "Auto fast-forward local main when behind origin during release",
       "Fix stars with new cloud renderer"
@@ -100,13 +109,6 @@
     "changes": [
       "How many of the most recently shown photo URLs per location are skipped before repeating",
       "Verifieer RemoveSky-secrets tegen de live service vóór Play Store publish"
-    ]
-  },
-  {
-    "version": "1.1.189",
-    "date": "2026-07-08",
-    "changes": [
-      "Voeg RemoveSky-secrets toe aan Play Store release-workflow"
     ]
   }
 ]
