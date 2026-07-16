@@ -46,7 +46,7 @@ Voor Android-versies is het manifest leidend: YoWindow declareert `minSdkVersion
 
 Onderzocht pad:
 
-`D:\Project\LiveWeatherApp`
+`D:\Project\LiveWeather\LiveWeatherApp`
 
 De relevante onderdelen zijn onder andere:
 

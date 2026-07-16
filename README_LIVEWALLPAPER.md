@@ -75,7 +75,7 @@ WallpaperImageStore(context).addLocationData(
 Vereisten: **Android Studio** (al geïnstalleerd) — bevat JDK + Android SDK. Geen Flutter nodig;
 dit is een pure Gradle/Kotlin Android-app.
 
-1. Open de map `d:\Project\LiveWeatherApp` in Android Studio en laat Gradle synchroniseren.
+1. Open de map `d:\Project\LiveWeather\LiveWeatherApp` in Android Studio en laat Gradle synchroniseren.
 2. Schakel **USB-debugging** in op je telefoon (Instellingen → Ontwikkelaarsopties).
 3. Sluit de telefoon via USB aan en bevestig de debug-prompt.
 4. Kies je toestel in Android Studio en klik **Run** (of: `.\gradlew assembleDebug` en installeer de APK).

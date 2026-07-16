@@ -17,7 +17,7 @@ Bij het testen van de camera-flow (foto van de lucht maken en laten beoordelen) 
 
 ## 2. Bevindingen in de huidige code
 
-Alle referenties zijn relatief aan `D:\Project\LiveWeatherApp`.
+Alle referenties zijn relatief aan `D:\Project\LiveWeather\LiveWeatherApp`.
 
 ### 2.1 Camera-scherm
 
