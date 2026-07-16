@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+1)",
+    "version": "Niet uitgebracht (+2)",
     "date": "",
     "changes": [
+      "Limit Actions storage usage from CI",
       "update documentatie"
     ]
   },
