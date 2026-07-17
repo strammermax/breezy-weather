@@ -28,8 +28,10 @@ import android.graphics.Shader
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.util.AttributeSet
+import android.util.Log
 import android.view.Choreographer
 import android.view.View
+import com.liveweatherwallpaperapp.BuildConfig
 
 /**
  * Hardware-accelerated View that renders the live wallpaper's animated weather effects
@@ -52,9 +54,16 @@ internal class WallpaperEffectView @JvmOverloads constructor(
     private var shouldAnimate = false
     private var lastFrameNanos = 0L
 
+    // Debug-only fps counter to verify the 60fps cap on-device (e.g. on 90/120Hz panels),
+    // compiled out of release builds. No-op cost in release since BuildConfig.DEBUG is a
+    // compile-time constant the compiler can dead-code-eliminate the branch for.
+    private var mTelemetryFrameCount = 0
+    private var mLastTelemetryLogMillis = 0L
+
     companion object {
         /** ~60fps ceiling (1000/60 rounded up, so the cap never drifts slightly above 60). */
         private const val MAX_FRAME_INTERVAL_MILLIS = 17L
+        private const val TELEMETRY_LOG_INTERVAL_MILLIS = 5_000L
     }
 
     /** Blurs only this background layer; UI and glass cards above it remain sharp. */
@@ -110,6 +119,7 @@ internal class WallpaperEffectView @JvmOverloads constructor(
             lastFrameNanos = frameTimeNanos
             renderer?.update(intervalMillis, animate = true)
             invalidate()
+            if (BuildConfig.DEBUG) maybeLogFrameTelemetry()
             // Unlike the home-screen wallpaper (a fixed 30fps RxJava interval), this view was
             // previously posting on every vsync -- up to 120fps on high-refresh-rate panels, for
             // a background layer sitting behind a RenderEffect blur that recomposites on every
@@ -117,6 +127,21 @@ internal class WallpaperEffectView @JvmOverloads constructor(
             // update()+invalidate()+blur-recomposite cycles on 90/120Hz ones.
             Choreographer.getInstance().postFrameCallbackDelayed(this, MAX_FRAME_INTERVAL_MILLIS)
         }
+    }
+
+    private fun maybeLogFrameTelemetry() {
+        mTelemetryFrameCount++
+        val now = System.currentTimeMillis()
+        if (mLastTelemetryLogMillis == 0L) {
+            mLastTelemetryLogMillis = now
+            return
+        }
+        val elapsed = now - mLastTelemetryLogMillis
+        if (elapsed < TELEMETRY_LOG_INTERVAL_MILLIS) return
+        val fps = mTelemetryFrameCount * 1000.0 / elapsed
+        Log.d("LWW", "WallpaperEffectView fps=%.1f frames=%d window=%dms".format(fps, mTelemetryFrameCount, elapsed))
+        mTelemetryFrameCount = 0
+        mLastTelemetryLogMillis = now
     }
 
     /**
