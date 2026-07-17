@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+1)",
+    "version": "Niet uitgebracht (+2)",
     "date": "",
     "changes": [
+      "Consolidate Find my phone parameters into AppDefaults",
       "Fix fictional-location weather updates failing on country-gated sources"
     ]
   },
