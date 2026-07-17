@@ -1,5 +1,17 @@
 [
   {
+    "version": "Niet uitgebracht (+1)",
+    "date": "",
+    "changes": [
+      "Notify users locally once they've actually installed an update"
+    ]
+  },
+  {
+    "version": "2026.07.17.357",
+    "date": "2026-07-17",
+    "changes": []
+  },
+  {
     "version": "2026.07.17.356",
     "date": "2026-07-17",
     "changes": [
@@ -57,69 +69,6 @@
       "Add \"Find my phone\" clap/whistle detection feature",
       "Limit Actions storage usage from CI",
       "update documentatie"
-    ]
-  },
-  {
-    "version": "2026.07.15.330",
-    "date": "2026-07-15",
-    "changes": [
-      "Remove BUGS.md, tracked on GitHub instead",
-      "Restore BUGS.md",
-      "Show app warnings and weetjes as a card on the main screen",
-      "Add direct link to live wallpaper settings from root Settings screen",
-      "Fix cloud amount alpha normalization and height clamp in cloud-engine"
-    ]
-  },
-  {
-    "version": "2026.07.14.322",
-    "date": "2026-07-14",
-    "changes": [
-      "Fix mechanical Kotlin compiler warnings",
-      "Enable full release flow in push.yml for our own fork",
-      "Add Dutch translation for Sans Serif Bold widget font",
-      "Add Sans Serif Bold widget clock font option",
-      "Fix spotless formatting violations from source auto-fill changes",
-      "Fix #2870 - NCEI parsing error",
-      "Translated using Weblate (Slovak)",
-      "Translated using Weblate (Vietnamese)",
-      "Translated using Weblate (Portuguese (Brazil))",
-      "Translated using Weblate (Catalan)",
-      "Translated using Weblate (Tamil)",
-      "Translated using Weblate (Romanian)",
-      "Translated using Weblate (Tamil)",
-      "Translated using Weblate (Tamil)",
-      "Added translation using Weblate (Tamil)",
-      "Translated using Weblate (Romanian)",
-      "Translated using Weblate (Swedish)",
-      "Translated using Weblate (Latvian)",
-      "Translated using Weblate (Romanian)",
-      "Translated using Weblate (Swedish)",
-      "Translated using Weblate (Spanish)",
-      "Translated using Weblate (Spanish)",
-      "Translated using Weblate (Spanish)",
-      "Update actions/setup-java action to v5.4.0",
-      "Update dependencies",
-      "Add Wear Sync to 3rd party apps",
-      "Add Gadgetbridge to 3rd party apps",
-      "Typo",
-      "Add a file with 3rd party apps",
-      "Update contribution guidelines to avoid feature creep",
-      "Update Radar feature info",
-      "Fix #2842 - [Met Office UK] Shifted day",
-      "Update actions/checkout action to v7",
-      "Update kotest.assertions to v6.2.1",
-      "Update compose.bom to v2026.06.00",
-      "Update lifecycle to v2.11.0",
-      "Update softprops/action-gh-release action to v3.0.1",
-      "Translated using Weblate (Romanian)",
-      "Translated using Weblate (Czech)",
-      "Translated using Weblate (Turkish)",
-      "Translated using Weblate (Slovak)",
-      "Translated using Weblate (Slovak)",
-      "Translated using Weblate (Romanian)",
-      "Translated using Weblate (Persian)",
-      "Update actions/setup-java action to v5.3.0",
-      "Update dependencies"
     ]
   }
 ]
