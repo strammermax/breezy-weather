@@ -1089,6 +1089,17 @@ class RefreshHelper @Inject constructor(
             latitude = resolvedCurrentPosition.latitude,
             longitude = resolvedCurrentPosition.longitude,
             timeZone = resolvedCurrentPosition.timeZone,
+            // Also carry over country/admin fields, not just coordinates -- sources like KNMI
+            // gate isFeatureSupportedForLocation() on countryCode, and a fictional location's
+            // own countryCode ("ZZ") would otherwise still make every feature look unsupported
+            // even though the substituted coordinates are a real, supported place.
+            country = resolvedCurrentPosition.country,
+            countryCode = resolvedCurrentPosition.countryCode,
+            admin1 = resolvedCurrentPosition.admin1,
+            admin1Code = resolvedCurrentPosition.admin1Code,
+            admin2 = resolvedCurrentPosition.admin2,
+            admin2Code = resolvedCurrentPosition.admin2Code,
+            city = resolvedCurrentPosition.city,
             forecastSource = resolvedCurrentPosition.forecastSource,
             currentSource = resolvedCurrentPosition.currentSource,
             airQualitySource = resolvedCurrentPosition.airQualitySource,
