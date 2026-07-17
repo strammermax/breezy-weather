@@ -39,6 +39,16 @@ jobs:
       - name: Clean build
         run: ./gradlew clean
 
+      - name: Write Firebase google-services.json
+        # Required by the com.google.gms.google-services plugin for any release build task
+        # (FCM push notifications, see docs/UpdateFLow.md flow 5) - gitignored, so CI needs
+        # its own copy from a secret. Written before both flavors are assembled below (the
+        # plugin applies to all variants, not just "basic") -- `gradlew clean` only clears
+        # build/ output, so this survives the freenet-flavor "Clean build" step later on.
+        run: echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+
       - name: Assemble freenet flavor
         if: startsWith(github.ref, 'refs/tags/')
         run: ./gradlew assembleFreenetRelease
@@ -111,14 +121,6 @@ jobs:
           MF_WSFT_JWT_KEY: ${{ secrets.MF_WSFT_JWT_KEY }}
           MF_WSFT_KEY: ${{ secrets.MF_WSFT_KEY }}
           OPEN_WEATHER_KEY: ${{ secrets.OPEN_WEATHER_KEY }}
-
-      - name: Write Firebase google-services.json
-        # Required by the com.google.gms.google-services plugin for any release build task
-        # (FCM push notifications, see docs/UpdateFLow.md flow 5) - gitignored, so CI needs
-        # its own copy from a secret.
-        run: echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
-        env:
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
 
       - name: Assemble basic flavor
         run: ./gradlew assembleBasicRelease
