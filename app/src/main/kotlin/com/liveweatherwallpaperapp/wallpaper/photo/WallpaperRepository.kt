@@ -16,10 +16,12 @@
 
 package com.liveweatherwallpaperapp.wallpaper.photo
 
+import android.app.ActivityManager
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
+import androidx.core.content.getSystemService
 import com.liveweatherwallpaperapp.BuildConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -99,6 +101,14 @@ class WallpaperRepository @Inject constructor(
     private val maxDecodeDimension: Int by lazy {
         val metrics = context.resources.displayMetrics
         (maxOf(metrics.widthPixels, metrics.heightPixels) * 1.5f).toInt()
+    }
+
+    /** Halves per-pixel memory for the (fully opaque) background photo on devices the platform
+     *  itself flags as memory-constrained -- doesn't apply to the depth map, whose grayscale
+     *  pixel values are read back as exact distance data and would be corrupted by RGB_565's
+     *  5/6/5-bit quantization. */
+    private val isLowRamDevice: Boolean by lazy {
+        context.getSystemService<ActivityManager>()?.isLowRamDevice ?: false
     }
 
     /**
@@ -797,7 +807,7 @@ class WallpaperRepository @Inject constructor(
         }
 
         val decoded = try {
-            BitmapFactory.decodeFile(file.absolutePath, decodeOptionsFor(file))
+            BitmapFactory.decodeFile(file.absolutePath, decodeOptionsFor(file, isDepth))
         } catch (e: Throwable) {
             null
         } ?: return null
@@ -811,8 +821,10 @@ class WallpaperRepository @Inject constructor(
 
     /** Picks an `inSampleSize` (power-of-2 downscale) so decoded bitmaps never exceed
      *  [maxDecodeDimension] on their longest side -- a no-op (sampleSize=1) for photos
-     *  already at or below that size, which covers the common case. */
-    private fun decodeOptionsFor(file: File): BitmapFactory.Options {
+     *  already at or below that size, which covers the common case. Also drops the
+     *  background photo (never the depth map, see [isLowRamDevice]) to RGB_565 on
+     *  low-RAM devices, halving its in-memory footprint. */
+    private fun decodeOptionsFor(file: File, isDepth: Boolean): BitmapFactory.Options {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(file.absolutePath, bounds)
         var sampleSize = 1
@@ -821,7 +833,10 @@ class WallpaperRepository @Inject constructor(
         ) {
             sampleSize *= 2
         }
-        return BitmapFactory.Options().apply { inSampleSize = sampleSize }
+        return BitmapFactory.Options().apply {
+            inSampleSize = sampleSize
+            if (!isDepth && isLowRamDevice) inPreferredConfig = Bitmap.Config.RGB_565
+        }
     }
 
     private suspend fun downloadAndCacheDepthMap(depthUrl: String, place: PlaceQuery, photoUrl: String): String? =
