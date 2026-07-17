@@ -22,7 +22,12 @@ import com.liveweatherwallpaperapp.common.AppMessageKind
 import com.liveweatherwallpaperapp.common.AppMessageStore
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import com.liveweatherwallpaperapp.remoteviews.Notifications
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import livewallpaperweather.data.location.LocationRepository
 import java.time.LocalTime
 import java.time.ZoneId
 import javax.inject.Inject
@@ -145,5 +150,55 @@ class WeetjeManager @Inject constructor(
         // check above, not by dwelling a fresh full threshold again. The dwell session only
         // resets when the location-key check at the top actually sees a different place.
         return false
+    }
+
+    /**
+     * Debug-only: immediately shows a weetje notification for [place], bypassing every gate in
+     * [checkAndNotify] (dwell time, daily cap, even-spacing, quiet hours). Uses a cached weetje
+     * if one's available, fetching fresh ones otherwise. Deliberately doesn't call
+     * [WeetjeStore.markShown]/[WeetjeStore.recordNotificationShown] -- a debug trigger shouldn't
+     * skew the real feature's "already shown"/cadence bookkeeping. Returns false if no weetje
+     * could be found for this place at all (nothing cached and the fetch came back empty).
+     */
+    suspend fun forceShowNow(latitude: Double, longitude: Double, place: PlaceQuery): Boolean {
+        val locationKey = place.cacheFileName().substringBeforeLast('.')
+        val taal = context.currentLocale.language
+
+        var cached = store.weetjesFor(locationKey)
+        if (cached.isEmpty()) {
+            val fetched = wallpaperRepository.fetchNearbyWeetjes(latitude, longitude, taal)
+            if (fetched.isNotEmpty()) {
+                store.mergeWeetjes(locationKey, fetched)
+                cached = store.weetjesFor(locationKey)
+            }
+        }
+        val weetje = cached.randomOrNull() ?: return false
+
+        Notifications.sendWeetjeNotification(context, weetje.weetje, weetje.omschrijving, weetje.url)
+        AppMessageStore(context).setMessage(
+            AppMessage(
+                kind = AppMessageKind.WEETJE,
+                key = "weetje",
+                title = weetje.weetje,
+                body = weetje.omschrijving,
+                url = weetje.url,
+                timestampMillis = System.currentTimeMillis()
+            )
+        )
+        return true
+    }
+
+    /** Lets plain (non-Hilt-injected) callers -- e.g. a Composable settings screen -- reach
+     * [WeetjeManager] and [LocationRepository] to trigger [forceShowNow] for a debug button. */
+    @InstallIn(SingletonComponent::class)
+    @EntryPoint
+    interface WeetjeManagerEntryPoint {
+        fun weetjeManager(): WeetjeManager
+        fun locationRepository(): LocationRepository
+    }
+
+    companion object {
+        fun entryPoint(context: Context): WeetjeManagerEntryPoint =
+            EntryPointAccessors.fromApplication(context, WeetjeManagerEntryPoint::class.java)
     }
 }

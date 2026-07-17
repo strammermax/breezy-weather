@@ -64,6 +64,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
@@ -222,6 +223,9 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
                     onRandomizeAssets = {
                         cloudView?.randomizeAssets()
                     },
+                    onTriggerEasterEgg = {
+                        cloudView?.triggerEasterEgg()
+                    },
                     modifier = Modifier.weight(1f).padding(bottom = 8.dp)
                 )
             }
@@ -250,6 +254,7 @@ private fun CloudLayerControlPanel(
     wind: Float,
     onWindChange: (Float) -> Unit,
     onRandomizeAssets: () -> Unit,
+    onTriggerEasterEgg: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var expandedLayers by remember { mutableStateOf(setOf<CloudLayer>()) }
@@ -281,6 +286,19 @@ private fun CloudLayerControlPanel(
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text("Randomize all cloud assets", fontSize = 11.sp)
+            }
+            if (BuildConfig.DEBUG) {
+                // Debug-only: the real easter eggs only appear in two 5-minute windows a day,
+                // so testers need a way to summon one on demand instead of waiting. Tapping
+                // repeatedly swaps in the next egg rather than stacking several at once.
+                Button(
+                    onClick = onTriggerEasterEgg,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = cloudActionButtonColors(),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("🥚 Trigger easter egg (debug)", fontSize = 11.sp)
+                }
             }
             CloudLayer.entries.reversed().forEach { layer ->
                 val isExpanded = layer in expandedLayers

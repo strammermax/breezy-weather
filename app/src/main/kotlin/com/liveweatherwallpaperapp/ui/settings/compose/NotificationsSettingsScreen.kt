@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -39,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,9 +49,11 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
+import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.background.findmyphone.FindMyPhoneService
 import com.liveweatherwallpaperapp.background.findmyphone.FindMyPhoneStore
@@ -58,6 +62,7 @@ import com.liveweatherwallpaperapp.background.forecast.TomorrowForecastNotificat
 import com.liveweatherwallpaperapp.common.extensions.plus
 import com.liveweatherwallpaperapp.common.extensions.powerManager
 import com.liveweatherwallpaperapp.common.options.UpdateInterval
+import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
 import com.liveweatherwallpaperapp.domain.settings.AppDefaults
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.domain.settings.TesterModeStore
@@ -77,7 +82,10 @@ import com.liveweatherwallpaperapp.ui.settings.preference.sectionHeaderItem
 import com.liveweatherwallpaperapp.ui.settings.preference.smallSeparatorItem
 import com.liveweatherwallpaperapp.ui.settings.preference.switchPreferenceItem
 import com.liveweatherwallpaperapp.ui.settings.preference.timePickerPreferenceItem
+import com.liveweatherwallpaperapp.wallpaper.photo.WeetjeManager
 import com.liveweatherwallpaperapp.wallpaper.photo.WeetjeStore
+import com.liveweatherwallpaperapp.wallpaper.photo.toWallpaperPlaceQuery
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @Composable
@@ -91,6 +99,7 @@ fun NotificationsSettingsScreen(
     modifier: Modifier = Modifier,
 ) {
     val scrollBehavior = generateCollapsedScrollBehavior()
+    val weetjeForceScope = rememberCoroutineScope()
     val weetjeStore = remember(context) { WeetjeStore(context) }
     var weetjeEnabled by remember { mutableStateOf(weetjeStore.notificationsEnabled) }
     var weetjeMaxPerDay by remember { mutableFloatStateOf(weetjeStore.maxNotificationsPerDay.toFloat()) }
@@ -296,6 +305,37 @@ fun NotificationsSettingsScreen(
                                 weetjeStore.dwellThresholdMinutes = weetjeDwellMinutes.roundToInt()
                             }
                         )
+                        if (BuildConfig.DEBUG) {
+                            // Debug-only: the real notification needs a full dwell period (up
+                            // to hours) at a real location, so testers need a way to force one
+                            // immediately instead of waiting.
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = {
+                                    weetjeForceScope.launch {
+                                        val entryPoint = WeetjeManager.entryPoint(context)
+                                        val location = entryPoint.locationRepository().getFirstLocation()
+                                        val shown = location?.let {
+                                            entryPoint.weetjeManager().forceShowNow(
+                                                it.latitude,
+                                                it.longitude,
+                                                it.toWallpaperPlaceQuery()
+                                            )
+                                        } ?: false
+                                        SnackbarHelper.showSnackbar(
+                                            if (shown) {
+                                                "Weetje notification sent"
+                                            } else {
+                                                "No location or no weetje available for it"
+                                            }
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Force a weetje now (debug)", fontSize = 11.sp)
+                            }
+                        }
                     }
                 }
             }

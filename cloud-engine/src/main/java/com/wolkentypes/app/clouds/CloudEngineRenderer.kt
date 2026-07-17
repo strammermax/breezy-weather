@@ -52,6 +52,10 @@ class CloudEngineRenderer(private val context: Context) {
     private var instances: List<CloudInstance> = emptyList()
     private val forcedAssetIndex = mutableMapOf<CloudLayer, Int>()
 
+    // Debug-triggered easter egg (see triggerEasterEggNow()): 0L means "none pending".
+    private var forcedEasterEggStartMillis: Long = 0L
+    private var forcedEasterEggAssetIndex: Int = 0
+
     private val spriteTypes = setOf(CloudTextureType.WHITE, CloudTextureType.DARK, CloudTextureType.SMOKE)
     private val overcastFamily = setOf("overcast", "drizzle", "rain", "snow", "snow_showers")
 
@@ -169,6 +173,18 @@ class CloudEngineRenderer(private val context: Context) {
         randomSeed += 1L
     }
 
+    /**
+     * Debug-only: immediately shows an easter-egg cloud crossing the screen, bypassing the
+     * normal once/twice-a-day time gate in [drawDailyEasterEgg]. Cycles to the next asset in
+     * the pool on every call, so tapping repeatedly swaps the currently traveling egg for the
+     * next one instead of queueing several -- fast taps replace, they don't stack.
+     */
+    fun triggerEasterEggNow() {
+        if (easterEggAssets.isEmpty()) return
+        forcedEasterEggAssetIndex = (forcedEasterEggAssetIndex + 1) % easterEggAssets.size
+        forcedEasterEggStartMillis = System.currentTimeMillis()
+    }
+
     private fun bankVariant(type: CloudTextureType): CloudAsset? {
         val options = cloudAssets.filter { it.type == type }
         val variantSeed = profile.hashCode().toLong() xor randomSeed
@@ -233,7 +249,26 @@ class CloudEngineRenderer(private val context: Context) {
         screenHeight: Float,
         pxPerDp: Float,
     ) {
-        if (!easterEggsEnabled || weatherId == "clear" || easterEggAssets.isEmpty()) return
+        if (easterEggAssets.isEmpty()) return
+
+        if (forcedEasterEggStartMillis != 0L) {
+            val forcedElapsedSeconds = (System.currentTimeMillis() - forcedEasterEggStartMillis) / 1000f
+            if (forcedElapsedSeconds in 0f..FORCED_EASTER_EGG_TRAVEL_SECONDS) {
+                val asset = easterEggAssets[forcedEasterEggAssetIndex % easterEggAssets.size]
+                val progress = forcedElapsedSeconds / FORCED_EASTER_EGG_TRAVEL_SECONDS
+                val width = screenWidth * .5f
+                val height = width / asset.aspectRatio
+                val padding = maxOf(screenWidth * .08f, 24f * pxPerDp)
+                val left = -width - padding + progress * (screenWidth + width + padding * 2f)
+                val top = screenHeight * .30f
+                val fade = minOf((progress / .1f).coerceAtMost(1f), ((1f - progress) / .1f).coerceAtMost(1f))
+                drawAsset(canvas, asset, left, top, width, height, .94f * fade)
+                return
+            }
+            forcedEasterEggStartMillis = 0L
+        }
+
+        if (!easterEggsEnabled || weatherId == "clear") return
 
         val nowMillis = System.currentTimeMillis()
         val calendar = Calendar.getInstance().apply { timeInMillis = nowMillis }
@@ -526,6 +561,10 @@ class CloudEngineRenderer(private val context: Context) {
 
     private companion object {
         const val EASTER_EGG_TRAVEL_MINUTES = 5f
+
+        // Debug-triggered eggs cross the screen much faster than the real daily ones, so testers
+        // tapping the button repeatedly actually see each one instead of waiting minutes.
+        const val FORCED_EASTER_EGG_TRAVEL_SECONDS = 3f
 
         // Eenvoudige waarde-ruis (hash + bilineaire interpolatie) + fbm van twee octaven,
         // standaardtechniek uit shader-programmering (geen overgenomen broncode) — tekent een

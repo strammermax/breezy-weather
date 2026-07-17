@@ -63,6 +63,11 @@ class CloudSurfaceView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun triggerEasterEgg() {
+        renderer.triggerEasterEggNow()
+        invalidate()
+    }
+
     private var startNanos = -1L
 
     private val frameCallback = object : Choreographer.FrameCallback {
