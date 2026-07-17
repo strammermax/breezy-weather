@@ -52,6 +52,11 @@ internal class WallpaperEffectView @JvmOverloads constructor(
     private var shouldAnimate = false
     private var lastFrameNanos = 0L
 
+    companion object {
+        /** ~60fps ceiling (1000/60 rounded up, so the cap never drifts slightly above 60). */
+        private const val MAX_FRAME_INTERVAL_MILLIS = 17L
+    }
+
     /** Blurs only this background layer; UI and glass cards above it remain sharp. */
     fun setFrosted(frosted: Boolean, strength: Int = 2, tint: String = "system") {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -105,7 +110,12 @@ internal class WallpaperEffectView @JvmOverloads constructor(
             lastFrameNanos = frameTimeNanos
             renderer?.update(intervalMillis, animate = true)
             invalidate()
-            Choreographer.getInstance().postFrameCallback(this)
+            // Unlike the home-screen wallpaper (a fixed 30fps RxJava interval), this view was
+            // previously posting on every vsync -- up to 120fps on high-refresh-rate panels, for
+            // a background layer sitting behind a RenderEffect blur that recomposites on every
+            // invalidate(). Capped to 60fps: no change on 60Hz devices, up to 2-4x fewer
+            // update()+invalidate()+blur-recomposite cycles on 90/120Hz ones.
+            Choreographer.getInstance().postFrameCallbackDelayed(this, MAX_FRAME_INTERVAL_MILLIS)
         }
     }
 
