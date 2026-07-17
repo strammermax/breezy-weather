@@ -39,9 +39,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.background.findmyphone.FindMyPhoneCalibrator
-import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 private sealed interface CalibrationStep {
     data object Prompt : CalibrationStep

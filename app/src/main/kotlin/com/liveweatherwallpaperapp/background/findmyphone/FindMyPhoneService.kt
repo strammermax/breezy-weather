@@ -156,7 +156,9 @@ class FindMyPhoneService : Service() {
                     event.values[1] * event.values[1] +
                     event.values[2] * event.values[2]
             )
-            if (lastAccelMagnitude != 0f && kotlin.math.abs(magnitude - lastAccelMagnitude) > ACCELEROMETER_JOLT_THRESHOLD) {
+            if (lastAccelMagnitude != 0f &&
+                kotlin.math.abs(magnitude - lastAccelMagnitude) > ACCELEROMETER_JOLT_THRESHOLD
+            ) {
                 disarm()
             }
             lastAccelMagnitude = magnitude
@@ -297,7 +299,9 @@ class FindMyPhoneService : Service() {
     }
 
     private fun registerPickupSensors() {
-        proximitySensor?.let { sensorManager.registerListener(proximityListener, it, SensorManager.SENSOR_DELAY_NORMAL) }
+        proximitySensor?.let {
+            sensorManager.registerListener(proximityListener, it, SensorManager.SENSOR_DELAY_NORMAL)
+        }
         // Significant-motion is tuned to detect the device changing location (e.g. walking off
         // with it) and often does NOT fire for simply lifting the phone off a table -- register
         // it as a bonus signal, but always also run the accelerometer jolt detector, which is
@@ -460,7 +464,10 @@ class FindMyPhoneService : Service() {
         val contentIntent = PendingIntent.getActivity(
             this,
             0,
-            Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+            Intent(
+                this,
+                MainActivity::class.java
+            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
             PendingIntent.FLAG_IMMUTABLE
         )
 

@@ -391,7 +391,8 @@ fun NotificationsSettingsScreen(
                             value = findMyPhoneRmsGateDb,
                             onValueChange = { findMyPhoneRmsGateDb = it.roundToInt().toFloat() },
                             valueRange = FIND_MY_PHONE_TESTER_RMS_GATE_MIN..FIND_MY_PHONE_TESTER_RMS_GATE_MAX,
-                            steps = (FIND_MY_PHONE_TESTER_RMS_GATE_MAX - FIND_MY_PHONE_TESTER_RMS_GATE_MIN).roundToInt() - 1,
+                            steps =
+                            (FIND_MY_PHONE_TESTER_RMS_GATE_MAX - FIND_MY_PHONE_TESTER_RMS_GATE_MIN).roundToInt() - 1,
                             onValueChangeFinished = {
                                 findMyPhoneStore.testerRmsGateDbOverride = findMyPhoneRmsGateDb
                             }
@@ -414,7 +415,9 @@ fun NotificationsSettingsScreen(
                             value = findMyPhoneArmDelayMinutes,
                             onValueChange = { findMyPhoneArmDelayMinutes = it.roundToInt().toFloat() },
                             valueRange = FIND_MY_PHONE_TESTER_ARM_DELAY_MIN..FIND_MY_PHONE_TESTER_ARM_DELAY_MAX,
-                            steps = (FIND_MY_PHONE_TESTER_ARM_DELAY_MAX - FIND_MY_PHONE_TESTER_ARM_DELAY_MIN).roundToInt() - 1,
+                            steps =
+                            (FIND_MY_PHONE_TESTER_ARM_DELAY_MAX - FIND_MY_PHONE_TESTER_ARM_DELAY_MIN).roundToInt() -
+                                1,
                             onValueChangeFinished = {
                                 findMyPhoneStore.testerArmDelayMinutesOverride = findMyPhoneArmDelayMinutes.roundToInt()
                             }
