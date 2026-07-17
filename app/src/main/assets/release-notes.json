@@ -1,7 +1,14 @@
 [
   {
-    "version": "Niet uitgebracht (+2)",
+    "version": "Niet uitgebracht (+1)",
     "date": "",
+    "changes": [
+      "Add debug-only easter egg and weetje force-trigger buttons"
+    ]
+  },
+  {
+    "version": "2026.07.17.349",
+    "date": "2026-07-17",
     "changes": [
       "Consolidate Find my phone parameters into AppDefaults",
       "Fix fictional-location weather updates failing on country-gated sources"
@@ -6069,10 +6076,5 @@
       "Simplify cloud tuning controls",
       "Add tester mode feedback and adaptive app icon"
     ]
-  },
-  {
-    "version": "2026.07.13.239",
-    "date": "2026-07-13",
-    "changes": []
   }
 ]
