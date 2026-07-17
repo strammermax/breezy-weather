@@ -66,6 +66,7 @@ import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
 import com.liveweatherwallpaperapp.domain.settings.AppDefaults
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.domain.settings.TesterModeStore
+import com.liveweatherwallpaperapp.remoteviews.presenters.MaterialYouForecastWidgetIMP
 import com.liveweatherwallpaperapp.ui.common.composables.AnimatedVisibilitySlideVertically
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3Scaffold
 import com.liveweatherwallpaperapp.ui.common.widgets.generateCollapsedScrollBehavior
@@ -85,6 +86,7 @@ import com.liveweatherwallpaperapp.ui.settings.preference.timePickerPreferenceIt
 import com.liveweatherwallpaperapp.wallpaper.photo.WeetjeManager
 import com.liveweatherwallpaperapp.wallpaper.photo.WeetjeStore
 import com.liveweatherwallpaperapp.wallpaper.photo.toWallpaperPlaceQuery
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -315,20 +317,36 @@ fun NotificationsSettingsScreen(
                                     weetjeForceScope.launch {
                                         val entryPoint = WeetjeManager.entryPoint(context)
                                         val location = entryPoint.locationRepository().getFirstLocation()
-                                        val shown = location?.let {
+                                        val weetje = location?.let {
                                             entryPoint.weetjeManager().forceShowNow(
                                                 it.latitude,
                                                 it.longitude,
                                                 it.toWallpaperPlaceQuery()
                                             )
-                                        } ?: false
+                                        }
                                         SnackbarHelper.showSnackbar(
-                                            if (shown) {
+                                            if (weetje != null) {
                                                 "Weetje notification sent"
                                             } else {
                                                 "No location or no weetje available for it"
                                             }
                                         )
+                                        // Also mirror it onto the widget fact banner (same
+                                        // "briefly show, then hide" behavior as the real
+                                        // scheduled trigger), so this one button can test both.
+                                        if (weetje != null) {
+                                            MaterialYouForecastWidgetIMP.updateFactVisibility(
+                                                context,
+                                                show = true,
+                                                factText = weetje
+                                            )
+                                            delay(AppDefaults.widgetFact.durationSeconds * 1000L)
+                                            MaterialYouForecastWidgetIMP.updateFactVisibility(
+                                                context,
+                                                show = false,
+                                                factText = null
+                                            )
+                                        }
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth()

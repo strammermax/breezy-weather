@@ -157,10 +157,11 @@ class WeetjeManager @Inject constructor(
      * [checkAndNotify] (dwell time, daily cap, even-spacing, quiet hours). Uses a cached weetje
      * if one's available, fetching fresh ones otherwise. Deliberately doesn't call
      * [WeetjeStore.markShown]/[WeetjeStore.recordNotificationShown] -- a debug trigger shouldn't
-     * skew the real feature's "already shown"/cadence bookkeeping. Returns false if no weetje
-     * could be found for this place at all (nothing cached and the fetch came back empty).
+     * skew the real feature's "already shown"/cadence bookkeeping. Returns the weetje text shown
+     * (so callers can e.g. also mirror it onto the widget fact banner), or null if none could be
+     * found for this place at all (nothing cached and the fetch came back empty).
      */
-    suspend fun forceShowNow(latitude: Double, longitude: Double, place: PlaceQuery): Boolean {
+    suspend fun forceShowNow(latitude: Double, longitude: Double, place: PlaceQuery): String? {
         val locationKey = place.cacheFileName().substringBeforeLast('.')
         val taal = context.currentLocale.language
 
@@ -172,7 +173,7 @@ class WeetjeManager @Inject constructor(
                 cached = store.weetjesFor(locationKey)
             }
         }
-        val weetje = cached.randomOrNull() ?: return false
+        val weetje = cached.randomOrNull() ?: return null
 
         Notifications.sendWeetjeNotification(context, weetje.weetje, weetje.omschrijving, weetje.url)
         AppMessageStore(context).setMessage(
@@ -185,7 +186,7 @@ class WeetjeManager @Inject constructor(
                 timestampMillis = System.currentTimeMillis()
             )
         )
-        return true
+        return weetje.weetje
     }
 
     /** Lets plain (non-Hilt-injected) callers -- e.g. a Composable settings screen -- reach
