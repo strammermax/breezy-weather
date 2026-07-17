@@ -43,6 +43,9 @@
     <!-- widgets. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <!-- Widget fact banner: exact SHOW/HIDE timing for a 20s window needs a real exact alarm,
+         not a WorkManager job (can drift by minutes to hours under Doze/battery optimization). -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <!-- tiles. -->
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
@@ -457,6 +460,10 @@
 
         <receiver
             android:name=".background.receiver.NotificationReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".background.receiver.widget.WidgetFactAlarmReceiver"
             android:exported="false" />
 
         <!-- widget -->

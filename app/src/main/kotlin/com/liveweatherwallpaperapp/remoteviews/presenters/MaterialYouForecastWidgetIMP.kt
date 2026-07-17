@@ -58,6 +58,28 @@ class MaterialYouForecastWidgetIMP : AbstractRemoteViewsPresenter() {
                 buildWeatherWidget(context, location)
             )
         }
+
+        /**
+         * Toggles the fact banner on the 4x2 layout only, via a partial update -- doesn't touch
+         * the rest of the widget (no weather refetch needed), so it's cheap enough to call from
+         * an exact alarm. A no-op if no 4x2 widget instance is currently placed.
+         */
+        fun updateFactVisibility(context: Context, show: Boolean, factText: String?) {
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val appWidgetIds = appWidgetManager.getAppWidgetIds(
+                ComponentName(context, WidgetMaterialYouForecastProvider::class.java)
+            )
+            if (appWidgetIds.isEmpty()) return
+
+            val views = RemoteViews(context.packageName, R.layout.widget_material_you_forecast_4x2)
+            if (show && !factText.isNullOrBlank()) {
+                views.setTextViewText(R.id.widget_material_you_forecast_fact, factText)
+                views.setViewVisibility(R.id.widget_material_you_forecast_fact, View.VISIBLE)
+            } else {
+                views.setViewVisibility(R.id.widget_material_you_forecast_fact, View.GONE)
+            }
+            appWidgetIds.forEach { appWidgetManager.partiallyUpdateAppWidget(it, views) }
+        }
     }
 }
 
@@ -129,6 +151,9 @@ private fun buildRemoteViews(
     @LayoutRes layoutId: Int,
 ): RemoteViews {
     val views = RemoteViews(context.packageName, layoutId)
+    // Regular weather-driven rebuilds always reset the fact banner (only WidgetFactAlarmReceiver's
+    // partial updates should ever show it) -- a no-op on layouts without that view id.
+    views.setViewVisibility(R.id.widget_material_you_forecast_fact, View.GONE)
 
     val weather = location?.weather ?: return views
     val dayTime = location.isDaylight

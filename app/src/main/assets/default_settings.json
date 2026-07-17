@@ -61,5 +61,11 @@
   "findMyPhone": {
     "rmsGateDb": -35.0,
     "armDelayMinutes": 15
+  },
+  "widgetFact": {
+    "hour": 13,
+    "minute": 0,
+    "second": 0,
+    "durationSeconds": 20
   }
 }

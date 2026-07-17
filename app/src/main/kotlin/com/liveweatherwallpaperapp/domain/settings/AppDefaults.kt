@@ -96,6 +96,16 @@ data class DebugDefaults(
 )
 
 @Serializable
+data class WidgetFactDefaults(
+    /** Local wall-clock time the fact banner appears under the 4x2 widget, 0-23/0-59/0-59. */
+    val hour: Int = 13,
+    val minute: Int = 0,
+    val second: Int = 0,
+    /** How long the banner stays visible before WidgetFactAlarmReceiver hides it again. */
+    val durationSeconds: Int = 20,
+)
+
+@Serializable
 data class FindMyPhoneDefaults(
     /** RMS level (dB relative to full scale) that ambient sound must clear before the clap/
      * whistle detector bothers analyzing a buffer. */
@@ -116,6 +126,7 @@ data class AppDefaultsRoot(
     val widget: WidgetDefaults = WidgetDefaults(),
     val debug: DebugDefaults = DebugDefaults(),
     val findMyPhone: FindMyPhoneDefaults = FindMyPhoneDefaults(),
+    val widgetFact: WidgetFactDefaults = WidgetFactDefaults(),
 )
 
 /**
@@ -145,4 +156,5 @@ object AppDefaults {
     val widget: WidgetDefaults get() = root.widget
     val debug: DebugDefaults get() = root.debug
     val findMyPhone: FindMyPhoneDefaults get() = root.findMyPhone
+    val widgetFact: WidgetFactDefaults get() = root.widgetFact
 }

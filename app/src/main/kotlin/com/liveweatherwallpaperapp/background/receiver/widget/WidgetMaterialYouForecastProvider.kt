@@ -46,6 +46,9 @@ class WidgetMaterialYouForecastProvider : AppWidgetProvider() {
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
         if (MaterialYouForecastWidgetIMP.isEnabled(context)) {
+            // Idempotent: re-arms the same daily SHOW/HIDE pair every time a widget is added or
+            // resized, so a freshly-placed widget doesn't have to wait for a reboot to get one.
+            WidgetFactAlarmScheduler.scheduleNext(context)
             GlobalScope.launch(Dispatchers.IO) {
                 val location = locationRepository.getFirstLocation(withParameters = false)
                 MaterialYouForecastWidgetIMP.updateWidgetView(

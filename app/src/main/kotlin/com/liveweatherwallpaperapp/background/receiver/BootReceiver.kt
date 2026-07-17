@@ -21,6 +21,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.work.WorkInfo
 import androidx.work.WorkQuery
+import com.liveweatherwallpaperapp.background.receiver.widget.WidgetFactAlarmScheduler
 import com.liveweatherwallpaperapp.common.extensions.workManager
 import com.liveweatherwallpaperapp.remoteviews.presenters.notification.WidgetNotificationIMP
 import com.liveweatherwallpaperapp.sources.RefreshHelper
@@ -60,6 +61,10 @@ class BootReceiver : BroadcastReceiver() {
                         refreshHelper.updateNotificationIfNecessary(context)
                     }
                 }
+
+                // Exact alarms don't survive a reboot -- re-arm the widget fact banner's
+                // SHOW/HIDE pair.
+                WidgetFactAlarmScheduler.scheduleNext(context)
             }
         }
     }

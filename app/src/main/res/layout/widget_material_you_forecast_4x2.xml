@@ -374,6 +374,25 @@
 
         </LinearLayout>
 
+        <!-- Hidden by default; briefly shown/hidden by WidgetFactAlarmReceiver at an exact
+             scheduled time (see AppDefaults.widgetFact), overlaying the hourly row below it
+             with a short weetje for the current location. -->
+        <TextView
+            android:id="@+id/widget_material_you_forecast_fact"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@drawable/widget_m3_background"
+            android:padding="@dimen/normal_margin"
+            android:textSize="@dimen/content_text_size"
+            android:textColor="?android:attr/textColorPrimary"
+            android:gravity="center"
+            android:maxLines="3"
+            android:ellipsize="end"
+            android:visibility="gone"
+            tools:text="Wist je dat Studio Ghibli ooit een samuraizwaard naar een producent stuurde met de boodschap: geen knipwerk?"
+            tools:visibility="visible" />
+
     </FrameLayout>
 
 </RelativeLayout>
