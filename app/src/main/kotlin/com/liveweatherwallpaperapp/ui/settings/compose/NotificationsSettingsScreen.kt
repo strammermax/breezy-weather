@@ -16,8 +16,13 @@
 
 package com.liveweatherwallpaperapp.ui.settings.compose
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
 import android.os.Build
+import android.provider.Settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -29,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -41,12 +47,20 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
+import com.google.accompanist.permissions.PermissionStatus
+import com.google.accompanist.permissions.rememberPermissionState
 import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.background.findmyphone.FindMyPhoneConfig
+import com.liveweatherwallpaperapp.background.findmyphone.FindMyPhoneService
+import com.liveweatherwallpaperapp.background.findmyphone.FindMyPhoneStore
 import com.liveweatherwallpaperapp.background.forecast.TodayForecastNotificationJob
 import com.liveweatherwallpaperapp.background.forecast.TomorrowForecastNotificationJob
 import com.liveweatherwallpaperapp.common.extensions.plus
+import com.liveweatherwallpaperapp.common.extensions.powerManager
 import com.liveweatherwallpaperapp.common.options.UpdateInterval
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
+import com.liveweatherwallpaperapp.domain.settings.TesterModeStore
 import com.liveweatherwallpaperapp.ui.common.composables.AnimatedVisibilitySlideVertically
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3Scaffold
 import com.liveweatherwallpaperapp.ui.common.widgets.generateCollapsedScrollBehavior
@@ -81,6 +95,50 @@ fun NotificationsSettingsScreen(
     var weetjeEnabled by remember { mutableStateOf(weetjeStore.notificationsEnabled) }
     var weetjeMaxPerDay by remember { mutableFloatStateOf(weetjeStore.maxNotificationsPerDay.toFloat()) }
     var weetjeDwellMinutes by remember { mutableFloatStateOf(weetjeStore.dwellThresholdMinutes.toFloat()) }
+
+    val findMyPhoneStore = remember(context) { FindMyPhoneStore(context) }
+    var findMyPhoneEnabled by remember { mutableStateOf(findMyPhoneStore.enabled) }
+    var findMyPhonePendingEnable by remember { mutableStateOf(false) }
+    val isTesterModeEnabled = remember(context) { TesterModeStore(context).isEnabled }
+    var findMyPhoneRmsGateDb by remember {
+        mutableFloatStateOf(findMyPhoneStore.testerRmsGateDbOverride ?: FindMyPhoneConfig.current.rmsGateDb)
+    }
+    var findMyPhoneArmDelayMinutes by remember {
+        mutableFloatStateOf(
+            (findMyPhoneStore.testerArmDelayMinutesOverride ?: FindMyPhoneConfig.current.armDelayMinutes).toFloat()
+        )
+    }
+    var findMyPhoneClapEnabled by remember { mutableStateOf(findMyPhoneStore.clapEnabled) }
+    var findMyPhoneWhistleEnabled by remember { mutableStateOf(findMyPhoneStore.whistleEnabled) }
+    var showFindMyPhoneCalibration by remember { mutableStateOf(false) }
+    val recordAudioPermissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
+    LaunchedEffect(recordAudioPermissionState.status, findMyPhonePendingEnable) {
+        if (findMyPhonePendingEnable && recordAudioPermissionState.status == PermissionStatus.Granted) {
+            findMyPhonePendingEnable = false
+            findMyPhoneEnabled = true
+            findMyPhoneStore.enabled = true
+            FindMyPhoneService.start(context)
+            requestIgnoreBatteryOptimizationsForFindMyPhone(context)
+            if (findMyPhoneWhistleEnabled) showFindMyPhoneCalibration = true
+        }
+    }
+
+    if (showFindMyPhoneCalibration) {
+        FindMyPhoneCalibrationDialog(
+            context = context,
+            onCalibrated = { hz ->
+                findMyPhoneWhistleEnabled = true
+                findMyPhoneStore.whistleEnabled = true
+                if (hz != null) findMyPhoneStore.whistleCenterHz = hz
+                showFindMyPhoneCalibration = false
+            },
+            onDeclined = {
+                findMyPhoneWhistleEnabled = false
+                findMyPhoneStore.whistleEnabled = false
+                showFindMyPhoneCalibration = false
+            }
+        )
+    }
 
     Material3Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -191,7 +249,6 @@ fun NotificationsSettingsScreen(
                     checked = weetjeEnabled,
                     withState = false,
                     enabled = hasNotificationPermission,
-                    isLast = true,
                     onValueChanged = {
                         weetjeEnabled = it
                         weetjeStore.notificationsEnabled = it
@@ -237,6 +294,129 @@ fun NotificationsSettingsScreen(
                             valueRange = dwellRangeStart..dwellRangeEnd,
                             onValueChangeFinished = {
                                 weetjeStore.dwellThresholdMinutes = weetjeDwellMinutes.roundToInt()
+                            }
+                        )
+                    }
+                }
+            }
+            smallSeparatorItem()
+            switchPreferenceItem(R.string.find_my_phone_title) { id ->
+                SwitchPreferenceView(
+                    titleId = id,
+                    summaryOnId = R.string.find_my_phone_summary_on,
+                    summaryOffId = R.string.find_my_phone_summary_off,
+                    checked = findMyPhoneEnabled,
+                    withState = false,
+                    isLast = !findMyPhoneEnabled && !isTesterModeEnabled,
+                    onValueChanged = {
+                        if (it) {
+                            if (recordAudioPermissionState.status == PermissionStatus.Granted) {
+                                findMyPhoneEnabled = true
+                                findMyPhoneStore.enabled = true
+                                FindMyPhoneService.start(context)
+                                requestIgnoreBatteryOptimizationsForFindMyPhone(context)
+                                if (findMyPhoneWhistleEnabled) showFindMyPhoneCalibration = true
+                            } else {
+                                findMyPhonePendingEnable = true
+                                recordAudioPermissionState.launchPermissionRequest()
+                            }
+                        } else {
+                            findMyPhoneEnabled = false
+                            findMyPhoneStore.enabled = false
+                            FindMyPhoneService.stop(context)
+                        }
+                    }
+                )
+            }
+            if (findMyPhoneEnabled) {
+                smallSeparatorItem()
+                switchPreferenceItem(R.string.find_my_phone_clap_title) { id ->
+                    SwitchPreferenceView(
+                        titleId = id,
+                        summaryOnId = R.string.settings_enabled,
+                        summaryOffId = R.string.settings_disabled,
+                        checked = findMyPhoneClapEnabled,
+                        withState = false,
+                        onValueChanged = {
+                            findMyPhoneClapEnabled = it
+                            findMyPhoneStore.clapEnabled = it
+                        }
+                    )
+                }
+                smallSeparatorItem()
+                switchPreferenceItem(R.string.find_my_phone_whistle_title) { id ->
+                    SwitchPreferenceView(
+                        titleId = id,
+                        summaryOnId = R.string.settings_enabled,
+                        summaryOffId = R.string.settings_disabled,
+                        checked = findMyPhoneWhistleEnabled,
+                        withState = false,
+                        isLast = !isTesterModeEnabled,
+                        onValueChanged = {
+                            if (it) {
+                                // Re-calibrate on every re-enable, not just the first time: the
+                                // user turning it back on is exactly the moment to (re)confirm
+                                // their whistle, e.g. after having declined or skipped before.
+                                showFindMyPhoneCalibration = true
+                            } else {
+                                findMyPhoneWhistleEnabled = false
+                                findMyPhoneStore.whistleEnabled = false
+                            }
+                        }
+                    )
+                }
+            }
+            if (isTesterModeEnabled && findMyPhoneEnabled) {
+                smallSeparatorItem()
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(dimensionResource(R.dimen.normal_margin))
+                    ) {
+                        Text(
+                            text = stringResource(
+                                R.string.find_my_phone_tester_rms_gate,
+                                findMyPhoneRmsGateDb.roundToInt()
+                            ),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = stringResource(R.string.find_my_phone_tester_rms_gate_summary),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Slider(
+                            value = findMyPhoneRmsGateDb,
+                            onValueChange = { findMyPhoneRmsGateDb = it.roundToInt().toFloat() },
+                            valueRange = FIND_MY_PHONE_TESTER_RMS_GATE_MIN..FIND_MY_PHONE_TESTER_RMS_GATE_MAX,
+                            steps = (FIND_MY_PHONE_TESTER_RMS_GATE_MAX - FIND_MY_PHONE_TESTER_RMS_GATE_MIN).roundToInt() - 1,
+                            onValueChangeFinished = {
+                                findMyPhoneStore.testerRmsGateDbOverride = findMyPhoneRmsGateDb
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(
+                                R.string.find_my_phone_tester_arm_delay,
+                                findMyPhoneArmDelayMinutes.roundToInt()
+                            ),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = stringResource(R.string.find_my_phone_tester_arm_delay_summary),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Slider(
+                            value = findMyPhoneArmDelayMinutes,
+                            onValueChange = { findMyPhoneArmDelayMinutes = it.roundToInt().toFloat() },
+                            valueRange = FIND_MY_PHONE_TESTER_ARM_DELAY_MIN..FIND_MY_PHONE_TESTER_ARM_DELAY_MAX,
+                            steps = (FIND_MY_PHONE_TESTER_ARM_DELAY_MAX - FIND_MY_PHONE_TESTER_ARM_DELAY_MIN).roundToInt() - 1,
+                            onValueChangeFinished = {
+                                findMyPhoneStore.testerArmDelayMinutesOverride = findMyPhoneArmDelayMinutes.roundToInt()
                             }
                         )
                     }
@@ -306,5 +486,33 @@ fun NotificationsSettingsScreen(
 
             bottomInsetItem()
         }
+    }
+}
+
+private const val FIND_MY_PHONE_TESTER_RMS_GATE_MIN = -60f
+private const val FIND_MY_PHONE_TESTER_RMS_GATE_MAX = -10f
+private const val FIND_MY_PHONE_TESTER_ARM_DELAY_MIN = 0f
+private const val FIND_MY_PHONE_TESTER_ARM_DELAY_MAX = 15f
+
+/**
+ * Prompts to exempt the app from battery optimizations, so OEM battery managers (e.g. Samsung's
+ * "sleeping apps") don't kill the "Find my phone" foreground service's microphone access after
+ * the screen has been locked for a while. Silently does nothing if already exempted or if the
+ * device has no activity to handle the request.
+ */
+@SuppressLint("BatteryLife")
+private fun requestIgnoreBatteryOptimizationsForFindMyPhone(context: Context) {
+    if (context.powerManager.isIgnoringBatteryOptimizations(context.packageName)) return
+    try {
+        context.startActivity(
+            Intent().apply {
+                action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                data = "package:${context.packageName}".toUri()
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+        )
+    } catch (e: ActivityNotFoundException) {
+        // No settings activity to handle this on the device -- the feature still works, just
+        // more likely to be paused by the OEM's battery manager while locked for a long time.
     }
 }

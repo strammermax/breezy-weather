@@ -468,6 +468,26 @@
     <string name="air_quality_co_voice">Koolstofmonoxide</string>
     <string name="settings_notifications_alerts_title">Meldingen van ernstige weeralarmen</string>
     <string name="settings_notifications_precipitations_title">Meldingen van neerslag</string>
+    <string name="find_my_phone_title">Vind mijn telefoon</string>
+    <string name="find_my_phone_summary_on">Luistert naar 3 keer klappen of fluiten</string>
+    <string name="find_my_phone_summary_off">Uit</string>
+    <string name="find_my_phone_notification_channel">Vind mijn telefoon actief</string>
+    <string name="find_my_phone_notification_title">Vind mijn telefoon luistert mee</string>
+    <string name="find_my_phone_notification_text">Klap 3 keer of fluit om je telefoon te laten reageren.</string>
+    <string name="find_my_phone_tester_rms_gate">Vind mijn telefoon: geluidsdrempel (%1$d dB)</string>
+    <string name="find_my_phone_tester_rms_gate_summary">Alleen tester mode. Lager = gevoeliger (reageert op zachter geluid). Geldt vanaf de volgende keer dat de detectie (opnieuw) actief wordt.</string>
+    <string name="find_my_phone_tester_arm_delay">Vind mijn telefoon: wachttijd (%1$d min)</string>
+    <string name="find_my_phone_tester_arm_delay_summary">Alleen tester mode. Hoe lang het scherm vergrendeld moet blijven voordat de microfoon gaat luisteren. Geldt vanaf de volgende keer dat het scherm vergrendelt.</string>
+    <string name="find_my_phone_calibration_title">Kalibreer je fluitgeluid</string>
+    <string name="find_my_phone_calibration_prompt">Om goed te kunnen reageren op je fluiten, wil ik graag horen hoe je fluit. Ga drie meter van de telefoon af staan en wacht op het signaal, fluit dan 5 seconden.</string>
+    <string name="find_my_phone_calibration_countdown">Maak je klaar — opname begint over %1$d…</string>
+    <string name="find_my_phone_calibration_recording">Ik luister… fluit nu!</string>
+    <string name="find_my_phone_calibration_done">Klaar, je kunt ontspannen.</string>
+    <string name="find_my_phone_calibration_start">Start kalibreren</string>
+    <string name="find_my_phone_calibration_not_now">Nee, nu niet</string>
+    <string name="find_my_phone_calibration_ok">OK</string>
+    <string name="find_my_phone_clap_title">Klapdetectie</string>
+    <string name="find_my_phone_whistle_title">Fluitdetectie</string>
     <string name="settings_debug_summary">Crashlogs</string>
     <string name="weather_message_invalid_location">Ongeldige locatie. Verwijderen en opnieuw toevoegen</string>
     <string name="action_save">Opslaan</string>

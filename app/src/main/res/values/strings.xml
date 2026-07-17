@@ -1025,6 +1025,26 @@
     <!-- %s is the string with the key action_grant_permission -->
     <string name="settings_notifications_permission_summary">Needed to notify about alerts and forecasts. %s</string>
     <string name="settings_notifications_section_general" translatable="false">@string/settings_section_general</string>
+    <string name="find_my_phone_title">Find my phone</string>
+    <string name="find_my_phone_summary_on">Listening for 3 claps or a whistle</string>
+    <string name="find_my_phone_summary_off">Off</string>
+    <string name="find_my_phone_notification_channel">Find my phone active</string>
+    <string name="find_my_phone_notification_title">Find my phone is listening</string>
+    <string name="find_my_phone_notification_text">Clap 3 times or whistle to make your phone respond.</string>
+    <string name="find_my_phone_tester_rms_gate">Find my phone: sound threshold (%1$d dB)</string>
+    <string name="find_my_phone_tester_rms_gate_summary">Tester mode only. Lower = more sensitive (triggers on quieter sound). Applies the next time listening (re-)arms.</string>
+    <string name="find_my_phone_tester_arm_delay">Find my phone: arm delay (%1$d min)</string>
+    <string name="find_my_phone_tester_arm_delay_summary">Tester mode only. How long the screen must stay locked before the microphone starts listening. Applies the next time the screen locks.</string>
+    <string name="find_my_phone_calibration_title">Calibrate your whistle</string>
+    <string name="find_my_phone_calibration_prompt">To recognize your whistle properly, I\'d like to hear how you whistle. Stand three meters from the phone and wait for the signal, then whistle for 5 seconds.</string>
+    <string name="find_my_phone_calibration_countdown">Get ready — recording starts in %1$d…</string>
+    <string name="find_my_phone_calibration_recording">Listening… whistle now!</string>
+    <string name="find_my_phone_calibration_done">All done, you can relax.</string>
+    <string name="find_my_phone_calibration_start">Start calibrating</string>
+    <string name="find_my_phone_calibration_not_now">No, not now</string>
+    <string name="find_my_phone_calibration_ok">OK</string>
+    <string name="find_my_phone_clap_title">Clap detection</string>
+    <string name="find_my_phone_whistle_title">Whistle detection</string>
     <!-- “important” means we won’t send notifications for minor severity alerts -->
     <string name="settings_notifications_alerts_title">Notifications of severe weather alerts</string>
     <string name="settings_notifications_precipitations_title">Notifications of precipitations</string>
@@ -1145,6 +1165,8 @@
     <string name="test_settings_manage_backgrounds_summary">Review and curate cached photos</string>
     <string name="test_settings_live_wallpaper">Live wallpaper test options</string>
     <string name="test_settings_live_wallpaper_summary">Rotating weather, seasonal grading, new clouds toggle</string>
+    <string name="test_settings_find_my_phone">Find my phone: sound threshold</string>
+    <string name="test_settings_find_my_phone_summary">Jump to Notifications settings to tune the tester-mode sensitivity slider</string>
     <string name="release_notes_unavailable">Couldn\'t load release notes. Check your connection and try again later.</string>
     <string name="release_notes_view_on_github">View on GitHub</string>
     <string name="about_contributors">Contributors</string>

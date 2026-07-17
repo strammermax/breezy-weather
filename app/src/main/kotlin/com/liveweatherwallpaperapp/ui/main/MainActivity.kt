@@ -67,6 +67,8 @@ import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.Migrations
 import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.background.findmyphone.FindMyPhoneService
+import com.liveweatherwallpaperapp.background.findmyphone.FindMyPhoneStore
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.bus.EventBus
 import com.liveweatherwallpaperapp.common.extensions.conditional
@@ -318,6 +320,13 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
 
     override fun onStart() {
         super.onStart()
+
+        // Opening the app -- including bringing it back from the background, not just a cold
+        // launch -- is how the user tells "Find my phone" they've found it: silence any
+        // in-progress alarm, without touching the background listening itself.
+        if (FindMyPhoneStore(this).enabled) {
+            FindMyPhoneService.stopAlarm(this)
+        }
 
         if (BreezyWeather.instance.isImpersonatingBreezyWeather) {
             viewModel.emptyLocationListFake()

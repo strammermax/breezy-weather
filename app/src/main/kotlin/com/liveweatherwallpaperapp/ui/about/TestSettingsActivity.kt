@@ -35,6 +35,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -53,6 +54,8 @@ import com.liveweatherwallpaperapp.ui.common.widgets.Material3Scaffold
 import com.liveweatherwallpaperapp.ui.common.widgets.generateCollapsedScrollBehavior
 import com.liveweatherwallpaperapp.ui.common.widgets.insets.FitStatusBarTopAppBar
 import com.liveweatherwallpaperapp.ui.common.widgets.insets.bottomInsetItem
+import com.liveweatherwallpaperapp.ui.settings.activities.SettingsActivity
+import com.liveweatherwallpaperapp.ui.settings.compose.SettingsScreenRouter
 import com.liveweatherwallpaperapp.ui.settings.preference.SmallSeparatorItem
 import com.liveweatherwallpaperapp.ui.theme.compose.themeRipple
 import com.liveweatherwallpaperapp.wallpaper.CloudTuningActivity
@@ -112,6 +115,18 @@ private fun TestSettingsScreen(onBackPressed: () -> Unit) {
                 summaryId = R.string.test_settings_live_wallpaper_summary
             ) {
                 context.startActivity(Intent(context, LiveWallpaperConfigActivity::class.java))
+            },
+            TestSettingsItem(
+                icon = Icons.Filled.VolumeUp,
+                titleId = R.string.test_settings_find_my_phone,
+                summaryId = R.string.test_settings_find_my_phone_summary
+            ) {
+                context.startActivity(
+                    Intent(context, SettingsActivity::class.java).putExtra(
+                        SettingsActivity.KEY_SETTINGS_ACTIVITY_START_DESTINATION,
+                        SettingsScreenRouter.Notifications.route
+                    )
+                )
             }
         )
     }
