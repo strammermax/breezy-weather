@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+7)",
+    "version": "Niet uitgebracht (+8)",
     "date": "",
     "changes": [
+      "Module 3: add a Macrobenchmark test module",
       "Module 2: drop background photo to RGB_565 on low-RAM devices",
       "Module 2: cache decoded wallpaper bitmaps and constrain background jobs",
       "Add debug-only fps telemetry to WallpaperEffectView",
