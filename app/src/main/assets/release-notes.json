@@ -3,6 +3,13 @@
     "version": "Niet uitgebracht (+1)",
     "date": "",
     "changes": [
+      "Rework easter egg debug trigger into a full control section"
+    ]
+  },
+  {
+    "version": "2026.07.17.350",
+    "date": "2026-07-17",
+    "changes": [
       "Add debug-only easter egg and weetje force-trigger buttons"
     ]
   },
@@ -6061,20 +6068,6 @@
     "changes": [
       "Auto fast-forward local main when behind origin during release",
       "Fix stars with new cloud renderer"
-    ]
-  },
-  {
-    "version": "2026.07.13.255",
-    "date": "2026-07-13",
-    "changes": [
-      "Update release notes checkout action",
-      "Add support for fictional locations",
-      "Reduce sky renderer frame allocations",
-      "Refine tester, cache and notification settings",
-      "Improve daily temperature and precipitation chart",
-      "Performance: minder per-frame allocaties en disk-I/O in de wallpaper render-loop",
-      "Simplify cloud tuning controls",
-      "Add tester mode feedback and adaptive app icon"
     ]
   }
 ]
