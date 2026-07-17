@@ -57,5 +57,9 @@
   },
   "debug": {
     "maxTelemetryEvents": 20
+  },
+  "findMyPhone": {
+    "rmsGateDb": -35.0,
+    "armDelayMinutes": 15
   }
 }

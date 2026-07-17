@@ -96,6 +96,16 @@ data class DebugDefaults(
 )
 
 @Serializable
+data class FindMyPhoneDefaults(
+    /** RMS level (dB relative to full scale) that ambient sound must clear before the clap/
+     * whistle detector bothers analyzing a buffer. */
+    val rmsGateDb: Float = -35f,
+    /** How long the screen must stay continuously off/locked before the microphone starts
+     * listening. */
+    val armDelayMinutes: Int = 15,
+)
+
+@Serializable
 data class AppDefaultsRoot(
     val global: GlobalDefaults = GlobalDefaults(),
     val notifications: NotificationDefaults = NotificationDefaults(),
@@ -105,6 +115,7 @@ data class AppDefaultsRoot(
     val wallpaper: WallpaperDefaults = WallpaperDefaults(),
     val widget: WidgetDefaults = WidgetDefaults(),
     val debug: DebugDefaults = DebugDefaults(),
+    val findMyPhone: FindMyPhoneDefaults = FindMyPhoneDefaults(),
 )
 
 /**
@@ -133,4 +144,5 @@ object AppDefaults {
     val wallpaper: WallpaperDefaults get() = root.wallpaper
     val widget: WidgetDefaults get() = root.widget
     val debug: DebugDefaults get() = root.debug
+    val findMyPhone: FindMyPhoneDefaults get() = root.findMyPhone
 }

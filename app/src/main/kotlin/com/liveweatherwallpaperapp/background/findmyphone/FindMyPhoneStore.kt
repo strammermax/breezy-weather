@@ -17,6 +17,7 @@
 package com.liveweatherwallpaperapp.background.findmyphone
 
 import android.content.Context
+import com.liveweatherwallpaperapp.domain.settings.AppDefaults
 import com.liveweatherwallpaperapp.domain.settings.ConfigStore
 
 /** Master switch for the "Find my phone" clap/whistle-detection feature. */
@@ -63,7 +64,7 @@ class FindMyPhoneStore(context: Context) {
             }
         }
 
-    /** Tester-mode override for [FindMyPhoneConfig.rmsGateDb], null meaning "use the bundled
+    /** Tester-mode override for [AppDefaults.findMyPhone.rmsGateDb], null meaning "use the bundled
      * default". Lets testers dial the threshold in without needing a new build. Picked up the
      * next time the service (re-)arms, not instantly while it's already listening. */
     var testerRmsGateDbOverride: Float?
@@ -80,7 +81,7 @@ class FindMyPhoneStore(context: Context) {
             }
         }
 
-    /** Tester-mode override for [FindMyPhoneConfig.armDelayMinutes], null meaning "use the
+    /** Tester-mode override for [AppDefaults.findMyPhone.armDelayMinutes], null meaning "use the
      * bundled default". Picked up the next time the screen turns off and the arm delay starts. */
     var testerArmDelayMinutesOverride: Int?
         get() = if (config.contains(KEY_TESTER_ARM_DELAY_MINUTES)) {

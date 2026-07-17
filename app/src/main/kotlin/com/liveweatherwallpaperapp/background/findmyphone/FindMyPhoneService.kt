@@ -50,6 +50,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.domain.settings.AppDefaults
 import com.liveweatherwallpaperapp.ui.main.MainActivity
 import java.io.IOException
 import kotlin.concurrent.thread
@@ -59,7 +60,7 @@ import kotlin.math.sqrt
 /**
  * Foreground service backing "Find my phone". To keep it battery-friendly for something that
  * may sit running for hours, the microphone stays off until the screen has been continuously
- * off for [FindMyPhoneConfig.armDelayMinutes] -- normal screen-off/on cycles during regular use
+ * off for [AppDefaults.findMyPhone.armDelayMinutes] -- normal screen-off/on cycles during regular use
  * never touch the mic at all. Once armed and listening, it reacts to two patterns:
  *  - 3 claps within [CLAP_WINDOW_MS] start the device's default ringtone (looping) + vibration.
  *  - 1 whistle in the [WHISTLE_MIN_HZ]..[WHISTLE_MAX_HZ] band starts the device's default
@@ -69,7 +70,7 @@ import kotlin.math.sqrt
  * button, or touching the screen if the device has double-tap/lift-to-wake enabled), the device
  * is unlocked, the proximity sensor reports something close (picked up to look at or to an
  * ear), the motion sensor reports the phone being picked up or moved, or the app is opened; the
- * [FindMyPhoneConfig.armDelayMinutes] wait then starts over from the next screen-off.
+ * [AppDefaults.findMyPhone.armDelayMinutes] wait then starts over from the next screen-off.
  *
  * A reduced [SAMPLE_RATE] (vs. the usual 44100Hz) cuts the data volume to process by ~75%, and
  * buffers below the RMS gate skip onset/pitch analysis entirely so the CPU stays idle in
@@ -94,10 +95,10 @@ class FindMyPhoneService : Service() {
     private var alarmActive = false
     private var mediaPlayer: MediaPlayer? = null
 
-    /** Snapshotted from [FindMyPhoneStore] / [FindMyPhoneConfig.current] each time listening
+    /** Snapshotted from [FindMyPhoneStore] / [AppDefaults.findMyPhone] each time listening
      * (re-)arms, so a settings change takes effect on the next arm cycle without needing to
      * restart the service. */
-    private var rmsGateDb = FindMyPhoneConfig.current.rmsGateDb
+    private var rmsGateDb = AppDefaults.findMyPhone.rmsGateDb
     private var clapEnabled = true
     private var whistleEnabled = true
     private var whistleMinHz = WHISTLE_DEFAULT_MIN_HZ
@@ -212,7 +213,7 @@ class FindMyPhoneService : Service() {
         // Priority: explicit tester-mode override > debug-build default (fast iteration without
         // needing to unlock tester mode) > the bundled production default.
         val armDelayMinutes = FindMyPhoneStore(this).testerArmDelayMinutesOverride
-            ?: if (BuildConfig.DEBUG) DEBUG_ARM_DELAY_MINUTES else FindMyPhoneConfig.current.armDelayMinutes
+            ?: if (BuildConfig.DEBUG) DEBUG_ARM_DELAY_MINUTES else AppDefaults.findMyPhone.armDelayMinutes
         handler.postDelayed(armRunnable, armDelayMinutes * 60_000L)
     }
 
@@ -233,7 +234,7 @@ class FindMyPhoneService : Service() {
         }
 
         val store = FindMyPhoneStore(this)
-        rmsGateDb = store.testerRmsGateDbOverride ?: FindMyPhoneConfig.current.rmsGateDb
+        rmsGateDb = store.testerRmsGateDbOverride ?: AppDefaults.findMyPhone.rmsGateDb
         clapEnabled = store.clapEnabled
         whistleEnabled = store.whistleEnabled
         // Everyone whistles at a different pitch: if the user has calibrated their own whistle,

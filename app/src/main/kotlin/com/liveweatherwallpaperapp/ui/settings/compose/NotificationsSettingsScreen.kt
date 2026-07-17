@@ -51,7 +51,6 @@ import androidx.core.net.toUri
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import com.liveweatherwallpaperapp.R
-import com.liveweatherwallpaperapp.background.findmyphone.FindMyPhoneConfig
 import com.liveweatherwallpaperapp.background.findmyphone.FindMyPhoneService
 import com.liveweatherwallpaperapp.background.findmyphone.FindMyPhoneStore
 import com.liveweatherwallpaperapp.background.forecast.TodayForecastNotificationJob
@@ -59,6 +58,7 @@ import com.liveweatherwallpaperapp.background.forecast.TomorrowForecastNotificat
 import com.liveweatherwallpaperapp.common.extensions.plus
 import com.liveweatherwallpaperapp.common.extensions.powerManager
 import com.liveweatherwallpaperapp.common.options.UpdateInterval
+import com.liveweatherwallpaperapp.domain.settings.AppDefaults
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.domain.settings.TesterModeStore
 import com.liveweatherwallpaperapp.ui.common.composables.AnimatedVisibilitySlideVertically
@@ -101,11 +101,11 @@ fun NotificationsSettingsScreen(
     var findMyPhonePendingEnable by remember { mutableStateOf(false) }
     val isTesterModeEnabled = remember(context) { TesterModeStore(context).isEnabled }
     var findMyPhoneRmsGateDb by remember {
-        mutableFloatStateOf(findMyPhoneStore.testerRmsGateDbOverride ?: FindMyPhoneConfig.current.rmsGateDb)
+        mutableFloatStateOf(findMyPhoneStore.testerRmsGateDbOverride ?: AppDefaults.findMyPhone.rmsGateDb)
     }
     var findMyPhoneArmDelayMinutes by remember {
         mutableFloatStateOf(
-            (findMyPhoneStore.testerArmDelayMinutesOverride ?: FindMyPhoneConfig.current.armDelayMinutes).toFloat()
+            (findMyPhoneStore.testerArmDelayMinutesOverride ?: AppDefaults.findMyPhone.armDelayMinutes).toFloat()
         )
     }
     var findMyPhoneClapEnabled by remember { mutableStateOf(findMyPhoneStore.clapEnabled) }

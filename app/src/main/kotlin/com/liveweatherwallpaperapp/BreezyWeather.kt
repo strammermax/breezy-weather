@@ -27,7 +27,6 @@ import androidx.work.Configuration
 import androidx.work.WorkInfo
 import androidx.work.WorkQuery
 import com.google.firebase.messaging.FirebaseMessaging
-import com.liveweatherwallpaperapp.background.findmyphone.FindMyPhoneConfig
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.uiModeManager
 import com.liveweatherwallpaperapp.common.extensions.workManager
@@ -96,7 +95,6 @@ class BreezyWeather : Application(), Configuration.Provider {
         instance = this
 
         setupNotificationChannels()
-        FindMyPhoneConfig.load(this)
 
         if (getProcessName().equals(packageName)) {
             // Sets and persists the night mode setting for this app. This allows the system to know
