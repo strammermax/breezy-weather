@@ -1,7 +1,14 @@
 [
   {
-    "version": "Niet uitgebracht (+4)",
+    "version": "Niet uitgebracht (+1)",
     "date": "",
+    "changes": [
+      "Fix invalid cache-cleanup value in CI workflows"
+    ]
+  },
+  {
+    "version": "2026.07.17.336",
+    "date": "2026-07-17",
     "changes": [
       "Apply spotless formatting to Find my phone files",
       "Add \"Find my phone\" clap/whistle detection feature",
@@ -6080,13 +6087,6 @@
     "date": "2026-07-11",
     "changes": [
       "Replace radar tile providers, add release notes screen, update app icons"
-    ]
-  },
-  {
-    "version": "1.1.212",
-    "date": "2026-07-11",
-    "changes": [
-      "Send the release update-notification to the LAN address, not the public domain"
     ]
   }
 ]
