@@ -55,6 +55,8 @@ class CloudEngineRenderer(private val context: Context) {
     // Debug-triggered easter egg (see triggerEasterEggNow()): 0L means "none pending".
     private var forcedEasterEggStartMillis: Long = 0L
     private var forcedEasterEggAssetIndex: Int = 0
+    private var forcedEasterEggAlpha: Float = 0.55f
+    private var forcedEasterEggSpeedMultiplier: Float = 1f
 
     private val spriteTypes = setOf(CloudTextureType.WHITE, CloudTextureType.DARK, CloudTextureType.SMOKE)
     private val overcastFamily = setOf("overcast", "drizzle", "rain", "snow", "snow_showers")
@@ -173,15 +175,22 @@ class CloudEngineRenderer(private val context: Context) {
         randomSeed += 1L
     }
 
+    /** Number of easter-egg cloud assets available, for a debug UI to build an asset picker. */
+    val easterEggAssetCount: Int get() = easterEggAssets.size
+
     /**
      * Debug-only: immediately shows an easter-egg cloud crossing the screen, bypassing the
-     * normal once/twice-a-day time gate in [drawDailyEasterEgg]. Cycles to the next asset in
-     * the pool on every call, so tapping repeatedly swaps the currently traveling egg for the
-     * next one instead of queueing several -- fast taps replace, they don't stack.
+     * normal once/twice-a-day time gate in [drawDailyEasterEgg]. Calling it again while one is
+     * still traveling replaces it instead of queueing another -- fast taps swap, they don't
+     * stack. [assetIndex] picks a specific asset (null cycles to the next one automatically).
+     * [alpha] and [speedMultiplier] are debug-only overrides, not persisted anywhere.
      */
-    fun triggerEasterEggNow() {
+    fun triggerEasterEggNow(assetIndex: Int?, alpha: Float, speedMultiplier: Float) {
         if (easterEggAssets.isEmpty()) return
-        forcedEasterEggAssetIndex = (forcedEasterEggAssetIndex + 1) % easterEggAssets.size
+        forcedEasterEggAssetIndex = assetIndex?.let { Math.floorMod(it, easterEggAssets.size) }
+            ?: (forcedEasterEggAssetIndex + 1) % easterEggAssets.size
+        forcedEasterEggAlpha = alpha.coerceIn(0f, 1f)
+        forcedEasterEggSpeedMultiplier = speedMultiplier.coerceIn(0.1f, 5f)
         forcedEasterEggStartMillis = System.currentTimeMillis()
     }
 
@@ -252,17 +261,20 @@ class CloudEngineRenderer(private val context: Context) {
         if (easterEggAssets.isEmpty()) return
 
         if (forcedEasterEggStartMillis != 0L) {
+            val travelSeconds = FORCED_EASTER_EGG_TRAVEL_SECONDS / forcedEasterEggSpeedMultiplier.coerceAtLeast(.05f)
             val forcedElapsedSeconds = (System.currentTimeMillis() - forcedEasterEggStartMillis) / 1000f
-            if (forcedElapsedSeconds in 0f..FORCED_EASTER_EGG_TRAVEL_SECONDS) {
+            if (forcedElapsedSeconds in 0f..travelSeconds) {
                 val asset = easterEggAssets[forcedEasterEggAssetIndex % easterEggAssets.size]
-                val progress = forcedElapsedSeconds / FORCED_EASTER_EGG_TRAVEL_SECONDS
-                val width = screenWidth * .5f
+                val progress = forcedElapsedSeconds / travelSeconds
+                // Smaller than the real daily egg (screenWidth * ~.42-.63) -- at that size it
+                // dwarfed the regular clouds around it.
+                val width = screenWidth * FORCED_EASTER_EGG_SIZE_FRACTION
                 val height = width / asset.aspectRatio
                 val padding = maxOf(screenWidth * .08f, 24f * pxPerDp)
                 val left = -width - padding + progress * (screenWidth + width + padding * 2f)
                 val top = screenHeight * .30f
                 val fade = minOf((progress / .1f).coerceAtMost(1f), ((1f - progress) / .1f).coerceAtMost(1f))
-                drawAsset(canvas, asset, left, top, width, height, .94f * fade)
+                drawAsset(canvas, asset, left, top, width, height, forcedEasterEggAlpha * fade)
                 return
             }
             forcedEasterEggStartMillis = 0L
@@ -565,6 +577,7 @@ class CloudEngineRenderer(private val context: Context) {
         // Debug-triggered eggs cross the screen much faster than the real daily ones, so testers
         // tapping the button repeatedly actually see each one instead of waiting minutes.
         const val FORCED_EASTER_EGG_TRAVEL_SECONDS = 3f
+        const val FORCED_EASTER_EGG_SIZE_FRACTION = 0.28f
 
         // Eenvoudige waarde-ruis (hash + bilineaire interpolatie) + fbm van twee octaven,
         // standaardtechniek uit shader-programmering (geen overgenomen broncode) — tekent een

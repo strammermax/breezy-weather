@@ -63,8 +63,10 @@ class CloudSurfaceView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun triggerEasterEgg() {
-        renderer.triggerEasterEggNow()
+    val easterEggAssetCount: Int get() = renderer.easterEggAssetCount
+
+    fun triggerEasterEgg(assetIndex: Int? = null, alpha: Float = 0.55f, speedMultiplier: Float = 1f) {
+        renderer.triggerEasterEggNow(assetIndex, alpha, speedMultiplier)
         invalidate()
     }
 

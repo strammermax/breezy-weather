@@ -223,8 +223,9 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
                     onRandomizeAssets = {
                         cloudView?.randomizeAssets()
                     },
-                    onTriggerEasterEgg = {
-                        cloudView?.triggerEasterEgg()
+                    easterEggAssetCount = cloudView?.easterEggAssetCount ?: 15,
+                    onTriggerEasterEgg = { assetIndex, alpha, speed ->
+                        cloudView?.triggerEasterEgg(assetIndex, alpha, speed)
                     },
                     modifier = Modifier.weight(1f).padding(bottom = 8.dp)
                 )
@@ -254,7 +255,8 @@ private fun CloudLayerControlPanel(
     wind: Float,
     onWindChange: (Float) -> Unit,
     onRandomizeAssets: () -> Unit,
-    onTriggerEasterEgg: () -> Unit,
+    easterEggAssetCount: Int,
+    onTriggerEasterEgg: (assetIndex: Int, alpha: Float, speedMultiplier: Float) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var expandedLayers by remember { mutableStateOf(setOf<CloudLayer>()) }
@@ -287,19 +289,6 @@ private fun CloudLayerControlPanel(
             ) {
                 Text("Randomize all cloud assets", fontSize = 11.sp)
             }
-            if (BuildConfig.DEBUG) {
-                // Debug-only: the real easter eggs only appear in two 5-minute windows a day,
-                // so testers need a way to summon one on demand instead of waiting. Tapping
-                // repeatedly swaps in the next egg rather than stacking several at once.
-                Button(
-                    onClick = onTriggerEasterEgg,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = cloudActionButtonColors(),
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Text("🥚 Trigger easter egg (debug)", fontSize = 11.sp)
-                }
-            }
             CloudLayer.entries.reversed().forEach { layer ->
                 val isExpanded = layer in expandedLayers
                 Row(
@@ -325,6 +314,89 @@ private fun CloudLayerControlPanel(
             CloudTuningSlider("Stacking / depth", "${(depth * 100).roundToInt()}%", depth, .35f..1.8f, onDepthChange)
             val windText = if (abs(wind) < .1f) "calm" else "%+.1f m/s".format(wind)
             CloudTuningSlider("Wind", windText, wind, -4f..4f, onWindChange)
+
+            if (BuildConfig.DEBUG) {
+                HorizontalDivider(color = Color(0xFFD8DEEA))
+                EasterEggDebugSection(easterEggAssetCount, onTriggerEasterEgg)
+            }
+        }
+    }
+}
+
+/**
+ * Debug-only: the real easter eggs only appear in two 5-minute windows a day and pick their
+ * asset/pitch/pace automatically, so testers need a way to summon a specific one on demand with
+ * adjustable transparency/speed instead of waiting and hoping. Speed/transparency here are
+ * debug-session-only (not persisted) -- they just tune the next forced trigger.
+ */
+@Composable
+private fun EasterEggDebugSection(
+    easterEggAssetCount: Int,
+    onTrigger: (assetIndex: Int, alpha: Float, speedMultiplier: Float) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Row(
+        Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(vertical = 10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("🥚 Easter egg (debug)", fontWeight = FontWeight.Bold, color = Color(0xFF23324A))
+        Text(if (expanded) "⌄" else "›", fontSize = 24.sp, color = Color(0xFF6C4EB4))
+    }
+    if (expanded) {
+        var assetIndex by remember { mutableStateOf(0) }
+        var alpha by remember { mutableFloatStateOf(0.55f) }
+        var speed by remember { mutableFloatStateOf(1f) }
+        var dropdownExpanded by remember { mutableStateOf(false) }
+        val eggCount = easterEggAssetCount.coerceAtLeast(1)
+
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            ExposedDropdownMenuBox(
+                expanded = dropdownExpanded,
+                onExpandedChange = { dropdownExpanded = it },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                TextField(
+                    readOnly = true,
+                    value = "Egg ${assetIndex + 1} / $eggCount",
+                    onValueChange = {},
+                    label = { Text("Which cloud") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(dropdownExpanded) },
+                    colors = cloudWeatherTypeFieldColors(),
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(dropdownExpanded, { dropdownExpanded = false }) {
+                    (0 until eggCount).forEach { index ->
+                        DropdownMenuItem(
+                            text = { Text("Egg ${index + 1}") },
+                            onClick = {
+                                assetIndex = index
+                                dropdownExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+            CloudTuningSlider(
+                "Transparency",
+                "${(alpha * 100).roundToInt()}%",
+                alpha,
+                0.1f..1f
+            ) { alpha = it }
+            CloudTuningSlider(
+                "Speed",
+                "%.1fx".format(speed),
+                speed,
+                0.2f..3f
+            ) { speed = it }
+            Button(
+                onClick = { onTrigger(assetIndex, alpha, speed) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = cloudActionButtonColors(),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text("Force easter egg", fontSize = 11.sp)
+            }
         }
     }
 }
