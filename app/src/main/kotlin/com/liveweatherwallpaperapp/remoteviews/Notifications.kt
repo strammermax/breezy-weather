@@ -45,6 +45,7 @@ import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.domain.weather.model.getMinutelyDescription
 import com.liveweatherwallpaperapp.domain.weather.model.getMinutelyTitle
 import com.liveweatherwallpaperapp.domain.weather.model.hasMinutelyPrecipitation
+import com.liveweatherwallpaperapp.ui.settings.activities.ReleaseNotesActivity
 import livewallpaperweather.domain.location.model.Location
 import livewallpaperweather.domain.weather.model.Alert
 import livewallpaperweather.domain.weather.model.Weather
@@ -183,6 +184,43 @@ object Notifications {
                         context,
                         ID_APP_UPDATE,
                         IntentHelper.buildMainActivityIntent(null),
+                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+                )
+            }.build()
+        )
+    }
+
+    /**
+     * Shows a "you're now on vX" notification, triggered locally by MainActivity the moment it
+     * detects the running version changed since the last launch (see
+     * SettingsManager.lastSeenAppVersion) -- unlike [sendAppUpdateNotification] (an FCM push
+     * sent the instant a release goes out, before most people have actually installed it), this
+     * only fires once someone has genuinely upgraded. Tapping opens the release notes for that
+     * version ("Read more"); [highlight] (the first bullet from the offline release history, if
+     * any) is shown as a preview so the notification is useful without opening anything.
+     */
+    fun sendVersionInstalledNotification(context: Context, version: String, highlight: String?) {
+        if (!SettingsManager.getInstance(context).isAppUpdatePushEnabled) return
+        val title = context.getString(R.string.notification_app_updated_title, version)
+        val intent = Intent(context, ReleaseNotesActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.notify(
+            ID_APP_UPDATE,
+            context.notificationBuilder(CHANNEL_APP_UPDATE).apply {
+                setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                setSmallIcon(R.drawable.ic_alert)
+                setContentTitle(title)
+                highlight?.let {
+                    setContentText(it)
+                    setStyle(NotificationCompat.BigTextStyle().bigText(it))
+                }
+                setAutoCancel(true)
+                setContentIntent(
+                    PendingIntent.getActivity(
+                        context,
+                        ID_APP_UPDATE,
+                        intent,
                         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                     )
                 )

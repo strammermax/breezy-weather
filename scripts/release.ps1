@@ -3,19 +3,17 @@
     Builds a signed release APK, tags the current commit, and publishes a GitHub release
     with the APK attached so testers can download it directly (no Play Store needed).
 
+    Doesn't push a "new version available" notification -- the app notifies itself locally
+    the moment someone who's actually installed the update opens it (see
+    Notifications.sendVersionInstalledNotification / MainActivity's lastSeenAppVersion check),
+    instead of blasting everyone the instant this script runs, before anyone has the update.
+
 .PARAMETER Flavor
     Product flavor to build ("basic" or "freenet"). Defaults to "basic" (same flavor
     published to the Play Store), so the GitHub download matches what testers already use.
 
 .PARAMETER Draft
     Create the GitHub release as a draft instead of publishing it immediately.
-
-.PARAMETER SkipNotify
-    Skip pushing the "new version available" notification to app users after publishing.
-
-.PARAMETER NotifyMessage
-    Custom notification text, used as-is instead of prompting for changelog highlights.
-    Only sent when the release itself isn't a draft.
 
 .EXAMPLE
     ./scripts/release.ps1
@@ -24,9 +22,7 @@
 param(
     [ValidateSet("basic", "freenet")]
     [string]$Flavor = "basic",
-    [switch]$Draft,
-    [switch]$SkipNotify,
-    [string]$NotifyMessage
+    [switch]$Draft
 )
 
 $ErrorActionPreference = "Stop"
@@ -133,46 +129,3 @@ Write-Host "Publishing GitHub release $tag with $apkFile ..." -ForegroundColor C
 & gh @releaseArgs
 
 Write-Host "Done: https://github.com/strammermax/breezy-weather/releases/tag/$tag" -ForegroundColor Green
-
-# This script is the actual "new version is out" moment for testers (GitHub release, not
-# the Play Store) -- Play Store rollout is a separate manual Play Console upload this
-# script doesn't touch. Best-effort: a failed/skipped notification must never fail the
-# release itself, so this always runs last and only warns on problems.
-if (-not $Draft -and -not $SkipNotify) {
-    $adminKey = $env:REMOVESKY_ADMIN_API_KEY
-    if (-not $adminKey) {
-        # local.properties is gitignored -- safe place for this secret, unlike this script.
-        $localPropsPath = Join-Path $repoRoot "local.properties"
-        if (Test-Path $localPropsPath) {
-            $line = Get-Content $localPropsPath | Where-Object { $_ -match "^REMOVESKY_ADMIN_API_KEY=" }
-            if ($line) {
-                $adminKey = $line.Substring($line.IndexOf("=") + 1).Trim()
-            }
-        }
-    }
-    if (-not $adminKey) {
-        Write-Warning "REMOVESKY_ADMIN_API_KEY not set (env var or local.properties) - skipping the 'new version available' push notification."
-    } else {
-        $changelog = if ($NotifyMessage) {
-            $NotifyMessage
-        } else {
-            Read-Host "Wat zijn de highlights van deze release? (voor de notificatie naar app-gebruikers)"
-        }
-        $message = "Er is een nieuwe versie uit $versionName - $changelog"
-        try {
-            # The admin router only accepts requests whose real TCP peer is on the LAN
-            # (see require_local_network in removesky-service/app/api/deps.py) -- going
-            # through the public https://removesky.vanburik.info domain means Cloudflare's
-            # IP is the peer, not this machine's, and gets a 403. Must hit the LAN address
-            # directly instead.
-            Invoke-RestMethod -Method Post `
-                -Uri "http://192.168.1.154:12345/api/v1/admin/notify-update" `
-                -Headers @{ "x-api-key" = $adminKey } `
-                -ContentType "application/json" `
-                -Body (@{ version = $versionName; message = $message } | ConvertTo-Json) | Out-Null
-            Write-Host "Sent 'new version available' notification to app users." -ForegroundColor Green
-        } catch {
-            Write-Warning "Failed to send update notification: $_"
-        }
-    }
-}

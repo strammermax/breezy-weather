@@ -79,12 +79,14 @@ import com.liveweatherwallpaperapp.common.extensions.isLandscape
 import com.liveweatherwallpaperapp.common.extensions.isOnline
 import com.liveweatherwallpaperapp.common.extensions.isRtl
 import com.liveweatherwallpaperapp.common.snackbar.SnackbarContainer
+import com.liveweatherwallpaperapp.common.update.GithubReleaseNotesSource
 import com.liveweatherwallpaperapp.common.utils.helpers.IntentHelper
 import com.liveweatherwallpaperapp.common.utils.helpers.LogHelper
 import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
 import com.liveweatherwallpaperapp.databinding.ActivityMainBinding
 import com.liveweatherwallpaperapp.domain.settings.SettingsChangedMessage
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
+import com.liveweatherwallpaperapp.remoteviews.Notifications
 import com.liveweatherwallpaperapp.sources.SourceManager
 import com.liveweatherwallpaperapp.ui.common.composables.AlertDialogConfirmOnly
 import com.liveweatherwallpaperapp.ui.common.composables.AlertDialogNoPadding
@@ -256,8 +258,11 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
         if (isLaunch) {
             Migrations.upgrade(applicationContext, sourceManager, locationRepository, weatherRepository)
 
-            // Show the release notes once, the first time the app is opened after an update --
-            // never on a fresh install (empty lastSeenAppVersion), since there's nothing to diff.
+            // Notify (instead of forcing the release notes screen open) the first time the app
+            // is opened after an update -- never on a fresh install (empty lastSeenAppVersion),
+            // since there's nothing to diff. This is the "you've actually installed the new
+            // version" moment, unlike sendAppUpdateNotification's server push sent the instant
+            // a release goes out, before most people have installed anything.
             val settings = SettingsManager.getInstance(this)
             val currentVersion = BuildConfig.VERSION_NAME
             if (
@@ -265,7 +270,10 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
                 settings.lastSeenAppVersion.isNotBlank() &&
                 settings.lastSeenAppVersion != currentVersion
             ) {
-                IntentHelper.startReleaseNotesActivity(this)
+                lifecycleScope.launch {
+                    val highlight = GithubReleaseNotesSource(applicationContext).getLatest()?.changes?.firstOrNull()
+                    Notifications.sendVersionInstalledNotification(applicationContext, currentVersion, highlight)
+                }
             }
             settings.lastSeenAppVersion = currentVersion
         }

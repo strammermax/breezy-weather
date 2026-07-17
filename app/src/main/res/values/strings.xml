@@ -1129,6 +1129,7 @@
     <string name="notification_channel_background_services">Background services</string>
     <string name="notification_channel_crash_logs">Crash logs</string>
     <string name="notification_channel_app_update">App updates</string>
+    <string name="notification_app_updated_title">Updated to %1$s</string>
     <string name="notification_channel_weetje">Location fun facts</string>
     <string name="notification_running_in_background">Running in background to keep updating</string>
     <string name="notification_updating_weather_data">Updating weather data (%1$d/%2$d)</string>

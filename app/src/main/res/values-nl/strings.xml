@@ -613,6 +613,7 @@
     <string name="settings_notifications_app_updates_check">Meldingen van app-updates</string>
     <string name="about_no_new_updates">Geen nieuwe updates beschikbaar</string>
     <string name="notification_channel_app_updates">App-updates</string>
+    <string name="notification_app_updated_title">Bijgewerkt naar %1$s</string>
     <string name="notification_channel_weetje">Weetjes over locaties</string>
     <string name="notification_app_update_available">Nieuwe versie beschikbaar!</string>
     <string name="common_weather_text_sand_storm">Zandstorm</string>
