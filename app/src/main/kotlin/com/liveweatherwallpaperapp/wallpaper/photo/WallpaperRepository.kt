@@ -82,6 +82,25 @@ class WallpaperRepository @Inject constructor(
     private val store: WallpaperImageStore = WallpaperImageStore(context)
     private val client: OkHttpClient = defaultClient(store)
 
+    // In-memory cache for the two hot decode paths (loadCachedBitmap/loadCachedDepthBitmap):
+    // both were re-decoding from disk on every call (e.g. every wallpaper redraw-drawable
+    // rebuild, every Details/Radar screen open) even when the underlying file hadn't changed
+    // since the last decode. Keyed on path + lastModified so a fresh photo download still
+    // invalidates the entry.
+    private data class CachedBitmapEntry(val path: String, val lastModified: Long, val bitmap: Bitmap)
+    private val bitmapCacheLock = Any()
+    private var cachedPhotoEntry: CachedBitmapEntry? = null
+    private var cachedDepthEntry: CachedBitmapEntry? = null
+
+    // Cap decoded bitmap dimensions to ~1.5x the display's longest side -- enough headroom for
+    // the wallpaper's parallax overscan (PARALLAX_FG_FACTOR = 0.15, i.e. up to 1.3x width) while
+    // avoiding full-resolution decodes of source photos that can be considerably larger than the
+    // screen they'll ever be drawn on.
+    private val maxDecodeDimension: Int by lazy {
+        val metrics = context.resources.displayMetrics
+        (maxOf(metrics.widthPixels, metrics.heightPixels) * 1.5f).toInt()
+    }
+
     /**
      * Fires whenever the wallpaper photo catalog changes from something other than direct
      * user action in the currently-open screen -- currently just [purgeUrls] (an FCM push
@@ -756,30 +775,53 @@ class WallpaperRepository @Inject constructor(
     ): File? = refreshFor(latitude, longitude, PlaceQuery(city = placeName))
 
     /** Loads the cached background as a [Bitmap], or null when nothing is cached. */
-    fun loadCachedBitmap(): Bitmap? {
-        val path = store.cachedPhotoPath ?: return null
-        val file = File(path)
-        if (!file.exists()) return null
-        return try {
-            BitmapFactory.decodeFile(file.absolutePath)
-        } catch (e: Throwable) {
-            null
-        }
-    }
+    fun loadCachedBitmap(): Bitmap? = loadCachedBitmapCached(store.cachedPhotoPath, isDepth = false)
 
     /**
      * Loads the cached depth map as a grayscale [Bitmap], or null when not available.
      * Pixel value 255 = nearest to camera, 0 = furthest (matches server-side convention).
      */
-    fun loadCachedDepthBitmap(): Bitmap? {
-        val path = store.cachedDepthMapPath ?: return null
+    fun loadCachedDepthBitmap(): Bitmap? = loadCachedBitmapCached(store.cachedDepthMapPath, isDepth = true)
+
+    private fun loadCachedBitmapCached(path: String?, isDepth: Boolean): Bitmap? {
+        if (path == null) return null
         val file = File(path)
         if (!file.exists()) return null
-        return try {
-            BitmapFactory.decodeFile(file.absolutePath)
+        val lastModified = file.lastModified()
+
+        synchronized(bitmapCacheLock) {
+            val entry = if (isDepth) cachedDepthEntry else cachedPhotoEntry
+            if (entry != null && entry.path == path && entry.lastModified == lastModified && !entry.bitmap.isRecycled) {
+                return entry.bitmap
+            }
+        }
+
+        val decoded = try {
+            BitmapFactory.decodeFile(file.absolutePath, decodeOptionsFor(file))
         } catch (e: Throwable) {
             null
+        } ?: return null
+
+        synchronized(bitmapCacheLock) {
+            val newEntry = CachedBitmapEntry(path, lastModified, decoded)
+            if (isDepth) cachedDepthEntry = newEntry else cachedPhotoEntry = newEntry
         }
+        return decoded
+    }
+
+    /** Picks an `inSampleSize` (power-of-2 downscale) so decoded bitmaps never exceed
+     *  [maxDecodeDimension] on their longest side -- a no-op (sampleSize=1) for photos
+     *  already at or below that size, which covers the common case. */
+    private fun decodeOptionsFor(file: File): BitmapFactory.Options {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(file.absolutePath, bounds)
+        var sampleSize = 1
+        while (bounds.outWidth / (sampleSize * 2) >= maxDecodeDimension ||
+            bounds.outHeight / (sampleSize * 2) >= maxDecodeDimension
+        ) {
+            sampleSize *= 2
+        }
+        return BitmapFactory.Options().apply { inSampleSize = sampleSize }
     }
 
     private suspend fun downloadAndCacheDepthMap(depthUrl: String, place: PlaceQuery, photoUrl: String): String? =

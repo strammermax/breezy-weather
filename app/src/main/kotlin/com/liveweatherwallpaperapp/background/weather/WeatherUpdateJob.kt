@@ -500,6 +500,14 @@ class WeatherUpdateJob @AssistedInject constructor(
                 .addTag(TAG)
                 .setInitialDelay(ADAPTIVE_REFRESH_DELAY_MINUTES, TimeUnit.MINUTES)
                 .setInputData(inputData)
+                // Background job the user never explicitly triggered -- same network/battery
+                // posture as the regular periodic refresh it's speeding up.
+                .setConstraints(
+                    Constraints(
+                        requiredNetworkType = NetworkType.CONNECTED,
+                        requiresBatteryNotLow = SettingsManager.getInstance(context).ignoreUpdatesWhenBatteryLow
+                    )
+                )
                 .build()
             wm.enqueueUniqueWork(workName, ExistingWorkPolicy.REPLACE, request)
         }
@@ -557,6 +565,8 @@ class WeatherUpdateJob @AssistedInject constructor(
                 .addTag(TAG)
                 .addTag(WORK_NAME_MANUAL)
                 .setInputData(inputData)
+                // Explicit user action (pull-to-refresh) -- only wait for network, not battery.
+                .setConstraints(Constraints(requiredNetworkType = NetworkType.CONNECTED))
                 .build()
             wm.enqueueUniqueWork(WORK_NAME_MANUAL, ExistingWorkPolicy.KEEP, request)
 

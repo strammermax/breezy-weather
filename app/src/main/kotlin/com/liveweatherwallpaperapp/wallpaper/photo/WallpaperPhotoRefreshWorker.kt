@@ -311,9 +311,13 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                 return false
             }
 
+            // User tapped "refresh now" -- still requires network (it can't do anything without
+            // it), but deliberately not requiresBatteryNotLow: this is an explicit, one-shot user
+            // action, not a background rotation the user can't see, so it shouldn't silently wait.
             val request = OneTimeWorkRequestBuilder<WallpaperPhotoRefreshWorker>()
                 .addTag(TAG)
                 .addTag(WORK_NAME_MANUAL)
+                .setConstraints(Constraints(requiredNetworkType = NetworkType.CONNECTED))
                 .build()
             wm.enqueueUniqueWork(WORK_NAME_MANUAL, ExistingWorkPolicy.KEEP, request)
             return true
@@ -330,6 +334,10 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                 .addTag(TAG)
                 .addTag(WORK_NAME_RETRY)
                 .setInitialDelay(delayMinutes, TimeUnit.MINUTES)
+                // Same constraints as the periodic rotation it's standing in for -- this is a
+                // background retry the user never explicitly asked for, so it shouldn't run on
+                // metered/no network or drain an already-low battery either.
+                .setConstraints(Constraints(requiredNetworkType = NetworkType.CONNECTED, requiresBatteryNotLow = true))
                 .build()
             context.workManager.enqueueUniqueWork(WORK_NAME_RETRY, ExistingWorkPolicy.REPLACE, request)
         }
