@@ -3,6 +3,13 @@
     "version": "Niet uitgebracht (+1)",
     "date": "",
     "changes": [
+      "Fix fictional-location weather updates failing on country-gated sources"
+    ]
+  },
+  {
+    "version": "2026.07.17.342",
+    "date": "2026-07-17",
+    "changes": [
       "Fix google-services.json ordering in release workflow"
     ]
   },
@@ -6066,27 +6073,5 @@
     "version": "2026.07.13.239",
     "date": "2026-07-13",
     "changes": []
-  },
-  {
-    "version": "2026.07.13.238",
-    "date": "2026-07-13",
-    "changes": [
-      "fix release notes change detection",
-      "fix release about icon resource",
-      "fix cloud renderer formatting",
-      "add implementation documentation",
-      "CI: volledige git-historie ophalen zodat versionCode/versionName niet stil op 0 terugvallen",
-      "Fix ktlint/spotless-opmaakviolaties (CI spotlessXmlCheck faalde op ic_launcher.xml)",
-      "add offline in-app release history",
-      "Camera-upload stuurt lokale datum/tijd mee als EXIF-fallback voor day/night- en season-classificatie",
-      "versie is gewijzigd in yyyy.MM.dd.buildnr (bv. 2026.07.13.842).",
-      "iets leuks toegevoegd",
-      "add tester mode and cloud debug controls",
-      "Add weetjes (location fun-fact) dwell notifications",
-      "expand cloud sprite variation pools",
-      "fix cloud sprite edge color fringing",
-      "refine frosted background defaults and theme options",
-      "feat: add configurable frosted app backgrounds"
-    ]
   }
 ]
