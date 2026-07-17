@@ -103,6 +103,15 @@ configure<ApplicationExtension> {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
+        // Macrobenchmark target (see :benchmark) -- release-shaped (minified, non-debuggable, so
+        // measurements reflect what ships) but signed with the debug key so `./gradlew connected
+        // BenchmarkAndroidTest` works on a dev machine without the real release keystore.
+        create("benchmark") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+            isProfileable = true
+        }
     }
 
     val localProperties = Properties()

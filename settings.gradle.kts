@@ -34,6 +34,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "LiveWallpaperWeather"
 include(":app")
+include(":benchmark")
 include(":cloud-engine")
 include(":data")
 include(":domain")
