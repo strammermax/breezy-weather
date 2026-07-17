@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+5)",
+    "version": "Niet uitgebracht (+6)",
     "date": "",
     "changes": [
+      "Module 2: cache decoded wallpaper bitmaps and constrain background jobs",
       "Add debug-only fps telemetry to WallpaperEffectView",
       "Cap the in-app frosted background animation to 60fps",
       "Mirror the debug weetje trigger onto the widget fact banner too",
