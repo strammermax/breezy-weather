@@ -95,7 +95,7 @@ suspend fun deleteRecordsDataDB(repo: WallpaperPhotoRepository, json: JSONObject
  * (`placeKey -> urls`, plus the single active [store]'s cached photo) into [repo] as
  * placeholder rows -- that old cache never recorded location text, GPS, day_period, or any
  * of `wallpaper_photos`'s other metadata columns, so this can't reconstruct full rows. The
- * next real getImagesDataBy*/updateImagesDataBy* sync for that place naturally overwrites
+ * next real getImagesDataBy* / updateImagesDataBy* sync for that place naturally overwrites
  * these placeholders with full data (`upsertDataDB` uses `INSERT ... ON CONFLICT(id) DO
  * UPDATE`).
  *
