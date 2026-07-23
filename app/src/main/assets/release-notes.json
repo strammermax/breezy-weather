@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+6)",
+    "version": "Niet uitgebracht (+7)",
     "date": "",
     "changes": [
+      "Wire the new sort pipeline into WallpaperPhotoRefreshWorker",
       "Fix dangling top-level KDoc: use a plain block comment for the file intro",
       "Fix premature comment termination in ImagesDataSync.kt kdoc",
       "Fix remaining ktlint violation: one argument per line in wrapped calls",
