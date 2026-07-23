@@ -20,11 +20,11 @@ import livewallpaperweather.data.wallpaper.WallpaperPhotoRepository
 import org.json.JSONObject
 import java.security.MessageDigest
 
-/**
+/*
  * `upsertDataDB`/`deleteRecordsDataDB` from ACT-021: thin wrappers around the existing
- * [WallpaperPhotoRepository] (SQLDelight, `wallpaper_photos`) rather than a separate database
+ * WallpaperPhotoRepository (SQLDelight, `wallpaper_photos`) rather than a separate database
  * -- see docs/ACT-021, section 3, for why a second local DB was rejected in favor of reusing
- * this one, which [WallpaperPhotoPriority] already reads.
+ * this one, which WallpaperPhotoPriority already reads.
  */
 
 /**
