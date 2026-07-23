@@ -1112,13 +1112,22 @@ class WallpaperRepository @Inject constructor(
         val records = photoCatalog.getForLocation(locationKey)
         val resultlist = if (location.isCurrentPosition) {
             sortLocationRecsByGPSLocation(
-                records, latitude, longitude, minimal, store.maxCachedPhotosPerLocation, currentWeather
+                records,
+                latitude,
+                longitude,
+                minimal,
+                store.maxCachedPhotosPerLocation,
+                currentWeather
             )
         } else {
             sortLocationRecsByLocation(
-                records, minimal, location.isFictional,
-                locationLatitude = latitude, locationLongitude = longitude,
-                currentLatitude = currentLatitude, currentLongitude = currentLongitude,
+                records,
+                minimal,
+                location.isFictional,
+                locationLatitude = latitude,
+                locationLongitude = longitude,
+                currentLatitude = currentLatitude,
+                currentLongitude = currentLongitude,
                 currentWeather = currentWeather
             )
         }
