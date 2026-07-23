@@ -1057,8 +1057,33 @@ class RefreshHelper @Inject constructor(
                 alertList = weatherWrapperCompleted.alertList ?: emptyList(),
                 normals = weatherWrapperCompleted.normals ?: emptyMap()
             )
-            locationRepository.insertParameters(location.formattedId, locationParameters)
-            weatherRepository.insert(location, weather)
+            // resolveWeatherLocation() swapped in the real current position's country/countryCode/
+            // city (needed above for isFeatureSupportedForLocation() and the actual source calls)
+            // -- for a fictional location that also flips isFictional to false and changes
+            // formattedId, so saving under `location` would silently store this weather under the
+            // device's real-position ID instead of the fictional location's own, leaving the
+            // fictional location's own lookup (weatherRepository.getWeatherByLocationId) forever
+            // empty. Restore the original identity fields just for storage.
+            val storageLocation = if (requestedLocation.isFictional) {
+                location.copy(
+                    city = requestedLocation.city,
+                    district = requestedLocation.district,
+                    country = requestedLocation.country,
+                    countryCode = requestedLocation.countryCode,
+                    admin1 = requestedLocation.admin1,
+                    admin1Code = requestedLocation.admin1Code,
+                    admin2 = requestedLocation.admin2,
+                    admin2Code = requestedLocation.admin2Code,
+                    admin3 = requestedLocation.admin3,
+                    admin3Code = requestedLocation.admin3Code,
+                    admin4 = requestedLocation.admin4,
+                    admin4Code = requestedLocation.admin4Code
+                )
+            } else {
+                location
+            }
+            locationRepository.insertParameters(storageLocation.formattedId, locationParameters)
+            weatherRepository.insert(storageLocation, weather)
             return WeatherResult(weather, errors)
         } catch (e: Throwable) {
             e.printStackTrace()
