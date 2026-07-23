@@ -61,6 +61,20 @@ class WallpaperImageStore(context: Context) {
         }
 
     /**
+     * `minimal` from docs/ACT-021 sections 7/8/10: the floor below which
+     * `GetMinimalLocationRecs`/`SortLocationRecsBy*` give up relaxing further, and below which
+     * `getSortedResultlist` discards a freshly-computed Resultlist rather than replace the
+     * existing one ("too few, do nothing"). Deliberately **not** exposed in the regular
+     * settings UI -- admin/debug-only (see [DebugSettingsScreen]), unlike
+     * [maxCachedPhotosPerLocation].
+     */
+    var minimalLocationRecs: Int
+        get() = config.getInt(KEY_MINIMAL_LOCATION_RECS, DEFAULT_MINIMAL_LOCATION_RECS)
+        set(value) {
+            config.edit().putInt(KEY_MINIMAL_LOCATION_RECS, value.coerceAtLeast(0)).apply()
+        }
+
+    /**
      * How many of the most recently shown photo URLs per location are skipped before repeating
      * one, so the wallpaper doesn't cycle back to the same photo too quickly.
      */
@@ -348,6 +362,7 @@ class WallpaperImageStore(context: Context) {
         private const val KEY_REFRESH_INTERVAL_MINUTES = "photo_refresh_interval_minutes"
         private const val KEY_LAST_HEALTH_CHECK_AT = "last_health_check_at"
         private const val KEY_IMAGE_DB_MIGRATION_DONE = "image_db_migration_done"
+        private const val KEY_MINIMAL_LOCATION_RECS = "minimal_location_recs"
 
         /** File name used for the cached background bitmap inside the app files dir. */
         const val CACHE_FILE_NAME = "wallpaper_location_photo.jpg"
@@ -360,6 +375,10 @@ class WallpaperImageStore(context: Context) {
         const val DEFAULT_MAX_PHOTOS_PER_LOCATION = 12
         const val MIN_PHOTOS_PER_LOCATION = 4
         const val MAX_PHOTOS_PER_LOCATION = 50
+
+        /** Default `minimal` (docs/ACT-021) -- matches the existing `buildShowlist` `minSize`
+         * this replaces, as a sensible starting point (admin/debug can override). */
+        const val DEFAULT_MINIMAL_LOCATION_RECS = 6
         const val DEFAULT_REFRESH_INTERVAL_MINUTES = 30
         const val MIN_REFRESH_INTERVAL_MINUTES = 15
         const val MAX_REFRESH_INTERVAL_MINUTES = 180

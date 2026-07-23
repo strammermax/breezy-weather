@@ -31,8 +31,10 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.withContext
 import livewallpaperweather.data.wallpaper.WallpaperPhotoRecord
 import livewallpaperweather.data.wallpaper.WallpaperPhotoRepository
+import livewallpaperweather.domain.location.model.Location
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.json.JSONObject
 import java.io.File
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
@@ -1037,6 +1039,172 @@ class WallpaperRepository @Inject constructor(
         _catalogChanged.tryEmit(Unit)
     }
 
+    // -------------------------------------------------------------------------------------
+    // docs/ACT-021: unified sort pipeline (replaces buildShowlist/selectWallpaperPhoto).
+    //
+    // In-memory only (per §10.0's "restart just starts the rotation over" note) -- keyed by
+    // Location.formattedId, per §10.0a, so multiple configured locations never share state.
+    // -------------------------------------------------------------------------------------
+    private val currentSortedResultlist = mutableMapOf<String, List<WallpaperPhotoRecord>>()
+    private val rotationIndex = mutableMapOf<String, Int>()
+
+    /**
+     * `GetsortedResultlist()` from docs/ACT-021 section 10.0. Syncs [location] against
+     * RemoveSky -- GPS-based ([RemoveSkyProvider.getImagesDataByGPS]/`updateImagesDataByGPS`)
+     * for a tracked current position, city-based (`getImagesDataByCity`/`updateImagesDataByCity`)
+     * for a fixed or fictional location -- then rebuilds the sorted list only when the sync
+     * actually turned up something new. Returns the last known-good list unchanged otherwise
+     * (a `{changed:false}` response, or a fresh Resultlist that doesn't clear [minimal]).
+     *
+     * Does **not** itself gate on "is it too soon since the last check for this location" --
+     * that's the caller's job (the existing [WallpaperPhotoRefreshWorker] already has this via
+     * `WallpaperPhotoRefreshPlanner.needsRefresh`/`photoRefreshedAtFor`); this function assumes
+     * it's only called when the caller has already decided a sync is due.
+     *
+     * [currentLatitude]/[currentLongitude] are the device's real GPS position -- only read for
+     * a fictional [location] (`Werklocation`, docs/ACT-021 section 7a); ignored otherwise.
+     */
+    suspend fun getSortedResultlist(
+        location: Location,
+        latitude: Double,
+        longitude: Double,
+        place: PlaceQuery,
+        currentLatitude: Double,
+        currentLongitude: Double,
+        currentWeather: String? = null,
+    ): List<WallpaperPhotoRecord> = withContext(Dispatchers.IO) {
+        val locationKey = location.formattedId
+        val now = java.time.Instant.now().toString()
+        val isNewLocation = photoCatalog.getForLocation(locationKey).isEmpty()
+        val since = store.searchSinceFor(locationKey, SORTED_RESULTLIST_SINCE_PURPOSE)
+        val provider = removeSkyProvider()
+
+        var hasChanges = isNewLocation
+        if (location.isCurrentPosition) {
+            if (isNewLocation) {
+                val json = provider.getImagesDataByGPS(now, latitude, longitude, SYNC_RANGE_KM)
+                upsertDataDB(photoCatalog, locationKey, json)
+                recordSince(locationKey, json)
+            } else if (since != null) {
+                val result = provider.updateImagesDataByGPS(now, latitude, longitude, since, SYNC_RANGE_KM)
+                upsertDataDB(photoCatalog, locationKey, result.upserted)
+                deleteRecordsDataDB(photoCatalog, result.removed)
+                hasChanges = result.upserted?.let { it.has("changed") && !it.optBoolean("changed", true) } != true
+                recordSince(locationKey, result.upserted ?: result.removed)
+            }
+        } else {
+            if (isNewLocation) {
+                val json = provider.getImagesDataByCity(now, latitude, longitude, place.city)
+                upsertDataDB(photoCatalog, locationKey, json)
+                recordSince(locationKey, json)
+            } else if (since != null) {
+                val result = provider.updateImagesDataByCity(now, latitude, longitude, since, place.city)
+                upsertDataDB(photoCatalog, locationKey, result.upserted)
+                deleteRecordsDataDB(photoCatalog, result.removed)
+                hasChanges = result.upserted?.let { it.has("changed") && !it.optBoolean("changed", true) } != true
+                recordSince(locationKey, result.upserted ?: result.removed)
+            }
+        }
+
+        if (!hasChanges) return@withContext currentSortedResultlist[locationKey].orEmpty()
+
+        val minimal = store.minimalLocationRecs
+        val records = photoCatalog.getForLocation(locationKey)
+        val resultlist = if (location.isCurrentPosition) {
+            sortLocationRecsByGPSLocation(
+                records, latitude, longitude, minimal, store.maxCachedPhotosPerLocation, currentWeather
+            )
+        } else {
+            sortLocationRecsByLocation(
+                records, minimal, location.isFictional,
+                locationLatitude = latitude, locationLongitude = longitude,
+                currentLatitude = currentLatitude, currentLongitude = currentLongitude,
+                currentWeather = currentWeather,
+            )
+        }
+
+        // "Nee, te weinig, doe niks": keep the existing list rather than replace it with one
+        // that doesn't even clear the minimal bar.
+        if (resultlist.size < minimal) return@withContext currentSortedResultlist[locationKey].orEmpty()
+
+        val sorted = sortByRecencyViewsDistance(resultlist, latitude, longitude)
+        downloadMissingImages(sorted, place)
+        currentSortedResultlist[locationKey] = sorted
+        sorted
+    }
+
+    private fun recordSince(locationKey: String, json: JSONObject?) {
+        json?.optString("checked_at")?.ifBlank { null }
+            ?.let { store.setSearchSince(locationKey, SORTED_RESULTLIST_SINCE_PURPOSE, it) }
+    }
+
+    /**
+     * `downloadMissingImages` from docs/ACT-021 section 10.1: downloads (and caches to disk)
+     * up to [maxCount] of [sortedRecords]' entries that have no local file yet
+     * ([WallpaperPhotoRecord.filePath] `== null`), in [sortedRecords]' own order (most
+     * important first) -- the rest of the list stays as metadata-only rows, ready to be
+     * downloaded on a later call once cache space frees up. Immediately runs
+     * [pruneLocationCache] afterwards so this location's cache never exceeds
+     * [WallpaperImageStore.maxCachedPhotosPerLocation] (oldest-downloaded evicted first).
+     */
+    suspend fun downloadMissingImages(
+        sortedRecords: List<WallpaperPhotoRecord>,
+        place: PlaceQuery,
+        maxCount: Int = store.maxCachedPhotosPerLocation,
+    ) = withContext(Dispatchers.IO) {
+        val missing = sortedRecords.filter { it.filePath == null }.take(maxCount)
+        for (record in missing) {
+            val url = record.sourceUrl ?: continue
+            val bitmap = downloadSkyBitmap(url, alreadyProcessed = true) ?: continue
+            val file = cacheFile(place, url)
+            try {
+                val written = file.outputStream().use { bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it) }
+                if (!written) {
+                    file.delete()
+                    continue
+                }
+            } finally {
+                bitmap.recycle()
+            }
+            file.setLastModified(System.currentTimeMillis())
+            photoCatalog.upsertDownloaded(
+                id = record.id,
+                sourceUrl = url,
+                locationKey = record.locationKey,
+                locationName = record.locationName,
+                filePath = file.absolutePath,
+                attribution = record.attribution,
+                processed = true,
+            )
+        }
+        val directory = File(photoCacheDir(), place.cacheFileName().substringBeforeLast('.'))
+        pruneLocationCache(directory, store.cachedPhotoPath?.let(::File))
+    }
+
+    /**
+     * `Is item banned by user?` from docs/ACT-021 section 10.3 -- distinct from the
+     * curator-driven [WallpaperPhotoRecord.disabled] (see [WallpaperPhotoRecord.userBanned]).
+     */
+    fun isBannedByUser(record: WallpaperPhotoRecord): Boolean = record.userBanned
+
+    /** `Get first sortedResultlist item` from docs/ACT-021 section 10.2: resets [locationKey]'s
+     * rotation position to the top of its current sorted list. Null if that list is empty. */
+    fun getFirstSortedResultlistItem(locationKey: String): WallpaperPhotoRecord? {
+        rotationIndex[locationKey] = 0
+        return currentSortedResultlist[locationKey]?.firstOrNull()
+    }
+
+    /** `Get next sortedResultlist item` from docs/ACT-021 section 10.2: advances [locationKey]'s
+     * rotation position by one, wrapping back to the start at the end of the list. Null if
+     * that list is empty. */
+    fun getNextSortedResultlistItem(locationKey: String): WallpaperPhotoRecord? {
+        val list = currentSortedResultlist[locationKey]
+        if (list.isNullOrEmpty()) return null
+        val next = ((rotationIndex[locationKey] ?: -1) + 1).mod(list.size)
+        rotationIndex[locationKey] = next
+        return list[next]
+    }
+
     fun enforceCacheLimit() {
         val activeFile = store.cachedPhotoPath?.let(::File)
         photoCacheDir().listFiles()?.filter(File::isDirectory)?.forEach { directory ->
@@ -1127,6 +1295,13 @@ class WallpaperRepository @Inject constructor(
         private const val CHECK_NEW_SINCE_PURPOSE = "checkNew"
         private const val REMOVED_SINCE_PURPOSE = "removedReconcile"
         private const val PREFETCH_SINCE_PURPOSE = "prefetch"
+        private const val SORTED_RESULTLIST_SINCE_PURPOSE = "sortedResultlist"
+
+        /** Radius (km) requested from RemoveSky when syncing a current-position location (see
+         * [getSortedResultlist]) -- must be at least as wide as the largest ring
+         * [sortLocationRecsByGPSLocation]'s cascade considers (its "unrestricted" tier is
+         * everything already synced locally, which this radius bounds). */
+        private const val SYNC_RANGE_KM = 25.0
         private const val BYTES_PER_MB = 1024L * 1024L
         private const val USER_AGENT =
             "LiveWallpaperWeather/1.0 (https://github.com/strammermax/breezy-weather; " +
