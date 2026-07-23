@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+7)",
+    "version": "Niet uitgebracht (+8)",
     "date": "",
     "changes": [
+      "Fix double blank line left by dead-code removal",
       "Wire the new sort pipeline into WallpaperPhotoRefreshWorker",
       "Fix dangling top-level KDoc: use a plain block comment for the file intro",
       "Fix premature comment termination in ImagesDataSync.kt kdoc",
