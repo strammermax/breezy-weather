@@ -599,7 +599,6 @@ class WallpaperRepository @Inject constructor(
         return CheckForNewPhotosResult.FOUND
     }
 
-
     /** Back-compatible overload taking a single place name. */
     suspend fun refreshFor(
         latitude: Double,
