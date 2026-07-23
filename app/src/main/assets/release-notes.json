@@ -1,7 +1,14 @@
 [
   {
-    "version": "Niet uitgebracht (+9)",
+    "version": "Niet uitgebracht (+1)",
     "date": "",
+    "changes": [
+      "Redesign wallpaper photo sorting: SortLocationRecsByGPSLocation/ByLocation"
+    ]
+  },
+  {
+    "version": "2026.07.19.378",
+    "date": "2026-07-19",
     "changes": [
       "Add ACT-020: results report for the battery/performance optimization pass",
       "Module 3: add a Macrobenchmark test module",
@@ -67,16 +74,6 @@
     "date": "2026-07-17",
     "changes": [
       "Fix invalid cache-cleanup value in CI workflows"
-    ]
-  },
-  {
-    "version": "2026.07.17.336",
-    "date": "2026-07-17",
-    "changes": [
-      "Apply spotless formatting to Find my phone files",
-      "Add \"Find my phone\" clap/whistle detection feature",
-      "Limit Actions storage usage from CI",
-      "update documentatie"
     ]
   }
 ]
