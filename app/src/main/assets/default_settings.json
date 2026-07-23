@@ -49,7 +49,8 @@
     "newCloudsEnabled": true,
     "cloudDirectionDegrees": 70,
     "fogDirectionDegrees": 70,
-    "precipitationLayers": 16
+    "precipitationLayers": 16,
+    "minimalLocationRecs": 4
   },
   "widget": {
     "widgetWeekIconMode": "auto",

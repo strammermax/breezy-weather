@@ -180,8 +180,9 @@ aanpasbare waarde, alleen bereikbaar via de bestaande admin/debug-instellingen
 (`DebugSettingsScreen.kt`/`ui/settings/compose`), net als andere daar al aanwezige
 debug-only tunables. Wordt net als `maxCachedPhotosPerLocation` opgeslagen in
 `WallpaperImageStore`, alleen zonder een zichtbaar item in de reguliere instellingen-UI.
-Exacte default-waarde nog te bepalen (huidige `buildShowlist`-equivalent is `minSize = 6`,
-bruikbaar als startpunt).
+**Beslist:** default `4`, gedefinieerd in `assets/default_settings.json`
+(`wallpaper.minimalLocationRecs`) → `AppDefaults.wallpaper.minimalLocationRecs`, net als de
+overige tunable wallpaper-defaults in dat bestand.
 
 Stappen:
 1. `getForLocation(locationKey)` → alle lokale records voor deze plek (bestaande query).
@@ -703,10 +704,10 @@ gevuld zodra de eerstvolgende echte `getSortedResultlist()`-cyclus voor die loca
 4. `RemoveSkyImageDao.kt` verwijderen; `upsertDataDB`/`deleteRecordsDataDB` herschrijven als
    wrappers rond `WallpaperPhotoRepository` (incl. nieuwe `getIdBySourceUrl`-query in
    `wallpaper_photos.sq`).
-5. `minimal` toevoegen aan `WallpaperImageStore` (zelfde patroon als
-   `maxCachedPhotosPerLocation`), met een bijbehorend item in `DebugSettingsScreen.kt`
-   (niet in de reguliere gebruikersinstellingen) zodat alleen admin/debug-toegang dit kan
-   aanpassen.
+5. ~~`minimal` toevoegen aan `WallpaperImageStore`~~ **gedaan**: default `4` in
+   `assets/default_settings.json` (`wallpaper.minimalLocationRecs`) → `AppDefaults` →
+   `WallpaperImageStore.minimalLocationRecs`. Nog open: een bijbehorend item in
+   `DebugSettingsScreen.kt` zodat het ook zonder JSON-edit aanpasbaar is.
 6. `GetMinimalLocationRecs` bouwen als losse, kleine functies per §8.1, met het
    gegeneraliseerde `sortitem`/`location`-parameterpaar (§8) — kleinste, meest losstaande
    stuk, gebruikt door beide sorteerpaden hieronder.

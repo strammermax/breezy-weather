@@ -18,6 +18,7 @@ package com.liveweatherwallpaperapp.wallpaper.photo
 
 import android.content.Context
 import com.liveweatherwallpaperapp.BuildConfig
+import com.liveweatherwallpaperapp.domain.settings.AppDefaults
 import com.liveweatherwallpaperapp.domain.settings.ConfigStore
 import org.json.JSONArray
 import org.json.JSONObject
@@ -69,7 +70,7 @@ class WallpaperImageStore(context: Context) {
      * [maxCachedPhotosPerLocation].
      */
     var minimalLocationRecs: Int
-        get() = config.getInt(KEY_MINIMAL_LOCATION_RECS, DEFAULT_MINIMAL_LOCATION_RECS)
+        get() = config.getInt(KEY_MINIMAL_LOCATION_RECS, AppDefaults.wallpaper.minimalLocationRecs)
         set(value) {
             config.edit().putInt(KEY_MINIMAL_LOCATION_RECS, value.coerceAtLeast(0)).apply()
         }
@@ -374,9 +375,6 @@ class WallpaperImageStore(context: Context) {
         const val MIN_PHOTOS_PER_LOCATION = 4
         const val MAX_PHOTOS_PER_LOCATION = 50
 
-        /** Default `minimal` (docs/ACT-021) -- matches the existing `buildShowlist` `minSize`
-         * this replaces, as a sensible starting point (admin/debug can override). */
-        const val DEFAULT_MINIMAL_LOCATION_RECS = 6
         const val DEFAULT_REFRESH_INTERVAL_MINUTES = 30
         const val MIN_REFRESH_INTERVAL_MINUTES = 15
         const val MAX_REFRESH_INTERVAL_MINUTES = 180
