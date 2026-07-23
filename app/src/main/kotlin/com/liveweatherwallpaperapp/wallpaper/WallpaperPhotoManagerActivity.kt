@@ -66,6 +66,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import livewallpaperweather.data.location.LocationRepository
 import livewallpaperweather.data.wallpaper.WallpaperPhotoRecord
+import livewallpaperweather.domain.location.model.Location
 import java.io.File
 import javax.inject.Inject
 
@@ -112,9 +113,9 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
                         country = it.country.ifBlank { null }
                     )
                 }
-                val locationKey = place?.cacheFileName()?.substringBeforeLast('.')
+                val locationKey = location?.formattedId
                 val coords = if (location != null && place != null) {
-                    CurrentLocationCoords(location.latitude, location.longitude, place)
+                    CurrentLocationCoords(location.latitude, location.longitude, place, location)
                 } else {
                     null
                 }
@@ -131,7 +132,7 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
         lifecycleScope.launch {
             checkingNewPhotos = true
             val result = withContext(Dispatchers.IO) {
-                wallpaperRepository.checkForNewPhotos(coords.latitude, coords.longitude, coords.place)
+                wallpaperRepository.checkForNewPhotos(coords.latitude, coords.longitude, coords.place, coords.location)
             }
             if (result == CheckForNewPhotosResult.FOUND) {
                 photos = withContext(Dispatchers.IO) { wallpaperRepository.managedPhotos() }
@@ -408,5 +409,6 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
         val latitude: Double,
         val longitude: Double,
         val place: PlaceQuery,
+        val location: Location,
     )
 }

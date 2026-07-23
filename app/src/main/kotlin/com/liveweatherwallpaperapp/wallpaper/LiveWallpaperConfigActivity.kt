@@ -260,9 +260,12 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
     }
 
     /**
-     * Applies the currently selected settings, then resolves+downloads a photo for the app's
-     * current location through the provider chain and updates the in-screen preview. Lets the
-     * user test a source (incl. keyless Wikimedia) without waiting for a wallpaper redraw.
+     * Applies the currently selected settings, then runs the same getSortedResultlist()/
+     * rotation pipeline (docs/ACT-021) the periodic background worker uses -- via
+     * [WallpaperPhotoRefreshWorker.startNowAndAwait], a one-off run that bypasses the periodic
+     * schedule's own throttling -- and refreshes the in-screen preview from whatever it
+     * activated. Lets the user (or a tester) trigger a real refresh on demand instead of
+     * waiting for the next scheduled tick (default up to 30 minutes).
      */
     private fun runRefresh() {
         if (refreshBusyValue.value) return
@@ -297,18 +300,20 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 country = location.country.ifBlank { null }
             )
             currentLocationValue.value = place.displayName
-            val file = withContext(Dispatchers.IO) {
-                wallpaperRepository.refreshFor(
-                    location.latitude,
-                    location.longitude,
-                    place,
-                    forceRefresh = true
-                )
+
+            val started = withContext(Dispatchers.IO) {
+                WallpaperPhotoRefreshWorker.startNowAndAwait(this@LiveWallpaperConfigActivity)
             }
-            if (file != null) {
-                val refreshedAt = System.currentTimeMillis()
-                wallpaperImageStore.setPhotoRefreshedAt(location.formattedId, refreshedAt)
-                photoRefreshedAtValue.value = refreshedAt
+            if (!started) {
+                // A manual run was already in progress -- not a failure, just nothing new to wait for.
+                refreshStatusValue.value = getString(R.string.widget_live_wallpaper_refresh_running)
+                refreshBusyValue.value = false
+                return@launch
+            }
+
+            photoRefreshedAtValue.value = wallpaperImageStore.photoRefreshedAtFor(location.formattedId)
+            val cachedPath = wallpaperImageStore.cachedPhotoPath
+            if (cachedPath != null) {
                 previewBitmapValue.value = withContext(Dispatchers.IO) {
                     wallpaperRepository.loadCachedBitmap()
                 }
@@ -361,7 +366,8 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             municipality = location.admin2,
                             state = location.admin1,
                             country = location.country.ifBlank { null }
-                        )
+                        ),
+                        location
                     )
                 }
             }

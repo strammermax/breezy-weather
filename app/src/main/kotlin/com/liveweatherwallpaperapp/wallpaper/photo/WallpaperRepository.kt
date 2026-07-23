@@ -166,8 +166,8 @@ class WallpaperRepository @Inject constructor(
      * [getSortedResultlist]/[checkForNewPhotos] (which only run on their own schedule).
      * Best-effort: silently does nothing on a failed request.
      */
-    suspend fun reconcileRemovals(latitude: Double, longitude: Double, place: PlaceQuery) {
-        val locationKey = place.cacheFileName().substringBeforeLast('.')
+    suspend fun reconcileRemovals(latitude: Double, longitude: Double, location: Location) {
+        val locationKey = location.formattedId
         val since =
             store.searchSinceFor(locationKey, REMOVED_SINCE_PURPOSE) ?: return reconcileRemovalsFirstRun(locationKey)
         val (urls, checkedAt) = removeSkyProvider().fetchRemoved(latitude, longitude, since)
@@ -239,13 +239,14 @@ class WallpaperRepository @Inject constructor(
         latitude: Double,
         longitude: Double,
         place: PlaceQuery,
+        location: Location,
         forceRefresh: Boolean = false,
         activate: Boolean = true,
         currentWeather: String? = null,
         isCurrentPosition: Boolean = true,
     ): File? {
         val placeKey = place.cacheFileName()
-        val locationKey = placeKey.substringBeforeLast('.')
+        val locationKey = location.formattedId
         synchronizePhotoCatalog()
         val tried = HashSet<String>()
         tried.addAll(photoCatalog.getDisabledSourceUrls())
@@ -282,7 +283,7 @@ class WallpaperRepository @Inject constructor(
 
             // null => download failed or the photo has too little sky => try another candidate.
             val bitmap = downloadSkyBitmap(url, result.alreadyProcessed) ?: return@repeat
-            val cacheFile = cacheFile(place, url)
+            val cacheFile = cacheFile(locationKey, url)
             try {
                 val written = cacheFile.outputStream().use {
                     bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it)
@@ -328,7 +329,7 @@ class WallpaperRepository @Inject constructor(
             )
             store.recordRecentUrl(placeKey, url)
             if (activate) {
-                val depthPath = result.depthUrl?.let { downloadAndCacheDepthMap(it, place, url) }
+                val depthPath = result.depthUrl?.let { downloadAndCacheDepthMap(it, locationKey, url) }
                 store.activatePhoto(cacheFile.absolutePath, url, result.attribution, depthPath)
                 photoCatalog.markShown(photoId(url))
             }
@@ -369,7 +370,8 @@ class WallpaperRepository @Inject constructor(
         val place = PlaceQuery(city = upload.location)
         val bitmap = downloadSkyBitmap(upload.processedUrl, alreadyProcessed = true)
             ?: throw IllegalStateException("Processed RemoveSky image could not be downloaded")
-        val cacheFile = cacheFile(place, upload.processedUrl)
+        val cameraLocationKey = place.cacheFileName().substringBeforeLast('.')
+        val cacheFile = cacheFile(cameraLocationKey, upload.processedUrl)
         try {
             val written = cacheFile.outputStream().use {
                 bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it)
@@ -385,7 +387,7 @@ class WallpaperRepository @Inject constructor(
         photoCatalog.upsertDownloaded(
             id = photoId(upload.processedUrl),
             sourceUrl = upload.processedUrl,
-            locationKey = place.cacheFileName().substringBeforeLast('.'),
+            locationKey = cameraLocationKey,
             locationName = place.displayName,
             filePath = cacheFile.absolutePath,
             attribution = "Camera / RemoveSky",
@@ -397,7 +399,7 @@ class WallpaperRepository @Inject constructor(
             exifLon = upload.exifLongitude
         )
         store.recordRecentUrl(place.cacheFileName(), upload.processedUrl)
-        val depthPath = upload.depthUrl?.let { downloadAndCacheDepthMap(it, place, upload.processedUrl) }
+        val depthPath = upload.depthUrl?.let { downloadAndCacheDepthMap(it, cameraLocationKey, upload.processedUrl) }
         if (activate) {
             store.activatePhoto(cacheFile.absolutePath, upload.processedUrl, "Camera / RemoveSky", depthPath)
             photoCatalog.markShown(photoId(upload.processedUrl))
@@ -505,9 +507,9 @@ class WallpaperRepository @Inject constructor(
      * call this when the user deletes that location from the weather app itself, so its
      * photos don't linger orphaned in the cache/database forever.
      */
-    suspend fun clearLocation(place: PlaceQuery) = withContext(Dispatchers.IO) {
+    suspend fun clearLocation(place: PlaceQuery, location: Location) = withContext(Dispatchers.IO) {
         val placeKey = place.cacheFileName()
-        val locationKey = placeKey.substringBeforeLast('.')
+        val locationKey = location.formattedId
 
         val activeUrl = store.cachedPhotoUrl
         val wasActive = activeUrl != null && photoCatalog.getForLocation(locationKey).any { it.sourceUrl == activeUrl }
@@ -532,9 +534,13 @@ class WallpaperRepository @Inject constructor(
      * returns an already-downloaded-but-not-recently-shown photo before ever asking the server,
      * so it can't tell "nothing new" apart from "we already have it but haven't shown it lately."
      */
-    suspend fun checkForNewPhotos(latitude: Double, longitude: Double, place: PlaceQuery): CheckForNewPhotosResult {
-        val placeKey = place.cacheFileName()
-        val locationKey = placeKey.substringBeforeLast('.')
+    suspend fun checkForNewPhotos(
+        latitude: Double,
+        longitude: Double,
+        place: PlaceQuery,
+        location: Location,
+    ): CheckForNewPhotosResult {
+        val locationKey = location.formattedId
         synchronizePhotoCatalog()
 
         val since = store.searchSinceFor(locationKey, CHECK_NEW_SINCE_PURPOSE)
@@ -554,7 +560,7 @@ class WallpaperRepository @Inject constructor(
 
         val bitmap = downloadSkyBitmap(newPhoto.url, alreadyProcessed = true)
             ?: return CheckForNewPhotosResult.REQUEST_FAILED
-        val cacheFile = cacheFile(place, newPhoto.url)
+        val cacheFile = cacheFile(locationKey, newPhoto.url)
         try {
             val written = cacheFile.outputStream().use {
                 bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it)
@@ -598,13 +604,6 @@ class WallpaperRepository @Inject constructor(
         prunePhotoCache(cacheFile)
         return CheckForNewPhotosResult.FOUND
     }
-
-    /** Back-compatible overload taking a single place name. */
-    suspend fun refreshFor(
-        latitude: Double,
-        longitude: Double,
-        placeName: String?,
-    ): File? = refreshFor(latitude, longitude, PlaceQuery(city = placeName))
 
     /** Loads the cached background as a [Bitmap], or null when nothing is cached. */
     fun loadCachedBitmap(): Bitmap? = loadCachedBitmapCached(store.cachedPhotoPath, isDepth = false)
@@ -661,11 +660,11 @@ class WallpaperRepository @Inject constructor(
         }
     }
 
-    private suspend fun downloadAndCacheDepthMap(depthUrl: String, place: PlaceQuery, photoUrl: String): String? =
+    private suspend fun downloadAndCacheDepthMap(depthUrl: String, locationKey: String, photoUrl: String): String? =
         withContext(Dispatchers.Default) {
             try {
                 val bytes = downloadBytes(depthUrl) ?: return@withContext null
-                val file = depthCacheFile(place, photoUrl)
+                val file = depthCacheFile(locationKey, photoUrl)
                 file.outputStream().use { it.write(bytes) }
                 file.absolutePath
             } catch (e: Throwable) {
@@ -673,9 +672,8 @@ class WallpaperRepository @Inject constructor(
             }
         }
 
-    private fun depthCacheFile(place: PlaceQuery, url: String): File {
-        val placeName = place.cacheFileName().substringBeforeLast('.')
-        val locationDirectory = File(photoCacheDir(), placeName).apply { mkdirs() }
+    private fun depthCacheFile(locationKey: String, url: String): File {
+        val locationDirectory = File(photoCacheDir(), locationKey).apply { mkdirs() }
         return depthFileInDir(locationDirectory, url)
     }
 
@@ -957,7 +955,7 @@ class WallpaperRepository @Inject constructor(
         if (resultlist.size < minimal) return@withContext currentSortedResultlist[locationKey].orEmpty()
 
         val sorted = sortByRecencyViewsDistance(resultlist, latitude, longitude)
-        downloadMissingImages(sorted, place)
+        downloadMissingImages(sorted)
         currentSortedResultlist[locationKey] = sorted
         sorted
     }
@@ -978,14 +976,14 @@ class WallpaperRepository @Inject constructor(
      */
     suspend fun downloadMissingImages(
         sortedRecords: List<WallpaperPhotoRecord>,
-        place: PlaceQuery,
         maxCount: Int = store.maxCachedPhotosPerLocation,
     ) = withContext(Dispatchers.IO) {
         val missing = sortedRecords.filter { it.filePath == null }.take(maxCount)
         for (record in missing) {
-            downloadOneMissingImage(record, place)
+            downloadOneMissingImage(record)
         }
-        val directory = File(photoCacheDir(), place.cacheFileName().substringBeforeLast('.'))
+        val locationKey = sortedRecords.firstOrNull()?.locationKey ?: return@withContext
+        val directory = File(photoCacheDir(), locationKey)
         pruneLocationCache(directory, store.cachedPhotoPath?.let(::File))
     }
 
@@ -994,10 +992,10 @@ class WallpaperRepository @Inject constructor(
      * reached yet). Returns the cached file, or null on any failure (no source URL, download
      * error, decode failure, or a failed write) -- the existing [WallpaperPhotoRecord.filePath]
      * (if any) is left untouched in that case. */
-    private suspend fun downloadOneMissingImage(record: WallpaperPhotoRecord, place: PlaceQuery): File? {
+    private suspend fun downloadOneMissingImage(record: WallpaperPhotoRecord): File? {
         val url = record.sourceUrl ?: return null
         val bitmap = downloadSkyBitmap(url, alreadyProcessed = true) ?: return null
-        val file = cacheFile(place, url)
+        val file = cacheFile(record.locationKey, url)
         try {
             val written = file.outputStream().use {
                 bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it)
@@ -1047,10 +1045,10 @@ class WallpaperRepository @Inject constructor(
      * feeding back into the next [sortByRecencyViewsDistance] pass. Returns the activated file,
      * or null if no file exists and none could be downloaded.
      */
-    suspend fun activateRotationItem(record: WallpaperPhotoRecord, place: PlaceQuery): File? =
+    suspend fun activateRotationItem(record: WallpaperPhotoRecord): File? =
         withContext(Dispatchers.IO) {
             val file = record.filePath?.let(::File)?.takeIf { it.exists() }
-                ?: downloadOneMissingImage(record, place)
+                ?: downloadOneMissingImage(record)
                 ?: return@withContext null
             activateCatalogPhoto(record, file)
             file
@@ -1082,9 +1080,8 @@ class WallpaperRepository @Inject constructor(
         prunePhotoCache(activeFile)
     }
 
-    private fun cacheFile(place: PlaceQuery, url: String): File {
-        val placeName = place.cacheFileName().substringBeforeLast('.')
-        val locationDirectory = File(photoCacheDir(), placeName).apply { mkdirs() }
+    private fun cacheFile(locationKey: String, url: String): File {
+        val locationDirectory = File(photoCacheDir(), locationKey).apply { mkdirs() }
         return File(locationDirectory, "${url.sha256Prefix()}.webp")
     }
 

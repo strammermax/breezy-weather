@@ -39,6 +39,7 @@ import com.liveweatherwallpaperapp.common.extensions.workManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import livewallpaperweather.data.location.LocationRepository
 import livewallpaperweather.data.weather.WeatherRepository
 import livewallpaperweather.domain.location.model.Location
@@ -207,7 +208,7 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                         while (item != null && wallpaperRepository.isBannedByUser(item)) {
                             item = wallpaperRepository.getNextSortedResultlistItem(location.formattedId)
                         }
-                        item?.let { wallpaperRepository.activateRotationItem(it, place) }
+                        item?.let { wallpaperRepository.activateRotationItem(it) }
                     }
                     refreshedCount++
                 } else {
@@ -330,6 +331,23 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                 .setConstraints(Constraints(requiredNetworkType = NetworkType.CONNECTED))
                 .build()
             wm.enqueueUniqueWork(WORK_NAME_MANUAL, ExistingWorkPolicy.KEEP, request)
+            return true
+        }
+
+        /**
+         * [startNow], but suspends the caller until that one-off run finishes -- so a "refresh
+         * now" UI action can wait for the getSortedResultlist()/rotation pipeline (docs/ACT-021)
+         * to actually pick a photo before refreshing its own preview, instead of firing the job
+         * and immediately reading stale state. Returns false without waiting if a manual run was
+         * already in progress (nothing new was started, per [startNow]'s own contract) -- the
+         * caller should treat that the same as "still running", not "failed".
+         */
+        suspend fun startNowAndAwait(context: Context): Boolean {
+            if (!startNow(context)) return false
+            val wm = context.workManager
+            while (wm.isRunning(TAG)) {
+                delay(500)
+            }
             return true
         }
 

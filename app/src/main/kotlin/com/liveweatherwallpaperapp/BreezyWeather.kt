@@ -35,7 +35,6 @@ import com.liveweatherwallpaperapp.common.utils.helpers.LogHelper
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.remoteviews.Notifications
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
-import com.liveweatherwallpaperapp.wallpaper.photo.toWallpaperPlaceQuery
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -133,7 +132,7 @@ class BreezyWeather : Application(), Configuration.Provider {
             wallpaperRepository.reconcileRemovals(
                 location.latitude,
                 location.longitude,
-                location.toWallpaperPlaceQuery()
+                location
             )
         }
     }

@@ -672,7 +672,7 @@ class MainActivityViewModel @Inject constructor(
             // Not cascaded by the above: the wallpaper photo cache (files + catalog rows) for
             // this location lives in its own store, keyed by a derived locationKey, not by
             // formattedId -- without this it would linger orphaned forever.
-            wallpaperRepository.clearLocation(location.toWallpaperPlaceQuery())
+            wallpaperRepository.clearLocation(location.toWallpaperPlaceQuery(), location)
         }
     }
 

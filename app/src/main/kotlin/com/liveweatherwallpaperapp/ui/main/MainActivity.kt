@@ -967,6 +967,7 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
                                 latitude = location.latitude,
                                 longitude = location.longitude,
                                 place = location.toWallpaperPlaceQuery(),
+                                location = location,
                                 forceRefresh = true,
                                 activate = true
                             )
