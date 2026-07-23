@@ -1,8 +1,10 @@
 [
   {
-    "version": "Niet uitgebracht (+3)",
+    "version": "Niet uitgebracht (+5)",
     "date": "",
     "changes": [
+      "Fix premature comment termination in ImagesDataSync.kt kdoc",
+      "Fix remaining ktlint violation: one argument per line in wrapped calls",
       "Fix spotless/ktlint violations (trailing commas at call sites, line length)",
       "Wire GetsortedResultlist(), rotation state and downloadMissingImages",
       "Redesign wallpaper photo sorting: SortLocationRecsByGPSLocation/ByLocation"
