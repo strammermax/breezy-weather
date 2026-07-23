@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+10)",
+    "version": "Niet uitgebracht (+11)",
     "date": "",
     "changes": [
+      "Wire refresh-now to the new pipeline and unify wallpaper photo locationKey",
       "Fix premature comment termination in AppDefaults.kt kdoc (same */ pitfall)",
       "Source minimalLocationRecs default from default_settings.json (value 4)",
       "Fix double blank line left by dead-code removal",
