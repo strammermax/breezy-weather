@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+9)",
+    "version": "Niet uitgebracht (+10)",
     "date": "",
     "changes": [
+      "Fix premature comment termination in AppDefaults.kt kdoc (same */ pitfall)",
       "Source minimalLocationRecs default from default_settings.json (value 4)",
       "Fix double blank line left by dead-code removal",
       "Wire the new sort pipeline into WallpaperPhotoRefreshWorker",
