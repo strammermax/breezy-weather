@@ -129,6 +129,20 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                 val longitude = fix?.longitude ?: location.longitude
                 val place = fix?.place ?: location.toWallpaperPlaceQuery()
 
+                // Real device position for a fictional location's day/night/season context
+                // ("Werklocation", docs/ACT-021 section 7a) -- distinct from latitude/longitude
+                // above, which stay the fictional place's own nominal coordinates (its identity
+                // for sync/caching never follows the device). Only resolved for the activating
+                // location -- the other up-to-4 locations aren't driving the visible wallpaper,
+                // so an approximate context (falling back to latitude/longitude below) is fine.
+                val currentFix = if (location.isFictional && isActivating) {
+                    wallpaperLocationResolver.resolve()
+                } else {
+                    null
+                }
+                val currentLatitude = currentFix?.latitude ?: latitude
+                val currentLongitude = currentFix?.longitude ?: longitude
+
                 // Weetje dwell-notification check: only for the activating location (the one
                 // with a live GPS fix this tick, i.e. "where the user actually is now") --
                 // the other up-to-4 locations here are just the user's saved weather
@@ -154,52 +168,48 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                     }
                 }
 
-                val activeRemoved = wallpaperRepository.pruneDisabledPhotos(
-                    latitude = latitude,
-                    longitude = longitude,
-                    place = place
-                )
-
-                val lastRefreshedAt = store.photoRefreshedAtFor(location.formattedId)
-                val minIntervalMillis = TimeUnit.MINUTES.toMillis(store.photoRefreshIntervalMinutes.toLong())
-                if (!WallpaperPhotoRefreshPlanner.needsRefresh(lastRefreshedAt, now, minIntervalMillis) &&
-                    !activeRemoved
-                ) {
-                    skippedCount++
-                    return@forEachIndexed
-                }
-
-                // Best-effort: a missing/stale weather fetch just means the showlist's weather
-                // tier is skipped (buildShowlist treats null as "don't filter on weather").
+                // Best-effort: a missing/stale weather fetch just means the context-relaxation
+                // cascade's weather tier is skipped (weatherMatches treats null as "don't filter").
                 val currentWeather = weatherCodeToRemoveSkyWeather(
                     weatherRepository.getWeatherByLocationId(location.formattedId)?.current?.weatherCode
                 )
 
-                val file = wallpaperRepository.refreshFor(
+                // docs/ACT-021 GetsortedResultlist(): syncs this location against RemoveSky and
+                // rebuilds its sorted list when anything changed. Runs for every location here
+                // (not just the activating one) so the others' wallpaper_photos data stays
+                // current in the background -- this also covers what pruneDisabledPhotos used to
+                // do (removed-photo reconciliation), now via deleteRecordsDataDB inside it, for
+                // every location on every tick rather than only the activating one.
+                val previousList = wallpaperRepository.currentSortedResultlistFor(location.formattedId)
+                val sortedResultlist = wallpaperRepository.getSortedResultlist(
+                    location = location,
                     latitude = latitude,
                     longitude = longitude,
                     place = place,
-                    forceRefresh = true,
-                    activate = isActivating || activeRemoved,
-                    currentWeather = currentWeather,
-                    isCurrentPosition = location.isCurrentPosition
+                    currentLatitude = currentLatitude,
+                    currentLongitude = currentLongitude,
+                    currentWeather = currentWeather
                 )
-                if (file != null) {
+
+                if (sortedResultlist.isNotEmpty()) {
                     store.setPhotoRefreshedAt(location.formattedId, now)
                     store.clearEmptyRetryCount(location.formattedId)
                     if (isActivating) {
                         AppMessageStore(context).clear(WARNING_KEY_PHOTO_REFRESH_FAILED)
+                        // docs/ACT-021 section 10.2 rotation loop: unchanged list -> advance to
+                        // the next photo; a genuinely new/re-sorted list -> start over from the
+                        // top. Skip anything the user personally banned (section 10.3).
+                        var item = if (sortedResultlist == previousList) {
+                            wallpaperRepository.getNextSortedResultlistItem(location.formattedId)
+                        } else {
+                            wallpaperRepository.getFirstSortedResultlistItem(location.formattedId)
+                        }
+                        while (item != null && wallpaperRepository.isBannedByUser(item)) {
+                            item = wallpaperRepository.getNextSortedResultlistItem(location.formattedId)
+                        }
+                        item?.let { wallpaperRepository.activateRotationItem(it, place) }
                     }
                     refreshedCount++
-                    // Warms the cache for this location's *next* pick ahead of time -- best
-                    // effort, never blocks the current tick's activation on it.
-                    wallpaperRepository.prefetchShowlist(
-                        latitude,
-                        longitude,
-                        place,
-                        currentWeather,
-                        isCurrentPosition = location.isCurrentPosition
-                    )
                 } else {
                     skippedCount++
                     // Neither the cache nor the server had anything usable for the location that

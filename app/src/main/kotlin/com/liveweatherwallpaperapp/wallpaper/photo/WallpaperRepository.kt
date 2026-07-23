@@ -163,7 +163,7 @@ class WallpaperRepository @Inject constructor(
      * (latitude, longitude) since this location's last such check -- catches a curator
      * delete/disable that happened while the app was closed (FCM push only reaches a
      * running app) and that hasn't been caught yet by the periodic since/changed poll in
-     * [pruneDisabledPhotos]/[checkForNewPhotos] (which only run on their own schedule).
+     * [getSortedResultlist]/[checkForNewPhotos] (which only run on their own schedule).
      * Best-effort: silently does nothing on a failed request.
      */
     suspend fun reconcileRemovals(latitude: Double, longitude: Double, place: PlaceQuery) {
@@ -444,7 +444,7 @@ class WallpaperRepository @Inject constructor(
     /**
      * Immediately removes every cached photo whose source URL is in [urls] -- called by
      * [RemoveSkyMessagingService] when RemoveSky pushes a curator soft-delete/disable, so
-     * the app doesn't have to wait for its next [pruneDisabledPhotos]/[checkForNewPhotos]
+     * the app doesn't have to wait for its next [getSortedResultlist]/[checkForNewPhotos]
      * poll to stop showing it (see docs/UpdateFLow.md flow 5, child-safety).
      */
     suspend fun purgeUrls(urls: Collection<String>) = withContext(Dispatchers.IO) {
@@ -520,55 +520,6 @@ class WallpaperRepository @Inject constructor(
         File(photoCacheDir(), locationKey).deleteRecursively()
         photoCatalog.deleteForLocation(locationKey)
         store.setRecentUrls(placeKey, emptyList())
-    }
-
-    /**
-     * Removes cached photos for [place] that RemoveSky no longer reports as `enabled`.
-     * Returns true when the currently active photo for this place was removed (caller should
-     * trigger a forced [refreshFor] to pick a replacement).
-     */
-    suspend fun pruneDisabledPhotos(latitude: Double, longitude: Double, place: PlaceQuery): Boolean {
-        val placeKey = place.cacheFileName()
-        val locationKey = placeKey.substringBeforeLast('.')
-        val since = store.searchSinceFor(locationKey, PRUNE_SINCE_PURPOSE)
-        val enabledPhotos = when (val result = removeSkyProvider().fetchEnabledPhotos(latitude, longitude, since)) {
-            is EnabledPhotosResult.Failed -> return false
-            is EnabledPhotosResult.Unchanged -> {
-                result.checkedAt?.let { store.setSearchSince(locationKey, PRUNE_SINCE_PURPOSE, it) }
-                return false
-            }
-            is EnabledPhotosResult.Success -> {
-                result.checkedAt?.let { store.setSearchSince(locationKey, PRUNE_SINCE_PURPOSE, it) }
-                result.photos
-            }
-        }
-        val enabled = enabledPhotos.mapTo(HashSet()) { it.url }
-
-        // 1. Trim recent-URL history to only still-enabled URLs.
-        val recent = store.recentUrlsFor(placeKey)
-        val keptRecent = recent.filter { it in enabled }
-        if (keptRecent != recent) store.setRecentUrls(placeKey, keptRecent)
-
-        // 2. Delete cached files whose URL is no longer enabled.
-        val locationDir = File(photoCacheDir(), placeKey.substringBeforeLast('.'))
-        val activeFile = store.cachedPhotoPath?.let(::File)
-        val allowedNames = enabled.map { "${it.sha256Prefix()}.webp" }.toSet()
-        locationDir.listFiles()?.forEach { file ->
-            if (file.isFile && file.name !in allowedNames && file != activeFile) {
-                file.delete()
-            }
-        }
-
-        // 3. If the active photo for this place is no longer enabled, deactivate it.
-        val activeUrl = store.cachedPhotoUrl
-        if (activeUrl != null && activeUrl !in enabled && activeFile?.parentFile == locationDir) {
-            activeFile.delete()
-            store.cachedPhotoPath = null
-            store.cachedPhotoUrl = null
-            store.cachedPhotoAttribution = null
-            return true
-        }
-        return false
     }
 
     /**
@@ -648,136 +599,6 @@ class WallpaperRepository @Inject constructor(
         return CheckForNewPhotosResult.FOUND
     }
 
-    /**
-     * Downloads up to [maxToDownload] of the best-ranked not-yet-cached candidates for [place]
-     * (per [buildShowlist]'s radius/season/weather ladder, ranked together with what's already
-     * cached so a genuinely better new candidate can still outrank a mediocre cached one)
-     * without activating any of them -- warms the cache ahead of time so the next
-     * [refreshFor] pick doesn't need an on-demand download. See docs/UpdateFLow.md flow 2/3
-     * step 3.0. Returns how many were actually downloaded (0 on a failed request too --
-     * best-effort, same as [pruneDisabledPhotos]/[checkForNewPhotos]).
-     */
-    suspend fun prefetchShowlist(
-        latitude: Double,
-        longitude: Double,
-        place: PlaceQuery,
-        currentWeather: String? = null,
-        isCurrentPosition: Boolean = true,
-        maxToDownload: Int = 4,
-    ): Int {
-        val placeKey = place.cacheFileName()
-        val locationKey = placeKey.substringBeforeLast('.')
-        synchronizePhotoCatalog()
-
-        val since = store.searchSinceFor(locationKey, PREFETCH_SINCE_PURPOSE)
-        val enabledPhotos = when (val result = removeSkyProvider().fetchEnabledPhotos(latitude, longitude, since)) {
-            is EnabledPhotosResult.Failed -> return 0
-            is EnabledPhotosResult.Unchanged -> {
-                result.checkedAt?.let { store.setSearchSince(locationKey, PREFETCH_SINCE_PURPOSE, it) }
-                return 0
-            }
-            is EnabledPhotosResult.Success -> {
-                result.checkedAt?.let { store.setSearchSince(locationKey, PREFETCH_SINCE_PURPOSE, it) }
-                result.photos
-            }
-        }
-
-        val cachedRecords = photoCatalog.getForLocation(locationKey)
-        val knownUrls = cachedRecords.mapNotNullTo(HashSet()) { it.sourceUrl }
-        val now = System.currentTimeMillis()
-        val uncachedByUrl = enabledPhotos.filter { it.url !in knownUrls }.associateBy { it.url }
-        // Placeholder rows (filePath = null) just so buildShowlist can rank not-yet-downloaded
-        // candidates alongside already-cached ones on equal footing -- never persisted as-is.
-        val placeholders = uncachedByUrl.values.map { photo ->
-            WallpaperPhotoRecord(
-                id = photoId(photo.url),
-                sourceUrl = photo.url,
-                locationKey = locationKey,
-                locationName = place.displayName,
-                filePath = null,
-                attribution = photo.attribution,
-                processed = true,
-                rating = 0,
-                disabled = false,
-                viewCount = 0,
-                createdAt = now,
-                updatedAt = now,
-                lastShownAt = null,
-                dayPeriod = photo.dayPeriod,
-                country = photo.country,
-                season = photo.season,
-                exifLat = photo.exifLatitude,
-                exifLon = photo.exifLongitude,
-                sceneType = photo.sceneType,
-                weather = photo.weather,
-                resolvedLat = photo.resolvedLatitude,
-                resolvedLon = photo.resolvedLongitude
-            )
-        }
-
-        val disabledUrls = photoCatalog.getDisabledSourceUrls()
-        val showlist = buildShowlist(
-            cachedRecords + placeholders,
-            excludedUrls = disabledUrls,
-            latitude = latitude,
-            longitude = longitude,
-            currentWeather = currentWeather,
-            isCurrentPosition = isCurrentPosition
-        )
-
-        var downloaded = 0
-        for (candidate in showlist) {
-            if (downloaded >= maxToDownload) break
-            if (candidate.filePath != null) continue // already cached, nothing to prefetch
-            val photo = uncachedByUrl[candidate.sourceUrl] ?: continue
-
-            val bitmap = downloadSkyBitmap(photo.url, alreadyProcessed = true) ?: continue
-            val cacheFile = cacheFile(place, photo.url)
-            try {
-                val written = cacheFile.outputStream().use {
-                    bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it)
-                }
-                if (!written) {
-                    cacheFile.delete()
-                    continue
-                }
-            } finally {
-                bitmap.recycle()
-            }
-            cacheFile.setLastModified(System.currentTimeMillis())
-            photoCatalog.upsertDownloaded(
-                id = photoId(photo.url),
-                sourceUrl = photo.url,
-                locationKey = locationKey,
-                locationName = place.displayName,
-                filePath = cacheFile.absolutePath,
-                attribution = photo.attribution,
-                processed = true,
-                dayPeriod = photo.dayPeriod,
-                country = photo.country,
-                season = photo.season,
-                exifLat = photo.exifLatitude,
-                exifLon = photo.exifLongitude,
-                source = photo.source,
-                providerName = photo.provider,
-                title = photo.title,
-                status = photo.status,
-                sourceLocation = photo.location,
-                capturedAt = photo.capturedAt,
-                description = photo.description,
-                resolvedCity = photo.resolvedCity,
-                isCity = photo.isCity,
-                sceneType = photo.sceneType,
-                weather = photo.weather,
-                resolvedLat = photo.resolvedLatitude,
-                resolvedLon = photo.resolvedLongitude
-            )
-            pruneLocationCache(cacheFile.parentFile, cacheFile)
-            prunePhotoCache(cacheFile)
-            downloaded++
-        }
-        return downloaded
-    }
 
     /** Back-compatible overload taking a single place name. */
     suspend fun refreshFor(
@@ -1163,33 +984,43 @@ class WallpaperRepository @Inject constructor(
     ) = withContext(Dispatchers.IO) {
         val missing = sortedRecords.filter { it.filePath == null }.take(maxCount)
         for (record in missing) {
-            val url = record.sourceUrl ?: continue
-            val bitmap = downloadSkyBitmap(url, alreadyProcessed = true) ?: continue
-            val file = cacheFile(place, url)
-            try {
-                val written = file.outputStream().use {
-                    bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it)
-                }
-                if (!written) {
-                    file.delete()
-                    continue
-                }
-            } finally {
-                bitmap.recycle()
-            }
-            file.setLastModified(System.currentTimeMillis())
-            photoCatalog.upsertDownloaded(
-                id = record.id,
-                sourceUrl = url,
-                locationKey = record.locationKey,
-                locationName = record.locationName,
-                filePath = file.absolutePath,
-                attribution = record.attribution,
-                processed = true
-            )
+            downloadOneMissingImage(record, place)
         }
         val directory = File(photoCacheDir(), place.cacheFileName().substringBeforeLast('.'))
         pruneLocationCache(directory, store.cachedPhotoPath?.let(::File))
+    }
+
+    /** Downloads and caches a single [record] (used by [downloadMissingImages]'s batch pass,
+     * and by [activateRotationItem] when the rotation lands on an item that batch hasn't
+     * reached yet). Returns the cached file, or null on any failure (no source URL, download
+     * error, decode failure, or a failed write) -- the existing [WallpaperPhotoRecord.filePath]
+     * (if any) is left untouched in that case. */
+    private suspend fun downloadOneMissingImage(record: WallpaperPhotoRecord, place: PlaceQuery): File? {
+        val url = record.sourceUrl ?: return null
+        val bitmap = downloadSkyBitmap(url, alreadyProcessed = true) ?: return null
+        val file = cacheFile(place, url)
+        try {
+            val written = file.outputStream().use {
+                bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it)
+            }
+            if (!written) {
+                file.delete()
+                return null
+            }
+        } finally {
+            bitmap.recycle()
+        }
+        file.setLastModified(System.currentTimeMillis())
+        photoCatalog.upsertDownloaded(
+            id = record.id,
+            sourceUrl = url,
+            locationKey = record.locationKey,
+            locationName = record.locationName,
+            filePath = file.absolutePath,
+            attribution = record.attribution,
+            processed = true
+        )
+        return file
     }
 
     /**
@@ -1197,6 +1028,34 @@ class WallpaperRepository @Inject constructor(
      * curator-driven [WallpaperPhotoRecord.disabled] (see [WallpaperPhotoRecord.userBanned]).
      */
     fun isBannedByUser(record: WallpaperPhotoRecord): Boolean = record.userBanned
+
+    /** Current in-memory sorted list for [locationKey] (docs/ACT-021 section 10.0/10.2's
+     * `_currentSortedResultlist`) without triggering a sync -- read this *before* calling
+     * [getSortedResultlist] to snapshot "vorige" for the rotation loop's changed-check
+     * (see [WallpaperPhotoRefreshWorker]). */
+    fun currentSortedResultlistFor(locationKey: String): List<WallpaperPhotoRecord> =
+        currentSortedResultlist[locationKey].orEmpty()
+
+    /**
+     * Makes [record] the active wallpaper photo: downloads it first if the rotation landed on
+     * an entry [downloadMissingImages] hasn't reached yet (e.g. the list grew, or the rotation
+     * index moved past the initially-downloaded batch), then writes it into
+     * [WallpaperImageStore.cachedPhotoPath]/`cachedPhotoUrl` via the existing
+     * [activateCatalogPhoto] -- the same store fields
+     * [com.liveweatherwallpaperapp.wallpaper.MaterialLiveWallpaperService] already reads, so
+     * the renderer needs no changes of its own (docs/ACT-021 section 10.4). Also this is what
+     * increments [WallpaperPhotoRecord.viewCount] (via [WallpaperPhotoRepository.markShown]),
+     * feeding back into the next [sortByRecencyViewsDistance] pass. Returns the activated file,
+     * or null if no file exists and none could be downloaded.
+     */
+    suspend fun activateRotationItem(record: WallpaperPhotoRecord, place: PlaceQuery): File? =
+        withContext(Dispatchers.IO) {
+            val file = record.filePath?.let(::File)?.takeIf { it.exists() }
+                ?: downloadOneMissingImage(record, place)
+                ?: return@withContext null
+            activateCatalogPhoto(record, file)
+            file
+        }
 
     /** `Get first sortedResultlist item` from docs/ACT-021 section 10.2: resets [locationKey]'s
      * rotation position to the top of its current sorted list. Null if that list is empty. */
@@ -1300,12 +1159,10 @@ class WallpaperRepository @Inject constructor(
         private const val MAX_SKY_ATTEMPTS = 10
         private const val PHOTO_CACHE_DIR = "wallpaper_photo_cache"
 
-        // Separate `since` namespaces for pruneDisabledPhotos() vs checkForNewPhotos() -- see
-        // WallpaperImageStore.searchSinceFor's kdoc for why these must not share one value.
-        private const val PRUNE_SINCE_PURPOSE = "prune"
+        // Separate `since` namespaces per caller -- see WallpaperImageStore.searchSinceFor's
+        // kdoc for why these must not share one value.
         private const val CHECK_NEW_SINCE_PURPOSE = "checkNew"
         private const val REMOVED_SINCE_PURPOSE = "removedReconcile"
-        private const val PREFETCH_SINCE_PURPOSE = "prefetch"
         private const val SORTED_RESULTLIST_SINCE_PURPOSE = "sortedResultlist"
 
         /** Radius (km) requested from RemoveSky when syncing a current-position location (see

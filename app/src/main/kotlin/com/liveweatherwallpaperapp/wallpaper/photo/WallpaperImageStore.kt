@@ -319,14 +319,12 @@ class WallpaperImageStore(context: Context) {
      * call so RemoveSky can answer "changed: false" (and skip re-sending the full photo
      * list) when nothing changed for this location since then.
      *
-     * [purpose] namespaces this independently per caller (e.g. "prune" vs "checkNew"):
-     * pruneDisabledPhotos() and checkForNewPhotos() both call fetchEnabledPhotos() but do
-     * different things with a Success response (prune vs. download-if-new). Sharing one
-     * `since` meant whichever ran first on a given tick "consumed" the freshness signal --
-     * pruneDisabledPhotos() runs unconditionally on every tick and would silently swallow a
-     * "changed:true" it never actually inspected for new photos, so a manual "Check for new
-     * images" right after would see the already-advanced `since` and wrongly report nothing
-     * new, even though it never actually looked at the results that added them.
+     * [purpose] namespaces this independently per caller (e.g. "checkNew" vs
+     * "sortedResultlist"): two callers that both poll the same location but do different
+     * things with a fresh result must not share one `since` -- whichever ran first on a given
+     * tick would otherwise "consume" the freshness signal, so the other caller's next run
+     * would see the already-advanced `since` and wrongly conclude nothing changed, even though
+     * it never actually looked at the results itself.
      */
     fun searchSinceFor(locationId: String, purpose: String): String? =
         searchSinceMap().optString("$purpose:$locationId").takeIf { it.isNotBlank() }
