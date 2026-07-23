@@ -121,11 +121,22 @@ class RefreshHelper @Inject constructor(
     /**
      * Get updated coordinates from the location service
      * Update the store and returns the result, including the potential errors
+     *
+     * Skips the actual GPS/network location request (and its ~20s+ latency) when the last fix
+     * is still younger than [RECENT_FIX_MAX_AGE_MILLIS] -- a user (or a fictional location
+     * borrowing this position, see [resolveWeatherLocation]) is very unlikely to have moved
+     * enough in a few minutes to matter, and the next call past that age still gets a fresh fix.
      */
     suspend fun updateCurrentCoordinates(
         context: Context,
         background: Boolean,
     ): List<RefreshError> {
+        if (currentLocationStore.isUsable &&
+            Date().time - currentLocationStore.lastSuccessfulRefresh < RECENT_FIX_MAX_AGE_MILLIS
+        ) {
+            return emptyList()
+        }
+
         val locationSource = SettingsManager.getInstance(context).locationSource
         val locationService = sourceManager.getLocationSourceOrDefault(locationSource)
         val errors = mutableListOf<RefreshError>()
@@ -1624,5 +1635,8 @@ class RefreshHelper @Inject constructor(
 
         const val CACHING_DISTANCE_LIMIT = 5000 // 5 km
         const val REVERSE_GEOCODING_DISTANCE_LIMIT = 50000 // 50 km
+
+        /** See [updateCurrentCoordinates]'s kdoc. */
+        private const val RECENT_FIX_MAX_AGE_MILLIS = 5 * 60 * 1000L
     }
 }
