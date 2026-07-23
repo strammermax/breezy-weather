@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+5)",
+    "version": "Niet uitgebracht (+6)",
     "date": "",
     "changes": [
+      "Fix dangling top-level KDoc: use a plain block comment for the file intro",
       "Fix premature comment termination in ImagesDataSync.kt kdoc",
       "Fix remaining ktlint violation: one argument per line in wrapped calls",
       "Fix spotless/ktlint violations (trailing commas at call sites, line length)",
