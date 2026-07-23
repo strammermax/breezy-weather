@@ -113,6 +113,7 @@ class RemoveSkyProvider(
                         title = item.optStringOrNull("title"),
                         status = item.optStringOrNull("status"),
                         location = item.optStringOrNull("location"),
+                        processedAt = item.optStringOrNull("processed_at"),
                         capturedAt = item.optStringOrNull("captured_at"),
                         description = item.optStringOrNull("description"),
                         resolvedCity = item.optStringOrNull("resolved_city"),
@@ -511,6 +512,88 @@ class RemoveSkyProvider(
             urls to json.optStringOrNull("checked_at")
         }
 
+    // -------------------------------------------------------------------------------------
+    // First-time / incremental sync entry points.
+    //
+    // [datetime] is the caller's local request timestamp (for logging/telemetry on the
+    // caller's side only -- no endpoint here takes it, unlike [lastUpdated]/`since`, which
+    // is the server's own `checked_at` from a *previous* call and actually drives the
+    // incremental-fetch logic).
+    //
+    // Callers are responsible for persistence: pass the returned JSON for a "get"/"update"
+    // call to upsertDataDB(json), and -- for the update variants -- the second (removed)
+    // JSON to deleteRecordsDataDB(json) for records whose status is now disabled or that
+    // were soft-deleted.
+    // -------------------------------------------------------------------------------------
+
+    /**
+     * First-time fetch of every `enabled` processed image for a named place (e.g. "Paris"),
+     * regardless of how far individual photos sit from that place's own centroid -- see the
+     * location-based `since` support in `/search`/`/removed` for why this differs from the
+     * GPS+radius variant below.
+     */
+    suspend fun getImagesDataByCity(
+        datetime: String,
+        latitude: Double,
+        longitude: Double,
+        city: String? = null,
+    ): JSONObject? = withContext(Dispatchers.IO) {
+        val locationParam = city?.takeIf { it.isNotBlank() }?.let { "&location=${enc(it)}" }.orEmpty()
+        searchRaw("$apiBase/search?source=local&limit=$MAX_ENABLED_URLS&lat=$latitude&lon=$longitude$locationParam")
+    }
+
+    /** First-time fetch of every `enabled` processed image within [range] km of (lat, lon). */
+    suspend fun getImagesDataByGPS(
+        datetime: String,
+        latitude: Double,
+        longitude: Double,
+        range: Double,
+    ): JSONObject? = withContext(Dispatchers.IO) {
+        searchRaw("$apiBase/search?source=local&limit=$MAX_ENABLED_URLS&lat=$latitude&lon=$longitude&radius_km=$range")
+    }
+
+    /**
+     * Incremental sync for a named place since [lastUpdated] (a previous call's
+     * `checked_at`): fetches images that are new/still-enabled ([ImagesSyncResult.upserted],
+     * or `{changed:false}` when nothing moved) plus images that dropped out (disabled or
+     * soft-deleted) in the same window ([ImagesSyncResult.removed]).
+     */
+    suspend fun updateImagesDataByCity(
+        datetime: String,
+        latitude: Double,
+        longitude: Double,
+        lastUpdated: String,
+        city: String? = null,
+    ): ImagesSyncResult = withContext(Dispatchers.IO) {
+        val locationParam = city?.takeIf { it.isNotBlank() }?.let { "&location=${enc(it)}" }.orEmpty()
+        val upserted = searchRaw(
+            "$apiBase/search?source=local&limit=$MAX_ENABLED_URLS&lat=$latitude&lon=$longitude" +
+                "$locationParam&since=${enc(lastUpdated)}"
+        )
+        val removed = if (!city.isNullOrBlank()) {
+            searchRaw("$apiBase/removed?location=${enc(city)}&since=${enc(lastUpdated)}")
+        } else {
+            searchRaw("$apiBase/removed?lat=$latitude&lon=$longitude&since=${enc(lastUpdated)}")
+        }
+        ImagesSyncResult(upserted, removed)
+    }
+
+    /** Same as [updateImagesDataByCity], keyed on GPS + [range] instead of a place name. */
+    suspend fun updateImagesDataByGPS(
+        datetime: String,
+        latitude: Double,
+        longitude: Double,
+        lastUpdated: String,
+        range: Double,
+    ): ImagesSyncResult = withContext(Dispatchers.IO) {
+        val upserted = searchRaw(
+            "$apiBase/search?source=local&limit=$MAX_ENABLED_URLS&lat=$latitude&lon=$longitude" +
+                "&radius_km=$range&since=${enc(lastUpdated)}"
+        )
+        val removed = searchRaw("$apiBase/removed?lat=$latitude&lon=$longitude&radius_km=$range&since=${enc(lastUpdated)}")
+        ImagesSyncResult(upserted, removed)
+    }
+
     private fun get(url: String): Request = Request.Builder()
         .url(url)
         .header("User-Agent", USER_AGENT)
@@ -614,6 +697,11 @@ data class RemoveSkyEnabledPhoto(
     val title: String? = null,
     val status: String? = null,
     val location: String? = null,
+    /** When RemoveSky processed this photo (server's `processed_at`) -- the "created_date"
+     * customsortlogic.md's recency-margin rule sorts on, distinct from [capturedAt] (the
+     * photo's own EXIF capture date) and from the local first-sync time. Null if unknown
+     * (e.g. an older server that doesn't send this field yet). */
+    val processedAt: String? = null,
     val capturedAt: String? = null,
     val description: String? = null,
     val resolvedCity: String? = null,
@@ -642,6 +730,19 @@ sealed class EnabledPhotosResult {
      * pruning/diffing rather than treat this as an empty result. */
     object Failed : EnabledPhotosResult()
 }
+
+/**
+ * Result of [RemoveSkyProvider.updateImagesDataByCity]/[RemoveSkyProvider.updateImagesDataByGPS]:
+ * [upserted] is the `/search` response (either a fresh result list to upsert, or
+ * `{changed:false}` when nothing moved since `lastUpdated`), [removed] is the `/removed`
+ * response (records to delete -- disabled or soft-deleted). Either may be null if that
+ * particular request failed; callers must not treat a null as "nothing changed", same
+ * failure contract as [EnabledPhotosResult.Failed].
+ */
+data class ImagesSyncResult(
+    val upserted: JSONObject?,
+    val removed: JSONObject?,
+)
 
 class RemoveSkyHttpException(
     val statusCode: Int,

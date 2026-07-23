@@ -1,0 +1,5 @@
+ALTER TABLE wallpaper_photos
+ADD COLUMN processed_at TEXT;
+
+ALTER TABLE wallpaper_photos
+ADD COLUMN user_banned INTEGER AS Boolean NOT NULL DEFAULT 0;

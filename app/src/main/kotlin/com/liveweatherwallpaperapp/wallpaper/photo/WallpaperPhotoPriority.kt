@@ -220,7 +220,7 @@ private fun haversineKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double):
     return EARTH_RADIUS_KM * 2 * atan2(sqrt(a), sqrt(1 - a))
 }
 
-private fun isCurrentlyNight(latitude: Double, longitude: Double, now: Long): Boolean {
+internal fun isCurrentlyNight(latitude: Double, longitude: Double, now: Long): Boolean {
     val (sunrise, sunset) = CelestialTiming.approximateSunInterval(
         Location(latitude = latitude, longitude = longitude),
         now

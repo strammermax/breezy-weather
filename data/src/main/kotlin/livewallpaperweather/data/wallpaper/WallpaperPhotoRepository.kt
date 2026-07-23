@@ -68,6 +68,15 @@ data class WallpaperPhotoRecord(
      * photos). Used as the distance fallback when EXIF GPS is unknown. Null if unknown. */
     val resolvedLat: Double? = null,
     val resolvedLon: Double? = null,
+    /** When RemoveSky processed this photo (server's `processed_at`) -- the "created_date"
+     * customsortlogic.md's recency-margin rule sorts on. Distinct from [createdAt] (local
+     * first-sync time) and [capturedAt] (EXIF capture date). Null if unknown (e.g. synced
+     * before the server started sending this field). */
+    val processedAt: String? = null,
+    /** The user's own "hide this photo" choice (see the photo-manager screen), distinct from
+     * [disabled] (curator-driven, from RemoveSky). Never written by [WallpaperPhotoRepository.upsertDownloaded] --
+     * only [WallpaperPhotoRepository.setUserBanned] touches this, so a sync never overwrites it. */
+    val userBanned: Boolean = false,
 )
 
 class WallpaperPhotoRepository(
@@ -94,7 +103,10 @@ class WallpaperPhotoRepository(
         sourceUrl: String?,
         locationKey: String,
         locationName: String,
-        filePath: String,
+        /** Null when only metadata has been synced so far and no local file exists yet
+         * (see `upsertDataDB` in ImagesDataSync.kt) -- `downloadMissingImages` relies on this
+         * being genuinely null, not an empty string, to find records still needing a download. */
+        filePath: String? = null,
         attribution: String?,
         processed: Boolean,
         dayPeriod: String? = null,
@@ -119,6 +131,7 @@ class WallpaperPhotoRepository(
         weather: String? = null,
         resolvedLat: Double? = null,
         resolvedLon: Double? = null,
+        processedAt: String? = null,
         now: Long = System.currentTimeMillis(),
     ) = handler.await {
         wallpaper_photosQueries.upsertDownloaded(
@@ -151,6 +164,7 @@ class WallpaperPhotoRepository(
             weather = weather,
             resolvedLat = resolvedLat,
             resolvedLon = resolvedLon,
+            processedAt = processedAt,
             now = now
         )
     }
@@ -163,6 +177,19 @@ class WallpaperPhotoRepository(
         handler.await {
             wallpaper_photosQueries.setDisabled(disabled, now, id)
         }
+
+    /** The user's own "hide this photo" toggle (photo-manager screen) -- distinct from
+     * [setDisabled] (curator-driven). See [WallpaperPhotoRecord.userBanned]. */
+    suspend fun setUserBanned(id: String, userBanned: Boolean, now: Long = System.currentTimeMillis()) =
+        handler.await {
+            wallpaper_photosQueries.setUserBanned(userBanned, now, id)
+        }
+
+    /** Looks up a record's id by its source URL -- used by deleteRecordsDataDB, which only
+     * knows removed photos by URL (RemoveSky's `/removed` response), never by local id. */
+    suspend fun getIdBySourceUrl(sourceUrl: String): String? = handler.awaitOneOrNull {
+        wallpaper_photosQueries.getIdBySourceUrl(sourceUrl)
+    }
 
     suspend fun markShown(id: String, now: Long = System.currentTimeMillis()) = handler.await {
         wallpaper_photosQueries.markShown(now, id)
@@ -226,6 +253,8 @@ class WallpaperPhotoRepository(
         weather: String?,
         resolvedLat: Double?,
         resolvedLon: Double?,
+        processedAt: String?,
+        userBanned: Boolean,
     ) = WallpaperPhotoRecord(
         id = id,
         sourceUrl = sourceUrl,
@@ -261,6 +290,8 @@ class WallpaperPhotoRepository(
         sceneType = sceneType,
         weather = weather,
         resolvedLat = resolvedLat,
-        resolvedLon = resolvedLon
+        resolvedLon = resolvedLon,
+        processedAt = processedAt,
+        userBanned = userBanned
     )
 }

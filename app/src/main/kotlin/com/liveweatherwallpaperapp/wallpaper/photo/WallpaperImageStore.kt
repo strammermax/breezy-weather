@@ -206,6 +206,18 @@ class WallpaperImageStore(context: Context) {
         config.edit().putString(KEY_RECENT_URLS, map.toString()).apply()
     }
 
+    /**
+     * Whether the one-time migration of this store's file-based cache
+     * ([allRecentUrls]/[cachedPhotoUrl]) into `wallpaper_photos` (see
+     * `ImagesDataSync.migrateFileCacheToRepository`) has already run. Checked (and set) by
+     * the migration call site so it never re-migrates on every app start.
+     */
+    var imageDbMigrationDone: Boolean
+        get() = config.getBoolean(KEY_IMAGE_DB_MIGRATION_DONE, false)
+        set(value) {
+            config.edit().putBoolean(KEY_IMAGE_DB_MIGRATION_DONE, value).apply()
+        }
+
     fun allRecentUrls(): Map<String, List<String>> {
         val map = recentUrlMap()
         return buildMap {
@@ -335,6 +347,7 @@ class WallpaperImageStore(context: Context) {
         private const val KEY_EMPTY_RETRY_COUNT = "empty_retry_count"
         private const val KEY_REFRESH_INTERVAL_MINUTES = "photo_refresh_interval_minutes"
         private const val KEY_LAST_HEALTH_CHECK_AT = "last_health_check_at"
+        private const val KEY_IMAGE_DB_MIGRATION_DONE = "image_db_migration_done"
 
         /** File name used for the cached background bitmap inside the app files dir. */
         const val CACHE_FILE_NAME = "wallpaper_location_photo.jpg"

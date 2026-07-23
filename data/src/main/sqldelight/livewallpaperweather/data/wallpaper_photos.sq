@@ -35,7 +35,9 @@ CREATE TABLE wallpaper_photos(
     scene_type TEXT,
     weather TEXT,
     resolved_lat REAL,
-    resolved_lon REAL
+    resolved_lon REAL,
+    processed_at TEXT,
+    user_banned INTEGER AS Boolean NOT NULL DEFAULT 0
 );
 
 CREATE INDEX wallpaper_photos_location_idx ON wallpaper_photos(location_key);
@@ -64,7 +66,7 @@ INSERT INTO wallpaper_photos(
     day_period, country, season, exif_lat, exif_lon,
     source, provider_name, title, page_url, owner_name, license, processed_location,
     status, source_location, captured_at, description, resolved_city, is_city,
-    scene_type, weather, resolved_lat, resolved_lon
+    scene_type, weather, resolved_lat, resolved_lon, processed_at
 )
 VALUES (
     :id, :sourceUrl, :locationKey, :locationName, :filePath, :attribution, :processed,
@@ -72,13 +74,17 @@ VALUES (
     :dayPeriod, :country, :season, :exifLat, :exifLon,
     :source, :providerName, :title, :pageUrl, :ownerName, :license, :processedLocation,
     :status, :sourceLocation, :capturedAt, :description, :resolvedCity, :isCity,
-    :sceneType, :weather, :resolvedLat, :resolvedLon
+    :sceneType, :weather, :resolvedLat, :resolvedLon, :processedAt
 )
 ON CONFLICT(id) DO UPDATE SET
     source_url = coalesce(excluded.source_url, source_url),
     location_key = excluded.location_key,
     location_name = excluded.location_name,
-    file_path = excluded.file_path,
+    -- Never clobbered by a null (metadata-only sync, see ImagesDataSync.upsertDataDB) --
+    -- only a real download (existing WallpaperRepository call sites, always non-null here)
+    -- is meant to change this; clearFilePath()/setDisabled() intentionally null it out
+    -- via their own dedicated queries instead.
+    file_path = coalesce(excluded.file_path, file_path),
     attribution = coalesce(excluded.attribution, attribution),
     processed = excluded.processed,
     updated_at = excluded.updated_at,
@@ -103,7 +109,10 @@ ON CONFLICT(id) DO UPDATE SET
     scene_type = coalesce(excluded.scene_type, scene_type),
     weather = coalesce(excluded.weather, weather),
     resolved_lat = coalesce(excluded.resolved_lat, resolved_lat),
-    resolved_lon = coalesce(excluded.resolved_lon, resolved_lon);
+    resolved_lon = coalesce(excluded.resolved_lon, resolved_lon),
+    processed_at = coalesce(excluded.processed_at, processed_at);
+-- user_banned is deliberately never written here (see setUserBanned) -- a sync/upsert must
+-- never clobber the user's own "hide this photo" choice, unlike disabled (curator-driven).
 
 setRating:
 UPDATE wallpaper_photos
@@ -116,6 +125,14 @@ SET disabled = :disabled,
     file_path = CASE WHEN :disabled THEN NULL ELSE file_path END,
     updated_at = :now
 WHERE id = :id;
+
+setUserBanned:
+UPDATE wallpaper_photos
+SET user_banned = :userBanned, updated_at = :now
+WHERE id = :id;
+
+getIdBySourceUrl:
+SELECT id FROM wallpaper_photos WHERE source_url = :sourceUrl;
 
 markShown:
 UPDATE wallpaper_photos
