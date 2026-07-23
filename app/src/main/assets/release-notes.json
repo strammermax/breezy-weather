@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+12)",
+    "version": "Niet uitgebracht (+13)",
     "date": "",
     "changes": [
+      "Reuse a recent GPS fix instead of always requesting a fresh one",
       "Fix weather storage key for fictional locations",
       "Wire refresh-now to the new pipeline and unify wallpaper photo locationKey",
       "Fix premature comment termination in AppDefaults.kt kdoc (same */ pitfall)",
