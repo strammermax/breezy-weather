@@ -82,9 +82,9 @@ data class WallpaperDefaults(
     val cloudDirectionDegrees: Float = 70f,
     val fogDirectionDegrees: Float = 70f,
     val precipitationLayers: Float = 16f,
-    /** `minimal` from docs/ACT-021 sections 7/8/10 -- the floor GetMinimalLocationRecs/
-     * SortLocationRecsBy*/getSortedResultlist won't drop below. Admin/debug-tunable only
-     * (see DebugSettingsScreen), not exposed in the regular settings UI. */
+    /** `minimal` from docs/ACT-021 sections 7/8/10 -- the floor GetMinimalLocationRecs,
+     * SortLocationRecsBy* and getSortedResultlist won't drop below. Admin/debug-tunable
+     * only (see DebugSettingsScreen), not exposed in the regular settings UI. */
     val minimalLocationRecs: Int = 4,
 )
 
