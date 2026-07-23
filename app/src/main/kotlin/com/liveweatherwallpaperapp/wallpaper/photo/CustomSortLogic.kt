@@ -50,15 +50,16 @@ internal fun recencyMarginComparator(marginDays: Long = 5, now: Long): Comparato
         val dA = daysSinceProcessed(a, now)
         val dB = daysSinceProcessed(b, now)
         when {
-            dB <= dA - marginDays -> 1   // B is at least marginDays days more recent than A
-            dA <= dB - marginDays -> -1  // A is at least marginDays days more recent than B
-            else -> 0                    // within the margin: no verdict, next comparator decides
+            dB <= dA - marginDays -> 1 // B is at least marginDays days more recent than A
+            dA <= dB - marginDays -> -1 // A is at least marginDays days more recent than B
+            else -> 0 // within the margin: no verdict, next comparator decides
         }
     }
 
 private fun daysSinceProcessed(record: WallpaperPhotoRecord, now: Long): Long {
-    val processedAtMillis = record.processedAt?.let { runCatching { java.time.Instant.parse(it).toEpochMilli() }.getOrNull() }
-        ?: return Long.MAX_VALUE / MS_PER_DAY
+    val processedAtMillis =
+        record.processedAt?.let { runCatching { java.time.Instant.parse(it).toEpochMilli() }.getOrNull() }
+            ?: return Long.MAX_VALUE / MS_PER_DAY
     return (now - processedAtMillis) / MS_PER_DAY
 }
 

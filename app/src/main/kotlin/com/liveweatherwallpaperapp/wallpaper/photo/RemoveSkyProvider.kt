@@ -590,7 +590,8 @@ class RemoveSkyProvider(
             "$apiBase/search?source=local&limit=$MAX_ENABLED_URLS&lat=$latitude&lon=$longitude" +
                 "&radius_km=$range&since=${enc(lastUpdated)}"
         )
-        val removed = searchRaw("$apiBase/removed?lat=$latitude&lon=$longitude&radius_km=$range&since=${enc(lastUpdated)}")
+        val removed =
+            searchRaw("$apiBase/removed?lat=$latitude&lon=$longitude&radius_km=$range&since=${enc(lastUpdated)}")
         ImagesSyncResult(upserted, removed)
     }
 

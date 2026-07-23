@@ -68,7 +68,7 @@ suspend fun upsertDataDB(repo: WallpaperPhotoRepository, locationKey: String, js
             weather = item.optStringOrNull("weather"),
             resolvedLat = item.optDoubleOrNull("resolved_lat"),
             resolvedLon = item.optDoubleOrNull("resolved_lon"),
-            processedAt = item.optStringOrNull("processed_at"),
+            processedAt = item.optStringOrNull("processed_at")
         )
     }
 }
@@ -119,7 +119,7 @@ suspend fun migrateFileCacheToRepository(store: WallpaperImageStore, repo: Wallp
                 locationName = MIGRATED_LOCATION_KEY,
                 filePath = null,
                 attribution = null,
-                processed = true,
+                processed = true
             )
         }.isSuccess
     }

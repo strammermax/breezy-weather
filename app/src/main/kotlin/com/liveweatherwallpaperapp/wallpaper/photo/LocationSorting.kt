@@ -60,7 +60,7 @@ fun getMinimalLocationRecs(
         filterDaySeasonWeather(locationRecs, isNight, currentSeason, currentWeather),
         filterDayWeather(locationRecs, isNight, currentWeather),
         filterDayOnly(locationRecs, isNight),
-        noFilter(locationRecs),
+        noFilter(locationRecs)
     )
     for (stage in stages) {
         val sorted = sortBySortItem(stage, sortitem, location)

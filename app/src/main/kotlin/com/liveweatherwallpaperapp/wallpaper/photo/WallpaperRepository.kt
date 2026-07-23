@@ -1119,7 +1119,7 @@ class WallpaperRepository @Inject constructor(
                 records, minimal, location.isFictional,
                 locationLatitude = latitude, locationLongitude = longitude,
                 currentLatitude = currentLatitude, currentLongitude = currentLongitude,
-                currentWeather = currentWeather,
+                currentWeather = currentWeather
             )
         }
 
@@ -1158,7 +1158,9 @@ class WallpaperRepository @Inject constructor(
             val bitmap = downloadSkyBitmap(url, alreadyProcessed = true) ?: continue
             val file = cacheFile(place, url)
             try {
-                val written = file.outputStream().use { bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it) }
+                val written = file.outputStream().use {
+                    bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it)
+                }
                 if (!written) {
                     file.delete()
                     continue
@@ -1174,7 +1176,7 @@ class WallpaperRepository @Inject constructor(
                 locationName = record.locationName,
                 filePath = file.absolutePath,
                 attribution = record.attribution,
-                processed = true,
+                processed = true
             )
         }
         val directory = File(photoCacheDir(), place.cacheFileName().substringBeforeLast('.'))

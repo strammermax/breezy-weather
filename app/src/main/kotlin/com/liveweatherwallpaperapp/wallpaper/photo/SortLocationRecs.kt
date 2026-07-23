@@ -46,7 +46,7 @@ fun sortLocationRecsByGPSLocation(
         locationRecs1km(records, latitude, longitude),
         locationRecs500m(records, latitude, longitude),
         locationRecs200m(records, latitude, longitude),
-        locationRecs100m(records, latitude, longitude),
+        locationRecs100m(records, latitude, longitude)
     )
     for ((index, ring) in rings.withIndex()) {
         val isLastRing = index == rings.lastIndex
