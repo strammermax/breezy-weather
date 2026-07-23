@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+8)",
+    "version": "Niet uitgebracht (+9)",
     "date": "",
     "changes": [
+      "Source minimalLocationRecs default from default_settings.json (value 4)",
       "Fix double blank line left by dead-code removal",
       "Wire the new sort pipeline into WallpaperPhotoRefreshWorker",
       "Fix dangling top-level KDoc: use a plain block comment for the file intro",
