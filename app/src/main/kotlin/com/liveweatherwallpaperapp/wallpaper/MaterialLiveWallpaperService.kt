@@ -67,6 +67,7 @@ import com.liveweatherwallpaperapp.ui.theme.weatherView.materialWeatherView.Inte
 import com.liveweatherwallpaperapp.ui.theme.weatherView.materialWeatherView.MaterialWeatherView
 import com.liveweatherwallpaperapp.ui.theme.weatherView.materialWeatherView.WeatherImplementorFactory
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperImageStore
+import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperPhotoActivatedMessage
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
@@ -1375,6 +1376,14 @@ class MaterialLiveWallpaperService : WallpaperService() {
          */
         private val mLocationUpdatedObserver = Observer<Location> { refreshLocationDependentState() }
 
+        /** Fires when [WallpaperRepository.activateCameraPhoto] activates a photo outside the
+         *  normal rotation (the "Verwerk"/"Bewaar" buttons in the camera flow) -- that only
+         *  updates the data layer, so without this the already-running engine wouldn't redraw
+         *  until its next visibility toggle or per-frame self-heal check. */
+        private val mPhotoActivatedObserver = Observer<WallpaperPhotoActivatedMessage> {
+            mHandler?.post { setWeatherBackgroundDrawable() }
+        }
+
         /** Re-fetches the active location + its weather and rebuilds celestial timing/scene state
          *  from it -- the non-visibility-triggered counterpart of [onVisibilityChanged]'s refresh,
          *  see [mLocationUpdatedObserver]. */
@@ -1526,6 +1535,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 mGravitySensor = it.getDefaultSensor(Sensor.TYPE_GRAVITY)
             }
             EventBus.instance.with(Location::class.java).observeForever(mLocationUpdatedObserver)
+            EventBus.instance.with(WallpaperPhotoActivatedMessage::class.java).observeForever(mPhotoActivatedObserver)
             mVisible = false
             setWeather(WeatherView.WEATHER_KIND_NULL, true, submitTarget = false)
         }
@@ -1732,6 +1742,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
         override fun onDestroy() {
             EventBus.instance.with(Location::class.java).removeObserver(mLocationUpdatedObserver)
+            EventBus.instance.with(WallpaperPhotoActivatedMessage::class.java).removeObserver(mPhotoActivatedObserver)
             onVisibilityChanged(false)
             mHandlerThread?.quit()
             mGlassSceneBitmap?.recycle()

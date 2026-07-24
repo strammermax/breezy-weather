@@ -23,6 +23,7 @@ import android.graphics.BitmapFactory
 import android.os.Build
 import androidx.core.content.getSystemService
 import com.liveweatherwallpaperapp.BuildConfig
+import com.liveweatherwallpaperapp.common.bus.EventBus
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -58,6 +59,12 @@ enum class CheckForNewPhotosResult {
     NONE_FOUND,
     REQUEST_FAILED,
 }
+
+/** [EventBus] marker posted whenever a photo is manually activated as the live wallpaper
+ *  background outside the normal rotation (see [WallpaperRepository.activateCameraPhoto]) --
+ *  lets the already-running [com.liveweatherwallpaperapp.wallpaper.MaterialLiveWallpaperService]
+ *  redraw immediately instead of waiting for its next visibility toggle or per-frame self-heal. */
+class WallpaperPhotoActivatedMessage
 
 /**
  * The brains of the location-to-image matching for the live wallpaper background.
@@ -416,6 +423,7 @@ class WallpaperRepository @Inject constructor(
     suspend fun activateCameraPhoto(result: CameraUploadResult) {
         store.activatePhoto(result.file.absolutePath, result.processedUrl, "Camera / RemoveSky", result.depthPath)
         photoCatalog.markShown(photoId(result.processedUrl))
+        EventBus.instance.with(WallpaperPhotoActivatedMessage::class.java).postValue(WallpaperPhotoActivatedMessage())
     }
 
     /**
