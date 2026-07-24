@@ -942,9 +942,19 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
         val sunInterval = CelestialTiming.closestAstroInterval(CelestialTiming.sunIntervals(location, now), now)
             ?: CelestialTiming.approximateSunInterval(location, now)
         val moonInterval = CelestialTiming.closestAstroInterval(CelestialTiming.moonIntervals(location, now), now)
+        // Derive daylight from the same freshly-resolved sunInterval above instead of the
+        // separately-cached location.locationIsDaylight (tied to the last weather refresh's
+        // today.sun) -- the two could disagree right after a location switch or a long sleep,
+        // showing e.g. a "day" sky gradient with night-oriented moon/star logic or vice versa.
+        val daylight = CelestialTiming.sunVisibility(
+            now,
+            sunInterval?.first,
+            sunInterval?.second,
+            location.locationIsDaylight
+        )
         val sceneState = WallpaperSceneStateFactory.create(
             weatherKind = WeatherViewController.getWeatherKind(location),
-            daylight = if (location.locationIsDaylight) 1f else 0f,
+            daylight = daylight,
             windSpeedMetersPerSecond = weather.current?.wind?.speed?.value?.toFloat() ?: 0f,
             windGustMetersPerSecond = weather.current?.wind?.gusts?.value?.toFloat() ?: 0f,
             windDirectionDegrees = weather.current?.wind?.degree?.toFloat(),

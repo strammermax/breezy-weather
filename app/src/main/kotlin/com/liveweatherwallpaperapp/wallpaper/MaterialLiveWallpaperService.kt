@@ -48,9 +48,11 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.Size
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.withTranslation
+import androidx.lifecycle.Observer
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.common.bus.EventBus
 import com.liveweatherwallpaperapp.common.extensions.isLandscape
 import com.liveweatherwallpaperapp.common.extensions.sensorManager
 import com.liveweatherwallpaperapp.common.utils.helpers.AsyncHelper
@@ -1362,6 +1364,51 @@ class MaterialLiveWallpaperService : WallpaperService() {
             lwwLog { "automatic day/night changed daytime=$daytime" }
         }
 
+        /**
+         * Fires whenever [WeatherUpdateJob][com.liveweatherwallpaperapp.background.weather.WeatherUpdateJob]
+         * finishes refreshing weather for any tracked location (posted via [EventBus]). The engine
+         * otherwise only re-fetches location/weather from [onVisibilityChanged] -- without this,
+         * switching to a different location, or the active location's weather simply updating,
+         * would only reach the wallpaper the next time the screen happens to toggle visibility.
+         * Always re-derives "the" location from [locationRepository] rather than trusting the
+         * posted value directly, so a location reorder (not just a weather refresh) is picked up.
+         */
+        private val mLocationUpdatedObserver = Observer<Location> { refreshLocationDependentState() }
+
+        /** Re-fetches the active location + its weather and rebuilds celestial timing/scene state
+         *  from it -- the non-visibility-triggered counterpart of [onVisibilityChanged]'s refresh,
+         *  see [mLocationUpdatedObserver]. */
+        private fun refreshLocationDependentState() {
+            val location: Location? = runBlocking {
+                locationRepository.getFirstLocation(withParameters = false)
+                    ?.let {
+                        it.copy(
+                            weather = weatherRepository.getWeatherByLocationId(
+                                it.formattedId,
+                                withDaily = true,
+                                withHourly = true,
+                                withMinutely = false,
+                                withAlerts = false,
+                                withNormals = false
+                            )
+                        )
+                    }
+            }
+            mCurrentLocationData = location
+            updateCelestialTiming(location)
+            if (mAutomaticWeather && !mRotatingWeather) {
+                setWeather(
+                    WeatherViewController.getWeatherKind(location?.weather?.current?.weatherCode),
+                    visualDaytime(System.currentTimeMillis())
+                )
+            }
+            mLastDayNightCheckMinute = Long.MIN_VALUE
+            refreshAutomaticDayNight(System.currentTimeMillis())
+            setWeatherImplementor(SceneTransitionReason.WEATHER_DATA_CHANGED)
+            mHandler?.post(mDrawableRunnable)
+            lwwLog { "location/weather updated externally, refreshed celestial timing + scene" }
+        }
+
         private fun updateCelestialTiming(location: Location?) {
             val now = System.currentTimeMillis()
             val sunIntervals = CelestialTiming.sunIntervals(location, now)
@@ -1478,12 +1525,19 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 mOpenGravitySensor = true
                 mGravitySensor = it.getDefaultSensor(Sensor.TYPE_GRAVITY)
             }
+            EventBus.instance.with(Location::class.java).observeForever(mLocationUpdatedObserver)
             mVisible = false
             setWeather(WeatherView.WEATHER_KIND_NULL, true, submitTarget = false)
         }
 
         override fun onVisibilityChanged(visible: Boolean) {
-            if (mVisible == visible) return
+            // Only visible=false is deduped: some launchers/lockscreens redundantly deliver
+            // visible=true twice in a row with no intervening false (e.g. across a home-screen
+            // switch or a recents-view round trip). Since this is the only place location/
+            // weather/celestial timing gets refreshed on wake, silently ignoring a repeated
+            // visible=true left the wallpaper frozen on a stale day/night state until the next
+            // genuine invisible->visible cycle -- always redo the refresh below instead.
+            if (!visible && mVisible == visible) return
 
             if (BuildConfig.DEBUG) {
                 val event = mLifecycleTelemetry.recordVisibilityChanged(visible)
@@ -1677,6 +1731,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         }
 
         override fun onDestroy() {
+            EventBus.instance.with(Location::class.java).removeObserver(mLocationUpdatedObserver)
             onVisibilityChanged(false)
             mHandlerThread?.quit()
             mGlassSceneBitmap?.recycle()
