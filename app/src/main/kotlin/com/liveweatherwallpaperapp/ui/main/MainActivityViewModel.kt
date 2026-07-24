@@ -37,6 +37,7 @@ import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
 import com.liveweatherwallpaperapp.domain.location.model.applyDefaultPreset
 import com.liveweatherwallpaperapp.domain.location.model.isCloseTo
 import com.liveweatherwallpaperapp.domain.settings.CurrentLocationStore
+import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperPhotoRefreshWorker
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.sources.RefreshHelper
 import com.liveweatherwallpaperapp.sources.SourceManager
@@ -517,6 +518,13 @@ class MainActivityViewModel @Inject constructor(
         writeLocationList(locationList = valid)
 
         _locationListLoading.value = false
+
+        // Don't make the user wait up to photoRefreshIntervalMinutes (default 30 min) for a
+        // wallpaper background on a location they just added -- kick off an immediate one-off
+        // refresh (weather + photo showlist) the same way the manual "refresh now" button does.
+        if (context != null) {
+            WallpaperPhotoRefreshWorker.startNow(context)
+        }
 
         return true
     }
