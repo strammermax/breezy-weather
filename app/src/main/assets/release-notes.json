@@ -1,7 +1,7 @@
 [
   {
-    "version": "Niet uitgebracht (+1)",
-    "date": "",
+    "version": "2026.07.24.411",
+    "date": "2026-07-24",
     "changes": [
       "Trigger immediate wallpaper photo refresh when a location is added"
     ]
