@@ -1,7 +1,15 @@
 [
   {
-    "version": "Niet uitgebracht (+13)",
+    "version": "Niet uitgebracht (+2)",
     "date": "",
+    "changes": [
+      "Distinguish timeout from server error in the camera upload check step",
+      "Fix stale day/night wallpaper state on wake and location switch"
+    ]
+  },
+  {
+    "version": "2026.07.24.403",
+    "date": "2026-07-24",
     "changes": [
       "Reuse a recent GPS fix instead of always requesting a fresh one",
       "Fix weather storage key for fictional locations",
@@ -79,13 +87,6 @@
     "date": "2026-07-17",
     "changes": [
       "Fix google-services.json ordering in release workflow"
-    ]
-  },
-  {
-    "version": "2026.07.17.339",
-    "date": "2026-07-17",
-    "changes": [
-      "Fix invalid cache-cleanup value in CI workflows"
     ]
   }
 ]
