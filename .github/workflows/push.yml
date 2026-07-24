@@ -6,12 +6,27 @@ on:
       - main
     tags:
       - v*
+  # Lets a release be triggered from the GitHub UI ("Run workflow") instead of only via
+  # scripts/release.ps1 pushing a tag locally. versionName is date+commit-count derived
+  # (app/build.gradle.kts), not tied to the git ref, so it's resolved from a cheap
+  # BuildConfig-generation task below and the matching tag is created+pushed by this run
+  # itself -- see the "Determine version tag" step.
+  workflow_dispatch:
+    inputs:
+      draft:
+        description: "Create the GitHub release as a draft"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: 'ubuntu-24.04'
     env:
       VERSION_TAG: ${{ github.ref_name }}
+      IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
 
     steps:
       - name: Checkout
@@ -49,12 +64,38 @@ jobs:
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
 
+      - name: Determine version tag (manual release)
+        # Only needed on a manual dispatch: a real tag push already has VERSION_TAG from
+        # github.ref_name. versionName is date+commit-count derived, not tied to the ref, so
+        # it's the same value a tag push would produce -- resolved here via the cheap
+        # BuildConfig-generation task (no APK assembly) so the rest of the job can create and
+        # push the matching "vX.Y.Z" tag before doing the real (slow, signed) builds below.
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          set -e
+          ./gradlew :app:generateBasicReleaseBuildConfig -q
+          buildConfigFile=$(find app/build/generated -type f -name BuildConfig.java -path '*basic/release*' | head -n1)
+          versionName=$(grep -oP '(?<=VERSION_NAME = ")[^"]+' "$buildConfigFile")
+          if [ -z "$versionName" ]; then
+            echo "::error::Could not resolve versionName from $buildConfigFile"
+            exit 1
+          fi
+          tag="v$versionName"
+          if git tag -l "$tag" | grep -q .; then
+            echo "::error::Tag $tag already exists - bump the version (commit something) before releasing again."
+            exit 1
+          fi
+          echo "Tagging $tag on $(git rev-parse --short HEAD)"
+          git tag -a "$tag" -m "Release $tag"
+          git push origin "$tag"
+          echo "VERSION_TAG=$tag" >> "$GITHUB_ENV"
+
       - name: Assemble freenet flavor
-        if: startsWith(github.ref, 'refs/tags/')
+        if: env.IS_RELEASE == 'true'
         run: ./gradlew assembleFreenetRelease
 
       - name: Sign APK (free networks)
-        if: startsWith(github.ref, 'refs/tags/')
+        if: env.IS_RELEASE == 'true'
         uses: r0adkll/sign-android-release@a391126403df92c6a0a3988a829dd47f79b89ed7
         with:
           releaseDirectory: app/build/outputs/apk/freenet/release
@@ -66,13 +107,15 @@ jobs:
           BUILD_TOOLS_VERSION: '36.0.0'
 
       - name: Save version tag in env
+        # No-op on a manual dispatch: VERSION_TAG was already set (and the tag already
+        # created+pushed) by "Determine version tag" above.
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           set -x
           echo "VERSION_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
 
       - name: Prepare APKs with checksums, archive mapping.txt file (freenet)
-        if: startsWith(github.ref, 'refs/tags/')
+        if: env.IS_RELEASE == 'true'
         run: |
           set -e
           mv app/build/outputs/apk/freenet/release/app-freenet-universal-release-unsigned-signed.apk breezy-weather-${{ env.VERSION_TAG }}_freenet.apk
@@ -81,11 +124,11 @@ jobs:
           tar -czvf mapping-${{ env.VERSION_TAG }}_freenet.tar.gz --directory=app/build/outputs/mapping/freenetRelease/ mapping.txt
 
       - name: Clean build
-        if: startsWith(github.ref, 'refs/tags/')
+        if: env.IS_RELEASE == 'true'
         run: ./gradlew clean
 
       - name: Add secrets to local.properties
-        if: startsWith(github.ref, 'refs/tags/')
+        if: env.IS_RELEASE == 'true'
         run: |
           set -e
           echo "breezy.accu.key=$ACCU_WEATHER_KEY" >> local.properties
@@ -126,7 +169,7 @@ jobs:
         run: ./gradlew assembleBasicRelease
 
       - name: Delete local.properties
-        if: startsWith(github.ref, 'refs/tags/')
+        if: env.IS_RELEASE == 'true'
         run: |
           set -e
           rm local.properties
@@ -136,7 +179,7 @@ jobs:
         run: rm -f app/google-services.json
 
       - name: Sign APK (basic)
-        if: startsWith(github.ref, 'refs/tags/')
+        if: env.IS_RELEASE == 'true'
         uses: r0adkll/sign-android-release@a391126403df92c6a0a3988a829dd47f79b89ed7
         with:
           releaseDirectory: app/build/outputs/apk/basic/release
@@ -148,7 +191,7 @@ jobs:
           BUILD_TOOLS_VERSION: '36.0.0'
 
       - name: Prepare APKs with checksums, archive mapping.txt file (basic)
-        if: startsWith(github.ref, 'refs/tags/')
+        if: env.IS_RELEASE == 'true'
         run: |
           set -e
           mv app/build/outputs/apk/basic/release/app-basic-universal-release-unsigned-signed.apk breezy-weather-${{ env.VERSION_TAG }}_standard.apk
@@ -169,7 +212,7 @@ jobs:
           tar -czvf mapping-${{ env.VERSION_TAG }}_standard.tar.gz --directory=app/build/outputs/mapping/basicRelease/ mapping.txt
 
       - name: Create release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: env.IS_RELEASE == 'true'
         uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
         with:
           tag_name: ${{ env.VERSION_TAG }}
@@ -197,5 +240,8 @@ jobs:
             mapping-${{ env.VERSION_TAG }}_standard.tar.gz
             breezy-weather-${{ env.VERSION_TAG }}_freenet.apk
             mapping-${{ env.VERSION_TAG }}_freenet.tar.gz
-          draft: true
+          # tag push -> always draft (unchanged prior behavior); workflow_dispatch -> the
+          # "draft" checkbox. Deliberately not `event == 'dispatch' && inputs.draft || true`:
+          # that's the classic broken-ternary bug when the middle value is itself false.
+          draft: ${{ github.event_name != 'workflow_dispatch' || inputs.draft }}
           prerelease: false
