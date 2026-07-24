@@ -1,8 +1,10 @@
 [
   {
-    "version": "Niet uitgebracht (+2)",
+    "version": "Niet uitgebracht (+4)",
     "date": "",
     "changes": [
+      "Redraw the live wallpaper immediately when a camera photo is activated",
+      "Allow triggering a release via workflow_dispatch, not just a tag push",
       "Distinguish timeout from server error in the camera upload check step",
       "Fix stale day/night wallpaper state on wake and location switch"
     ]
