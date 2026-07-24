@@ -515,6 +515,8 @@
     <string name="camera_result_not_landscape">Geen landschapsfoto gedetecteerd</string>
     <string name="camera_result_unknown_reason">Afgekeurd (onbekende reden)</string>
     <string name="camera_result_unknown_reason_with_code">Afgekeurd (reden: %1$s)</string>
+    <string name="camera_check_timeout">De server heeft het zwaar, probeer het straks nog eens</string>
+    <string name="camera_check_server_error">Er is iets fout gegaan bij het verwerken van de foto, probeer het nog eens</string>
     <string name="camera_process_photo">Verwerk</string>
     <string name="camera_photo_processed">Foto verwerkt en ingesteld als achtergrond</string>
     <string name="camera_stop_upload">Stoppen</string>

@@ -41,7 +41,7 @@ import com.liveweatherwallpaperapp.common.utils.DiagnosticLogger
 import com.liveweatherwallpaperapp.databinding.ActivityCameraBinding
 import com.liveweatherwallpaperapp.wallpaper.launchLiveWallpaperPicker
 import com.liveweatherwallpaperapp.wallpaper.photo.CameraUploadResult
-import com.liveweatherwallpaperapp.wallpaper.photo.RemoveSkyCheckResult
+import com.liveweatherwallpaperapp.wallpaper.photo.RemoveSkyCheckOutcome
 import com.liveweatherwallpaperapp.wallpaper.photo.RemoveSkyHttpException
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
 import dagger.hilt.android.AndroidEntryPoint
@@ -926,14 +926,15 @@ class CameraActivity : AppCompatActivity() {
         val checked = results.map { data ->
             data to data.processedUrl?.let { runBlocking { wallpaperRepository.checkUploadedPhoto(it) } }
         }
-        val anyApproved = checked.any { (_, check) -> check?.ok == true }
+        fun checkOk(check: RemoveSkyCheckOutcome?) = (check as? RemoveSkyCheckOutcome.Success)?.result?.ok == true
+        val anyApproved = checked.any { (_, check) -> checkOk(check) }
         // The single-photo camera flow shows one "Verwerk" button for its one approved photo;
         // the gallery batch flow instead shows a checkbox per approved photo plus one "Bewaar"
         // button (wired below, per card) that activates every checked one.
         val approvedActivation = if (isGalleryFlow) {
             null
         } else {
-            checked.firstOrNull { (data, check) -> check?.ok == true && data.activationResult != null }
+            checked.firstOrNull { (data, check) -> checkOk(check) && data.activationResult != null }
                 ?.first?.activationResult
         }
         pendingActivation = approvedActivation
@@ -955,7 +956,7 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-    private fun buildResultCard(data: UploadCardData, check: RemoveSkyCheckResult?): View {
+    private fun buildResultCard(data: UploadCardData, check: RemoveSkyCheckOutcome?): View {
         val card = layoutInflater.inflate(R.layout.item_camera_upload_result, binding.uploadResultCardsContainer, false)
         val thumbnailView = card.findViewById<ImageView>(R.id.cardThumbnail)
         if (data.thumbnail != null) {
@@ -964,12 +965,14 @@ class CameraActivity : AppCompatActivity() {
             thumbnailView.visibility = View.GONE
         }
 
+        val checkResult = (check as? RemoveSkyCheckOutcome.Success)?.result
+
         // Gallery batch only: a checkbox per approved photo, pre-checked, feeding "Bewaar".
         // Rejected/failed photos never got an activationResult, so they get no checkbox at all.
         val selectView = card.findViewById<CheckBox>(R.id.cardSelect)
         if (isGalleryFlow && data.activationResult != null) {
             selectView.visibility = View.VISIBLE
-            selectView.isChecked = check?.ok == true
+            selectView.isChecked = checkResult?.ok == true
             gallerySelection.add(selectView to data.activationResult)
         } else {
             selectView.visibility = View.GONE
@@ -985,26 +988,40 @@ class CameraActivity : AppCompatActivity() {
 
         val reasonView = card.findViewById<TextView>(R.id.cardReason)
         when {
-            check != null && check.ok -> {
+            checkResult?.ok == true -> {
                 reasonView.visibility = View.VISIBLE
                 reasonView.setTextColor(Color.parseColor("#2E7D32"))
                 reasonView.text = "✓ " + getString(R.string.camera_check_ok)
             }
-            check != null && !check.ok -> {
+            checkResult != null && !checkResult.ok -> {
                 reasonView.visibility = View.VISIBLE
                 reasonView.setTextColor(Color.parseColor("#C62828"))
-                reasonView.text = "✗ " + reasonText(check.reason)
+                reasonView.text = "✗ " + reasonText(checkResult.reason)
             }
             data.uploadFailureReason != null -> {
                 reasonView.visibility = View.VISIBLE
                 reasonView.setTextColor(Color.parseColor("#C62828"))
                 reasonView.text = "✗ " + reasonText(data.uploadFailureReason)
             }
+            // Upload succeeded (we have a processedUrl) but /check itself didn't return a real
+            // answer -- a timeout (RemoveSky's CPU-only sky/CLIP inference, see
+            // RemoveSkyProvider.checkImage's kdoc, taking longer than the client's read timeout)
+            // or a genuine server-side error. Previously both silently rendered a blank card.
+            check is RemoveSkyCheckOutcome.Timeout -> {
+                reasonView.visibility = View.VISIBLE
+                reasonView.setTextColor(Color.parseColor("#C62828"))
+                reasonView.text = "✗ " + getString(R.string.camera_check_timeout)
+            }
+            check is RemoveSkyCheckOutcome.ServerError -> {
+                reasonView.visibility = View.VISIBLE
+                reasonView.setTextColor(Color.parseColor("#C62828"))
+                reasonView.text = "✗ " + getString(R.string.camera_check_server_error)
+            }
             else -> reasonView.visibility = View.GONE
         }
 
         val checksGroup = card.findViewById<ChipGroup>(R.id.cardChecksGroup)
-        check?.checks?.let { c ->
+        checkResult?.checks?.let { c ->
             addCheckChip(checksGroup, R.string.camera_check_sky, c.hasSkyTop)
             addCheckChip(checksGroup, R.string.camera_check_outdoor, c.isOutdoor)
             addCheckChip(checksGroup, R.string.camera_check_color, c.hasColor)
@@ -1013,12 +1030,12 @@ class CameraActivity : AppCompatActivity() {
         }
 
         val badgesGroup = card.findViewById<ChipGroup>(R.id.cardBadgesGroup)
-        check?.checks?.isNightVisual?.let { isNight ->
+        checkResult?.checks?.isNightVisual?.let { isNight ->
             val label =
                 getString(if (isNight) R.string.wallpaper_photo_meta_night else R.string.wallpaper_photo_meta_day)
             addBadgeChip(badgesGroup, label)
         }
-        check?.checks?.seasonVisual?.let { season ->
+        checkResult?.checks?.seasonVisual?.let { season ->
             seasonLabel(season)?.let { addBadgeChip(badgesGroup, it) }
         }
 

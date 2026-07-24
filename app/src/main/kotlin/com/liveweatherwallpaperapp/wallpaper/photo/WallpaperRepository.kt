@@ -422,7 +422,7 @@ class WallpaperRepository @Inject constructor(
      * Runs RemoveSky's suitability diagnostics against an already-uploaded photo's URL — used to
      * show the user why their own camera/gallery upload was or wasn't a good background photo.
      */
-    suspend fun checkUploadedPhoto(url: String): RemoveSkyCheckResult? = removeSkyProvider().checkImage(url)
+    suspend fun checkUploadedPhoto(url: String): RemoveSkyCheckOutcome = removeSkyProvider().checkImage(url)
 
     /**
      * Downloads [url] and returns the bitmap to cache: the sky-erased (transparent) version when

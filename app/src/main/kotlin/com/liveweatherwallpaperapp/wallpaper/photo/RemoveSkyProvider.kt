@@ -133,40 +133,50 @@ class RemoveSkyProvider(
      * Runs RemoveSky's suitability diagnostics (sky-at-top, outdoor, color, GPS, date, season)
      * against an already-hosted image, e.g. right after [uploadFile] — used to show the user
      * why their own upload was or wasn't a good background photo.
+     *
+     * Distinguishes a timeout (the /check endpoint runs sky/CLIP inference synchronously and can
+     * legitimately take a long time on a CPU-only backend) from a genuine server-side error, so
+     * the caller can show the user a message that actually matches what happened instead of a
+     * silent blank result.
      */
-    suspend fun checkImage(url: String): RemoveSkyCheckResult? = withContext(Dispatchers.IO) {
+    suspend fun checkImage(url: String): RemoveSkyCheckOutcome = withContext(Dispatchers.IO) {
         try {
             val request = get("$apiBase/check?url=${enc(url)}")
             client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) return@withContext null
+                if (!response.isSuccessful) return@withContext RemoveSkyCheckOutcome.ServerError
                 val body = response.body.string()
                 val json = JSONObject(body)
                 val info = json.optJSONObject("info")
                 val checksJson = info?.optJSONObject("checks")
-                RemoveSkyCheckResult(
-                    ok = json.optBoolean("ok"),
-                    reason = json.optStringOrNull("reason"),
-                    skyFraction = if (json.has("sky_fraction") && !json.isNull("sky_fraction")) {
-                        json.optDouble("sky_fraction")
-                    } else {
-                        null
-                    },
-                    checks = checksJson?.let {
-                        RemoveSkyChecks(
-                            hasSkyTop = it.optBooleanOrNull("has_sky_top"),
-                            isOutdoor = it.optBooleanOrNull("is_outdoor"),
-                            hasColor = it.optBooleanOrNull("has_color"),
-                            hasGps = it.optBooleanOrNull("has_gps"),
-                            hasDate = it.optBooleanOrNull("has_date"),
-                            isNightVisual = it.optBooleanOrNull("is_night_visual"),
-                            seasonVisual = it.optStringOrNull("season_visual")
-                        )
-                    }
+                RemoveSkyCheckOutcome.Success(
+                    RemoveSkyCheckResult(
+                        ok = json.optBoolean("ok"),
+                        reason = json.optStringOrNull("reason"),
+                        skyFraction = if (json.has("sky_fraction") && !json.isNull("sky_fraction")) {
+                            json.optDouble("sky_fraction")
+                        } else {
+                            null
+                        },
+                        checks = checksJson?.let {
+                            RemoveSkyChecks(
+                                hasSkyTop = it.optBooleanOrNull("has_sky_top"),
+                                isOutdoor = it.optBooleanOrNull("is_outdoor"),
+                                hasColor = it.optBooleanOrNull("has_color"),
+                                hasGps = it.optBooleanOrNull("has_gps"),
+                                hasDate = it.optBooleanOrNull("has_date"),
+                                isNightVisual = it.optBooleanOrNull("is_night_visual"),
+                                seasonVisual = it.optStringOrNull("season_visual")
+                            )
+                        }
+                    )
                 )
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            log("check timeout for $url: ${e.message}")
+            RemoveSkyCheckOutcome.Timeout
         } catch (e: Throwable) {
             log("check error for $url: ${e.message}")
-            null
+            RemoveSkyCheckOutcome.ServerError
         }
     }
 
@@ -749,6 +759,19 @@ class RemoveSkyHttpException(
     val statusCode: Int,
     val responseBody: String,
 ) : Exception("RemoveSky HTTP $statusCode")
+
+/** Outcome of [RemoveSkyProvider.checkImage] -- distinguishes a real answer from the two ways
+ *  the call itself can fail, so the UI can show a message that matches what happened. */
+sealed class RemoveSkyCheckOutcome {
+    data class Success(val result: RemoveSkyCheckResult) : RemoveSkyCheckOutcome()
+
+    /** The request timed out -- most likely RemoveSky's CPU-only sky/CLIP inference (see
+     *  [RemoveSkyProvider.checkImage]'s kdoc) taking longer than the client's read timeout. */
+    object Timeout : RemoveSkyCheckOutcome()
+
+    /** A non-2xx response, or the body couldn't be parsed. */
+    object ServerError : RemoveSkyCheckOutcome()
+}
 
 /** Result of [RemoveSkyProvider.checkImage] — why a photo was or wasn't accepted as a background. */
 data class RemoveSkyCheckResult(
