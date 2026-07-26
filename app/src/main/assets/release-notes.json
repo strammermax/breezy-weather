@@ -1,7 +1,14 @@
 [
   {
-    "version": "Niet uitgebracht (+3)",
+    "version": "Niet uitgebracht (+1)",
     "date": "",
+    "changes": [
+      "Fix wallpaper photo refresh getting permanently stuck after a restart"
+    ]
+  },
+  {
+    "version": "2026.07.26.433",
+    "date": "2026-07-26",
     "changes": [
       "Retune the daily easter egg: every 5 min, 1-2 at a time, 50% alpha, cloud-speed pace",
       "Add tilt-driven, depth-aware parallax to the live wallpaper photo",
@@ -77,21 +84,6 @@
       "Fix spotless/ktlint violations (trailing commas at call sites, line length)",
       "Wire GetsortedResultlist(), rotation state and downloadMissingImages",
       "Redesign wallpaper photo sorting: SortLocationRecsByGPSLocation/ByLocation"
-    ]
-  },
-  {
-    "version": "2026.07.19.378",
-    "date": "2026-07-19",
-    "changes": [
-      "Add ACT-020: results report for the battery/performance optimization pass",
-      "Module 3: add a Macrobenchmark test module",
-      "Module 2: drop background photo to RGB_565 on low-RAM devices",
-      "Module 2: cache decoded wallpaper bitmaps and constrain background jobs",
-      "Add debug-only fps telemetry to WallpaperEffectView",
-      "Cap the in-app frosted background animation to 60fps",
-      "Mirror the debug weetje trigger onto the widget fact banner too",
-      "Add scheduled fact banner to the 4x2 Material You widget",
-      "Notify users locally once they've actually installed an update"
     ]
   }
 ]
