@@ -45,6 +45,7 @@ import com.liveweatherwallpaperapp.ui.main.utils.RefreshErrorType
 import com.liveweatherwallpaperapp.ui.main.utils.StatementManager
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
 import com.liveweatherwallpaperapp.wallpaper.photo.toWallpaperPlaceQuery
+import com.liveweatherwallpaperapp.common.AppMessageStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -272,6 +273,13 @@ class MainActivityViewModel @Inject constructor(
         errors: List<RefreshError> = emptyList(),
     ) {
         snackbarError.postValue(errors)
+
+        // Manual refreshes run through this ViewModel instead of WeatherUpdateJob. Clear the
+        // persisted background-job warning as soon as usable weather arrives, otherwise the
+        // refreshed forecast says "0 min ago" while the old failure card remains on screen.
+        if (location.weather != null) {
+            AppMessageStore(getApplication()).clear("weather_update_failed")
+        }
 
         updateInnerData(location)
 
