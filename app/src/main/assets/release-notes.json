@@ -1,7 +1,14 @@
 [
   {
-    "version": "Niet uitgebracht (+2)",
+    "version": "Niet uitgebracht (+1)",
     "date": "",
+    "changes": [
+      "Fix import order in RadarActivity.kt to satisfy spotlessKotlinCheck"
+    ]
+  },
+  {
+    "version": "2026.07.26.427",
+    "date": "2026-07-26",
     "changes": [
       "Open the Buienradar app (or its website) from the Buienradar radar tab/tile",
       "Smooth Main -> Details/Radar transition instead of a flash+slide"
@@ -84,10 +91,5 @@
       "Add scheduled fact banner to the 4x2 Material You widget",
       "Notify users locally once they've actually installed an update"
     ]
-  },
-  {
-    "version": "2026.07.17.357",
-    "date": "2026-07-17",
-    "changes": []
   }
 ]
