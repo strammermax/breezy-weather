@@ -24,14 +24,18 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.graphics.RenderEffect
+import android.graphics.Rect
 import android.graphics.Shader
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
+import android.os.Process
 import android.util.AttributeSet
 import android.util.Log
 import android.view.Choreographer
 import android.view.View
 import com.liveweatherwallpaperapp.BuildConfig
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Hardware-accelerated View that renders the live wallpaper's animated weather effects
@@ -61,8 +65,8 @@ internal class WallpaperEffectView @JvmOverloads constructor(
     private var mLastTelemetryLogMillis = 0L
 
     companion object {
-        /** ~60fps ceiling (1000/60 rounded up, so the cap never drifts slightly above 60). */
-        private const val MAX_FRAME_INTERVAL_MILLIS = 17L
+        /** Decorative background is capped at 30fps so the foreground always gets GPU time. */
+        private const val MAX_FRAME_INTERVAL_MILLIS = 34L
         private const val TELEMETRY_LOG_INTERVAL_MILLIS = 5_000L
     }
 
@@ -96,6 +100,7 @@ internal class WallpaperEffectView @JvmOverloads constructor(
      *  so clouds stay behind it — see [WallpaperSceneSnapshot.render]'s `depth` parameter. */
     private var foregroundPhoto: Bitmap? = null
     private var foregroundPaint = Paint(Paint.FILTER_BITMAP_FLAG)
+    private val foregroundDestination = Rect()
 
     /** Sets (or clears, with null) the near-photo layer and its night/greyscale tint. */
     fun setForegroundPhoto(bitmap: Bitmap?, greyscaleAmount: Float = 0f) {
@@ -149,12 +154,31 @@ internal class WallpaperEffectView @JvmOverloads constructor(
      * Call whenever the user swipes to a different day or the weather condition changes.
      */
     fun setWeather(weatherKind: Int, daylight: Float) {
+        renderer = createRenderer(weatherKind, daylight)
+    }
+
+    /** Builds resource-heavy cloud and precipitation state away from the UI thread. */
+    suspend fun setWeatherAsync(weatherKind: Int, daylight: Float) {
+        val preparedRenderer = withContext(Dispatchers.Default) {
+            val originalPriority = Process.getThreadPriority(Process.myTid())
+            try {
+                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
+                createRenderer(weatherKind, daylight)
+            } finally {
+                Process.setThreadPriority(originalPriority)
+            }
+        }
+        renderer = preparedRenderer
+        invalidate()
+    }
+
+    private fun createRenderer(weatherKind: Int, daylight: Float): WallpaperWeatherEffectRenderer {
         val state = WallpaperSceneStateFactory.create(
             weatherKind = weatherKind,
             daylight = daylight
         )
         val liveWallpaperConfig = LiveWallpaperConfigManager(context)
-        renderer = WallpaperWeatherEffectRenderer(
+        return WallpaperWeatherEffectRenderer(
             weatherKind = state.weatherKind,
             daylight = state.daylight,
             cloudSpeedFactor = state.windFactor,
@@ -207,8 +231,13 @@ internal class WallpaperEffectView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         val r = renderer ?: return
         r.drawBackgroundWeatherPass(canvas)
-        foregroundPhoto?.let { canvas.drawBitmap(it, 0f, 0f, foregroundPaint) }
+        foregroundPhoto?.let { canvas.drawBitmap(it, null, foregroundDestination, foregroundPaint) }
         r.drawForegroundWeatherPass(canvas)
         r.drawGlassRainDrops(canvas)
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        foregroundDestination.set(0, 0, w, h)
     }
 }

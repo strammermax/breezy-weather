@@ -26,8 +26,8 @@ import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.isBackgroundAnimationEnabled
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.wallpaper.WallpaperEffectView
-import com.liveweatherwallpaperapp.wallpaper.toFrostedBackground
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -64,8 +64,12 @@ class DetailsActivity : BreezyActivity() {
 
         val viewModel = ViewModelProvider(this)[DetailsViewModel::class.java]
         lifecycleScope.launch {
+            // Let the activity enter transition and the first Compose layout finish before
+            // constructing and animating the weather renderer. Initialising it during the
+            // transition caused 350-500 ms frames on the UI thread.
+            delay(EFFECT_START_DELAY_MILLIS)
             viewModel.backgroundState.collect { (weatherKind, isDaylight) ->
-                effectView.setWeather(weatherKind, if (isDaylight) 1f else 0f)
+                effectView.setWeatherAsync(weatherKind, if (isDaylight) 1f else 0f)
                 effectView.setDrawable(isBackgroundAnimationEnabled)
             }
         }
@@ -87,14 +91,14 @@ class DetailsActivity : BreezyActivity() {
             val frosted = SettingsManager.getInstance(this).appBackgroundFrosted
             val settings = SettingsManager.getInstance(this)
             effectView.setFrosted(frosted, settings.appBackgroundFrostStrength, settings.appBackgroundFrostTint)
-            effectView.setForegroundPhoto(
-                if (frosted) bitmap?.toFrostedBackground(settings.appBackgroundFrostStrength) else bitmap,
-                greyscaleAmount
-            )
+            // Bitmap processing is done by DetailsScreen on Dispatchers.Default. This method
+            // only assigns the prepared bitmap, so it never blocks a frame with scaling work.
+            effectView.setForegroundPhoto(bitmap, greyscaleAmount)
         }
     }
 
     companion object {
+        private const val EFFECT_START_DELAY_MILLIS = 1_500L
         const val KEY_FORMATTED_LOCATION_ID = "FORMATTED_LOCATION_ID"
         const val KEY_CURRENT_DAILY_INDEX = "CURRENT_DAILY_INDEX"
         const val KEY_CURRENT_PAGE = "CURRENT_PAGE"

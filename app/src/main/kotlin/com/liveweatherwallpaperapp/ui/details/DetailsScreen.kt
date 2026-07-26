@@ -19,8 +19,7 @@ package com.liveweatherwallpaperapp.ui.details
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.TransitionDrawable
+import android.os.Process
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
@@ -119,6 +118,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import livewallpaperweather.domain.location.model.Location
@@ -126,9 +126,8 @@ import java.util.Calendar
 import java.util.Date
 import com.liveweatherwallpaperapp.domain.location.model.isDaylight as locationIsDaylight
 
-/** How long the sky/photo snapshot background takes to crossfade in, whether that's the
- *  initial reveal (over the previous screen showing through) or a day-to-day pager swipe. */
-private const val BACKGROUND_CROSSFADE_DURATION_MILLIS = 300
+private const val DECORATIVE_BACKGROUND_START_DELAY_MILLIS = 1_500L
+private const val DETAILS_BACKGROUND_DOWNSAMPLE = 2
 
 @Composable
 internal fun DailyWeatherScreen(
@@ -233,6 +232,11 @@ internal fun DailyWeatherScreen(
                         return@LaunchedEffect
                     }
 
+                    // Fast navigation must not compete with optional scene generation. If the
+                    // user leaves before this delay, LaunchedEffect is cancelled and no bitmap
+                    // allocation, filtering or upload is started at all.
+                    delay(DECORATIVE_BACKGROUND_START_DELAY_MILLIS)
+
                     val wind = if (isToday) weather.current?.wind else halfDay?.wind
 
                     // Resolve sun/moon intervals the same way the live wallpaper does.
@@ -260,40 +264,51 @@ internal fun DailyWeatherScreen(
                     // Same depth map the live wallpaper uses to keep clouds behind near/foreground
                     // photo content (e.g. a building) instead of painting over the whole photo.
                     val depth = detailsViewModel.loadCachedDepthMap()
-                    var nearPhoto: Bitmap? = null
-                    val bitmap = withContext(Dispatchers.Default) {
-                        Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
-                            nearPhoto = WallpaperSceneSnapshot.render(
-                                Canvas(it),
-                                width,
-                                height,
-                                photo,
-                                sceneState,
-                                context.resources,
-                                depth
-                            )
+                    val settings = SettingsManager.getInstance(context)
+                    // A half-resolution scene has 75% fewer pixels to create, frost and upload.
+                    // It is intentionally soft behind the glass UI and is scaled to the window.
+                    val renderWidth = (width / DETAILS_BACKGROUND_DOWNSAMPLE).coerceAtLeast(1)
+                    val renderHeight = (height / DETAILS_BACKGROUND_DOWNSAMPLE).coerceAtLeast(1)
+                    val (background, preparedNearPhoto) = withContext(Dispatchers.Default) {
+                        // Scene generation is optional decoration. Keep it below the priority
+                        // of Compose layout, input and animation work at all times.
+                        val originalPriority = Process.getThreadPriority(Process.myTid())
+                        try {
+                            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
+                            var nearPhoto: Bitmap? = null
+                            val bitmap = Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888).also {
+                                nearPhoto = WallpaperSceneSnapshot.render(
+                                    Canvas(it),
+                                    renderWidth,
+                                    renderHeight,
+                                    photo,
+                                    sceneState,
+                                    context.resources,
+                                    depth
+                                )
+                            }
+                            val preparedBackground = if (settings.appBackgroundFrosted) {
+                                bitmap.toFrostedBackground(settings.appBackgroundFrostStrength)
+                            } else {
+                                bitmap
+                            }
+                            val preparedForeground = if (settings.appBackgroundFrosted) {
+                                nearPhoto?.toFrostedBackground(settings.appBackgroundFrostStrength)
+                            } else {
+                                nearPhoto
+                            }
+                            preparedBackground to preparedForeground
+                        } finally {
+                            Process.setThreadPriority(originalPriority)
                         }
                     }
                     (activity as? DetailsActivity)?.setForegroundPhoto(
-                        nearPhoto,
+                        preparedNearPhoto,
                         if (sceneState.usesGreyscalePhoto) sceneState.photoGreyscaleAmount else 0f
                     )
-                    val background = if (SettingsManager.getInstance(context).appBackgroundFrosted) {
-                        bitmap.toFrostedBackground(SettingsManager.getInstance(context).appBackgroundFrostStrength)
-                    } else {
-                        bitmap
-                    }
-                    // Crossfade instead of a hard swap. The `from` layer is whatever's
-                    // currently showing -- nothing yet on first render (the translucent
-                    // window lets the previous screen/live wallpaper show through, see
-                    // DetailsActivity.onCreate), or the previous day's snapshot on a pager
-                    // swipe -- so this covers both the initial reveal and day-to-day swipes.
-                    val previous = activity.window.decorView.background
-                    val crossfade = TransitionDrawable(
-                        arrayOf(previous ?: ColorDrawable(android.graphics.Color.TRANSPARENT), BitmapDrawable(context.resources, background))
-                    )
-                    activity.window.setBackgroundDrawable(crossfade)
-                    crossfade.startTransition(BACKGROUND_CROSSFADE_DURATION_MILLIS)
+                    // Avoid blending two full-window textures. The screen is already fully
+                    // entered at this point, so a direct replacement is both cheaper and calm.
+                    activity.window.setBackgroundDrawable(BitmapDrawable(context.resources, background))
                 }
 
                 // ACT-013: override the surface/outline colors so the cards and tab bar
