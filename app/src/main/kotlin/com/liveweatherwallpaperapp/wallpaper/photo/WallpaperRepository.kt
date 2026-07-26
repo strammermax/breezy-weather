@@ -960,17 +960,23 @@ class WallpaperRepository @Inject constructor(
     ): List<WallpaperPhotoRecord> = withContext(Dispatchers.IO) {
         val locationKey = location.formattedId
         val now = java.time.Instant.now().toString()
-        val isNewLocation = photoCatalog.getForLocation(locationKey).isEmpty()
         val since = store.searchSinceFor(locationKey, SORTED_RESULTLIST_SINCE_PURPOSE)
         val provider = removeSkyProvider()
 
-        var hasChanges = isNewLocation
+        // Whether to do a full fetch or an incremental update is driven by [since] -- whether a
+        // sync with the backend has ever actually succeeded -- not by whether the local catalog
+        // already has rows for this location. Keying it off the catalog instead used to get a
+        // location stuck permanently skipped: if an early sync attempt failed before recordSince()
+        // ever ran (e.g. a bad API key) but still left catalog rows behind some other way, the
+        // catalog-emptiness check saw a "not new" location with no [since] cursor and took
+        // neither branch below -- silently never talking to the backend again.
+        var hasChanges = since == null
         if (location.isCurrentPosition) {
-            if (isNewLocation) {
+            if (since == null) {
                 val json = provider.getImagesDataByGPS(now, latitude, longitude, SYNC_RANGE_KM)
                 upsertDataDB(photoCatalog, locationKey, json)
                 recordSince(locationKey, json)
-            } else if (since != null) {
+            } else {
                 val result = provider.updateImagesDataByGPS(now, latitude, longitude, since, SYNC_RANGE_KM)
                 upsertDataDB(photoCatalog, locationKey, result.upserted)
                 deleteRecordsDataDB(photoCatalog, result.removed)
@@ -978,11 +984,11 @@ class WallpaperRepository @Inject constructor(
                 recordSince(locationKey, result.upserted ?: result.removed)
             }
         } else {
-            if (isNewLocation) {
+            if (since == null) {
                 val json = provider.getImagesDataByCity(now, latitude, longitude, place.city)
                 upsertDataDB(photoCatalog, locationKey, json)
                 recordSince(locationKey, json)
-            } else if (since != null) {
+            } else {
                 val result = provider.updateImagesDataByCity(now, latitude, longitude, since, place.city)
                 upsertDataDB(photoCatalog, locationKey, result.upserted)
                 deleteRecordsDataDB(photoCatalog, result.removed)
@@ -991,7 +997,15 @@ class WallpaperRepository @Inject constructor(
             }
         }
 
-        if (!hasChanges) return@withContext currentSortedResultlist[locationKey].orEmpty()
+        // currentSortedResultlist is in-memory only (see its own doc comment), so it's always
+        // empty right after a process restart -- if the server correctly says "nothing changed"
+        // before this location's list has ever been rebuilt this session, returning that empty
+        // in-memory entry would show no photo at all despite the local DB already having a
+        // perfectly good cached catalog for it. Only short-circuit once something's actually
+        // been loaded into memory this session; otherwise fall through and rebuild from the DB.
+        if (!hasChanges && currentSortedResultlist.containsKey(locationKey)) {
+            return@withContext currentSortedResultlist[locationKey].orEmpty()
+        }
 
         val minimal = store.minimalLocationRecs
         val records = photoCatalog.getForLocation(locationKey)

@@ -744,6 +744,7 @@
     <string name="widget_live_wallpaper_bg_source_flickr" translatable="false">Flickr (no key)</string>
     <string name="widget_live_wallpaper_preview">Preview</string>
     <string name="widget_live_wallpaper_refresh_now">Refresh now</string>
+    <string name="widget_live_wallpaper_next">Next</string>
     <string name="widget_live_wallpaper_refresh_running">Searching for a photo…</string>
     <string name="widget_live_wallpaper_refresh_ok">Photo updated</string>
     <string name="widget_live_wallpaper_refresh_none">No photo found for this location</string>

@@ -28,7 +28,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -325,6 +327,49 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
             } else {
                 refreshStatusValue.value = getString(R.string.widget_live_wallpaper_refresh_none)
             }
+            refreshCacheStats()
+            refreshBusyValue.value = false
+        }
+    }
+
+    /**
+     * Advances to the next photo already in [WallpaperRepository]'s sorted rotation list
+     * (docs/ACT-021 section 10.2's "next sortedResultlist item") instead of asking the
+     * RemoveSky backend for anything new -- useful when [runRefresh] can't reach the backend
+     * (e.g. its health check fails) but there's already a usable local pool to cycle through.
+     */
+    private fun runNext() {
+        if (refreshBusyValue.value) return
+
+        refreshBusyValue.value = true
+        refreshStatusValue.value = getString(R.string.widget_live_wallpaper_refresh_running)
+
+        lifecycleScope.launch {
+            val location = withContext(Dispatchers.IO) {
+                locationRepository.getFirstLocation(withParameters = false)
+            }
+            if (location == null || !location.isUsable) {
+                refreshStatusValue.value = getString(R.string.widget_live_wallpaper_refresh_no_location)
+                refreshBusyValue.value = false
+                return@launch
+            }
+
+            val next = withContext(Dispatchers.IO) {
+                wallpaperRepository.getNextSortedResultlistItem(location.formattedId)
+            }
+            val activated = next?.let {
+                withContext(Dispatchers.IO) { wallpaperRepository.activateRotationItem(it) }
+            }
+            if (activated == null) {
+                refreshStatusValue.value = getString(R.string.widget_live_wallpaper_refresh_none)
+                refreshBusyValue.value = false
+                return@launch
+            }
+
+            photoRefreshedAtValue.value = wallpaperImageStore.photoRefreshedAtFor(location.formattedId)
+            previewBitmapValue.value = withContext(Dispatchers.IO) { wallpaperRepository.loadCachedBitmap() }
+            attributionValue.value = wallpaperImageStore.cachedPhotoAttribution.orEmpty()
+            refreshStatusValue.value = getString(R.string.widget_live_wallpaper_refresh_ok)
             refreshCacheStats()
             refreshBusyValue.value = false
         }
@@ -851,19 +896,29 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             }
                         }
                         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
-                        Button(
-                            onClick = { runRefresh() },
-                            enabled = !refreshBusyValue.value
-                        ) {
-                            if (refreshBusyValue.value) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(18.dp),
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    strokeWidth = 2.dp
-                                )
-                                Spacer(modifier = Modifier.width(dimensionResource(R.dimen.small_margin)))
+                        Row(horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.small_margin))) {
+                            Button(
+                                onClick = { runRefresh() },
+                                enabled = !refreshBusyValue.value
+                            ) {
+                                if (refreshBusyValue.value) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(18.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        strokeWidth = 2.dp
+                                    )
+                                    Spacer(modifier = Modifier.width(dimensionResource(R.dimen.small_margin)))
+                                }
+                                Text(stringResource(R.string.widget_live_wallpaper_refresh_now))
                             }
-                            Text(stringResource(R.string.widget_live_wallpaper_refresh_now))
+                            // Cycles through the already-downloaded local pool instead of asking
+                            // the backend for something new -- see runNext().
+                            OutlinedButton(
+                                onClick = { runNext() },
+                                enabled = !refreshBusyValue.value
+                            ) {
+                                Text(stringResource(R.string.widget_live_wallpaper_next))
+                            }
                         }
                         if (refreshStatusValue.value.isNotBlank()) {
                             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.small_margin)))
