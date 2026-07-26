@@ -1,7 +1,14 @@
 [
   {
-    "version": "Niet uitgebracht (+4)",
+    "version": "Niet uitgebracht (+1)",
     "date": "",
+    "changes": [
+      "Fix Spotless lint violations"
+    ]
+  },
+  {
+    "version": "2026.07.26.420",
+    "date": "2026-07-26",
     "changes": [
       "Prioritize foreground rendering during navigation",
       "Clear stale weather warning after manual refresh",
@@ -82,13 +89,6 @@
     "date": "2026-07-17",
     "changes": [
       "Trigger release build to verify signing secrets fix"
-    ]
-  },
-  {
-    "version": "2026.07.17.354",
-    "date": "2026-07-17",
-    "changes": [
-      "Rework easter egg debug trigger into a full control section"
     ]
   }
 ]
