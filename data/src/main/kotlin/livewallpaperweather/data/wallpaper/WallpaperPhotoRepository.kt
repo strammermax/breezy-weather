@@ -18,7 +18,6 @@ data class WallpaperPhotoRecord(
     val filePath: String?,
     val attribution: String?,
     val processed: Boolean,
-    val rating: Int,
     val disabled: Boolean,
     val viewCount: Int,
     val createdAt: Long,
@@ -169,10 +168,6 @@ class WallpaperPhotoRepository(
         )
     }
 
-    suspend fun setRating(id: String, rating: Int, now: Long = System.currentTimeMillis()) = handler.await {
-        wallpaper_photosQueries.setRating(rating.coerceIn(-1, 1).toLong(), now, id)
-    }
-
     suspend fun setDisabled(id: String, disabled: Boolean, now: Long = System.currentTimeMillis()) =
         handler.await {
             wallpaper_photosQueries.setDisabled(disabled, now, id)
@@ -225,7 +220,7 @@ class WallpaperPhotoRepository(
         filePath: String?,
         attribution: String?,
         processed: Boolean,
-        rating: Long,
+        @Suppress("UNUSED_PARAMETER") rating: Long, // schema still has the column (unused; see breezy-weather#12); positional SQLDelight mapper, must stay
         disabled: Boolean,
         viewCount: Long,
         createdAt: Long,
@@ -263,7 +258,6 @@ class WallpaperPhotoRepository(
         filePath = filePath,
         attribution = attribution,
         processed = processed,
-        rating = rating.toInt(),
         disabled = disabled,
         viewCount = viewCount.toInt(),
         createdAt = createdAt,

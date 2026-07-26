@@ -713,10 +713,6 @@ class WallpaperRepository @Inject constructor(
         return if (locationKey == null) photoCatalog.getAll() else photoCatalog.getForLocation(locationKey)
     }
 
-    suspend fun setPhotoRating(id: String, rating: Int) {
-        photoCatalog.setRating(id, rating)
-    }
-
     suspend fun setPhotoDisabled(id: String, disabled: Boolean): Boolean {
         val photo = photoCatalog.getById(id) ?: return false
         if (disabled) {

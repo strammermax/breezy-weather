@@ -8,6 +8,10 @@ CREATE TABLE wallpaper_photos(
     file_path TEXT,
     attribution TEXT,
     processed INTEGER AS Boolean NOT NULL DEFAULT 1,
+    -- Deprecated (thumbs up/down removed, see breezy-weather#12): no longer read or written
+    -- by any app code. Left in the schema rather than dropped -- SQLite DROP COLUMN isn't
+    -- safe across every bundled SQLite version this app might run on, and a full table-
+    -- rebuild migration wasn't worth the risk for an always-zero column. Always 0 from here on.
     rating INTEGER NOT NULL DEFAULT 0,
     disabled INTEGER AS Boolean NOT NULL DEFAULT 0,
     view_count INTEGER NOT NULL DEFAULT 0,
@@ -45,12 +49,12 @@ CREATE INDEX wallpaper_photos_disabled_idx ON wallpaper_photos(disabled);
 
 getAll:
 SELECT * FROM wallpaper_photos
-ORDER BY disabled ASC, location_name COLLATE NOCASE ASC, rating DESC, view_count ASC, updated_at DESC;
+ORDER BY disabled ASC, location_name COLLATE NOCASE ASC, view_count ASC, updated_at DESC;
 
 getForLocation:
 SELECT * FROM wallpaper_photos
 WHERE location_key = :locationKey
-ORDER BY disabled ASC, rating DESC, view_count ASC, updated_at DESC;
+ORDER BY disabled ASC, view_count ASC, updated_at DESC;
 
 getById:
 SELECT * FROM wallpaper_photos WHERE id = :id;
@@ -113,11 +117,6 @@ ON CONFLICT(id) DO UPDATE SET
     processed_at = coalesce(excluded.processed_at, processed_at);
 -- user_banned is deliberately never written here (see setUserBanned) -- a sync/upsert must
 -- never clobber the user's own "hide this photo" choice, unlike disabled (curator-driven).
-
-setRating:
-UPDATE wallpaper_photos
-SET rating = :rating, updated_at = :now
-WHERE id = :id;
 
 setDisabled:
 UPDATE wallpaper_photos

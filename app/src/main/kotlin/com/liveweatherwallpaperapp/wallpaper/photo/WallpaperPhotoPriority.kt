@@ -26,17 +26,14 @@ import kotlin.math.sqrt
  * between them), excluding [disabled][WallpaperPhotoRecord.disabled] photos and any whose
  * [sourceUrl][WallpaperPhotoRecord.sourceUrl] is in [excludedUrls] (already tried this refresh):
  *
- *  1. Not thumbs-down — a disliked photo only wins when every eligible candidate is disliked
- *     (a deliberate "last resort", not a soft preference).
- *  2. Season match (matches the current season > unknown season > a different, known season —
+ *  1. Season match (matches the current season > unknown season > a different, known season —
  *     no snow photos in summer just because nothing else stands out).
- *  3. Day/night match (matches now > doesn't; a photo with no day/night classification is
+ *  2. Day/night match (matches now > doesn't; a photo with no day/night classification is
  *     treated as a day photo).
- *  4. GPS proximity to [latitude]/[longitude] — strictly closer wins; photos with no EXIF GPS
+ *  3. GPS proximity to [latitude]/[longitude] — strictly closer wins; photos with no EXIF GPS
  *     rank last in this tier (so they fall through to the remaining ones, same as everyone
  *     else lacking GPS, rather than being treated as "close").
- *  5. Thumbs up.
- *  6. Fewest views.
+ *  4. Fewest views.
  *
  * [latitude]/[longitude]/[now] only drive the day-night/season/GPS tiers — they intentionally
  * don't need a fully resolved [Location] (with weather/timezone) so this stays usable from a
@@ -60,11 +57,9 @@ internal fun selectWallpaperPhoto(
         .filterNot { it.disabled }
         .filterNot { it.sourceUrl != null && it.sourceUrl in excludedUrls }
         .sortedWith(
-            compareByDescending<WallpaperPhotoRecord> { it.rating != -1 }
-                .thenByDescending { seasonTier(it, currentSeason) }
+            compareByDescending<WallpaperPhotoRecord> { seasonTier(it, currentSeason) }
                 .thenByDescending { dayNightMatches(it, isNight) }
                 .thenBy { gpsDistanceKmOrWorst(it, latitude, longitude) }
-                .thenByDescending { it.rating == 1 }
                 .thenBy { it.viewCount }
                 .thenBy { it.lastShownAt ?: Long.MIN_VALUE }
                 .thenBy { it.createdAt }
@@ -117,8 +112,8 @@ internal fun gpsDistanceKmOrWorst(photo: WallpaperPhotoRecord, latitude: Double,
  *     dropping day/night matching as the very last resort -- run whenever step 1 didn't reach
  *     [minSize] (always, for a fixed location; only as a fallback for the current location).
  *
- * Within each step, matches are ordered thumbs-up-not-down first, newest first, least-viewed
- * first -- matching the priority [selectWallpaperPhoto] uses standalone.
+ * Within each step, matches are ordered newest first, least-viewed first -- matching the
+ * priority [selectWallpaperPhoto] uses standalone.
  *
  * [currentWeather] should already be RemoveSky's vocabulary (see [weatherCodeToRemoveSkyWeather])
  * -- pass null to skip weather matching entirely (e.g. weather data not available yet).
@@ -155,8 +150,7 @@ internal fun buildShowlist(
             .filter { !requireSeason || seasonTier(it, currentSeason) == 2 }
             .filter { !requireWeather || currentWeather == null || it.weather == currentWeather }
             .sortedWith(
-                compareByDescending<WallpaperPhotoRecord> { it.rating != -1 }
-                    .thenByDescending { it.createdAt }
+                compareByDescending<WallpaperPhotoRecord> { it.createdAt }
                     .thenBy { it.viewCount }
             )
             .toList()

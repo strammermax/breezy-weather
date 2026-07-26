@@ -25,14 +25,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ThumbDown
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
@@ -149,15 +144,6 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
                 ),
                 Toast.LENGTH_SHORT
             ).show()
-        }
-    }
-
-    private fun updateRating(photo: WallpaperPhotoRecord, rating: Int) {
-        lifecycleScope.launch {
-            busyPhotoId = photo.id
-            withContext(Dispatchers.IO) { wallpaperRepository.setPhotoRating(photo.id, rating) }
-            photos = withContext(Dispatchers.IO) { wallpaperRepository.managedPhotos() }
-            busyPhotoId = null
         }
     }
 
@@ -297,35 +283,6 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
                         }
                         if (busyPhotoId == photo.id) {
                             CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-                        } else {
-                            IconButton(
-                                onClick = { updateRating(photo, if (photo.rating == 1) 0 else 1) },
-                                enabled = !photo.disabled
-                            ) {
-                                Icon(
-                                    Icons.Default.ThumbUp,
-                                    contentDescription = stringResource(R.string.wallpaper_photo_rate_up),
-                                    tint = if (photo.rating == 1) {
-                                        MaterialTheme.colorScheme.primary
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                    }
-                                )
-                            }
-                            IconButton(
-                                onClick = { updateRating(photo, if (photo.rating == -1) 0 else -1) },
-                                enabled = !photo.disabled
-                            ) {
-                                Icon(
-                                    Icons.Default.ThumbDown,
-                                    contentDescription = stringResource(R.string.wallpaper_photo_rate_down),
-                                    tint = if (photo.rating == -1) {
-                                        MaterialTheme.colorScheme.error
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                    }
-                                )
-                            }
                         }
                     }
                     Spacer(Modifier.height(8.dp))
