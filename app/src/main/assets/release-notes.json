@@ -1,5 +1,17 @@
 [
   {
+    "version": "Niet uitgebracht (+1)",
+    "date": "",
+    "changes": [
+      "Smooth Main -> Details/Radar transition instead of a flash+slide"
+    ]
+  },
+  {
+    "version": "2026.07.26.423",
+    "date": "2026-07-26",
+    "changes": []
+  },
+  {
     "version": "2026.07.26.422",
     "date": "2026-07-26",
     "changes": [
@@ -76,19 +88,5 @@
     "version": "2026.07.17.357",
     "date": "2026-07-17",
     "changes": []
-  },
-  {
-    "version": "2026.07.17.356",
-    "date": "2026-07-17",
-    "changes": [
-      "Trigger release build to verify GitHub token write permission fix"
-    ]
-  },
-  {
-    "version": "2026.07.17.355",
-    "date": "2026-07-17",
-    "changes": [
-      "Trigger release build to verify signing secrets fix"
-    ]
   }
 ]
