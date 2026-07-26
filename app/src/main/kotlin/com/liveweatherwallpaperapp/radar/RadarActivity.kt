@@ -22,6 +22,9 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.TransitionDrawable
+import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
 import android.webkit.WebView
@@ -94,6 +97,10 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
 
+/** How long the sky/photo snapshot background takes to crossfade in -- same duration as
+ *  DetailsActivity's identical crossfade. */
+private const val BACKGROUND_CROSSFADE_DURATION_MILLIS = 300
+
 /**
  * Precipitation radar screen. Combines two sources so they can be compared:
  * Buienradar (NL rain-trend nowcast graph) and RainViewer (worldwide animated radar map,
@@ -124,12 +131,22 @@ class RadarActivity : BreezyActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // See DetailsActivity.onCreate for why: fast exit for Main, slow fade-in for this
+        // screen's own content, instead of overridePendingTransition (ignored on Android 14+).
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.fade_in_slow, R.anim.fade_out_fast)
+            overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, 0, R.anim.fade_out_fast)
+        } else {
+            @Suppress("DEPRECATION")
+            overridePendingTransition(R.anim.fade_in_slow, R.anim.fade_out_fast)
+        }
         radarSource = intent.getStringExtra(EXTRA_RADAR_SOURCE)
             ?.takeIf { it in RADAR_SOURCES }
             ?: "rainviewer"
-        // Same sky-gradient backdrop as the main screen / details screen (ACT-013/ACT-014),
-        // instead of an opaque Material surface, so this screen doesn't look like a different app.
-        window.setBackgroundDrawableResource(R.drawable.bg_glass_sky)
+        // No placeholder background here: the window is translucent (see
+        // BreezyWeatherTheme.Details, shared with DetailsActivity), so the previous screen
+        // stays visible on its own until renderPhotoBackground()'s snapshot is ready and
+        // crossfades the real background in -- same fix as DetailsActivity's sky-gradient flash.
         setContent {
             BreezyWeatherTheme {
                 ContentView()
@@ -158,6 +175,16 @@ class RadarActivity : BreezyActivity() {
     override fun onPause() {
         super.onPause()
         if (::effectView.isInitialized) effectView.setDrawable(false)
+    }
+
+    override fun finish() {
+        super.finish()
+        // Pre-34: overrideActivityTransition doesn't exist, so the close transition still has
+        // to be (re-)applied right at finish() -- see DetailsActivity.finish().
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            @Suppress("DEPRECATION")
+            overridePendingTransition(0, R.anim.fade_out_fast)
+        }
     }
 
     private fun loadData() {
@@ -250,7 +277,14 @@ class RadarActivity : BreezyActivity() {
             nearPhoto,
             if (sceneState.usesGreyscalePhoto) sceneState.photoGreyscaleAmount else 0f
         )
-        window.setBackgroundDrawable(BitmapDrawable(resources, bitmap))
+        // Crossfade instead of a hard swap -- the `from` layer is nothing yet (the translucent
+        // window lets the previous screen show through) on first load.
+        val previous = window.decorView.background
+        val crossfade = TransitionDrawable(
+            arrayOf(previous ?: ColorDrawable(android.graphics.Color.TRANSPARENT), BitmapDrawable(resources, bitmap))
+        )
+        window.setBackgroundDrawable(crossfade)
+        crossfade.startTransition(BACKGROUND_CROSSFADE_DURATION_MILLIS)
     }
 
     @Composable

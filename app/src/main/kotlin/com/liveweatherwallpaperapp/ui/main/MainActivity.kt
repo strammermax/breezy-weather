@@ -147,6 +147,9 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
     companion object {
         const val SEARCH_ACTIVITY = 4
 
+        /** Matches R.anim.fade_out_fast's duration (DetailsActivity/RadarActivity's exit anim). */
+        private const val CONTENT_FADE_OUT_MILLIS = 120L
+
         const val ACTION_MAIN = "${BuildConfig.APPLICATION_ID}.Main"
         const val KEY_MAIN_ACTIVITY_LOCATION_FORMATTED_ID = "MAIN_ACTIVITY_LOCATION_FORMATTED_ID"
         const val KEY_MAIN_ACTIVITY_ALERT_ID = "MAIN_ACTIVITY_ALERT_ID"
@@ -363,6 +366,28 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
     override fun onResume() {
         super.onResume()
         if (::effectView.isInitialized) effectView.setDrawable(isBackgroundAnimationEnabled)
+        // Instantly visible again -- Main's own window never actually left the screen (see
+        // fadeOutContentForNavigation()), so there's nothing to fade back in.
+        binding.fragment?.alpha = 1f
+    }
+
+    /**
+     * Fades out only the foreground content (the fragment hosting the daily forecast cards/
+     * graphs) fast, decoupled from [WallpaperEffectView] / the window background -- called
+     * right before navigating to DetailsActivity/RadarActivity. Without this, the graphs were
+     * the last thing to disappear during the activity-transition fade (they sit in their own
+     * window, above the shared translucent background) instead of the first, since the window-
+     * level exit animation doesn't guarantee sub-second visual ordering against the incoming
+     * activity's own content.
+     *
+     * `binding.fragment` is nullable because it only exists in the phone layout (the tablet
+     * layout-w640dp variant uses `fragment_home`/`fragment_drawer` instead) -- a no-op there.
+     */
+    fun fadeOutContentForNavigation() {
+        binding.fragment?.animate()
+            ?.alpha(0f)
+            ?.setDuration(CONTENT_FADE_OUT_MILLIS)
+            ?.start()
     }
 
     override fun onPause() {

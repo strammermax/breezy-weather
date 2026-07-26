@@ -225,6 +225,7 @@ internal fun DailyWeatherScreen(
                 // --- Step 2: render static sky+photo snapshot (IO + CPU, runs in background) --
                 // Keyed on the same inputs so it re-runs whenever the day or weather changes.
                 LaunchedEffect(loc.weather, pagerPage) {
+                    if (!DetailsActivity.DETAILS_BACKGROUND_ENABLED) return@LaunchedEffect
                     val weather = loc.weather
                     val width = context.resources.displayMetrics.widthPixels
                     val height = context.resources.displayMetrics.heightPixels

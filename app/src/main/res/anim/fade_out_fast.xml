@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Main's exit when opening DetailsActivity/RadarActivity: fades out quickly so it's out of
+     the way well before the slower fade_in_slow entrance finishes covering it. -->
+<alpha xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromAlpha="1.0"
+    android:toAlpha="0.0"
+    android:duration="120"
+    android:interpolator="@android:interpolator/linear" />

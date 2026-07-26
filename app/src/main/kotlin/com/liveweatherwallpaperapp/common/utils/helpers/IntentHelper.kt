@@ -108,6 +108,9 @@ object IntentHelper {
         index: Int? = null,
         chart: DetailScreen? = null,
     ) {
+        // Fade Main's own graphs/cards out fast, decoupled from the activity-transition window
+        // animation -- see MainActivity.fadeOutContentForNavigation() for why.
+        if (activity is MainActivity) activity.fadeOutContentForNavigation()
         activity.startActivity(
             Intent(activity, DetailsActivity::class.java).apply {
                 putExtra(DetailsActivity.KEY_FORMATTED_LOCATION_ID, formattedId)

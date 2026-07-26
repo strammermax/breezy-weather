@@ -291,7 +291,7 @@
         <activity
             android:name=".radar.RadarActivity"
             android:label="@string/radar_title"
-            android:theme="@style/BreezyWeatherTheme"
+            android:theme="@style/BreezyWeatherTheme.Details"
             android:exported="true" />
 
         <!-- widget -->

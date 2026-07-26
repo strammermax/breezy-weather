@@ -16,12 +16,16 @@
 
 package com.liveweatherwallpaperapp.ui.details
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.isBackgroundAnimationEnabled
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
@@ -37,6 +41,24 @@ class DetailsActivity : BreezyActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // overridePendingTransition is deprecated and, on Android 14+, silently ignored in
+        // favor of the platform/OEM default (e.g. Samsung's slide) -- overrideActivityTransition
+        // is the replacement that's actually honored there. Both directions are set up front
+        // (not just OPEN here / CLOSE in finish() like the old API needed).
+        //
+        // Main fades out fast (R.anim.fade_out_fast) so it's out of the way well before
+        // Details' own slower fade-in (R.anim.fade_in_slow) finishes covering it -- equal-
+        // duration fades made everything above the shared translucent background flash
+        // invisible for a beat, since Details starts with nothing drawn yet.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.fade_in_slow, R.anim.fade_out_fast)
+            // Closing: Main was visible underneath the whole time (translucent window), so it
+            // needs no animation of its own -- only Details fades out on its way off screen.
+            overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, 0, R.anim.fade_out_fast)
+        } else {
+            @Suppress("DEPRECATION")
+            overridePendingTransition(R.anim.fade_in_slow, R.anim.fade_out_fast)
+        }
 
         // No placeholder background here: the window is translucent (see
         // BreezyWeatherTheme.Details), so the previous screen (the live wallpaper behind
@@ -44,6 +66,12 @@ class DetailsActivity : BreezyActivity() {
         // ready and crossfades the real background in.
         setContent {
             DailyWeatherScreen(onBackPressed = { finish() })
+        }
+
+        // Temporary performance test: keep every decorative details background layer off.
+        if (!DETAILS_BACKGROUND_ENABLED) {
+            window.setBackgroundDrawable(ColorDrawable(Color.rgb(24, 27, 34)))
+            return
         }
 
         // Animated weather effects (clouds, rain, snow, fog …) via the same
@@ -85,6 +113,16 @@ class DetailsActivity : BreezyActivity() {
         if (::effectView.isInitialized) effectView.setDrawable(false)
     }
 
+    override fun finish() {
+        super.finish()
+        // Pre-34: overrideActivityTransition doesn't exist, so the close transition still has
+        // to be (re-)applied right at finish() like the deprecated API always required.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            @Suppress("DEPRECATION")
+            overridePendingTransition(0, R.anim.fade_out_fast)
+        }
+    }
+
     /** Lets [DetailsScreen]'s snapshot renderer hand the near/foreground photo layer to [effectView]. */
     fun setForegroundPhoto(bitmap: android.graphics.Bitmap?, greyscaleAmount: Float) {
         if (::effectView.isInitialized) {
@@ -98,6 +136,7 @@ class DetailsActivity : BreezyActivity() {
     }
 
     companion object {
+        const val DETAILS_BACKGROUND_ENABLED = true
         private const val EFFECT_START_DELAY_MILLIS = 1_500L
         const val KEY_FORMATTED_LOCATION_ID = "FORMATTED_LOCATION_ID"
         const val KEY_CURRENT_DAILY_INDEX = "CURRENT_DAILY_INDEX"

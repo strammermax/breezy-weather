@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DetailsActivity/RadarActivity's entrance: fades in slowly, giving its own content (tiles,
+     charts) time to render before it's fully opaque, instead of popping in abruptly. -->
+<alpha xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromAlpha="0.0"
+    android:toAlpha="1.0"
+    android:duration="450"
+    android:interpolator="@android:interpolator/linear" />

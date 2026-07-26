@@ -68,11 +68,18 @@ internal class WallpaperEffectView @JvmOverloads constructor(
         /** Decorative background is capped at 30fps so the foreground always gets GPU time. */
         private const val MAX_FRAME_INTERVAL_MILLIS = 34L
         private const val TELEMETRY_LOG_INTERVAL_MILLIS = 5_000L
+
+        // Temporary isolation switches for the ~20fps-on-30fps-cap MainActivity measurement --
+        // flip one at a time, rebuild, and compare the fps telemetry to find which layer is
+        // actually eating the frame budget. All false is the normal, shipped configuration.
+        private const val DEBUG_DISABLE_FROSTED_BLUR = false
+        private const val DEBUG_DISABLE_FOREGROUND_PHOTO = false
+        private const val DEBUG_DISABLE_WEATHER_PASSES = false
     }
 
     /** Blurs only this background layer; UI and glass cards above it remain sharp. */
     fun setFrosted(frosted: Boolean, strength: Int = 2, tint: String = "system") {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !DEBUG_DISABLE_FROSTED_BLUR) {
             val radius = when (strength.coerceIn(1, 3)) {
                 1 -> 16f
                 3 -> 42f
@@ -230,10 +237,14 @@ internal class WallpaperEffectView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         val r = renderer ?: return
-        r.drawBackgroundWeatherPass(canvas)
-        foregroundPhoto?.let { canvas.drawBitmap(it, null, foregroundDestination, foregroundPaint) }
-        r.drawForegroundWeatherPass(canvas)
-        r.drawGlassRainDrops(canvas)
+        if (!DEBUG_DISABLE_WEATHER_PASSES) r.drawBackgroundWeatherPass(canvas)
+        if (!DEBUG_DISABLE_FOREGROUND_PHOTO) {
+            foregroundPhoto?.let { canvas.drawBitmap(it, null, foregroundDestination, foregroundPaint) }
+        }
+        if (!DEBUG_DISABLE_WEATHER_PASSES) {
+            r.drawForegroundWeatherPass(canvas)
+            r.drawGlassRainDrops(canvas)
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
