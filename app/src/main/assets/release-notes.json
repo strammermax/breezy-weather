@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+2)",
+    "version": "Niet uitgebracht (+3)",
     "date": "",
     "changes": [
+      "Retune the daily easter egg: every 5 min, 1-2 at a time, 50% alpha, cloud-speed pace",
       "Add tilt-driven, depth-aware parallax to the live wallpaper photo",
       "Fix import order in RadarActivity.kt to satisfy spotlessKotlinCheck"
     ]
