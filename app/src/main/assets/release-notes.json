@@ -1,5 +1,17 @@
 [
   {
+    "version": "Niet uitgebracht (+1)",
+    "date": "",
+    "changes": [
+      "Remove thumbs up/down rating from wallpaper photo priority + UI"
+    ]
+  },
+  {
+    "version": "2026.07.24.412",
+    "date": "2026-07-24",
+    "changes": []
+  },
+  {
     "version": "2026.07.24.411",
     "date": "2026-07-24",
     "changes": [
@@ -74,21 +86,6 @@
     "date": "2026-07-17",
     "changes": [
       "Rework easter egg debug trigger into a full control section"
-    ]
-  },
-  {
-    "version": "2026.07.17.350",
-    "date": "2026-07-17",
-    "changes": [
-      "Add debug-only easter egg and weetje force-trigger buttons"
-    ]
-  },
-  {
-    "version": "2026.07.17.349",
-    "date": "2026-07-17",
-    "changes": [
-      "Consolidate Find my phone parameters into AppDefaults",
-      "Fix fictional-location weather updates failing on country-gated sources"
     ]
   }
 ]
