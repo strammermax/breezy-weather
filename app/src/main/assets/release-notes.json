@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+1)",
+    "version": "Niet uitgebracht (+2)",
     "date": "",
     "changes": [
+      "Open the Buienradar app (or its website) from the Buienradar radar tab/tile",
       "Smooth Main -> Details/Radar transition instead of a flash+slide"
     ]
   },
