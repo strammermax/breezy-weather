@@ -27,6 +27,7 @@ import com.google.maps.android.SphericalUtil
 import com.google.maps.android.model.LatLng
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.common.AppMessageStore
 import com.liveweatherwallpaperapp.common.activities.BreezyViewModel
 import com.liveweatherwallpaperapp.common.activities.livedata.BusLiveData
 import com.liveweatherwallpaperapp.common.extensions.hasPermission
@@ -37,15 +38,14 @@ import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
 import com.liveweatherwallpaperapp.domain.location.model.applyDefaultPreset
 import com.liveweatherwallpaperapp.domain.location.model.isCloseTo
 import com.liveweatherwallpaperapp.domain.settings.CurrentLocationStore
-import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperPhotoRefreshWorker
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.sources.RefreshHelper
 import com.liveweatherwallpaperapp.sources.SourceManager
 import com.liveweatherwallpaperapp.ui.main.utils.RefreshErrorType
 import com.liveweatherwallpaperapp.ui.main.utils.StatementManager
+import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperPhotoRefreshWorker
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
 import com.liveweatherwallpaperapp.wallpaper.photo.toWallpaperPlaceQuery
-import com.liveweatherwallpaperapp.common.AppMessageStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

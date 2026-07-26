@@ -88,10 +88,12 @@ class RemoveSkyMessagingService : FirebaseMessagingService() {
                         hasGps = flag("has_gps"),
                         hasDate = flag("has_date"),
                         isNightVisual = message.data["day_period"]?.let { it == "night" },
-                        seasonVisual = message.data["season"]?.takeIf { it.isNotBlank() },
-                    ),
+                        seasonVisual = message.data["season"]?.takeIf { it.isNotBlank() }
+                    )
                 )
-            } else null
+            } else {
+                null
+            }
             EventBus.instance.with(UploadProcessingResultMessage::class.java).postValue(
                 UploadProcessingResultMessage(recordId, result, reason, message.data["processed_url"], checks)
             )

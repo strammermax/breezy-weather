@@ -45,8 +45,8 @@ import com.liveweatherwallpaperapp.wallpaper.photo.CameraUploadResult
 import com.liveweatherwallpaperapp.wallpaper.photo.RemoveSkyCheckOutcome
 import com.liveweatherwallpaperapp.wallpaper.photo.RemoveSkyCheckResult
 import com.liveweatherwallpaperapp.wallpaper.photo.RemoveSkyHttpException
-import com.liveweatherwallpaperapp.wallpaper.photo.UploadProcessingResultMessage
 import com.liveweatherwallpaperapp.wallpaper.photo.UploadProcessingProgressMessage
+import com.liveweatherwallpaperapp.wallpaper.photo.UploadProcessingResultMessage
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
@@ -194,7 +194,7 @@ class CameraActivity : AppCompatActivity() {
                             runBlocking {
                                 wallpaperRepository.completePendingCameraUpload(
                                     processedUrl = normalizedUrl,
-                                    location = completedCard.locationName,
+                                    location = completedCard.locationName
                                 )
                             }
                         }.onFailure {
@@ -202,7 +202,7 @@ class CameraActivity : AppCompatActivity() {
                                 this@CameraActivity,
                                 "Camera",
                                 "Could not cache completed upload",
-                                it,
+                                it
                             )
                         }.getOrNull()
                         val updated = currentCards.map { data ->
@@ -211,7 +211,7 @@ class CameraActivity : AppCompatActivity() {
                                     processedUrl = normalizedUrl,
                                     pending = false,
                                     activationResult = activationResult,
-                                    serverCheck = result.checkResult,
+                                    serverCheck = result.checkResult
                                 )
                             } else {
                                 data
@@ -232,7 +232,6 @@ class CameraActivity : AppCompatActivity() {
         resultTextView = binding.resultTextView
         progressBar = binding.progressBar
         captureButton = binding.captureButton
-
 
         if (allPermissionsGranted()) {
             startCamera()
@@ -737,7 +736,7 @@ class CameraActivity : AppCompatActivity() {
                         uploadFailureReason = null,
                         activationResult = result.takeUnless { it.pending },
                         pending = result.pending,
-                        recordId = result.recordId,
+                        recordId = result.recordId
                     )
                 )
             )
@@ -909,7 +908,7 @@ class CameraActivity : AppCompatActivity() {
                                 uploadFailureReason = null,
                                 activationResult = result.takeUnless { it.pending },
                                 pending = result.pending,
-                                recordId = result.recordId,
+                                recordId = result.recordId
                             )
                         )
                         appendProgressLog(getString(R.string.camera_gallery_saved, label))
@@ -1001,8 +1000,10 @@ class CameraActivity : AppCompatActivity() {
             return
         }
         val checked = results.map { data ->
-            data to (data.serverCheck?.let { RemoveSkyCheckOutcome.Success(it) }
-                ?: data.processedUrl?.let { runBlocking { wallpaperRepository.checkUploadedPhoto(it) } })
+            data to (
+                data.serverCheck?.let { RemoveSkyCheckOutcome.Success(it) }
+                    ?: data.processedUrl?.let { runBlocking { wallpaperRepository.checkUploadedPhoto(it) } }
+                )
         }
         fun checkOk(check: RemoveSkyCheckOutcome?) = (check as? RemoveSkyCheckOutcome.Success)?.result?.ok == true
         val anyApproved = checked.any { (_, check) -> checkOk(check) }
@@ -1148,7 +1149,7 @@ class CameraActivity : AppCompatActivity() {
                 view.setTextColor(Color.parseColor("#C62828"))
                 view.text = "✗ " + getString(
                     R.string.camera_upload_result_rejected,
-                    result.reason?.let(::reasonText).orEmpty(),
+                    result.reason?.let(::reasonText).orEmpty()
                 )
             }
             else -> {

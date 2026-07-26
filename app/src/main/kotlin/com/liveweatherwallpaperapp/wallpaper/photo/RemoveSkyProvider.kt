@@ -343,7 +343,7 @@ class RemoveSkyProvider(
                     pending = true,
                     recordId = json.optInt("id").takeIf { json.has("id") },
                     location = resolvedLocation,
-                    country = json.optStringOrNull("country"),
+                    country = json.optStringOrNull("country")
                 )
             }
             val url = json.optString("url").ifBlank {

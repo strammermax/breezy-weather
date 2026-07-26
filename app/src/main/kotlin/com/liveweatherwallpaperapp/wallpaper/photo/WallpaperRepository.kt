@@ -388,8 +388,11 @@ class WallpaperRepository @Inject constructor(
             // RemoveSkyMessagingService). Return early instead of running any of the
             // download/cache/activate logic below, which all requires a real processedUrl.
             return CameraUploadResult(
-                file = file, processedUrl = null, location = upload.location,
-                pending = true, recordId = upload.recordId,
+                file = file,
+                processedUrl = null,
+                location = upload.location,
+                pending = true,
+                recordId = upload.recordId
             )
         }
         val processedUrl = upload.processedUrl
@@ -403,7 +406,7 @@ class WallpaperRepository @Inject constructor(
             season = upload.season,
             exifLatitude = upload.exifLatitude,
             exifLongitude = upload.exifLongitude,
-            activate = activate,
+            activate = activate
         )
     }
 
@@ -416,7 +419,7 @@ class WallpaperRepository @Inject constructor(
     ): CameraUploadResult = cacheProcessedCameraPhoto(
         processedUrl = processedUrl,
         location = location,
-        activate = false,
+        activate = false
     )
 
     private suspend fun cacheProcessedCameraPhoto(

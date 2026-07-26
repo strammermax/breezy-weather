@@ -220,7 +220,8 @@ class WallpaperPhotoRepository(
         filePath: String?,
         attribution: String?,
         processed: Boolean,
-        @Suppress("UNUSED_PARAMETER") rating: Long, // schema still has the column (unused; see breezy-weather#12); positional SQLDelight mapper, must stay
+        // The schema still has this unused column; the positional SQLDelight mapper must keep it.
+        @Suppress("UNUSED_PARAMETER") rating: Long,
         disabled: Boolean,
         viewCount: Long,
         createdAt: Long,

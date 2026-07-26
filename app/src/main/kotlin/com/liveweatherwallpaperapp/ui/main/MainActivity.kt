@@ -1040,7 +1040,7 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
     fun retryWeatherUpdate() {
         viewModel.updateWithUpdatingChecking(
             triggeredByUser = true,
-            checkPermissions = true,
+            checkPermissions = true
         )
     }
 

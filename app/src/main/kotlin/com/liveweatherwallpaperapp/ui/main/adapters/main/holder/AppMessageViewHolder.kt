@@ -44,11 +44,11 @@ import com.liveweatherwallpaperapp.common.AppMessageKind
 import com.liveweatherwallpaperapp.common.AppMessageStore
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.utils.helpers.IntentHelper
+import com.liveweatherwallpaperapp.ui.main.MainActivity
 import com.liveweatherwallpaperapp.ui.theme.ThemeManager
 import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
 import com.liveweatherwallpaperapp.ui.theme.compose.themeRipple
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
-import com.liveweatherwallpaperapp.ui.main.MainActivity
 import com.liveweatherwallpaperapp.wallpaper.LiveWallpaperConfigActivity
 import livewallpaperweather.domain.location.model.Location
 
