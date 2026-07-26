@@ -324,10 +324,10 @@ private fun CloudLayerControlPanel(
 }
 
 /**
- * Debug-only: the real easter eggs only appear in two 5-minute windows a day and pick their
- * asset/pitch/pace automatically, so testers need a way to summon a specific one on demand with
- * adjustable transparency/speed instead of waiting and hoping. Speed/transparency here are
- * debug-session-only (not persisted) -- they just tune the next forced trigger.
+ * Debug-only: the real easter eggs cycle automatically every few minutes and pick their own
+ * asset/count/pace, so testers need a way to summon a specific one on demand with adjustable
+ * transparency/speed instead of waiting and hoping. Speed/transparency here are debug-session-
+ * only (not persisted) -- they just tune the next forced trigger.
  */
 @Composable
 private fun EasterEggDebugSection(

@@ -282,40 +282,46 @@ class CloudEngineRenderer(private val context: Context) {
 
         if (!easterEggsEnabled || weatherId == "clear") return
 
+        // Repeats every EASTER_EGG_INTERVAL_MINUTES (one cycle = one crossing window), instead
+        // of the old fixed twice-a-day windows. Travel speed matches the clouds' own pace
+        // (windSpeedMultiplier) so a windy scene sweeps the egg across faster, same as the
+        // cloud layers around it -- not a fixed duration independent of the weather.
         val nowMillis = System.currentTimeMillis()
         val calendar = Calendar.getInstance().apply { timeInMillis = nowMillis }
         val daySeed = calendar.get(Calendar.YEAR) * 400L + calendar.get(Calendar.DAY_OF_YEAR)
         val minuteOfDay = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
         val secondFraction = calendar.get(Calendar.SECOND) / 60f + calendar.get(Calendar.MILLISECOND) / 60_000f
-        val firstStart = 9 * 60 + Math.floorMod(daySeed * 17L, 180L).toInt()
-        val secondStart = 14 * 60 + Math.floorMod(daySeed * 29L, 180L).toInt()
-        val activeSlot = listOf(firstStart, secondStart).indexOfFirst { start ->
-            minuteOfDay + secondFraction in start.toFloat()..(start + EASTER_EGG_TRAVEL_MINUTES)
-        }
-        if (activeSlot < 0) return
-        val startMinute = if (activeSlot == 0) firstStart else secondStart
-        val progress = (minuteOfDay + secondFraction - startMinute) / EASTER_EGG_TRAVEL_MINUTES
+        val minuteOfDayF = minuteOfDay + secondFraction
+
+        val cycleIndex = (minuteOfDayF / EASTER_EGG_INTERVAL_MINUTES).toLong()
+        val cycleStart = cycleIndex * EASTER_EGG_INTERVAL_MINUTES
+        val travelMinutes = EASTER_EGG_BASE_TRAVEL_MINUTES / windSpeedMultiplier.coerceAtLeast(.1f)
+        val progress = (minuteOfDayF - cycleStart) / travelMinutes
         if (progress !in 0f..1f) return
 
-        val slotSeed = daySeed * 31L + activeSlot * 997L + randomSeed
-        val regularAssets = easterEggAssets.dropLast(1).ifEmpty { easterEggAssets }
-        val isWeeklySpecial = activeSlot == 1 && Math.floorMod(daySeed, 7L) == 0L
-        val asset = if (isWeeklySpecial) {
-            easterEggAssets.last()
-        } else {
-            regularAssets[Math.floorMod(slotSeed, regularAssets.size.toLong()).toInt()]
-        }
-        val sizeVariation = Math.floorMod(slotSeed shr 8, 21L).toFloat() / 100f
-        val width = screenWidth * (.42f + sizeVariation)
-        val height = width / asset.aspectRatio
-        val padding = maxOf(screenWidth * .08f, 24f * pxPerDp)
-        val left = -width - padding + progress * (screenWidth + width + padding * 2f)
-        val verticalRange = (screenHeight * .62f - height).coerceAtLeast(screenHeight * .12f)
-        val topSeed = Math.floorMod(slotSeed shr 16, 10_000L).toFloat() / 10_000f
-        val top = screenHeight * .10f + verticalRange * topSeed
-        val fade = minOf((progress / .06f).coerceAtMost(1f), ((1f - progress) / .06f).coerceAtMost(1f))
+        val cycleSeed = daySeed * 2_654_435_761L + cycleIndex * 40_503L + randomSeed
+        // Random 1 or 2 eggs per cycle (roughly a quarter of cycles get a second one), picked
+        // from the full asset pool -- no more reserving the last asset for a separate weekly-
+        // special path, everything's just part of the same random draw now.
+        val eggCount = if (Math.floorMod(cycleSeed, 4L) == 0L) 2 else 1
+        val fade = minOf((progress / .1f).coerceAtMost(1f), ((1f - progress) / .1f).coerceAtMost(1f))
 
-        drawAsset(canvas, asset, left, top, width, height, .94f * fade)
+        for (egg in 0 until eggCount) {
+            val eggSeed = cycleSeed * 97L + egg * 7_919L
+            val asset = easterEggAssets[Math.floorMod(eggSeed, easterEggAssets.size.toLong()).toInt()]
+            val sizeVariation = Math.floorMod(eggSeed shr 8, 21L).toFloat() / 100f
+            val width = screenWidth * (.32f + sizeVariation)
+            val height = width / asset.aspectRatio
+            val padding = maxOf(screenWidth * .08f, 24f * pxPerDp)
+            // Second egg trails slightly behind and offset in height, instead of both eggs
+            // moving in perfect lockstep across the exact same line.
+            val eggProgress = if (egg == 0) progress else (progress - .08f).coerceIn(0f, 1f)
+            val left = -width - padding + eggProgress * (screenWidth + width + padding * 2f)
+            val verticalRange = (screenHeight * .62f - height).coerceAtLeast(screenHeight * .12f)
+            val topSeed = Math.floorMod(eggSeed shr 16, 10_000L).toFloat() / 10_000f
+            val top = screenHeight * .10f + verticalRange * topSeed
+            drawAsset(canvas, asset, left, top, width, height, EASTER_EGG_ALPHA * fade)
+        }
     }
 
     private fun drawHorizonBank(
@@ -572,7 +578,14 @@ class CloudEngineRenderer(private val context: Context) {
     }
 
     private companion object {
-        const val EASTER_EGG_TRAVEL_MINUTES = 5f
+        /** How often a new easter-egg crossing cycle starts. */
+        const val EASTER_EGG_INTERVAL_MINUTES = 5f
+
+        /** Crossing duration at windSpeedMultiplier=1 -- scaled by the clouds' own wind speed
+         *  so the egg always keeps pace with them instead of a fixed independent duration. */
+        const val EASTER_EGG_BASE_TRAVEL_MINUTES = 1f
+
+        const val EASTER_EGG_ALPHA = 0.5f
 
         // Debug-triggered eggs cross the screen much faster than the real daily ones, so testers
         // tapping the button repeatedly actually see each one instead of waiting minutes.
