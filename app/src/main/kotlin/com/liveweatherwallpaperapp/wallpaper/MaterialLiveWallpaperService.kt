@@ -91,9 +91,28 @@ import kotlin.time.Duration.Companion.hours
 // Parallax travel per layer as a fraction of the screen width. The same constants drive the
 // extra layer width (updateLayerBounds), the foreground bitmap width (buildPhotoForeground)
 // and the per-frame offsets, so bitmap, bounds and offsets can never disagree.
-private const val PARALLAX_BG_FACTOR = 0.05f
-private const val PARALLAX_FG_FACTOR = 0.15f
+private const val PARALLAX_BG_FACTOR = 0.06f
+private const val PARALLAX_FG_FACTOR = 0.10f
 private const val PARALLAX_CELESTIAL_FACTOR = 0.02f
+
+/** Extra travel for [mForegroundNear] (the depth-masked near/subject layer) on top of
+ *  [PARALLAX_FG_FACTOR] -- the gap between this and the far layer's movement is what actually
+ *  reads as depth, not the absolute amount either one moves. */
+private const val PARALLAX_NEAR_FACTOR = 0.30f
+
+/** Depth value (0..255, 255=nearest) above which a pixel counts as "near" and gets kept in
+ *  [mForegroundNear]; matches [WallpaperRepository.loadCachedDepthBitmap]'s server convention. */
+private const val NEAR_DEPTH_THRESHOLD = 140
+
+/** Device tilt (radians, roll around the long axis) that maps to the full ±0.5 swing the old
+ *  swipe-only offset used -- comfortable wrist tilt while holding the phone normally, not a
+ *  full 90-degree turn. */
+private const val TILT_FULL_SWING_RADIANS = 0.5f
+
+/** Exponential-moving-average weight for [mTiltOffset] -- low enough to smooth out hand tremor
+ *  and sensor noise (unlike the raw accelerometer [mGravityListener] already uses for cloud
+ *  tilt) without feeling laggy against a deliberate tilt gesture. */
+private const val TILT_SMOOTHING_ALPHA = 0.12f
 
 /** ACT-009: minimum interval between periodic debug telemetry summaries. */
 private const val TELEMETRY_LOG_INTERVAL_MILLIS = 5_000L
@@ -191,6 +210,12 @@ class MaterialLiveWallpaperService : WallpaperService() {
         // Draw the complete photo after the cloud pass so clouds remain behind photographed
         // objects such as houses, trees and the horizon.
         private var mForeground: Drawable? = null
+
+        // Depth-masked copy of mForeground containing only the "near" pixels (see
+        // NEAR_DEPTH_THRESHOLD), drawn on top of it with extra parallax travel so the subject
+        // visibly separates from the rest of the photo when the phone tilts -- see
+        // buildPhotoForeground() and PARALLAX_NEAR_FACTOR.
+        private var mForegroundNear: Drawable? = null
         private var mGlassSceneBitmap: Bitmap? = null
         private var mGlassSceneCanvas: Canvas? = null
         private var mGlassSceneShader: Shader? = null
@@ -207,6 +232,31 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mLastDayNightCheckMinute = Long.MIN_VALUE
         private var mOpenGravitySensor = false
         private var mGravitySensor: Sensor? = null
+
+        // Tilt-driven parallax input, independent of mGravityListener above (that one only
+        // drives the cloud-tilt effect). Rotation vector is a fused, low-noise sensor (unlike
+        // raw TYPE_GRAVITY), still smoothed further in mTiltListener since this feeds a
+        // continuous visual offset rather than a discrete angle.
+        private var mTiltSensor: Sensor? = null
+        private var mTiltRegistered = false
+        private var mTiltOffset = 0f
+        private val mTiltRotationMatrix = FloatArray(9)
+        private val mTiltOrientation = FloatArray(3)
+        private val mTiltListener: SensorEventListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                SensorManager.getRotationMatrixFromVector(mTiltRotationMatrix, event.values)
+                SensorManager.getOrientation(mTiltRotationMatrix, mTiltOrientation)
+                // orientation[2] = roll: rotation around the phone's long axis, i.e. tilting it
+                // left/right in the hand -- the natural gesture for a horizontal parallax swing.
+                val roll = mTiltOrientation[2]
+                val target = (roll / TILT_FULL_SWING_RADIANS).coerceIn(-1f, 1f) * 0.5f
+                mTiltOffset += (target - mTiltOffset) * TILT_SMOOTHING_ALPHA
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
+                // do nothing.
+            }
+        }
 
         private var mParallaxEnabled = false
 
@@ -412,6 +462,15 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     it.withTranslation(-fgOffset, 0f) {
                         updateForegroundNightTint()
                         mForeground?.draw(it)
+                    }
+                    // Drawn separately (not nested in the block above) with its own, larger
+                    // offset -- see PARALLAX_NEAR_FACTOR -- so the near/subject layer visibly
+                    // separates from the rest of the photo instead of moving with it in lockstep.
+                    if (mForegroundNear != null) {
+                        val nearOffset = parallaxOffset(PARALLAX_FG_FACTOR + PARALLAX_NEAR_FACTOR)
+                        it.withTranslation(-nearOffset, 0f) {
+                            mForegroundNear?.draw(it)
+                        }
                     }
                     if (mIntervalComputer != null && mRotators != null) {
                         var interval = mIntervalComputer!!.interval
@@ -952,6 +1011,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             if (!mWallpaperImageStore.photoBackgroundEnabled) {
                 if (mForeground != null) {
                     mForeground = null
+                    mForegroundNear = null
                     mForegroundKey = null
                 }
                 return
@@ -962,6 +1022,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             if (path == null) {
                 if (mForeground != null) {
                     mForeground = null
+                    mForegroundNear = null
                     mForegroundKey = null
                 }
                 lwwLog { "no cached photo; waiting for app data layer" }
@@ -990,6 +1051,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 // forever, since nothing else ever clears it once cachedPhotoPath is gone.
                 if (mForeground != null) {
                     mForeground = null
+                    mForegroundNear = null
                     mForegroundKey = null
                 }
                 lwwLog { "no cached photo; waiting for app data layer" }
@@ -999,7 +1061,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
             val key = "$path|$mForegroundFileLastModified|${mSizes[0]}x${mSizes[1]}|$mParallaxEnabled"
             if (key == mForegroundKey && mForeground != null) return
 
-            mForeground = buildPhotoForeground()
+            val (foreground, near) = buildPhotoForeground()
+            mForeground = foreground
+            mForegroundNear = near
             mForegroundKey = if (mForeground != null) key else null
             mForegroundNightTint = Float.NaN
             mForegroundGreyscaleAmount = 0f
@@ -1077,11 +1141,16 @@ class MaterialLiveWallpaperService : WallpaperService() {
             canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), mSkyTintPaint)
         }
 
-        /** Parallax shift for a layer, clamped so it can never exceed the layer's extra width. */
+        /**
+         * Parallax shift for a layer, clamped so it can never exceed the layer's extra width.
+         * Combines two independent inputs: [mXOffset] (home-screen swipe progress, 0.5=centered)
+         * and [mTiltOffset] (device tilt, already in the same ±0.5 range) -- either alone, or
+         * both together, drives the shift.
+         */
         private fun parallaxOffset(factor: Float): Float {
             if (!mParallaxEnabled) return 0f
             val extra = mSizes[0] * factor
-            return ((mXOffset - 0.5f) * mSizes[0] * factor).coerceIn(-extra, extra)
+            return ((mXOffset - 0.5f + mTiltOffset) * mSizes[0] * factor).coerceIn(-extra, extra)
         }
 
         private fun updateLayerBounds() {
@@ -1093,13 +1162,16 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 // Make layers wider to allow shifting
                 val bgExtra = (width * PARALLAX_BG_FACTOR).toInt()
                 val fgExtra = (width * PARALLAX_FG_FACTOR).toInt()
+                val nearExtra = (width * (PARALLAX_FG_FACTOR + PARALLAX_NEAR_FACTOR)).toInt()
                 mBackground?.setBounds(-bgExtra, 0, width + bgExtra, height)
                 mOutgoingBackground?.setBounds(-bgExtra, 0, width + bgExtra, height)
                 mForeground?.setBounds(-fgExtra, 0, width + fgExtra, height)
+                mForegroundNear?.setBounds(-nearExtra, 0, width + nearExtra, height)
             } else {
                 mBackground?.setBounds(0, 0, width, height)
                 mOutgoingBackground?.setBounds(0, 0, width, height)
                 mForeground?.setBounds(0, 0, width, height)
+                mForegroundNear?.setBounds(0, 0, width, height)
             }
             lwwLog { "layer bounds updated ${width}x$height parallax=$mParallaxEnabled" }
         }
@@ -1107,37 +1179,56 @@ class MaterialLiveWallpaperService : WallpaperService() {
         /**
          * Places the complete processed photo at the bottom of a transparent full-screen bitmap,
          * covering the full width (cropping sides for wide photos, or the top for narrow/tall
-         * photos) so no transparent gaps appear next to the photo.
+         * photos) so no transparent gaps appear next to the photo. Also extracts a depth-masked
+         * "near" layer (see [WallpaperPhotoLayout.extractNearLayer]) for the caller to draw on
+         * top with extra parallax travel -- second component is null when parallax is off or no
+         * depth map is cached for this photo (the base photo still renders fine either way).
+         *
+         * Both drawables are built from one positioned bitmap sized for the near layer's wider
+         * bounds; [Drawable.setBounds] scales it to fit whatever rect it's actually assigned
+         * (the base layer's narrower bounds included), so sharing it costs nothing extra.
          */
-        private fun buildPhotoForeground(): Drawable? {
+        private fun buildPhotoForeground(): Pair<Drawable?, Drawable?> {
             if (!mWallpaperImageStore.photoBackgroundEnabled) {
                 lwwLog { "buildPhotoForeground skipped: disabled" }
-                return null
+                return null to null
             }
             if (mSizes[0] <= 0 || mSizes[1] <= 0) {
                 lwwLog { "buildPhotoForeground skipped: size=${mSizes[0]}x${mSizes[1]}" }
-                return null
+                return null to null
             }
             val source = mWallpaperRepository.loadCachedBitmap()
             if (source == null) {
                 lwwLog {
                     "buildPhotoForeground skipped: no cached bitmap (path=${mWallpaperImageStore.cachedPhotoPath})"
                 }
-                return null
+                return null to null
             }
             return try {
                 val width = if (mParallaxEnabled) {
-                    (mSizes[0] * (1f + 2 * PARALLAX_FG_FACTOR)).toInt()
+                    (mSizes[0] * (1f + 2 * (PARALLAX_FG_FACTOR + PARALLAX_NEAR_FACTOR))).toInt()
                 } else {
                     mSizes[0]
                 }
                 val positioned = positionPhotoAtBottom(source, width, mSizes[1])
 
-                lwwLog { "buildPhotoForeground ok: src=${source.width}x${source.height} -> ${width}x${mSizes[1]}" }
-                BitmapDrawable(resources, positioned)
+                val near = if (mParallaxEnabled) {
+                    val depthSource = mWallpaperRepository.loadCachedDepthBitmap()
+                    val positionedDepth = depthSource?.let { positionPhotoAtBottom(it, width, mSizes[1]) }
+                    WallpaperPhotoLayout.extractNearLayer(positioned, positionedDepth, NEAR_DEPTH_THRESHOLD)
+                        ?.let { BitmapDrawable(resources, it) }
+                } else {
+                    null
+                }
+
+                lwwLog {
+                    "buildPhotoForeground ok: src=${source.width}x${source.height} -> " +
+                        "${width}x${mSizes[1]} near=${near != null}"
+                }
+                BitmapDrawable(resources, positioned) to near
             } catch (e: Throwable) {
                 lwwLog { "buildPhotoForeground failed: ${e.message}" }
-                null
+                null to null
             } finally {
                 source.recycle()
             }
@@ -1179,6 +1270,9 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 )
             }
             foreground.colorFilter = filter
+            // Same tint on the near layer -- it's a duplicate crop of the same photo, so an
+            // untinted copy on top would show as a visible seam/glow at night or in fog.
+            mForegroundNear?.colorFilter = filter
             mForegroundNightTint = dimming
             mForegroundGreyscaleAmount = greyscaleAmount
         }
@@ -1546,6 +1640,25 @@ class MaterialLiveWallpaperService : WallpaperService() {
                             mNewCloudsEnabled = configManager.newCloudsEnabled
                             setWeatherImplementor(SceneTransitionReason.SURFACE_RECREATED)
 
+                            // Picks up a parallax toggle flipped while this surface was already
+                            // showing (e.g. from the settings screen) without waiting for a full
+                            // invisible/visible cycle -- same registration mDrawableRunnable's
+                            // onVisibilityChanged(true) branch does.
+                            if (mParallaxEnabled && mTiltSensor != null) {
+                                if (!mTiltRegistered) {
+                                    sensorManager?.registerListener(
+                                        mTiltListener,
+                                        mTiltSensor,
+                                        SensorManager.SENSOR_DELAY_UI
+                                    )
+                                    mTiltRegistered = true
+                                }
+                            } else if (mTiltRegistered) {
+                                sensorManager?.unregisterListener(mTiltListener, mTiltSensor)
+                                mTiltRegistered = false
+                                mTiltOffset = 0f
+                            }
+
                             // Drawables are owned by the render thread; serialize mutations there
                             // instead of racing it from this (main-thread) callback.
                             mHandler?.post {
@@ -1567,6 +1680,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
             sensorManager?.let {
                 mOpenGravitySensor = true
                 mGravitySensor = it.getDefaultSensor(Sensor.TYPE_GRAVITY)
+                mTiltSensor = it.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
             }
             EventBus.instance.with(Location::class.java).observeForever(mLocationUpdatedObserver)
             EventBus.instance.with(WallpaperPhotoActivatedMessage::class.java).observeForever(mPhotoActivatedObserver)
@@ -1596,6 +1710,10 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 }
                 mHandler?.removeCallbacksAndMessages(null)
                 sensorManager?.unregisterListener(mGravityListener, mGravitySensor)
+                if (mTiltRegistered) {
+                    sensorManager?.unregisterListener(mTiltListener, mTiltSensor)
+                    mTiltRegistered = false
+                }
                 mOrientationListener.disable()
                 if (BuildConfig.DEBUG) {
                     // Final summary before counters reset: confirms the renderer stopped
@@ -1719,6 +1837,18 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 )
             } else {
                 sensorManager?.unregisterListener(mGravityListener, mGravitySensor)
+            }
+            // Independent of the gravity-sensor setting above -- tilt parallax follows the
+            // parallax toggle, not the (separate) cloud-tilt one.
+            if (mParallaxEnabled && mTiltSensor != null) {
+                if (!mTiltRegistered) {
+                    sensorManager?.registerListener(mTiltListener, mTiltSensor, SensorManager.SENSOR_DELAY_UI)
+                    mTiltRegistered = true
+                }
+            } else if (mTiltRegistered) {
+                sensorManager?.unregisterListener(mTiltListener, mTiltSensor)
+                mTiltRegistered = false
+                mTiltOffset = 0f
             }
 
             mHandler?.post { setWeatherBackgroundDrawable() }
