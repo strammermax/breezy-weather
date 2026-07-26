@@ -332,7 +332,10 @@ class WeatherUpdateJob @AssistedInject constructor(
             }
         }
 
-        if (failedUpdates.isNotEmpty()) {
+        // A provider may report a secondary failure even though usable weather was received.
+        // In that case the main screen is already up to date, so do not keep showing a stale
+        // "weather update failed" card. Only warn when this run produced no weather update.
+        if (failedUpdates.isNotEmpty() && newUpdates.isEmpty()) {
             val errorFile = writeErrorFile(failedUpdates)
             notifier.showUpdateErrorNotification(
                 failedUpdates.groupBy { it.first }.size,

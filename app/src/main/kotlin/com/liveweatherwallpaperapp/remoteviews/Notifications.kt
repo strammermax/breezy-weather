@@ -101,6 +101,16 @@ object Notifications {
     const val CHANNEL_WEETJE = "weetje"
     const val ID_WEETJE = -401
 
+    /**
+     * Notification channel for the async camera-upload result (done/rejected/failed) --
+     * see RemoveSkyMessagingService's "upload_result" push and
+     * app/services/processing.py's finish_upload_processing. The /upload response itself
+     * only ever says "pending" for a direct file upload; this is the only place the real
+     * verdict reaches the user.
+     */
+    const val CHANNEL_UPLOAD_RESULT = "upload_result"
+    const val ID_UPLOAD_RESULT = -501
+
     private const val ALERT_GROUP_KEY = "breezy_weather_alert_notification_group"
     private const val PREFERENCE_NOTIFICATION = "NOTIFICATION_PREFERENCE"
     private const val KEY_NOTIFICATION_ID = "NOTIFICATION_ID"
@@ -159,6 +169,10 @@ object Notifications {
                 buildNotificationChannel(CHANNEL_WEETJE, IMPORTANCE_DEFAULT) {
                     setName(context.getString(R.string.notification_channel_weetje))
                     setGroup(GROUP_BREEZY_WEATHER)
+                },
+                buildNotificationChannel(CHANNEL_UPLOAD_RESULT, IMPORTANCE_DEFAULT) {
+                    setName(context.getString(R.string.notification_channel_upload_result))
+                    setGroup(GROUP_BREEZY_WEATHER)
                 }
             )
         )
@@ -183,6 +197,30 @@ object Notifications {
                     PendingIntent.getActivity(
                         context,
                         ID_APP_UPDATE,
+                        IntentHelper.buildMainActivityIntent(null),
+                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+                )
+            }.build()
+        )
+    }
+
+    /** Shows the async camera-upload result (done/rejected/failed) -- see
+     * RemoveSkyMessagingService.handleUploadResult. */
+    fun sendUploadResultNotification(context: Context, message: String) {
+        context.notify(
+            ID_UPLOAD_RESULT,
+            context.notificationBuilder(CHANNEL_UPLOAD_RESULT).apply {
+                setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                setSmallIcon(R.drawable.ic_alert)
+                setContentTitle(context.getString(R.string.brand_name))
+                setContentText(message)
+                setStyle(NotificationCompat.BigTextStyle().bigText(message))
+                setAutoCancel(true)
+                setContentIntent(
+                    PendingIntent.getActivity(
+                        context,
+                        ID_UPLOAD_RESULT,
                         IntentHelper.buildMainActivityIntent(null),
                         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                     )

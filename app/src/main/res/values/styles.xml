@@ -66,6 +66,15 @@
         <item name="android:windowContentTransitions">true</item>
     </style>
 
+    <!-- Lets DetailsActivity's window stay translucent so the previous screen (the live
+         wallpaper behind MainActivity) remains visible until the real sky/photo snapshot
+         background is ready to crossfade in. See DetailsActivity.onCreate and
+         DetailsScreen's background-render LaunchedEffect. -->
+    <style name="BreezyWeatherTheme.Details" parent="BreezyWeatherTheme">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
     <style name="BreezyWeatherTheme.AppBarTheme">
         <item name="android:background">?attr/colorSurface</item>
         <item name="elevation">0dp</item>

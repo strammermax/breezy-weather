@@ -49,9 +49,16 @@ data class WallpaperCacheStats(
 
 data class CameraUploadResult(
     val file: File,
-    val processedUrl: String,
+    /** Null while [pending] is true -- see [RemoveSkyUploadResult.pending]. */
+    val processedUrl: String?,
     val location: String?,
     val depthPath: String? = null,
+    /** True for the async camera-upload path: saved and queued server-side, no
+     * processedUrl/result yet -- see [uploadCameraPhoto]'s early-return and
+     * RemoveSkyMessagingService's "upload_result" push for how the eventual outcome
+     * reaches the user. [activateCameraPhoto] must never be called with this set. */
+    val pending: Boolean = false,
+    val recordId: Int? = null,
 )
 
 enum class CheckForNewPhotosResult {
@@ -374,11 +381,60 @@ class WallpaperRepository @Inject constructor(
             capturedAt = capturedAt,
             cancelTag = cancelTag
         )
-        val place = PlaceQuery(city = upload.location)
-        val bitmap = downloadSkyBitmap(upload.processedUrl, alreadyProcessed = true)
+        if (upload.pending) {
+            // Async camera-upload path: the file is saved and queued server-side, but
+            // there's no processed image to download/cache yet -- that (and activation)
+            // only happens once the eventual "upload_result" push says 'done' (see
+            // RemoveSkyMessagingService). Return early instead of running any of the
+            // download/cache/activate logic below, which all requires a real processedUrl.
+            return CameraUploadResult(
+                file = file, processedUrl = null, location = upload.location,
+                pending = true, recordId = upload.recordId,
+            )
+        }
+        val processedUrl = upload.processedUrl
+            ?: throw IllegalStateException("Upload response missing both pending flag and processedUrl")
+        return cacheProcessedCameraPhoto(
+            processedUrl = processedUrl,
+            location = upload.location,
+            depthUrl = upload.depthUrl,
+            dayPeriod = upload.dayPeriod,
+            country = upload.country,
+            season = upload.season,
+            exifLatitude = upload.exifLatitude,
+            exifLongitude = upload.exifLongitude,
+            activate = activate,
+        )
+    }
+
+    /** Completes the local half of an asynchronous upload after FCM reports `done`.
+     * The original temporary upload has already been deleted at that point, so the processed
+     * server image must be downloaded and cached before it can be offered as a wallpaper. */
+    suspend fun completePendingCameraUpload(
+        processedUrl: String,
+        location: String?,
+    ): CameraUploadResult = cacheProcessedCameraPhoto(
+        processedUrl = processedUrl,
+        location = location,
+        activate = false,
+    )
+
+    private suspend fun cacheProcessedCameraPhoto(
+        processedUrl: String,
+        location: String?,
+        depthUrl: String? = null,
+        dayPeriod: String? = null,
+        country: String? = null,
+        season: String? = null,
+        exifLatitude: Double? = null,
+        exifLongitude: Double? = null,
+        activate: Boolean,
+    ): CameraUploadResult {
+        val place = PlaceQuery(city = location)
+        val bitmap = downloadSkyBitmap(processedUrl, alreadyProcessed = true)
             ?: throw IllegalStateException("Processed RemoveSky image could not be downloaded")
         val cameraLocationKey = place.cacheFileName().substringBeforeLast('.')
-        val cacheFile = cacheFile(cameraLocationKey, upload.processedUrl)
+        val cacheFile = cacheFile(cameraLocationKey, processedUrl)
         try {
             val written = cacheFile.outputStream().use {
                 bitmap.compress(webpCompressFormat(), BuildConfig.WEBP_QUALITY, it)
@@ -392,37 +448,41 @@ class WallpaperRepository @Inject constructor(
         }
         cacheFile.setLastModified(System.currentTimeMillis())
         photoCatalog.upsertDownloaded(
-            id = photoId(upload.processedUrl),
-            sourceUrl = upload.processedUrl,
+            id = photoId(processedUrl),
+            sourceUrl = processedUrl,
             locationKey = cameraLocationKey,
             locationName = place.displayName,
             filePath = cacheFile.absolutePath,
             attribution = "Camera / RemoveSky",
             processed = true,
-            dayPeriod = upload.dayPeriod,
-            country = upload.country,
-            season = upload.season,
-            exifLat = upload.exifLatitude,
-            exifLon = upload.exifLongitude
+            dayPeriod = dayPeriod,
+            country = country,
+            season = season,
+            exifLat = exifLatitude,
+            exifLon = exifLongitude
         )
-        store.recordRecentUrl(place.cacheFileName(), upload.processedUrl)
-        val depthPath = upload.depthUrl?.let { downloadAndCacheDepthMap(it, cameraLocationKey, upload.processedUrl) }
+        store.recordRecentUrl(place.cacheFileName(), processedUrl)
+        val depthPath = depthUrl?.let { downloadAndCacheDepthMap(it, cameraLocationKey, processedUrl) }
         if (activate) {
-            store.activatePhoto(cacheFile.absolutePath, upload.processedUrl, "Camera / RemoveSky", depthPath)
-            photoCatalog.markShown(photoId(upload.processedUrl))
+            store.activatePhoto(cacheFile.absolutePath, processedUrl, "Camera / RemoveSky", depthPath)
+            photoCatalog.markShown(photoId(processedUrl))
         }
         pruneLocationCache(cacheFile.parentFile, cacheFile)
         prunePhotoCache(cacheFile)
-        return CameraUploadResult(cacheFile, upload.processedUrl, upload.location, depthPath)
+        return CameraUploadResult(cacheFile, processedUrl, location, depthPath)
     }
 
     /** Aborts an in-flight [uploadCameraPhoto] call previously started with the same [cancelTag]. */
     fun cancelCameraUpload(cancelTag: Any) = removeSkyProvider().cancelTaggedCalls(cancelTag)
 
-    /** Activates a photo previously uploaded with `activate = false` as the live wallpaper background. */
+    /** Activates a photo previously uploaded with `activate = false` as the live wallpaper
+     * background. Must never be called with a [CameraUploadResult.pending] result -- the
+     * caller (CameraActivity) only ever offers activation once a real processedUrl exists. */
     suspend fun activateCameraPhoto(result: CameraUploadResult) {
-        store.activatePhoto(result.file.absolutePath, result.processedUrl, "Camera / RemoveSky", result.depthPath)
-        photoCatalog.markShown(photoId(result.processedUrl))
+        val processedUrl = result.processedUrl
+            ?: throw IllegalStateException("Cannot activate a pending upload (no processedUrl yet)")
+        store.activatePhoto(result.file.absolutePath, processedUrl, "Camera / RemoveSky", result.depthPath)
+        photoCatalog.markShown(photoId(processedUrl))
         EventBus.instance.with(WallpaperPhotoActivatedMessage::class.java).postValue(WallpaperPhotoActivatedMessage())
     }
 

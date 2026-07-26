@@ -100,6 +100,7 @@ private const val TELEMETRY_LOG_INTERVAL_MILLIS = 5_000L
 
 /** ACT-012: how long an enable/disable toggle or a season change takes to fade in/out. */
 private const val SEASON_GRADING_FADE_MILLIS = 3_000L
+private const val BACKGROUND_CROSSFADE_DURATION_MILLIS = 600L
 
 /** How strongly [SeasonGrading.warmthShift] shifts the red/blue channel scale. */
 private const val SEASON_GRADING_WARMTH_SCALE = 0.3f
@@ -181,6 +182,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mHasSceneTarget = false
         private val mTransitionManager = TransitionManager()
         private var mBackground: Drawable? = null
+
+        // Crossfade support for background/sky-tint swaps (weather rotation, day/night, photo
+        // activation, ...) so a tint change fades in/out instead of popping.
+        private var mOutgoingBackground: Drawable? = null
+        private val mBackgroundTransition = TransitionManager()
 
         // Draw the complete photo after the cloud pass so clouds remain behind photographed
         // objects such as houses, trees and the horizon.
@@ -374,7 +380,20 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     }
 
                     it.withTranslation(-bgOffset, 0f) {
+                        val backgroundFade = mBackgroundTransition.transitionProgress()
+                        if (backgroundFade == null) {
+                            mOutgoingBackground = null
+                        } else {
+                            mOutgoingBackground?.let { outgoing ->
+                                outgoing.alpha = ((1f - backgroundFade) * 255f).roundToInt().coerceIn(0, 255)
+                                outgoing.draw(this)
+                            }
+                            mBackground?.alpha = (backgroundFade * 255f).roundToInt().coerceIn(0, 255)
+                        }
                         mBackground?.draw(it)
+                        if (backgroundFade == null) {
+                            mBackground?.alpha = 255
+                        }
                     }
                     it.withTranslation(-celestialOffset, 0f) {
                         drawCelestialBody(it)
@@ -899,10 +918,23 @@ class MaterialLiveWallpaperService : WallpaperService() {
         }
 
         private fun setWeatherBackgroundDrawable() {
+            val previousBackground = mBackground
             mBackground = buildSkyBackground()
-            // Invalidate the photo identity so ensureForeground() rebuilds it (e.g. after a
-            // daytime change or a fresh download); the keyed path is the only decode site.
-            mForegroundKey = null
+            // Crossfade from the previous sky tint instead of a hard swap, but only when there
+            // is something to fade from and animations are on -- the very first build (app
+            // start/surface recreation) has no prior background to blend against.
+            if (previousBackground != null && mAnimate) {
+                mOutgoingBackground = previousBackground
+                mBackgroundTransition.startTransition(BACKGROUND_CROSSFADE_DURATION_MILLIS)
+            } else {
+                mOutgoingBackground = null
+                mBackgroundTransition.cancelTransition()
+            }
+            // ensureForeground() is keyed on the cached photo's path/mtime/size/parallax (see
+            // its own identity check below), so it already no-ops here unless the photo itself
+            // changed -- no need to force a rebuild just because the sky tint did. Forcing one
+            // used to trigger an unconditional photo re-decode on every background update
+            // (weather rotation, day/night, photo activation, ...), stalling the render thread.
             ensureForeground()
             updateLayerBounds()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
@@ -1062,9 +1094,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 val bgExtra = (width * PARALLAX_BG_FACTOR).toInt()
                 val fgExtra = (width * PARALLAX_FG_FACTOR).toInt()
                 mBackground?.setBounds(-bgExtra, 0, width + bgExtra, height)
+                mOutgoingBackground?.setBounds(-bgExtra, 0, width + bgExtra, height)
                 mForeground?.setBounds(-fgExtra, 0, width + fgExtra, height)
             } else {
                 mBackground?.setBounds(0, 0, width, height)
+                mOutgoingBackground?.setBounds(0, 0, width, height)
                 mForeground?.setBounds(0, 0, width, height)
             }
             lwwLog { "layer bounds updated ${width}x$height parallax=$mParallaxEnabled" }

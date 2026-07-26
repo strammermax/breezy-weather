@@ -48,6 +48,7 @@ import com.liveweatherwallpaperapp.ui.theme.ThemeManager
 import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
 import com.liveweatherwallpaperapp.ui.theme.compose.themeRipple
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
+import com.liveweatherwallpaperapp.ui.main.MainActivity
 import com.liveweatherwallpaperapp.wallpaper.LiveWallpaperConfigActivity
 import livewallpaperweather.domain.location.model.Location
 
@@ -99,9 +100,13 @@ class AppMessageViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                                         activity.startActivity(intent)
                                     }
                                     AppMessageKind.WARNING -> {
-                                        activity.startActivity(
-                                            Intent(activity, LiveWallpaperConfigActivity::class.java)
-                                        )
+                                        if (message.key == "weather_update_failed" && activity is MainActivity) {
+                                            activity.retryWeatherUpdate()
+                                        } else {
+                                            activity.startActivity(
+                                                Intent(activity, LiveWallpaperConfigActivity::class.java)
+                                            )
+                                        }
                                     }
                                 }
                             }

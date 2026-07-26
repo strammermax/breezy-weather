@@ -37,12 +37,16 @@ import androidx.core.location.LocationManagerCompat
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.common.bus.EventBus
 import com.liveweatherwallpaperapp.common.utils.DiagnosticLogger
 import com.liveweatherwallpaperapp.databinding.ActivityCameraBinding
 import com.liveweatherwallpaperapp.wallpaper.launchLiveWallpaperPicker
 import com.liveweatherwallpaperapp.wallpaper.photo.CameraUploadResult
 import com.liveweatherwallpaperapp.wallpaper.photo.RemoveSkyCheckOutcome
+import com.liveweatherwallpaperapp.wallpaper.photo.RemoveSkyCheckResult
 import com.liveweatherwallpaperapp.wallpaper.photo.RemoveSkyHttpException
+import com.liveweatherwallpaperapp.wallpaper.photo.UploadProcessingResultMessage
+import com.liveweatherwallpaperapp.wallpaper.photo.UploadProcessingProgressMessage
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
@@ -95,6 +99,13 @@ class CameraActivity : AppCompatActivity() {
 
     /** Checkbox -> upload result for each approved gallery card, read by [saveSelectedButton]. */
     private val gallerySelection = mutableListOf<Pair<CheckBox, CameraUploadResult>>()
+
+    /** FCM may arrive before or after its card is inflated. Keep both sides keyed by the
+     * server record id so either ordering updates the correct upload. */
+    private val uploadResults = mutableMapOf<Int, UploadProcessingResultMessage>()
+    private val uploadProgress = mutableMapOf<Int, String>()
+    private val pendingResultViews = mutableMapOf<Int, TextView>()
+    private var displayedResultCards: List<UploadCardData> = emptyList()
 
     // The privacy-sandboxed Photo Picker (PickMultipleVisualMedia) never honors
     // MediaStore.setRequireOriginal()/ACCESS_MEDIA_LOCATION, even when granted — confirmed
@@ -168,13 +179,60 @@ class CameraActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        cameraExecutor = Executors.newSingleThreadExecutor()
+
+        EventBus.instance.with(UploadProcessingResultMessage::class.java).observeAutoRemove(this) { result ->
+            uploadResults[result.recordId] = result
+            pendingResultViews[result.recordId]?.let { renderUploadProcessingResult(it, result) }
+            if (result.result == "done" && result.processedUrl != null) {
+                val normalizedUrl = wallpaperRepository.normalizeServiceUrl(result.processedUrl)
+                val currentCards = displayedResultCards
+                val completedCard = currentCards.firstOrNull { it.recordId == result.recordId }
+                if (completedCard != null) {
+                    cameraExecutor.execute {
+                        val activationResult = runCatching {
+                            runBlocking {
+                                wallpaperRepository.completePendingCameraUpload(
+                                    processedUrl = normalizedUrl,
+                                    location = completedCard.locationName,
+                                )
+                            }
+                        }.onFailure {
+                            DiagnosticLogger.log(
+                                this@CameraActivity,
+                                "Camera",
+                                "Could not cache completed upload",
+                                it,
+                            )
+                        }.getOrNull()
+                        val updated = currentCards.map { data ->
+                            if (data.recordId == result.recordId) {
+                                data.copy(
+                                    processedUrl = normalizedUrl,
+                                    pending = false,
+                                    activationResult = activationResult,
+                                    serverCheck = result.checkResult,
+                                )
+                            } else {
+                                data
+                            }
+                        }
+                        displayedResultCards = updated
+                        renderResultCards(updated)
+                    }
+                }
+            }
+        }
+        EventBus.instance.with(UploadProcessingProgressMessage::class.java).observeAutoRemove(this) { progress ->
+            uploadProgress[progress.recordId] = progress.stage
+            pendingResultViews[progress.recordId]?.let { renderUploadProcessingProgress(it, progress.stage) }
+        }
 
         resultImageView = binding.resultImageView
         resultTextView = binding.resultTextView
         progressBar = binding.progressBar
         captureButton = binding.captureButton
 
-        cameraExecutor = Executors.newSingleThreadExecutor()
 
         if (allPermissionsGranted()) {
             startCamera()
@@ -660,10 +718,14 @@ class CameraActivity : AppCompatActivity() {
             DiagnosticLogger.log(
                 this,
                 "Camera",
-                "Upload and server processing completed; processedUrl=${result.processedUrl}"
+                if (result.pending) {
+                    "Upload accepted; queued for async processing, record id=${result.recordId}"
+                } else {
+                    "Upload and server processing completed; processedUrl=${result.processedUrl}"
+                }
             )
             appendProgressLog(getString(R.string.camera_step_uploading_done))
-            appendProgressLog(getString(R.string.camera_step_checking))
+            if (!result.pending) appendProgressLog(getString(R.string.camera_step_checking))
 
             renderResultCards(
                 listOf(
@@ -673,7 +735,9 @@ class CameraActivity : AppCompatActivity() {
                         locationName = result.location,
                         processedUrl = result.processedUrl,
                         uploadFailureReason = null,
-                        activationResult = result
+                        activationResult = result.takeUnless { it.pending },
+                        pending = result.pending,
+                        recordId = result.recordId,
                     )
                 )
             )
@@ -843,7 +907,9 @@ class CameraActivity : AppCompatActivity() {
                                 locationName = result.location,
                                 processedUrl = result.processedUrl,
                                 uploadFailureReason = null,
-                                activationResult = result
+                                activationResult = result.takeUnless { it.pending },
+                                pending = result.pending,
+                                recordId = result.recordId,
                             )
                         )
                         appendProgressLog(getString(R.string.camera_gallery_saved, label))
@@ -904,6 +970,16 @@ class CameraActivity : AppCompatActivity() {
          * gallery batch flow, which still activates each photo automatically on upload.
          */
         val activationResult: CameraUploadResult? = null,
+        /** True for the async upload path's immediate response (see
+         * [RemoveSkyUploadResult.pending]): the photo is saved and queued for the sky/CLIP
+         * pass, whose outcome arrives later as a push notification, not here. Distinct from
+         * a rejection ([uploadFailureReason] set) -- both have a null [processedUrl] but
+         * mean different things to show the user. */
+        val pending: Boolean = false,
+        /** Server-side id used to match the later targeted FCM result to this card. */
+        val recordId: Int? = null,
+        /** Check values already computed by the asynchronous server pipeline. */
+        val serverCheck: RemoveSkyCheckResult? = null,
     )
 
     /**
@@ -912,6 +988,7 @@ class CameraActivity : AppCompatActivity() {
      * done. Rejected photos never reached `/check`, so they only show the rejection reason.
      */
     private fun renderResultCards(results: List<UploadCardData>) {
+        displayedResultCards = results
         runOnUiThread {
             binding.progressBar.visibility = View.GONE
             binding.stopUploadButton.visibility = View.GONE
@@ -924,7 +1001,8 @@ class CameraActivity : AppCompatActivity() {
             return
         }
         val checked = results.map { data ->
-            data to data.processedUrl?.let { runBlocking { wallpaperRepository.checkUploadedPhoto(it) } }
+            data to (data.serverCheck?.let { RemoveSkyCheckOutcome.Success(it) }
+                ?: data.processedUrl?.let { runBlocking { wallpaperRepository.checkUploadedPhoto(it) } })
         }
         fun checkOk(check: RemoveSkyCheckOutcome?) = (check as? RemoveSkyCheckOutcome.Success)?.result?.ok == true
         val anyApproved = checked.any { (_, check) -> checkOk(check) }
@@ -943,6 +1021,7 @@ class CameraActivity : AppCompatActivity() {
             binding.resultTextScroll.visibility = View.GONE
             binding.resultImageView.visibility = View.GONE
             binding.uploadResultCardsContainer.removeAllViews()
+            pendingResultViews.clear()
             checked.forEach { (data, check) ->
                 binding.uploadResultCardsContainer.addView(buildResultCard(data, check))
             }
@@ -988,6 +1067,19 @@ class CameraActivity : AppCompatActivity() {
 
         val reasonView = card.findViewById<TextView>(R.id.cardReason)
         when {
+            // Async camera-upload path (see RemoveSkyUploadResult.pending): saved and
+            // queued, no verdict yet -- the eventual done/rejected/failed outcome arrives
+            // later as an "upload_result" FCM push (RemoveSkyMessagingService), not here.
+            data.pending -> {
+                reasonView.visibility = View.VISIBLE
+                reasonView.setTextColor(Color.parseColor("#F9A825"))
+                reasonView.text = "⏳ " + getString(R.string.camera_check_pending)
+                data.recordId?.let { recordId ->
+                    pendingResultViews[recordId] = reasonView
+                    uploadResults[recordId]?.let { renderUploadProcessingResult(reasonView, it) }
+                        ?: uploadProgress[recordId]?.let { renderUploadProcessingProgress(reasonView, it) }
+                }
+            }
             checkResult?.ok == true -> {
                 reasonView.visibility = View.VISIBLE
                 reasonView.setTextColor(Color.parseColor("#2E7D32"))
@@ -1024,6 +1116,7 @@ class CameraActivity : AppCompatActivity() {
         checkResult?.checks?.let { c ->
             addCheckChip(checksGroup, R.string.camera_check_sky, c.hasSkyTop)
             addCheckChip(checksGroup, R.string.camera_check_outdoor, c.isOutdoor)
+            addCheckChip(checksGroup, R.string.camera_check_city, c.isCity)
             addCheckChip(checksGroup, R.string.camera_check_color, c.hasColor)
             addCheckChip(checksGroup, R.string.camera_check_gps, c.hasGps)
             addCheckChip(checksGroup, R.string.camera_check_date, c.hasDate)
@@ -1040,6 +1133,44 @@ class CameraActivity : AppCompatActivity() {
         }
 
         return card
+    }
+
+    /** Replaces the orange pending text while this screen is open. The system notification is
+     * still emitted by RemoveSkyMessagingService for results received in the background. */
+    private fun renderUploadProcessingResult(view: TextView, result: UploadProcessingResultMessage) {
+        view.visibility = View.VISIBLE
+        when (result.result) {
+            "done" -> {
+                view.setTextColor(Color.parseColor("#2E7D32"))
+                view.text = "✓ " + getString(R.string.camera_upload_result_done)
+            }
+            "rejected" -> {
+                view.setTextColor(Color.parseColor("#C62828"))
+                view.text = "✗ " + getString(
+                    R.string.camera_upload_result_rejected,
+                    result.reason?.let(::reasonText).orEmpty(),
+                )
+            }
+            else -> {
+                view.setTextColor(Color.parseColor("#C62828"))
+                view.text = "✗ " + getString(R.string.camera_upload_result_failed)
+            }
+        }
+        pendingResultViews.remove(result.recordId)
+    }
+
+    private fun renderUploadProcessingProgress(view: TextView, stage: String) {
+        view.visibility = View.VISIBLE
+        view.setTextColor(Color.parseColor("#F9A825"))
+        val text = when (stage) {
+            "loading" -> getString(R.string.camera_progress_loading)
+            "sky" -> getString(R.string.camera_progress_sky)
+            "depth" -> getString(R.string.camera_progress_depth)
+            "classifying" -> getString(R.string.camera_progress_classifying)
+            "finalizing" -> getString(R.string.camera_progress_finalizing)
+            else -> getString(R.string.camera_check_pending)
+        }
+        view.text = "⏳ $text"
     }
 
     private fun addCheckChip(group: ChipGroup, @StringRes labelRes: Int, value: Boolean?) {

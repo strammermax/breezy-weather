@@ -1036,6 +1036,14 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
         updateLiveWallpaperBackground(forcePhotoRefresh = true)
     }
 
+    /** Starts the same weather refresh as pull-to-refresh, without opening a settings screen. */
+    fun retryWeatherUpdate() {
+        viewModel.updateWithUpdatingChecking(
+            triggeredByUser = true,
+            checkPermissions = true,
+        )
+    }
+
     private val isOrWillManagementFragmentVisible: Boolean
         get() = binding.drawerLayout?.isUnfold
             ?: findManagementFragment()?.let { !it.isRemoving }

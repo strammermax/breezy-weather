@@ -16,6 +16,8 @@
 
 package com.liveweatherwallpaperapp.wallpaper.photo
 
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -161,6 +163,7 @@ class RemoveSkyProvider(
                             RemoveSkyChecks(
                                 hasSkyTop = it.optBooleanOrNull("has_sky_top"),
                                 isOutdoor = it.optBooleanOrNull("is_outdoor"),
+                                isCity = it.optBooleanOrNull("is_city"),
                                 hasColor = it.optBooleanOrNull("has_color"),
                                 hasGps = it.optBooleanOrNull("has_gps"),
                                 hasDate = it.optBooleanOrNull("has_date"),
@@ -306,6 +309,11 @@ class RemoveSkyProvider(
                 latitude?.let { addFormDataPart("lat", it.toString()) }
                 longitude?.let { addFormDataPart("lon", it.toString()) }
                 capturedAt?.takeIf { it.isNotBlank() }?.let { addFormDataPart("captured_at", it) }
+                // Lets the server's async pipeline (finish_upload_processing, see
+                // app/services/push.py's send_to_token) push the sky/CLIP result back to
+                // just this device once the heavy pass finishes -- best-effort, so a
+                // failure to fetch the token here must not block the upload itself.
+                fcmTokenOrNull()?.let { addFormDataPart("fcm_token", it) }
             }
             .build()
         val request = Request.Builder()
@@ -321,6 +329,23 @@ class RemoveSkyProvider(
                 throw RemoveSkyHttpException(response.code, body)
             }
             val json = JSONObject(body)
+            // "pending" (direct file uploads only): the fast half saved the file and
+            // returned immediately -- the sky/CLIP/depth pass runs later via Prefect (see
+            // processing.save_upload_pending's docstring) and its result arrives as a
+            // later FCM push, not in this response. No processedUrl yet is expected, not
+            // an error.
+            if (json.optString("status") == "pending") {
+                val resolvedLocation = json.optString("location").trim().ifBlank {
+                    throw RemoveSkyHttpException(response.code, "Missing location")
+                }
+                return@use RemoveSkyUploadResult(
+                    processedUrl = null,
+                    pending = true,
+                    recordId = json.optInt("id").takeIf { json.has("id") },
+                    location = resolvedLocation,
+                    country = json.optStringOrNull("country"),
+                )
+            }
             val url = json.optString("url").ifBlank {
                 throw RemoveSkyHttpException(response.code, "Missing processed image URL")
             }
@@ -341,6 +366,14 @@ class RemoveSkyProvider(
                 depthUrl = json.optStringOrNull("depth_url")?.let(::normalizeServiceUrl)
             )
         }
+    }
+
+    /** Current FCM registration token, or null if unavailable (no Play Services, no
+     * network yet, etc.) -- never throws, upload must proceed either way. */
+    private fun fcmTokenOrNull(): String? = try {
+        Tasks.await(FirebaseMessaging.getInstance().token)
+    } catch (e: Exception) {
+        null
     }
 
     /** Run a search, then return the first candidate as a sky-removed (transparent) PNG URL. */
@@ -680,7 +713,8 @@ class RemoveSkyProvider(
 }
 
 data class RemoveSkyUploadResult(
-    val processedUrl: String,
+    /** Null while [pending] is true -- the async pass hasn't produced one yet. */
+    val processedUrl: String?,
     val location: String,
     val dayPeriod: String? = null,
     val country: String? = null,
@@ -689,6 +723,12 @@ data class RemoveSkyUploadResult(
     val exifLongitude: Double? = null,
     /** Depth map URL (grayscale PNG, 255=near, 0=far). Null if not yet generated. */
     val depthUrl: String? = null,
+    /** True for the async camera-upload path's immediate response: the file is saved and
+     * a `processed` row exists ([recordId]), but the sky/CLIP/depth pass hasn't run yet --
+     * its outcome (done/rejected/failed) arrives later as an "upload_result" FCM push (see
+     * RemoveSkyMessagingService), not in this result. */
+    val pending: Boolean = false,
+    val recordId: Int? = null,
 )
 
 /** One entry of [RemoveSkyProvider.fetchEnabledPhotos]: a known-enabled photo plus its metadata. */
@@ -785,6 +825,7 @@ data class RemoveSkyCheckResult(
 data class RemoveSkyChecks(
     val hasSkyTop: Boolean?,
     val isOutdoor: Boolean?,
+    val isCity: Boolean?,
     val hasColor: Boolean?,
     val hasGps: Boolean?,
     val hasDate: Boolean?,

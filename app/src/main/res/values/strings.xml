@@ -516,6 +516,15 @@
     <string name="camera_result_unknown_reason">Afgekeurd (onbekende reden)</string>
     <string name="camera_result_unknown_reason_with_code">Afgekeurd (reden: %1$s)</string>
     <string name="camera_check_timeout">De server heeft het zwaar, probeer het straks nog eens</string>
+    <string name="camera_check_pending">Geüpload, wordt op de achtergrond verwerkt — je krijgt bericht zodra het klaar is</string>
+    <string name="camera_upload_result_done">Je geüploade foto is verwerkt en goedgekeurd.</string>
+    <string name="camera_upload_result_rejected">Je geüploade foto is afgekeurd (reden: %1$s).</string>
+    <string name="camera_upload_result_failed">Er ging iets mis bij het verwerken van je geüploade foto, probeer het nog eens.</string>
+    <string name="camera_progress_loading">Afbeelding laden…</string>
+    <string name="camera_progress_sky">Lucht detecteren en verwijderen…</string>
+    <string name="camera_progress_depth">Depth-map maken…</string>
+    <string name="camera_progress_classifying">Buiten/stad/weer classificeren…</string>
+    <string name="camera_progress_finalizing">Resultaat opslaan…</string>
     <string name="camera_check_server_error">Er is iets fout gegaan bij het verwerken van de foto, probeer het nog eens</string>
     <string name="camera_process_photo">Verwerk</string>
     <string name="camera_photo_processed">Foto verwerkt en ingesteld als achtergrond</string>
@@ -532,6 +541,7 @@
     <string name="camera_source_gallery">Galerij</string>
     <string name="camera_check_sky">Lucht</string>
     <string name="camera_check_outdoor">Buiten</string>
+    <string name="camera_check_city">Stad</string>
     <string name="camera_check_color">Kleur</string>
     <string name="camera_check_gps">GPS</string>
     <string name="camera_check_date">Datum</string>
@@ -1133,6 +1143,7 @@
     <string name="notification_channel_app_update">App updates</string>
     <string name="notification_app_updated_title">Updated to %1$s</string>
     <string name="notification_channel_weetje">Location fun facts</string>
+    <string name="notification_channel_upload_result">Foto-uploadresultaat</string>
     <string name="notification_running_in_background">Running in background to keep updating</string>
     <string name="notification_updating_weather_data">Updating weather data (%1$d/%2$d)</string>
     <string name="notification_precipitation_starting">Precipitation soon</string>

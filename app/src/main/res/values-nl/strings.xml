@@ -1021,6 +1021,7 @@
     <string name="camera_source_gallery">Galerie</string>
     <string name="camera_check_sky">Lucht</string>
     <string name="camera_check_outdoor">Buiten</string>
+    <string name="camera_check_city">Stad</string>
     <string name="camera_check_color">Kleur</string>
     <string name="camera_check_gps">GPS</string>
     <string name="camera_check_date">Datum</string>

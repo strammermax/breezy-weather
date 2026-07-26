@@ -19,6 +19,8 @@ package com.liveweatherwallpaperapp.ui.details
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.TransitionDrawable
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
@@ -123,6 +125,10 @@ import livewallpaperweather.domain.location.model.Location
 import java.util.Calendar
 import java.util.Date
 import com.liveweatherwallpaperapp.domain.location.model.isDaylight as locationIsDaylight
+
+/** How long the sky/photo snapshot background takes to crossfade in, whether that's the
+ *  initial reveal (over the previous screen showing through) or a day-to-day pager swipe. */
+private const val BACKGROUND_CROSSFADE_DURATION_MILLIS = 300
 
 @Composable
 internal fun DailyWeatherScreen(
@@ -277,7 +283,17 @@ internal fun DailyWeatherScreen(
                     } else {
                         bitmap
                     }
-                    activity.window.setBackgroundDrawable(BitmapDrawable(context.resources, background))
+                    // Crossfade instead of a hard swap. The `from` layer is whatever's
+                    // currently showing -- nothing yet on first render (the translucent
+                    // window lets the previous screen/live wallpaper show through, see
+                    // DetailsActivity.onCreate), or the previous day's snapshot on a pager
+                    // swipe -- so this covers both the initial reveal and day-to-day swipes.
+                    val previous = activity.window.decorView.background
+                    val crossfade = TransitionDrawable(
+                        arrayOf(previous ?: ColorDrawable(android.graphics.Color.TRANSPARENT), BitmapDrawable(context.resources, background))
+                    )
+                    activity.window.setBackgroundDrawable(crossfade)
+                    crossfade.startTransition(BACKGROUND_CROSSFADE_DURATION_MILLIS)
                 }
 
                 // ACT-013: override the surface/outline colors so the cards and tab bar

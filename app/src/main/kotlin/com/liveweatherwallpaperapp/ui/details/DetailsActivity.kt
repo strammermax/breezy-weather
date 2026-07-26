@@ -22,7 +22,6 @@ import android.widget.FrameLayout
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.isBackgroundAnimationEnabled
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
@@ -39,9 +38,10 @@ class DetailsActivity : BreezyActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Static sky-gradient + photo snapshot as the base background layer.
-        window.setBackgroundDrawableResource(R.drawable.bg_glass_sky)
-
+        // No placeholder background here: the window is translucent (see
+        // BreezyWeatherTheme.Details), so the previous screen (the live wallpaper behind
+        // MainActivity) stays visible on its own until DetailsScreen's snapshot render is
+        // ready and crossfades the real background in.
         setContent {
             DailyWeatherScreen(onBackPressed = { finish() })
         }
