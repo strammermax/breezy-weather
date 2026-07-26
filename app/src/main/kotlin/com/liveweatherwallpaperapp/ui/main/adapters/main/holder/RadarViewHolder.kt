@@ -55,7 +55,13 @@ class RadarViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
 
         itemView.contentDescription = context.getString(R.string.action_radar)
         itemView.setOnClickListener {
-            context.startActivity(RadarActivity.createIntent(context, location, settings.radarTileSource))
+            // Buienradar selected: go straight to the app/website, same as tapping the map
+            // inside the full radar screen's Buienradar tab -- see RadarActivity.BuienradarMap.
+            if (settings.radarTileSource == "buienradar") {
+                RadarWebMapLoader.openBuienradarAppOrWebsite(context)
+            } else {
+                context.startActivity(RadarActivity.createIntent(context, location, settings.radarTileSource))
+            }
         }
         radarMap.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_UP) itemView.performClick()

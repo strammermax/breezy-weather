@@ -26,6 +26,7 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.TransitionDrawable
 import android.os.Build
 import android.os.Bundle
+import android.view.MotionEvent
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.widget.FrameLayout
@@ -70,6 +71,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import com.liveweatherwallpaperapp.R
@@ -529,14 +531,23 @@ class RadarActivity : BreezyActivity() {
         )
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
     @Composable
     private fun BuienradarMap(modifier: Modifier = Modifier) {
+        val context = LocalContext.current
         AndroidView(
             modifier = modifier,
             factory = { ctx ->
                 WebView(ctx).apply {
                     RadarWebMapLoader.loadBuienradar(this)
+                    // WebView swallows the tap for its own touch handling (same fix as
+                    // RadarViewHolder's home-screen widget) -- forward the ACTION_UP to a real
+                    // click so openBuienradarAppOrWebsite() actually fires.
+                    setOnTouchListener { _, event ->
+                        if (event.action == MotionEvent.ACTION_UP) performClick()
+                        true
+                    }
+                    setOnClickListener { RadarWebMapLoader.openBuienradarAppOrWebsite(context) }
                 }
             }
         )

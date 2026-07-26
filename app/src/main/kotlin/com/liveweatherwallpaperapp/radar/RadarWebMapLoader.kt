@@ -9,6 +9,7 @@
 package com.liveweatherwallpaperapp.radar
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Message
@@ -17,11 +18,25 @@ import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.core.net.toUri
 import java.util.Locale
 
 internal object RadarWebMapLoader {
 
     private var ventuskyWarmedUp = false
+
+    /** Opens the official Buienradar app if installed, otherwise its precipitation-radar page.
+     *  Shared by the full radar screen's Buienradar tab and the home-screen radar tile, so both
+     *  behave the same when Buienradar is the selected source. */
+    fun openBuienradarAppOrWebsite(context: Context) {
+        val launchIntent = context.packageManager.getLaunchIntentForPackage(BUIENRADAR_APP_PACKAGE)
+        context.startActivity(
+            launchIntent ?: Intent(Intent.ACTION_VIEW, BUIENRADAR_WEBSITE_URL.toUri())
+        )
+    }
+
+    private const val BUIENRADAR_APP_PACKAGE = "com.supportware.Buienradar"
+    private const val BUIENRADAR_WEBSITE_URL = "https://www.buienradar.nl/nederland/neerslag/buienradar"
 
     /**
      * Buienradar's interactive site (the previous approach here) is JS/canvas-heavy in the same
