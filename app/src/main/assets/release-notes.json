@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+3)",
+    "version": "Niet uitgebracht (+4)",
     "date": "",
     "changes": [
+      "Prioritize foreground rendering during navigation",
       "Clear stale weather warning after manual refresh",
       "Restore upload feedback and weather refresh behavior",
       "Remove thumbs up/down rating from wallpaper photo priority + UI"
