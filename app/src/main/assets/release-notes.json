@@ -1,5 +1,17 @@
 [
   {
+    "version": "Niet uitgebracht (+1)",
+    "date": "",
+    "changes": [
+      "Add docs/APP_FUNCTIES.md: full app feature overview"
+    ]
+  },
+  {
+    "version": "2026.07.27.439",
+    "date": "2026-07-27",
+    "changes": []
+  },
+  {
     "version": "2026.07.27.438",
     "date": "2026-07-27",
     "changes": [
@@ -55,18 +67,6 @@
       "Clear stale weather warning after manual refresh",
       "Restore upload feedback and weather refresh behavior",
       "Remove thumbs up/down rating from wallpaper photo priority + UI"
-    ]
-  },
-  {
-    "version": "2026.07.24.412",
-    "date": "2026-07-24",
-    "changes": []
-  },
-  {
-    "version": "2026.07.24.411",
-    "date": "2026-07-24",
-    "changes": [
-      "Trigger immediate wallpaper photo refresh when a location is added"
     ]
   }
 ]
