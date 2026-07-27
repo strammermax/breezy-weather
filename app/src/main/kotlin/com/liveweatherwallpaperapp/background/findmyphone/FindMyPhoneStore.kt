@@ -98,6 +98,16 @@ class FindMyPhoneStore(context: Context) {
         }
 
     companion object {
+        /**
+         * Temporarily disables the whole "Find my phone" feature (settings UI, service
+         * start/stop calls) without deleting its code. RECORD_AUDIO/FOREGROUND_SERVICE_MICROPHONE
+         * and the service declaration are also commented out in AndroidManifest.xml -- avoiding
+         * that permission entirely sidesteps the extra Play Console Data Safety questions it
+         * triggers. To bring the feature back: flip this to `true` and uncomment the matching
+         * block in AndroidManifest.xml.
+         */
+        const val FEATURE_ENABLED = false
+
         private const val SP_NAME = "find_my_phone"
         private const val KEY_ENABLED = "find_my_phone_enabled"
         private const val KEY_CLAP_ENABLED = "find_my_phone_clap_enabled"

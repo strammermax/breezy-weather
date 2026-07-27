@@ -335,7 +335,7 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
         // Opening the app -- including bringing it back from the background, not just a cold
         // launch -- is how the user tells "Find my phone" they've found it: silence any
         // in-progress alarm, without touching the background listening itself.
-        if (FindMyPhoneStore(this).enabled) {
+        if (FindMyPhoneStore.FEATURE_ENABLED && FindMyPhoneStore(this).enabled) {
             FindMyPhoneService.stopAlarm(this)
         }
 

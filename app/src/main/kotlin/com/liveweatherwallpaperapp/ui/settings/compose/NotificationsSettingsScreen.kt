@@ -260,6 +260,7 @@ fun NotificationsSettingsScreen(
                     checked = weetjeEnabled,
                     withState = false,
                     enabled = hasNotificationPermission,
+                    isLast = !weetjeEnabled && !FindMyPhoneStore.FEATURE_ENABLED,
                     onValueChanged = {
                         weetjeEnabled = it
                         weetjeStore.notificationsEnabled = it
@@ -357,129 +358,133 @@ fun NotificationsSettingsScreen(
                     }
                 }
             }
-            smallSeparatorItem()
-            switchPreferenceItem(R.string.find_my_phone_title) { id ->
-                SwitchPreferenceView(
-                    titleId = id,
-                    summaryOnId = R.string.find_my_phone_summary_on,
-                    summaryOffId = R.string.find_my_phone_summary_off,
-                    checked = findMyPhoneEnabled,
-                    withState = false,
-                    isLast = !findMyPhoneEnabled && !isTesterModeEnabled,
-                    onValueChanged = {
-                        if (it) {
-                            if (recordAudioPermissionState.status == PermissionStatus.Granted) {
-                                findMyPhoneEnabled = true
-                                findMyPhoneStore.enabled = true
-                                FindMyPhoneService.start(context)
-                                requestIgnoreBatteryOptimizationsForFindMyPhone(context)
-                                if (findMyPhoneWhistleEnabled) showFindMyPhoneCalibration = true
-                            } else {
-                                findMyPhonePendingEnable = true
-                                recordAudioPermissionState.launchPermissionRequest()
-                            }
-                        } else {
-                            findMyPhoneEnabled = false
-                            findMyPhoneStore.enabled = false
-                            FindMyPhoneService.stop(context)
-                        }
-                    }
-                )
-            }
-            if (findMyPhoneEnabled) {
+            if (FindMyPhoneStore.FEATURE_ENABLED) {
                 smallSeparatorItem()
-                switchPreferenceItem(R.string.find_my_phone_clap_title) { id ->
+                switchPreferenceItem(R.string.find_my_phone_title) { id ->
                     SwitchPreferenceView(
                         titleId = id,
-                        summaryOnId = R.string.settings_enabled,
-                        summaryOffId = R.string.settings_disabled,
-                        checked = findMyPhoneClapEnabled,
+                        summaryOnId = R.string.find_my_phone_summary_on,
+                        summaryOffId = R.string.find_my_phone_summary_off,
+                        checked = findMyPhoneEnabled,
                         withState = false,
-                        onValueChanged = {
-                            findMyPhoneClapEnabled = it
-                            findMyPhoneStore.clapEnabled = it
-                        }
-                    )
-                }
-                smallSeparatorItem()
-                switchPreferenceItem(R.string.find_my_phone_whistle_title) { id ->
-                    SwitchPreferenceView(
-                        titleId = id,
-                        summaryOnId = R.string.settings_enabled,
-                        summaryOffId = R.string.settings_disabled,
-                        checked = findMyPhoneWhistleEnabled,
-                        withState = false,
-                        isLast = !isTesterModeEnabled,
+                        isLast = !findMyPhoneEnabled && !isTesterModeEnabled,
                         onValueChanged = {
                             if (it) {
-                                // Re-calibrate on every re-enable, not just the first time: the
-                                // user turning it back on is exactly the moment to (re)confirm
-                                // their whistle, e.g. after having declined or skipped before.
-                                showFindMyPhoneCalibration = true
+                                if (recordAudioPermissionState.status == PermissionStatus.Granted) {
+                                    findMyPhoneEnabled = true
+                                    findMyPhoneStore.enabled = true
+                                    FindMyPhoneService.start(context)
+                                    requestIgnoreBatteryOptimizationsForFindMyPhone(context)
+                                    if (findMyPhoneWhistleEnabled) showFindMyPhoneCalibration = true
+                                } else {
+                                    findMyPhonePendingEnable = true
+                                    recordAudioPermissionState.launchPermissionRequest()
+                                }
                             } else {
-                                findMyPhoneWhistleEnabled = false
-                                findMyPhoneStore.whistleEnabled = false
+                                findMyPhoneEnabled = false
+                                findMyPhoneStore.enabled = false
+                                FindMyPhoneService.stop(context)
                             }
                         }
                     )
                 }
-            }
-            if (isTesterModeEnabled && findMyPhoneEnabled) {
-                smallSeparatorItem()
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(dimensionResource(R.dimen.normal_margin))
-                    ) {
-                        Text(
-                            text = stringResource(
-                                R.string.find_my_phone_tester_rms_gate,
-                                findMyPhoneRmsGateDb.roundToInt()
-                            ),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = stringResource(R.string.find_my_phone_tester_rms_gate_summary),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Slider(
-                            value = findMyPhoneRmsGateDb,
-                            onValueChange = { findMyPhoneRmsGateDb = it.roundToInt().toFloat() },
-                            valueRange = FIND_MY_PHONE_TESTER_RMS_GATE_MIN..FIND_MY_PHONE_TESTER_RMS_GATE_MAX,
-                            steps =
-                            (FIND_MY_PHONE_TESTER_RMS_GATE_MAX - FIND_MY_PHONE_TESTER_RMS_GATE_MIN).roundToInt() - 1,
-                            onValueChangeFinished = {
-                                findMyPhoneStore.testerRmsGateDbOverride = findMyPhoneRmsGateDb
+                if (findMyPhoneEnabled) {
+                    smallSeparatorItem()
+                    switchPreferenceItem(R.string.find_my_phone_clap_title) { id ->
+                        SwitchPreferenceView(
+                            titleId = id,
+                            summaryOnId = R.string.settings_enabled,
+                            summaryOffId = R.string.settings_disabled,
+                            checked = findMyPhoneClapEnabled,
+                            withState = false,
+                            onValueChanged = {
+                                findMyPhoneClapEnabled = it
+                                findMyPhoneStore.clapEnabled = it
                             }
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = stringResource(
-                                R.string.find_my_phone_tester_arm_delay,
-                                findMyPhoneArmDelayMinutes.roundToInt()
-                            ),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = stringResource(R.string.find_my_phone_tester_arm_delay_summary),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Slider(
-                            value = findMyPhoneArmDelayMinutes,
-                            onValueChange = { findMyPhoneArmDelayMinutes = it.roundToInt().toFloat() },
-                            valueRange = FIND_MY_PHONE_TESTER_ARM_DELAY_MIN..FIND_MY_PHONE_TESTER_ARM_DELAY_MAX,
-                            steps =
-                            (FIND_MY_PHONE_TESTER_ARM_DELAY_MAX - FIND_MY_PHONE_TESTER_ARM_DELAY_MIN).roundToInt() -
-                                1,
-                            onValueChangeFinished = {
-                                findMyPhoneStore.testerArmDelayMinutesOverride = findMyPhoneArmDelayMinutes.roundToInt()
+                    }
+                    smallSeparatorItem()
+                    switchPreferenceItem(R.string.find_my_phone_whistle_title) { id ->
+                        SwitchPreferenceView(
+                            titleId = id,
+                            summaryOnId = R.string.settings_enabled,
+                            summaryOffId = R.string.settings_disabled,
+                            checked = findMyPhoneWhistleEnabled,
+                            withState = false,
+                            isLast = !isTesterModeEnabled,
+                            onValueChanged = {
+                                if (it) {
+                                    // Re-calibrate on every re-enable, not just the first time: the
+                                    // user turning it back on is exactly the moment to (re)confirm
+                                    // their whistle, e.g. after having declined or skipped before.
+                                    showFindMyPhoneCalibration = true
+                                } else {
+                                    findMyPhoneWhistleEnabled = false
+                                    findMyPhoneStore.whistleEnabled = false
+                                }
                             }
                         )
+                    }
+                }
+                if (isTesterModeEnabled && findMyPhoneEnabled) {
+                    smallSeparatorItem()
+                    item {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(dimensionResource(R.dimen.normal_margin))
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    R.string.find_my_phone_tester_rms_gate,
+                                    findMyPhoneRmsGateDb.roundToInt()
+                                ),
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = stringResource(R.string.find_my_phone_tester_rms_gate_summary),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Slider(
+                                value = findMyPhoneRmsGateDb,
+                                onValueChange = { findMyPhoneRmsGateDb = it.roundToInt().toFloat() },
+                                valueRange = FIND_MY_PHONE_TESTER_RMS_GATE_MIN..FIND_MY_PHONE_TESTER_RMS_GATE_MAX,
+                                steps =
+                                (FIND_MY_PHONE_TESTER_RMS_GATE_MAX - FIND_MY_PHONE_TESTER_RMS_GATE_MIN)
+                                    .roundToInt() - 1,
+                                onValueChangeFinished = {
+                                    findMyPhoneStore.testerRmsGateDbOverride = findMyPhoneRmsGateDb
+                                }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(
+                                    R.string.find_my_phone_tester_arm_delay,
+                                    findMyPhoneArmDelayMinutes.roundToInt()
+                                ),
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = stringResource(R.string.find_my_phone_tester_arm_delay_summary),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Slider(
+                                value = findMyPhoneArmDelayMinutes,
+                                onValueChange = { findMyPhoneArmDelayMinutes = it.roundToInt().toFloat() },
+                                valueRange = FIND_MY_PHONE_TESTER_ARM_DELAY_MIN..FIND_MY_PHONE_TESTER_ARM_DELAY_MAX,
+                                steps =
+                                (FIND_MY_PHONE_TESTER_ARM_DELAY_MAX - FIND_MY_PHONE_TESTER_ARM_DELAY_MIN).roundToInt() -
+                                    1,
+                                onValueChangeFinished = {
+                                    findMyPhoneStore.testerArmDelayMinutesOverride =
+                                        findMyPhoneArmDelayMinutes.roundToInt()
+                                }
+                            )
+                        }
                     }
                 }
             }
