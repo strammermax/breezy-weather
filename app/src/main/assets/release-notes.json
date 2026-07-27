@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+1)",
+    "version": "Niet uitgebracht (+2)",
     "date": "",
     "changes": [
+      "Move docs/*.md into docs/Eisen/ and commit the updated content that was sitting there uncommitted",
       "Add docs/APP_FUNCTIES.md: full app feature overview"
     ]
   },
