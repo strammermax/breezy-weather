@@ -1,7 +1,14 @@
 [
   {
-    "version": "Niet uitgebracht (+2)",
+    "version": "Niet uitgebracht (+1)",
     "date": "",
+    "changes": [
+      "Temporarily disable Find my phone (clap/whistle detection)"
+    ]
+  },
+  {
+    "version": "2026.07.27.443",
+    "date": "2026-07-27",
     "changes": [
       "Move docs/*.md into docs/Eisen/ and commit the updated content that was sitting there uncommitted",
       "Add docs/APP_FUNCTIES.md: full app feature overview"
@@ -58,16 +65,6 @@
     "date": "2026-07-26",
     "changes": [
       "Fix Spotless lint violations"
-    ]
-  },
-  {
-    "version": "2026.07.26.420",
-    "date": "2026-07-26",
-    "changes": [
-      "Prioritize foreground rendering during navigation",
-      "Clear stale weather warning after manual refresh",
-      "Restore upload feedback and weather refresh behavior",
-      "Remove thumbs up/down rating from wallpaper photo priority + UI"
     ]
   }
 ]
