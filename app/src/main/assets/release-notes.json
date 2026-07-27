@@ -1,5 +1,17 @@
 [
   {
+    "version": "Niet uitgebracht (+1)",
+    "date": "",
+    "changes": [
+      "Fix fixed/fictional locations getting corrupted by device GPS, add immediate refresh triggers and a one-time cache hotfix"
+    ]
+  },
+  {
+    "version": "2026.07.27.436",
+    "date": "2026-07-27",
+    "changes": []
+  },
+  {
     "version": "2026.07.27.435",
     "date": "2026-07-27",
     "changes": [
@@ -55,35 +67,6 @@
     "date": "2026-07-24",
     "changes": [
       "Trigger immediate wallpaper photo refresh when a location is added"
-    ]
-  },
-  {
-    "version": "2026.07.24.409",
-    "date": "2026-07-24",
-    "changes": [
-      "Redraw the live wallpaper immediately when a camera photo is activated",
-      "Allow triggering a release via workflow_dispatch, not just a tag push",
-      "Distinguish timeout from server error in the camera upload check step",
-      "Fix stale day/night wallpaper state on wake and location switch"
-    ]
-  },
-  {
-    "version": "2026.07.24.403",
-    "date": "2026-07-24",
-    "changes": [
-      "Reuse a recent GPS fix instead of always requesting a fresh one",
-      "Fix weather storage key for fictional locations",
-      "Wire refresh-now to the new pipeline and unify wallpaper photo locationKey",
-      "Fix premature comment termination in AppDefaults.kt kdoc (same */ pitfall)",
-      "Source minimalLocationRecs default from default_settings.json (value 4)",
-      "Fix double blank line left by dead-code removal",
-      "Wire the new sort pipeline into WallpaperPhotoRefreshWorker",
-      "Fix dangling top-level KDoc: use a plain block comment for the file intro",
-      "Fix premature comment termination in ImagesDataSync.kt kdoc",
-      "Fix remaining ktlint violation: one argument per line in wrapped calls",
-      "Fix spotless/ktlint violations (trailing commas at call sites, line length)",
-      "Wire GetsortedResultlist(), rotation state and downloadMissingImages",
-      "Redesign wallpaper photo sorting: SortLocationRecsByGPSLocation/ByLocation"
     ]
   }
 ]
