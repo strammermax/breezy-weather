@@ -1,7 +1,7 @@
 [
   {
-    "version": "Niet uitgebracht (+1)",
-    "date": "",
+    "version": "2026.07.27.438",
+    "date": "2026-07-27",
     "changes": [
       "Fix fixed/fictional locations getting corrupted by device GPS, add immediate refresh triggers and a one-time cache hotfix"
     ]
