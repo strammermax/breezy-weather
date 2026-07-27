@@ -593,6 +593,18 @@ class WallpaperRepository @Inject constructor(
         File(photoCacheDir(), locationKey).deleteRecursively()
         photoCatalog.deleteForLocation(locationKey)
         store.setRecentUrls(placeKey, emptyList())
+
+        // currentSortedResultlist/rotationIndex are in-memory only (see their own doc comment)
+        // and were never touched by the DB/file wipe above -- without this, a "Clear cache" that
+        // was meant to purge bad data (e.g. photos mistakenly synced under the wrong location,
+        // see docs on the isCurrentPosition fix in WallpaperPhotoRefreshWorker) kept silently
+        // reusing that same stale in-memory list on the very next getSortedResultlist() call,
+        // making the clear look like it did nothing. Also resets the `since` cursor so the next
+        // sync is a genuine full fetch, not an incremental "what changed" that can correctly say
+        // "nothing" against unmoved server data while the local catalog sits empty either way.
+        currentSortedResultlist.remove(locationKey)
+        rotationIndex.remove(locationKey)
+        store.clearSearchSince(locationKey)
     }
 
     /**
@@ -921,6 +933,12 @@ class WallpaperRepository @Inject constructor(
         store.deactivatePhoto()
         store.allRecentUrls().keys.forEach { store.setRecentUrls(it, emptyList()) }
         photoCatalog.deleteAll()
+        // Same in-memory-cache gap as clearLocation() -- see its comment. Without this, every
+        // location's stale currentSortedResultlist/rotationIndex survived a full "Clear cache"
+        // and kept being served on the next getSortedResultlist() call for each of them.
+        currentSortedResultlist.clear()
+        rotationIndex.clear()
+        store.clearAllSearchSince()
         _catalogChanged.tryEmit(Unit)
     }
 

@@ -588,16 +588,37 @@ class MainActivityViewModel @Inject constructor(
         }
 
         val valid = validLocationList.value.toMutableList()
+        val activeBefore = valid.getOrNull(0)?.formattedId
         valid.add(to, valid.removeAt(from))
 
         updateInnerData(valid)
 
         writeLocationList(locationList = validLocationList.value)
+
+        // The live wallpaper always reads the first location in this list (it has no reactive
+        // listener of its own -- see the setCurrentLocation callsite above). Without this,
+        // switching which location is first (e.g. Rome <-> Current location) left the wallpaper
+        // showing whatever was active before until the next scheduled tick, up to
+        // photoRefreshIntervalMinutes (default 30 min) later.
+        val activeAfter = valid.getOrNull(0)?.formattedId
+        if (activeAfter != null && activeAfter != activeBefore) {
+            WallpaperPhotoRefreshWorker.startNow(getApplication())
+        }
     }
 
     fun updateLocation(newLocation: Location, oldLocation: Location?) {
+        // Same reasoning as swapLocations(): only matters when the edited entry is the one
+        // actively driving the wallpaper (index 0) -- e.g. re-picking a fixed location's place
+        // changes its identity/coordinates in place, without any reorder to hang a refresh off.
+        val wasActive = validLocationList.value.getOrNull(0)?.formattedId ==
+            (oldLocation?.formattedId ?: newLocation.formattedId)
+
         updateInnerData(newLocation, oldLocation)
         writeLocationList(locationList = validLocationList.value)
+
+        if (wasActive) {
+            WallpaperPhotoRefreshWorker.startNow(getApplication())
+        }
     }
 
     fun locationExists(location: Location): Boolean {
@@ -620,6 +641,13 @@ class MainActivityViewModel @Inject constructor(
         // If we no longer have any current position locations, clear the current location store data9
         if (location.isCurrentPosition && !valid.any { it.isCurrentPosition }) {
             currentLocationStore.clearCurrentLocation()
+        }
+
+        // Same reasoning as swapLocations(): deleting the active (index 0) location promotes
+        // whatever's now first -- the wallpaper needs telling, or it keeps showing the deleted
+        // location's last photo until the next scheduled tick.
+        if (position == 0 && valid.isNotEmpty()) {
+            WallpaperPhotoRefreshWorker.startNow(getApplication())
         }
 
         return location

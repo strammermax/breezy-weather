@@ -233,6 +233,21 @@ class WallpaperImageStore(context: Context) {
             config.edit().putBoolean(KEY_IMAGE_DB_MIGRATION_DONE, value).apply()
         }
 
+    /**
+     * One-shot hotfix for the location/coordinate-mismatch bug fixed in
+     * [WallpaperPhotoRefreshWorker] (it used to substitute the device's live GPS place/
+     * coordinates for a fixed/vaste-locatie's own -- see the `isFictional`-only check it used to
+     * have): wipes the whole photo cache/catalog once so every location does a clean full resync,
+     * instead of trying to detect and pick out only the mismatched entries. Only actually clears
+     * anything for installs that already have cached data (an upgrade); a
+     * fresh install has nothing to clean up, so this is a no-op there beyond setting the flag.
+     */
+    var hotfixCacheResetDone: Boolean
+        get() = config.getBoolean(KEY_HOTFIX_CACHE_RESET_DONE, false)
+        set(value) {
+            config.edit().putBoolean(KEY_HOTFIX_CACHE_RESET_DONE, value).apply()
+        }
+
     fun allRecentUrls(): Map<String, List<String>> {
         val map = recentUrlMap()
         return buildMap {
@@ -337,6 +352,26 @@ class WallpaperImageStore(context: Context) {
         config.edit().putString(KEY_SEARCH_SINCE, map.toString()).apply()
     }
 
+    /**
+     * Clears [locationId]'s `since` cursor for every purpose, so the next sync does a genuine
+     * full fetch instead of an incremental "what changed since X" that can report `changed:false`
+     * against server-side data that hasn't moved -- even though the local catalog was just wiped
+     * (e.g. by [WallpaperRepository.clearLocation]) and has nothing to show either way.
+     */
+    fun clearSearchSince(locationId: String) {
+        val map = searchSinceMap()
+        val suffix = ":$locationId"
+        val keysToRemove = map.keys().asSequence().filter { it.endsWith(suffix) }.toList()
+        if (keysToRemove.isEmpty()) return
+        keysToRemove.forEach { map.remove(it) }
+        config.edit().putString(KEY_SEARCH_SINCE, map.toString()).apply()
+    }
+
+    /** Same as [clearSearchSince] but for every location -- see [WallpaperRepository.clearCache]. */
+    fun clearAllSearchSince() {
+        config.edit().remove(KEY_SEARCH_SINCE).apply()
+    }
+
     private fun searchSinceMap(): JSONObject = try {
         config.getString(KEY_SEARCH_SINCE, null)?.let(::JSONObject) ?: JSONObject()
     } catch (e: Throwable) {
@@ -361,6 +396,7 @@ class WallpaperImageStore(context: Context) {
         private const val KEY_REFRESH_INTERVAL_MINUTES = "photo_refresh_interval_minutes"
         private const val KEY_LAST_HEALTH_CHECK_AT = "last_health_check_at"
         private const val KEY_IMAGE_DB_MIGRATION_DONE = "image_db_migration_done"
+        private const val KEY_HOTFIX_CACHE_RESET_DONE = "hotfix_cache_reset_done"
         private const val KEY_MINIMAL_LOCATION_RECS = "minimal_location_recs"
 
         /** File name used for the cached background bitmap inside the app files dir. */

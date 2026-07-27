@@ -75,6 +75,19 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
             return Result.success()
         }
 
+        // One-shot hotfix for the location/coordinate-mismatch bug (see the isCurrentPosition
+        // check further down): installs that already have cached photos necessarily ran the
+        // broken build at some point, so wipe everything once and let every location do a clean
+        // full resync -- a fresh install has nothing cached yet, so this is a no-op there beyond
+        // setting the flag. Runs before the health check/location loop so the resync below
+        // already sees the cleared state.
+        if (!store.hotfixCacheResetDone) {
+            if (wallpaperRepository.cacheStats().photoCount > 0) {
+                wallpaperRepository.clearCache()
+            }
+            store.hotfixCacheResetDone = true
+        }
+
         val now = System.currentTimeMillis()
         var refreshedCount = 0
         var skippedCount = 0
@@ -118,10 +131,15 @@ class WallpaperPhotoRefreshWorker @AssistedInject constructor(
                 // network-based fix over the (possibly stale) stored coordinates: this worker
                 // runs far more often than the app's regular weather/location refresh, and a
                 // missing/denied permission just falls back to the stored location below.
-                // Fictional locations (e.g. Ghibli) are the exception: their weather follows
-                // the device's GPS position, but their photos must keep following their own
-                // fixed identity/place query, never the device's real-world location.
-                val fix = if (isActivating && !location.isFictional) {
+                // Only ever applies to the tracked "current position" location -- a fixed
+                // ("vaste locatie", e.g. a manually added city like Rome) or fictional location
+                // (e.g. Ghibli) must always keep its own stored/nominal coordinates and place
+                // query, never the device's real-world GPS position. Using `!location.isFictional`
+                // here used to also catch fixed locations, silently substituting the device's
+                // real GPS place/coordinates (and thus real GPS photos) into that location's own
+                // photo catalog whenever it became active -- e.g. a Hoofddorp photo ending up
+                // tagged and shown under "Rome" while physically in Hoofddorp.
+                val fix = if (isActivating && location.isCurrentPosition) {
                     wallpaperLocationResolver.resolve()
                 } else {
                     null
