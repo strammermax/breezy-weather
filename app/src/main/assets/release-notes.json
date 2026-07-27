@@ -1,7 +1,7 @@
 [
   {
-    "version": "Niet uitgebracht (+1)",
-    "date": "",
+    "version": "2026.07.27.435",
+    "date": "2026-07-27",
     "changes": [
       "Fix wallpaper photo refresh getting permanently stuck after a restart"
     ]
