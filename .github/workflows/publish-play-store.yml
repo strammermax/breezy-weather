@@ -1,4 +1,4 @@
-name: Publish to Play Store (internal track)
+name: Publish to Play Store
 
 # Triggered by scripts/release.ps1, which tags+pushes "vX.Y.Z" (basic flavor) or
 # "vX.Y.Z-freenet" (GitHub-release-only, never published to Play). Also runnable by hand.
@@ -6,12 +6,26 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      track:
+        description: Google Play track
+        required: true
+        default: internal
+        type: choice
+        options:
+          - internal
+          - alpha
+          - beta
 
 jobs:
   publish:
     if: ${{ !endsWith(github.ref_name, '-freenet') }}
     runs-on: 'ubuntu-24.04'
+    env:
+      # Tag-triggered releases always remain internal. A maintainer can select
+      # closed (alpha) or open (beta) testing only when starting the workflow manually.
+      PLAY_TRACK: ${{ github.event_name == 'workflow_dispatch' && inputs.track || 'internal' }}
 
     steps:
       - name: Checkout
@@ -101,8 +115,8 @@ jobs:
           CF_ACCESS_CLIENT_ID: ${{ secrets.LWW_CFACCESS_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.LWW_CFACCESS_SECRET }}
 
-      - name: Publish basic flavor to Play Store internal track
-        run: ./gradlew publishBasicReleaseBundle
+      - name: Publish basic flavor to Play Store ${{ env.PLAY_TRACK }} track
+        run: ./gradlew publishBasicReleaseBundle --track "$PLAY_TRACK"
 
       - name: Remove secrets from workspace
         if: always()
