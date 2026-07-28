@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+5)",
+    "version": "Niet uitgebracht (+6)",
     "date": "",
     "changes": [
+      "Correct and expand privacy policy, translate to all supported locales",
       "Add Google Play foreground service evidence",
       "Embed Weather Vista privacy policy",
       "Rename app to Weather Vista",
