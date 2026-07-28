@@ -224,6 +224,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mGlassSceneCanvas: Canvas? = null
         private var mGlassSceneShader: Shader? = null
         private var mGlassSceneKey: String? = null
+        private var mGlassSceneCloudRenderingSupported = true
         private val mSkyTintPaint = Paint()
         private var mCelestialStartMillis: Long? = null
         private var mCelestialEndMillis: Long? = null
@@ -350,6 +351,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
         private var mAnimate = false
         private var mRotatingWeather = false
         private var mRotatingWeatherIndex = 0
+        private var mNextRotatingWeatherAtMillis = Long.MAX_VALUE
 
         /** Cloud cover override for fixed (non-rotating) presets like "Holl. wolken". */
         private var mForcedCloudCoverPercent: Float? = null
@@ -371,6 +373,12 @@ class MaterialLiveWallpaperService : WallpaperService() {
                 mHandler == null
             ) {
                 return@Runnable
+            }
+            if (mRotatingWeather && System.currentTimeMillis() >= mNextRotatingWeatherAtMillis) {
+                mRotatingWeatherIndex = (mRotatingWeatherIndex + 1) % RotatingWeatherScenarios.ALL.size
+                mNextRotatingWeatherAtMillis = System.currentTimeMillis() + ROTATING_WEATHER_INTERVAL_MILLIS
+                setWeather(RotatingWeatherScenarios.ALL[mRotatingWeatherIndex].weatherKind, mDaytime)
+                setWeatherImplementor(SceneTransitionReason.ROTATING_TEST)
             }
             // Log only on the missing->present transition of the photo layer, never per frame.
             val foregroundMissing = mWallpaperImageStore.photoBackgroundEnabled && mForeground == null
@@ -420,9 +428,15 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     ensureForeground()
                     // Offsets are clamped to the extra layer width so parallax can never push a
                     // layer past its own bounds, whatever the factors are set to.
-                    val bgOffset = parallaxOffset(PARALLAX_BG_FACTOR)
-                    val fgOffset = parallaxOffset(PARALLAX_FG_FACTOR)
-                    val celestialOffset = parallaxOffset(PARALLAX_CELESTIAL_FACTOR)
+                    // The wet-glass shader reconstructs the scene in an off-screen bitmap.
+                    // Moving that bitmap and the visible depth layers independently can expose
+                    // a stale/empty texture while the phone is tilted. Keep the complete scene
+                    // fixed whenever glass drops are active; parallax resumes automatically as
+                    // soon as the rain effect ends.
+                    val wetGlassActive = mSceneState.glassRainIntensity > 0.001f
+                    val bgOffset = if (wetGlassActive) 0f else parallaxOffset(PARALLAX_BG_FACTOR)
+                    val fgOffset = if (wetGlassActive) 0f else parallaxOffset(PARALLAX_FG_FACTOR)
+                    val celestialOffset = if (wetGlassActive) 0f else parallaxOffset(PARALLAX_CELESTIAL_FACTOR)
 
                     // ACT-012: optional seasonal grading, applied as the last layer over the
                     // whole scene (sky through glass rain drops). saveLayer only runs while the
@@ -471,7 +485,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     // offset -- see PARALLAX_NEAR_FACTOR -- so the near/subject layer visibly
                     // separates from the rest of the photo instead of moving with it in lockstep.
                     if (mForegroundNear != null) {
-                        val nearOffset = parallaxOffset(PARALLAX_FG_FACTOR + PARALLAX_NEAR_FACTOR)
+                        val nearOffset = if (wetGlassActive) {
+                            0f
+                        } else {
+                            parallaxOffset(PARALLAX_FG_FACTOR + PARALLAX_NEAR_FACTOR)
+                        }
                         it.withTranslation(-nearOffset, 0f) {
                             mForegroundNear?.draw(it)
                         }
@@ -584,17 +602,6 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     snapshot.recoveryEvents,
                     mCurrentEffectFamily
                 )
-            }
-        }
-
-        private val mRotatingWeatherRunnable = object : Runnable {
-            override fun run() {
-                if (!mVisible || !mRotatingWeather) return
-                mRotatingWeatherIndex = (mRotatingWeatherIndex + 1) % RotatingWeatherScenarios.ALL.size
-                setWeather(RotatingWeatherScenarios.ALL[mRotatingWeatherIndex].weatherKind, mDaytime)
-                setWeatherImplementor(SceneTransitionReason.ROTATING_TEST)
-                mHandler?.post(mDrawableRunnable)
-                mHandler?.postDelayed(this, ROTATING_WEATHER_INTERVAL_MILLIS)
             }
         }
 
@@ -1108,12 +1115,25 @@ class MaterialLiveWallpaperService : WallpaperService() {
             sceneCanvas.drawColor(Color.TRANSPARENT, android.graphics.PorterDuff.Mode.CLEAR)
             sceneCanvas.withTranslation(-bgOffset, 0f) { mBackground?.draw(this) }
             sceneCanvas.withTranslation(-celestialOffset, 0f) { drawCelestialBody(this) }
-            // The full AGSL cloud shader can't run here (this bitmap is software-rendered;
-            // RuntimeShader requires a hardware canvas), so approximate its average sky
-            // tint as a flat overlay instead. Without this, the glass refraction always
-            // sampled a clear-blue scene, so rain on the window looked the same regardless
-            // of how dark/overcast the actual sky was.
-            drawApproximateSkyTint(sceneCanvas)
+            // Reuse the exact same bitmap cloud engine as the visible scene so the opaque
+            // refractive glass pass contains the moving clouds instead of covering them. The
+            // hardware-only AGSL fallback cannot target this software bitmap, so retain the
+            // existing average sky approximation only for that path.
+            val cloudsRendered = try {
+                mGlassSceneCloudRenderingSupported &&
+                    mCurrentEffectRenderer?.drawCloudsIntoGlassScene(sceneCanvas) == true
+            } catch (error: IllegalArgumentException) {
+                // A bitmap-backed Canvas is always software-rendered. Some cloud renderers can
+                // internally use RuntimeShader and therefore cannot be drawn into this texture.
+                // Falling back here is essential: letting the exception escape aborts the whole
+                // wallpaper frame, including precipitation and the rotating-test label.
+                mGlassSceneCloudRenderingSupported = false
+                lwwLog { "glass scene cloud fallback enabled: ${error.message}" }
+                false
+            }
+            if (!cloudsRendered) {
+                drawApproximateSkyTint(sceneCanvas)
+            }
             sceneCanvas.withTranslation(-fgOffset, 0f) { mForeground?.draw(this) }
             mGlassSceneKey = key
             return mGlassSceneShader
@@ -1749,6 +1769,11 @@ class MaterialLiveWallpaperService : WallpaperService() {
             mAnimate = configManager.animationsEnabled
             mRotatingWeather = configManager.weatherKind == WEATHER_TYPE_ROTATING_TEST
             mRotatingWeatherIndex = 0
+            mNextRotatingWeatherAtMillis = if (mRotatingWeather) {
+                System.currentTimeMillis() + ROTATING_WEATHER_INTERVAL_MILLIS
+            } else {
+                Long.MAX_VALUE
+            }
             mRotation2D = 0f
             mRotation3D = 0f
             if (mOrientationListener.canDetectOrientation()) {
@@ -1856,9 +1881,6 @@ class MaterialLiveWallpaperService : WallpaperService() {
             }
 
             mHandler?.post { setWeatherBackgroundDrawable() }
-            if (mRotatingWeather) {
-                mHandler?.postDelayed(mRotatingWeatherRunnable, ROTATING_WEATHER_INTERVAL_MILLIS)
-            }
             if (mAnimate) {
                 val screenRefreshRate = ContextCompat.getDisplayOrDefault(this@MaterialLiveWallpaperService)
                     .refreshRate.let {

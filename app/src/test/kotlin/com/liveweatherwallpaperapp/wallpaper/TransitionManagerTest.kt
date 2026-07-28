@@ -182,13 +182,13 @@ class TransitionManagerTest {
     }
 
     @Test
-    fun `precipitation start or stop uses the medium duration`() {
+    fun `precipitation start or stop becomes visible immediately`() {
         transitionDurationMillis(
             from = WallpaperWeatherFamily.CLOUDY,
             to = WallpaperWeatherFamily.RAIN,
             reason = SceneTransitionReason.WEATHER_DATA_CHANGED,
             animationsEnabled = true
-        ) shouldBe 45_000L
+        ) shouldBe 3_000L
     }
 
     @Test

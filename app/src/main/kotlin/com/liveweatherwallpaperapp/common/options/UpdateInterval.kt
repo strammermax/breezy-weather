@@ -31,12 +31,10 @@ enum class UpdateInterval(
     INTERVAL_NEVER("never", null),
 
     /**
-     * A 1-hour baseline, battery-friendly when nothing is happening — the adaptive refresh (see
-     * [com.liveweatherwallpaperapp.background.weather.needsAdaptiveRefresh]) fills in the gaps with a
-     * short-interval follow-up whenever there's an active alert or the forecast is about to
-     * change, so this combines a calm default with fast reaction when it actually matters.
+     * Keep the selected location and every consumer of its shared weather state (app, widgets
+     * and live wallpaper) current at WorkManager's shortest supported periodic interval.
      */
-    INTERVAL_AUTO("auto", 1.hours),
+    INTERVAL_AUTO("auto", 15.minutes),
     INTERVAL_0_15("0:15", 15.minutes),
     INTERVAL_0_30("0:30", 30.minutes),
     INTERVAL_1_00("1:00", 1.hours),

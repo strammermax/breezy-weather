@@ -91,14 +91,21 @@ class WallpaperSceneStateTest {
     }
 
     @Test
-    fun `plain thunder and measured rain on dry families do not enable glass rain`() {
+    fun `measured rain enables glass even when current condition is dry`() {
         WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_THUNDER,
             daylight = 1f
         ).glassRainIntensity shouldBe 0f
 
-        WallpaperSceneStateFactory.create(
+        val measuredRain = WallpaperSceneStateFactory.create(
             WeatherView.WEATHER_KIND_CLEAR,
+            daylight = 1f,
+            precipitationMillimetersPerHour = 4f
+        ).glassRainIntensity
+        measuredRain.shouldBeGreaterThan(0f)
+
+        WallpaperSceneStateFactory.create(
+            WeatherView.WEATHER_KIND_SNOW,
             daylight = 1f,
             precipitationMillimetersPerHour = 4f
         ).glassRainIntensity shouldBe 0f
@@ -112,7 +119,7 @@ class WallpaperSceneStateTest {
             precipitationMillimetersPerHour = mmPerHour
         ).glassRainIntensity
 
-        intensity(1f) shouldBe 0.3f
+        intensity(1f) shouldBe 0.65f
         intensity(7f) shouldBe 0.7f
         intensity(18f) shouldBe 1f
     }

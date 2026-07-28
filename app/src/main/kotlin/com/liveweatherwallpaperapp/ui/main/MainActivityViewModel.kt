@@ -283,6 +283,16 @@ class MainActivityViewModel @Inject constructor(
 
         updateInnerData(location)
 
+        // A newly-added current-position location starts as an unusable 0,0 placeholder. The
+        // first photo worker therefore has nothing it can resolve. RefreshHelper has persisted
+        // the real GPS coordinates/place by the time this callback runs, so retry now when the
+        // installation still has no background photo. Fixed first locations normally get their
+        // photo from addLocation's post-write refresh below; this also safely covers a missed or
+        // interrupted first attempt.
+        if (location.isUsable && wallpaperRepository.loadCachedBitmap() == null) {
+            WallpaperPhotoRefreshWorker.startNow(getApplication())
+        }
+
         _loading.value = false
         updating = false
     }
@@ -523,16 +533,9 @@ class MainActivityViewModel @Inject constructor(
         valid.add(index ?: valid.size, locationWithValidTimeZone)
 
         updateInnerData(valid)
-        writeLocationList(locationList = valid)
+        writeLocationList(locationList = valid, refreshWallpaperAfterWrite = true)
 
         _locationListLoading.value = false
-
-        // Don't make the user wait up to photoRefreshIntervalMinutes (default 30 min) for a
-        // wallpaper background on a location they just added -- kick off an immediate one-off
-        // refresh (weather + photo showlist) the same way the manual "refresh now" button does.
-        if (context != null) {
-            WallpaperPhotoRefreshWorker.startNow(context)
-        }
 
         return true
     }
@@ -593,17 +596,16 @@ class MainActivityViewModel @Inject constructor(
 
         updateInnerData(valid)
 
-        writeLocationList(locationList = validLocationList.value)
-
         // The live wallpaper always reads the first location in this list (it has no reactive
         // listener of its own -- see the setCurrentLocation callsite above). Without this,
         // switching which location is first (e.g. Rome <-> Current location) left the wallpaper
         // showing whatever was active before until the next scheduled tick, up to
         // photoRefreshIntervalMinutes (default 30 min) later.
         val activeAfter = valid.getOrNull(0)?.formattedId
-        if (activeAfter != null && activeAfter != activeBefore) {
-            WallpaperPhotoRefreshWorker.startNow(getApplication())
-        }
+        writeLocationList(
+            locationList = validLocationList.value,
+            refreshWallpaperAfterWrite = activeAfter != null && activeAfter != activeBefore
+        )
     }
 
     fun updateLocation(newLocation: Location, oldLocation: Location?) {
@@ -614,11 +616,10 @@ class MainActivityViewModel @Inject constructor(
             (oldLocation?.formattedId ?: newLocation.formattedId)
 
         updateInnerData(newLocation, oldLocation)
-        writeLocationList(locationList = validLocationList.value)
-
-        if (wasActive) {
-            WallpaperPhotoRefreshWorker.startNow(getApplication())
-        }
+        writeLocationList(
+            locationList = validLocationList.value,
+            refreshWallpaperAfterWrite = wasActive
+        )
     }
 
     fun locationExists(location: Location): Boolean {
@@ -700,9 +701,18 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun writeLocationList(locationList: List<Location>) {
+    private fun writeLocationList(
+        locationList: List<Location>,
+        refreshWallpaperAfterWrite: Boolean = false,
+    ) {
         viewModelScope.launchIO {
             locationRepository.addAll(locationList)
+            // WorkManager reads its locations back from the repository. Enqueueing before
+            // addAll completed caused a fresh installation's first photo refresh to observe an
+            // empty list and finish without downloading anything.
+            if (refreshWallpaperAfterWrite) {
+                WallpaperPhotoRefreshWorker.startNow(getApplication())
+            }
         }
     }
 

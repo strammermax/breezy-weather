@@ -84,7 +84,7 @@ class TransitionManager(
  * | Rotating test mode | 2 s |
  * | Forced Day/Night mode | 3 s |
  * | To/from thunder(storm) | 30 s |
- * | Precipitation start/stop | 45 s |
+ * | Precipitation start/stop | 3 s |
  * | Normal weather family change | 60 s |
  */
 fun transitionDurationMillis(
@@ -102,8 +102,11 @@ fun transitionDurationMillis(
     // Auto day/night is handled by the continuous daylight factor; no discrete fade needed.
     if (reason == SceneTransitionReason.AUTO_DAY_NIGHT && from == to) return 0L
     if (from == to) return 0L
+    // Rain/snow/hail is immediate user-facing state: after a refresh the wallpaper must not
+    // spend almost a minute still showing the previous dry scene. Keep just enough crossfade
+    // to avoid a hard visual cut.
+    if (isPrecipitation(from) != isPrecipitation(to)) return 3_000L
     if (involvesThunder(from) || involvesThunder(to)) return 30_000L
-    if (isPrecipitation(from) != isPrecipitation(to)) return 45_000L
     return 60_000L
 }
 

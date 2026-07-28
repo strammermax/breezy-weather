@@ -294,6 +294,18 @@ internal class WallpaperWeatherEffectRenderer(
 
     fun drawBackgroundWeatherPass(canvas: Canvas, alpha: Float = 1f) = draw(canvas, WEATHER_PASS_BACKGROUND, alpha)
 
+    /**
+     * Draws the same bitmap-based cloud engine into the wet-glass scene texture. Returns false
+     * when this renderer uses the hardware-only AGSL cloud path, allowing the caller to use its
+     * inexpensive flat sky approximation instead.
+     */
+    fun drawCloudsIntoGlassScene(canvas: Canvas): Boolean {
+        val renderer = cloudEngineRenderer ?: return false
+        drawStandaloneStars(canvas, 1f)
+        renderer.draw(canvas, 1f)
+        return true
+    }
+
     fun drawForegroundWeatherPass(canvas: Canvas, alpha: Float = 1f) = draw(canvas, WEATHER_PASS_FOREGROUND, alpha)
 
     fun drawGlassRainDrops(canvas: Canvas, alpha: Float = 1f, sceneTexture: Shader? = null) {
@@ -305,10 +317,6 @@ internal class WallpaperWeatherEffectRenderer(
             glass.setFloatUniform("time", elapsedSeconds)
             glass.setFloatUniform("rainAmount", glassRainIntensity)
             glass.setFloatUniform("transitionAlpha", alpha.coerceIn(0f, 1f))
-            // Onweersbui: this glass layer fully replaces every pixel with a sample from
-            // the static, software-rendered sceneTexture (see updateGlassSceneTexture),
-            // which can't include the AGSL lightning flash drawn underneath. Without this,
-            // the glass-rain overlay silently hid the flash on every "wet" thunder family.
             glass.setFloatUniform(
                 "lightningMode",
                 if (weatherKind == WeatherView.WEATHER_KIND_THUNDER ||

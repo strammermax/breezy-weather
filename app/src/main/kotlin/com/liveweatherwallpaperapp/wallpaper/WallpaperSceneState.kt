@@ -213,16 +213,19 @@ object WallpaperSceneStateFactory {
         } else {
             profile.precipitationIntensity
         }
-        // Rain-on-glass belongs only to explicitly wet-glass families. Measured
-        // precipitation must not leak the effect into Clear, Cloudy, Thunder, etc.
-        val supportsGlassRain = when (family) {
-            WallpaperWeatherFamily.RAIN,
-            WallpaperWeatherFamily.SLEET,
-            WallpaperWeatherFamily.THUNDERSTORM,
-            -> profile.glassRainIntensity > 0f ||
-                (precipitationMillimetersPerHour?.let { it.isFinite() && it > 0f } == true)
-            else -> false
-        }
+        // The provider's broad current condition can still be CLEAR/CLOUDY while its
+        // current-hour measurement reports rain. The app already exposes that hourly
+        // precipitation to the user, so the shared scene must honour it as well. Frozen
+        // families remain excluded because their total precipitation is snow/hail, not
+        // liquid water on the glass.
+        val hasMeasuredPrecipitation = precipitationMillimetersPerHour
+            ?.let { it.isFinite() && it > 0f } == true
+        val supportsGlassRain = profile.glassRainIntensity > 0f ||
+            (
+                hasMeasuredPrecipitation &&
+                    family != WallpaperWeatherFamily.SNOW &&
+                    family != WallpaperWeatherFamily.HAIL
+                )
         val adjustedGlassRainIntensity = if (isPrecipitating && supportsGlassRain) {
             glassRainAmount(precipitationMillimetersPerHour, profile.glassRainIntensity)
         } else {
@@ -546,7 +549,7 @@ object WallpaperSceneStateFactory {
         if (mm == null || !mm.isFinite() || mm <= 0f) return fallback.coerceIn(0f, 1f)
 
         return when {
-            mm < Precipitation.PRECIPITATION_HOURLY_LIGHT.toFloat() -> 0.3f
+            mm < Precipitation.PRECIPITATION_HOURLY_LIGHT.toFloat() -> 0.65f
             mm < Precipitation.PRECIPITATION_HOURLY_HEAVY.toFloat() -> 0.7f
             else -> 1f
         }
