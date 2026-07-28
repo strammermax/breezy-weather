@@ -201,12 +201,13 @@ class SearchActivity : BreezyActivity() {
                                 ListItem(
                                     colors = ListItemDefaults
                                         .colors(containerColor = SearchBarDefaults.colors().containerColor),
-                                    headlineContent = { Text(location.getPlace(context)) },
                                     supportingContent = { Text(location.administrationLevels()) },
                                     modifier = Modifier.clickable {
                                         viewModel.setSelectedLocation(location, locationSearchSource)
                                     }
-                                )
+                                ) {
+                                    Text(location.getPlace(context))
+                                }
                             }
                         }
                         if (dialogLocationSourcesOpenState.value && selectedLocation.value != null) {

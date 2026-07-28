@@ -299,9 +299,6 @@ fun AppearanceSettingsScreen(
                                         colors = ListItemDefaults.colors(
                                             containerColor = androidx.compose.ui.graphics.Color.Transparent
                                         ),
-                                        headlineContent = {
-                                            Text(iconPack.providerName ?: "")
-                                        },
                                         modifier = Modifier.clickable {
                                             SettingsManager.getInstance(context).iconProvider = iconPack.packageName
                                             iconProviderState.value = iconPack.packageName
@@ -337,7 +334,9 @@ fun AppearanceSettingsScreen(
                                                 )
                                             }
                                         }
-                                    )
+                                    ) {
+                                        Text(iconPack.providerName ?: "")
+                                    }
                                 }
                             }
                         }

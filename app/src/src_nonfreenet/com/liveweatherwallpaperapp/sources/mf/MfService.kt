@@ -751,14 +751,14 @@ class MfService @Inject constructor(
     private fun getNormals(normalsResult: MfNormalsResult): Map<Month, Normals>? {
         val normalsStats = normalsResult.properties?.stats
         return if (!normalsStats.isNullOrEmpty()) {
-            Month.entries.associateWith { month ->
+            Month.entries.mapNotNull { month ->
                 normalsStats.getOrElse(month.value - 1) { null }?.let {
                     Normals(
                         daytimeTemperature = it.tMax?.celsius,
                         nighttimeTemperature = it.tMin?.celsius
-                    )
+                    ).let { normals -> month to normals }
                 }
-            }.filter { it.value != null } as Map<Month, Normals>
+            }.toMap()
         } else {
             null
         }

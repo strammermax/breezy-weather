@@ -416,7 +416,7 @@ class FindMyPhoneService : Service() {
             // No default sound available on this device -- vibration alone still alerts.
         }
 
-        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        val vibrator = getSystemService(Vibrator::class.java)
         val pattern = longArrayOf(0, 500, 500)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator?.vibrate(VibrationEffect.createWaveform(pattern, 1))
@@ -448,7 +448,7 @@ class FindMyPhoneService : Service() {
         }
         mediaPlayer = null
 
-        (getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator)?.cancel()
+        getSystemService(Vibrator::class.java)?.cancel()
     }
 
     private fun startForegroundNotification() {

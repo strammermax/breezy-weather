@@ -33,6 +33,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -190,7 +191,9 @@ private fun CloudTuningScreen(onBack: () -> Unit, backgroundBitmap: Bitmap?) {
                     label = { Text("Weather type") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(weatherMenuExpanded) },
                     colors = cloudWeatherTypeFieldColors(),
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
+                        .fillMaxWidth()
                 )
                 ExposedDropdownMenu(weatherMenuExpanded, { weatherMenuExpanded = false }) {
                     CLOUD_TUNING_WEATHER_TYPES.forEach { type ->
@@ -364,7 +367,9 @@ private fun EasterEggDebugSection(
                     label = { Text("Which cloud") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(dropdownExpanded) },
                     colors = cloudWeatherTypeFieldColors(),
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
+                        .fillMaxWidth()
                 )
                 ExposedDropdownMenu(dropdownExpanded, { dropdownExpanded = false }) {
                     (0 until eggCount).forEach { index ->

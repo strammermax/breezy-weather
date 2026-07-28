@@ -69,5 +69,11 @@
 # RestrictionBypass
 -keep class org.chickenhook.restrictionbypass.** { *; }
 
+# xmlutil's Android dependencies contain desktop ServiceLoader registrations whose
+# provider classes are intentionally absent. The app creates its XML serializers directly.
+-dontwarn nl.adaptivity.xmlutil.util.SerializationProvider
+-dontwarn nl.adaptivity.xmlutil.serialization.KotlinxSerializationProvider
+-dontwarn nl.adaptivity.xmlutil.util.DefaultSerializationProvider
+
 # Jwt
 -keep class io.jsonwebtoken.impl.** { *; }

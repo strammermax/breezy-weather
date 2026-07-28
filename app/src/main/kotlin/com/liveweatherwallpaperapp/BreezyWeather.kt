@@ -143,6 +143,7 @@ class BreezyWeather : Application(), Configuration.Provider {
      * docs/UpdateFLow.md flow 5. [RemoveSkyMessagingService.onNewToken] covers later
      * rotations of the same token.
      */
+    @Suppress("DEPRECATION") // RemoveSky still targets legacy FCM registration tokens.
     private fun registerFcmToken() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             val token = if (task.isSuccessful) task.result else null

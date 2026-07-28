@@ -665,14 +665,14 @@ tasks {
     val localesConfigTask = registerLocalesConfigTask(project)
 
     // Duplicating Hebrew string assets due to some locale code issues on different devices
-    val copyHebrewStrings by registering(Copy::class) {
+    val copyHebrewStrings = register<Copy>("copyHebrewStrings") {
         from("./src/main/res/values-he")
         into("./src/main/res/values-iw")
         include("**/*")
     }
 
     // Duplicating Indonesian string assets due to some locale code issues on different devices
-    val copyIndonesianStrings by registering(Copy::class) {
+    val copyIndonesianStrings = register<Copy>("copyIndonesianStrings") {
         from("./src/main/res/values-id")
         into("./src/main/res/values-in")
         include("**/*")

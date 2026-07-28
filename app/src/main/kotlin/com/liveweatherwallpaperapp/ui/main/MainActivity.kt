@@ -767,13 +767,6 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
                                         clickable { it.error.showDialogAction!!(this@MainActivity) }
                                     })
                                     .padding(vertical = dimensionResource(R.dimen.small_margin)),
-                                headlineContent = {
-                                    Text(
-                                        text = source ?: message,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                },
                                 supportingContent = {
                                     source?.let {
                                         Column {
@@ -794,7 +787,13 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
                                         )
                                     }
                                 }
-                            )
+                            ) {
+                                Text(
+                                    text = source ?: message,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                            }
                         }
                     }
                 }

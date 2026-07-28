@@ -21,7 +21,6 @@ import android.graphics.Color
 import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.exceptions.InvalidLocationException
-import com.liveweatherwallpaperapp.common.extensions.getFormattedDate
 import com.liveweatherwallpaperapp.common.extensions.toCalendarWithTimeZone
 import com.liveweatherwallpaperapp.common.extensions.toDateNoHour
 import com.liveweatherwallpaperapp.common.preference.EditTextPreference
@@ -223,7 +222,9 @@ class MetIeService @Inject constructor(
                         it.time = formatter.parse("${result.date} 0000")!!
                     }
                     cal.add(Calendar.DAY_OF_MONTH, -1)
-                    cal.time.getFormattedDate("yyyy-MM-dd", cal.timeZone, Locale.ENGLISH)
+                    SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).apply {
+                        timeZone = cal.timeZone
+                    }.format(cal.time)
                 } else {
                     result.date
                 }

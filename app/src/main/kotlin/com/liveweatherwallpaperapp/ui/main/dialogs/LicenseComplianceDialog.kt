@@ -150,18 +150,17 @@ object LicenseComplianceDialog {
             colors = ListItemDefaults.colors(
                 containerColor = Color.Transparent
             ),
-            headlineContent = {
-                Text(
-                    content,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
             leadingContent = icon?.let {
                 {
                     Text(it)
                 }
             }
-        )
+        ) {
+            Text(
+                content,
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
     }
 }
