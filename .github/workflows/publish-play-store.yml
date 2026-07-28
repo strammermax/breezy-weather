@@ -45,6 +45,20 @@ jobs:
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
 
+      - name: Determine Play release name
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            release_name="$GITHUB_REF_NAME"
+          else
+            # Keep this in sync with getLwwPatch()/getBuildDate() in buildSrc.
+            patch="$(git rev-list --count 795e85b..HEAD)"
+            release_name="v$(date -u +%Y.%m.%d).${patch}"
+          fi
+          echo "PLAY_RELEASE_NAME=$release_name" >> "$GITHUB_ENV"
+          echo "Publishing Play release: $release_name ($PLAY_TRACK)"
+
       - name: Write release keystore
         run: |
           set -e
@@ -116,7 +130,10 @@ jobs:
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.LWW_CFACCESS_SECRET }}
 
       - name: Publish basic flavor to Play Store ${{ env.PLAY_TRACK }} track
-        run: ./gradlew publishBasicReleaseBundle --track "$PLAY_TRACK"
+        run: >-
+          ./gradlew publishBasicReleaseBundle
+          --track "$PLAY_TRACK"
+          --release-name "$PLAY_RELEASE_NAME"
 
       - name: Remove secrets from workspace
         if: always()
