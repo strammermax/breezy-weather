@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+2)",
+    "version": "Niet uitgebracht (+3)",
     "date": "",
     "changes": [
+      "Documenteer removesky-sessie: locatie-autocomplete, tabel-scrollbar, kaarthoogte, test-pagina model-selector",
       "Add communication summary docs for bug review session",
       "Add communication summary for spotless build fix session"
     ]
