@@ -29,16 +29,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
-    <!-- Find my phone: background clap/whistle listening, temporarily disabled
-         (FindMyPhoneStore.FEATURE_ENABLED = false), see that constant's doc comment.
-         RECORD_AUDIO in particular triggers extra Play Console Data Safety questions, so it's
-         removed rather than just left unused. To re-enable: uncomment this block and the
-         matching service declaration below.
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
-    -->
+    <!-- Find-my-phone audio detection is disabled and has no manifest permissions. -->
 
     <!-- query internet state. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -433,13 +424,6 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="tile" />
         </service>
-
-        <!-- Find my phone service, temporarily disabled, see the permission block above.
-        <service
-            android:name=".background.findmyphone.FindMyPhoneService"
-            android:foregroundServiceType="microphone"
-            android:exported="false" />
-        -->
 
         <service
             android:name=".wallpaper.MaterialLiveWallpaperService"
