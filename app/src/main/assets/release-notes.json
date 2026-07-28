@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+14)",
+    "version": "Niet uitgebracht (+15)",
     "date": "",
     "changes": [
+      "Add Play track selection to release script",
       "Add version names to Play Store releases",
       "Support additional Play Store test tracks",
       "Align fork branding and compliance links",
