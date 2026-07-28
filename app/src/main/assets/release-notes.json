@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+6)",
+    "version": "Niet uitgebracht (+7)",
     "date": "",
     "changes": [
+      "Reduce Android lint warnings",
       "Correct and expand privacy policy, translate to all supported locales",
       "Add Google Play foreground service evidence",
       "Embed Weather Vista privacy policy",
