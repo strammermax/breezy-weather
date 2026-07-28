@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+1)",
+    "version": "Niet uitgebracht (+2)",
     "date": "",
     "changes": [
+      "Add communication summary docs for bug review session",
       "Add communication summary for spotless build fix session"
     ]
   },
