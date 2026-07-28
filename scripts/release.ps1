@@ -15,19 +15,40 @@
 .PARAMETER Draft
     Create the GitHub release as a draft instead of publishing it immediately.
 
+.PARAMETER PlayTrack
+    Google Play test track for the basic flavor: "internal", "alpha" (closed), or
+    "beta" (open). When omitted for a basic release, the script asks interactively.
+    Freenet releases are never published to Google Play.
+
 .EXAMPLE
     ./scripts/release.ps1
+    ./scripts/release.ps1 -PlayTrack alpha
     ./scripts/release.ps1 -Flavor freenet -Draft
 #>
 param(
     [ValidateSet("basic", "freenet")]
     [string]$Flavor = "basic",
+    [ValidateSet("internal", "alpha", "beta")]
+    [string]$PlayTrack,
     [switch]$Draft
 )
 
 $ErrorActionPreference = "Stop"
 $repoRoot = (Resolve-Path "$PSScriptRoot/..").Path
 Set-Location $repoRoot
+
+if ($Flavor -eq "basic" -and -not $PlayTrack) {
+    Write-Host "Choose the Google Play track:" -ForegroundColor Cyan
+    Write-Host "  1. internal - trusted internal testers"
+    Write-Host "  2. alpha    - closed testing"
+    Write-Host "  3. beta     - open testing"
+    $trackChoice = Read-Host "Track [1]"
+    $PlayTrack = switch ($trackChoice) {
+        "2" { "alpha" }
+        "3" { "beta" }
+        default { "internal" }
+    }
+}
 
 if (-not (Test-Path "keystore.properties")) {
     Write-Warning "keystore.properties not found - the APK will be built UNSIGNED. Aborting."
@@ -127,5 +148,22 @@ if ($Draft) { $releaseArgs += "--draft" }
 
 Write-Host "Publishing GitHub release $tag with $apkFile ..." -ForegroundColor Cyan
 & gh @releaseArgs
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Could not create the GitHub release."
+    exit 1
+}
+
+if ($Flavor -eq "basic") {
+    Write-Host "Starting Play Store publication to '$PlayTrack' ..." -ForegroundColor Cyan
+    gh workflow run "Publish to Play Store" `
+        --repo "strammermax/breezy-weather" `
+        --ref $tag `
+        -f "track=$PlayTrack"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Could not start the Play Store workflow for track '$PlayTrack'."
+        exit 1
+    }
+    Write-Host "Play Store workflow started for '$PlayTrack'." -ForegroundColor Green
+}
 
 Write-Host "Done: https://github.com/strammermax/breezy-weather/releases/tag/$tag" -ForegroundColor Green

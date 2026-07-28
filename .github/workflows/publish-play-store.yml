@@ -1,11 +1,8 @@
 name: Publish to Play Store
 
-# Triggered by scripts/release.ps1, which tags+pushes "vX.Y.Z" (basic flavor) or
-# "vX.Y.Z-freenet" (GitHub-release-only, never published to Play). Also runnable by hand.
+# Triggered explicitly by scripts/release.ps1 after it creates a basic release tag.
+# Also runnable by hand. Freenet releases are GitHub-only and never dispatch this workflow.
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
     inputs:
       track:
@@ -20,12 +17,9 @@ on:
 
 jobs:
   publish:
-    if: ${{ !endsWith(github.ref_name, '-freenet') }}
     runs-on: 'ubuntu-24.04'
     env:
-      # Tag-triggered releases always remain internal. A maintainer can select
-      # closed (alpha) or open (beta) testing only when starting the workflow manually.
-      PLAY_TRACK: ${{ github.event_name == 'workflow_dispatch' && inputs.track || 'internal' }}
+      PLAY_TRACK: ${{ inputs.track }}
 
     steps:
       - name: Checkout
