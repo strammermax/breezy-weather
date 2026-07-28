@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+7)",
+    "version": "Niet uitgebracht (+8)",
     "date": "",
     "changes": [
+      "Complete Dutch translation: add 139 missing strings",
       "Reduce Android lint warnings",
       "Correct and expand privacy policy, translate to all supported locales",
       "Add Google Play foreground service evidence",
