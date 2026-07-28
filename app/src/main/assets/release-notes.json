@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+1)",
+    "version": "Niet uitgebracht (+2)",
     "date": "",
     "changes": [
+      "Resolve release build warnings",
       "Publish releases to all Play test tracks"
     ]
   },
