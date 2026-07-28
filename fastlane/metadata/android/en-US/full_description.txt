@@ -1,4 +1,4 @@
-WeatherChum is a free and open-source weather app centered on dynamic live wallpapers. Turn a photo of your surroundings into a weather-aware background whose clouds, rain, lighting, time of day, forecasts, air quality, pollen and alerts respond to current conditions.
+Weertje is a live wallpaper and weather app built around one idea: instead of a generic sky animation, your home screen shows a photo of your own surroundings — your street, your balcony view, your neighborhood — brought to life with the real weather happening outside right now.
 
 <b>Features</b>
 

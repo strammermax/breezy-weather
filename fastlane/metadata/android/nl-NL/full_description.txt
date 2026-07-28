@@ -1,0 +1,47 @@
+Weertje is een live wallpaper en weerapp gebouwd rond één idee: in plaats van een generieke luchtanimatie toont je startscherm een foto van je eigen omgeving — je straat, je balkonuitzicht, je buurt — tot leven gebracht met het echte weer dat op dit moment buiten gebeurt.
+
+<b>Functies</b>
+
+- Dag- en uurverwachtingen tot 16 dagen vooruit
+- Neerslag in het komende uur
+- Actuele weersomstandigheden in realtime
+- Luchtkwaliteit, allergenen en zon-/maanstanden
+- Waarschuwingen voor zwaar weer en neerslag
+- Optioneel delen van data met andere apps (zoals Gadgetbridge)
+- Aandacht voor toegankelijkheid: schermlezers en lokalisatie
+
+<b>Ontwerp</b>
+
+- Material 3 Expressive
+- Gedetailleerde 24-uurs grafieken
+- Automatische donkere modus
+- Aangepaste icoonpakketten
+- Ruime keuze aan widgets
+- Live wallpaper op basis van je eigen foto
+
+<b>Bronnen</b>
+
+- In alle varianten: Open-Meteo, ANAM-BF, Bright Sky (DWD), DCCMS, DMN, DWR, EMI, FOSS Public Alert Server, GMet, IGEBU, INM, KNMI, Mali-Météo, Météo Benin, Météo Tchad, Météo Togo, Mettelsat, MSD, Pirate Weather, SMA (Seychelles), SMA (Sudan), SSMS
+- Niet vrij/zelf te hosten (niet inbegrepen in versies met achtervoegsel _freenet): AccuWeather, AEMET, Atmo Auvergne-Rhône-Alpes, Atmo France, ATMO GrandEst, Atmo Hauts-de-France, AtmoSud, Baidu IP-locatie, BMD, BMKG, CWA, DMI, ECCC, EKUK, EPD (Hongkong), GeoNames, GeoSphere AT, HERE, HKO, Ilmateenistus, IMD, IMS, IP.SB, IPMA, LHMT, LVĢMC, JMA, MET Éireann, MET Norway, Met Office UK, Meteo AM, Météo-France, MeteoLux, MGM, gemengde Chinese bronnen, NAMEM, NCDR, NCEI, NLSC, NWS, OpenWeather, PAGASA, SMG, Veðurstofa Íslands, WMO Severe Weather
+
+<b>Machtigingen</b>
+
+Vereist:
+
+- Netwerk (ACCESS_NETWORK_STATE, ACCESS_WIFI_STATE, INTERNET): weergegevens ophalen via internet
+
+Optioneel:
+
+- Achtergrondservices (RECEIVE_BOOT_COMPLETED, WAKE_LOCK, SET_ALARM, FOREGROUND_SERVICE, FOREGROUND_SERVICE_DATA_SYNC, FOREGROUND_SERVICE_SPECIAL_USE): weerupdates op de achtergrond en geplande verwachtingsmeldingen
+- Batterijoptimalisatie negeren (REQUEST_IGNORE_BATTERY_OPTIMIZATIONS): helpt voorkomen dat de app op sommige toestellen wordt afgesloten
+- Meldingen versturen (POST_NOTIFICATIONS): waarschuwingen, neerslag, verwachting voor vandaag/morgen, meldingswidget, voortgang van achtergrondupdates, enz.
+- Locatie (ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION, ACCESS_BACKGROUND_LOCATION): om het weer op je huidige locatie te tonen
+- Opslag (READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE): helpt bij het instellen van de live weer-wallpaper en/of widgets op sommige toestellen
+- Tegel (EXPAND_STATUS_BAR): maakt het mogelijk de app te starten vanuit Snelle instellingen
+- Specifieke apptaal (READ_APP_SPECIFIC_LOCALES): slaat een specifieke taal voor de app op en leest deze na een herstart op sommige toestellen
+
+<b>Licentie</b>
+
+- GNU Lesser General Public License v3.0
+- Deze licentie verleent geen rechten op de handelsmerken, dienstmerken of logo's van een bijdrager.
+- Verkeerde voorstelling van de herkomst van dat materiaal is verboden, en gewijzigde versies van dat materiaal moeten op redelijke wijze als afwijkend van de oorspronkelijke versie worden gemarkeerd.
