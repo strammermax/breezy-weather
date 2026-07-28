@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="brand_name">Weertje</string>
     <string name="content_provider_permission_label">Gegevens van LiveWallpaperWeather lezen</string>
     <string name="content_provider_permission_description">weerinformatie ophalen van LiveWallpaperWeather, inclusief de coördinaten van je locaties, zoals je huidige locatie als je deze hebt toegevoegd</string>
-    <string name="weather_vista_privacy_policy_summary">Lees het privacybeleid van Weather Vista</string>
+    <string name="weather_vista_privacy_policy_summary">Lees het privacybeleid van Weertje</string>
     <string name="weather_vista_privacy_policy_updated">Laatst bijgewerkt: 28 juli 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Privacybeleid</string>
     <string name="weather_vista_privacy_policy_intro">Deze applicatie ("de App") toont je actuele weersinformatie en bijpassende weersafbeeldingen op basis van je locatie, en kan een door jou gekozen of gemaakte foto gebruiken om een persoonlijke weer-achtergrond te maken. Wij vinden je privacy belangrijk. Hieronder lees je precies welke gegevens we gebruiken, waarom, en hoe lang we ze bewaren.</string>

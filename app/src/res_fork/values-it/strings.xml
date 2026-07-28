@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">Leggere i dati di LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">ottenere informazioni meteo da LiveWallpaperWeather, comprese le coordinate delle tue posizioni, come la tua posizione attuale se l\'hai aggiunta</string>
-    <string name="weather_vista_privacy_policy_summary">Leggi l\'informativa sulla privacy di Weather Vista</string>
+    <string name="weather_vista_privacy_policy_summary">Leggi l\'informativa sulla privacy di WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Ultimo aggiornamento: 28 luglio 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Informativa sulla privacy</string>
     <string name="weather_vista_privacy_policy_intro">Questa applicazione (\"l\'App\") ti mostra le informazioni meteo attuali e immagini meteo corrispondenti in base alla tua posizione, e può utilizzare una foto scelta o scattata da te per creare uno sfondo meteo personalizzato. Prendiamo molto sul serio la tua privacy. Di seguito puoi leggere esattamente quali dati utilizziamo, perché, e per quanto tempo li conserviamo.</string>

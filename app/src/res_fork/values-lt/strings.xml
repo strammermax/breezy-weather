@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">Skaityti LiveWallpaperWeather duomenis</string>
     <string name="content_provider_permission_description">gauti orų informaciją iš LiveWallpaperWeather, įskaitant jūsų vietovių koordinates, pavyzdžiui, dabartinę vietovę, jei ją pridėjote</string>
-    <string name="weather_vista_privacy_policy_summary">Skaityti Weather Vista privatumo politiką</string>
+    <string name="weather_vista_privacy_policy_summary">Skaityti WeatherChum privatumo politiką</string>
     <string name="weather_vista_privacy_policy_updated">Paskutinį kartą atnaujinta: 2026 m. liepos 28 d.</string>
     <string name="weather_vista_privacy_policy_intro_title">Privatumo politika</string>
     <string name="weather_vista_privacy_policy_intro">Ši programėlė (\"Programėlė\") rodo dabartinę orų informaciją ir atitinkamus orų vaizdus pagal jūsų vietovę bei gali naudoti jūsų pasirinktą ar nufotografuotą nuotrauką, kad sukurtų personalizuotą orų foną. Rimtai vertiname jūsų privatumą. Toliau galite tiksliai sužinoti, kokius duomenis naudojame, kodėl ir kiek laiko juos saugome.</string>

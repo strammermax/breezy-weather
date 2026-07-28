@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">Lue LiveWallpaperWeather-tietoja</string>
     <string name="content_provider_permission_description">hae säätietoja LiveWallpaperWeather-sovelluksesta, mukaan lukien sijaintiesi koordinaatit, kuten nykyinen sijaintisi, jos olet lisännyt sen</string>
-    <string name="weather_vista_privacy_policy_summary">Lue Weather Vista -sovelluksen tietosuojakäytäntö</string>
+    <string name="weather_vista_privacy_policy_summary">Lue WeatherChum -sovelluksen tietosuojakäytäntö</string>
     <string name="weather_vista_privacy_policy_updated">Viimeksi päivitetty: 28. heinäkuuta 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Tietosuojakäytäntö</string>
     <string name="weather_vista_privacy_policy_intro">Tämä sovellus (”Sovellus”) näyttää sinulle ajankohtaisia säätietoja ja niitä vastaavia säänkuvia sijaintisi perusteella, ja se voi käyttää valitsemaasi tai ottamaasi kuvaa personoidun sääntaustan luomiseen. Suhtaudumme yksityisyyteesi vakavasti. Alta voit lukea tarkalleen, mitä tietoja käytämme, miksi ja kuinka kauan säilytämme niitä.</string>

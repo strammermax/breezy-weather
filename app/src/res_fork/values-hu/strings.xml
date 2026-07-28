@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">LiveWallpaperWeather adatok olvasása</string>
     <string name="content_provider_permission_description">időjárási információk lekérése a LiveWallpaperWeather alkalmazásból, beleértve a helyszíneid koordinátáit, például a jelenlegi helyzetedet, ha hozzáadtad</string>
-    <string name="weather_vista_privacy_policy_summary">Olvasd el a Weather Vista adatvédelmi szabályzatát</string>
+    <string name="weather_vista_privacy_policy_summary">Olvasd el a WeatherChum adatvédelmi szabályzatát</string>
     <string name="weather_vista_privacy_policy_updated">Utolsó frissítés: 2026. július 28.</string>
     <string name="weather_vista_privacy_policy_intro_title">Adatvédelmi szabályzat</string>
     <string name="weather_vista_privacy_policy_intro">Ez az alkalmazás (\"az Alkalmazás\") a helyzeted alapján aktuális időjárási információkat és megfelelő időjárási képeket jelenít meg, és felhasználhat egy általad választott vagy készített fényképet egy személyre szabott időjárási háttér létrehozásához. Az adatvédelmedet komolyan vesszük. Az alábbiakban pontosan elolvashatod, milyen adatokat használunk, miért, és meddig tároljuk azokat.</string>

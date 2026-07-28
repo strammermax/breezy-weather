@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">Membaca data LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">mendapatkan informasi cuaca dari LiveWallpaperWeather, termasuk koordinat lokasi Anda, seperti lokasi Anda saat ini jika Anda menambahkannya</string>
-    <string name="weather_vista_privacy_policy_summary">Baca kebijakan privasi Weather Vista</string>
+    <string name="weather_vista_privacy_policy_summary">Baca kebijakan privasi WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Terakhir diperbarui: 28 Juli 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Kebijakan Privasi</string>
     <string name="weather_vista_privacy_policy_intro">Aplikasi ini (\"Aplikasi\") menampilkan informasi cuaca terkini dan gambar cuaca yang sesuai berdasarkan lokasi Anda, dan dapat menggunakan foto yang Anda pilih atau ambil untuk membuat latar belakang cuaca yang dipersonalisasi. Kami sangat serius menjaga privasi Anda. Di bawah ini Anda dapat membaca dengan tepat data apa yang kami gunakan, mengapa, dan berapa lama kami menyimpannya.</string>

@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">Leer datos de LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">obtener información meteorológica de LiveWallpaperWeather, incluidas las coordenadas de tus ubicaciones, como tu ubicación actual si la has añadido</string>
-    <string name="weather_vista_privacy_policy_summary">Leer la política de privacidad de Weather Vista</string>
+    <string name="weather_vista_privacy_policy_summary">Leer la política de privacidad de WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Última actualización: 28 de julio de 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Política de Privacidad</string>
     <string name="weather_vista_privacy_policy_intro">Esta aplicación («la Aplicación») te muestra información meteorológica actual e imágenes del clima correspondientes según tu ubicación, y puede usar una foto que elijas o tomes para crear un fondo de pantalla meteorológico personalizado. Nos tomamos tu privacidad muy en serio. A continuación puedes leer exactamente qué datos usamos, por qué y durante cuánto tiempo los conservamos.</string>

@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">קריאת נתוני LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">קבלת מידע מזג אוויר מ-LiveWallpaperWeather, כולל קואורדינטות המיקומים שלך, כגון המיקום הנוכחי שלך אם הוספת אותו</string>
-    <string name="weather_vista_privacy_policy_summary">קרא/י את מדיניות הפרטיות של Weather Vista</string>
+    <string name="weather_vista_privacy_policy_summary">קרא/י את מדיניות הפרטיות של WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">עדכון אחרון: 28 ביולי 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">מדיניות פרטיות</string>
     <string name="weather_vista_privacy_policy_intro">אפליקציה זו (\"האפליקציה\") מציגה לך מידע עדכני על מזג האוויר ותמונות מזג אוויר מתאימות בהתאם למיקומך, ויכולה להשתמש בתמונה שתבחר/י או תצלם/י כדי ליצור רקע מזג אוויר מותאם אישית. אנו מתייחסים לפרטיותך ברצינות רבה. להלן תוכל/י לקרוא בדיוק אילו נתונים אנו משתמשים בהם, מדוע, ולכמה זמן אנו שומרים אותם.</string>

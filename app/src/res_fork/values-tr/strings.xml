@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">LiveWallpaperWeather verilerini oku</string>
     <string name="content_provider_permission_description">LiveWallpaperWeather uygulamasından hava durumu bilgilerini alır; buna, eklediyseniz mevcut konumunuz gibi konumlarınızın koordinatları da dahildir</string>
-    <string name="weather_vista_privacy_policy_summary">Weather Vista gizlilik politikasını okuyun</string>
+    <string name="weather_vista_privacy_policy_summary">WeatherChum gizlilik politikasını okuyun</string>
     <string name="weather_vista_privacy_policy_updated">Son güncelleme: 28 Temmuz 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Gizlilik Politikası</string>
     <string name="weather_vista_privacy_policy_intro">Bu uygulama (\"Uygulama\"), konumunuza dayalı olarak size güncel hava durumu bilgilerini ve buna uygun hava durumu görsellerini gösterir ve kişiselleştirilmiş bir hava durumu arka planı oluşturmak için seçtiğiniz veya çektiğiniz bir fotoğrafı kullanabilir. Gizliliğinizi ciddiye alıyoruz. Aşağıda hangi verileri, neden kullandığımızı ve ne kadar süreyle sakladığımızı tam olarak okuyabilirsiniz.</string>

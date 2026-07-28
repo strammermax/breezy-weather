@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">LiveWallpaperWeather datuak irakurri</string>
     <string name="content_provider_permission_description">LiveWallpaperWeather-etik eguraldi-informazioa lortu, zure kokalekuen koordenatuak barne, adibidez, gehitu baduzu, zure uneko kokalekua</string>
-    <string name="weather_vista_privacy_policy_summary">Irakurri Weather Vista-ren pribatutasun-politika</string>
+    <string name="weather_vista_privacy_policy_summary">Irakurri WeatherChum-ren pribatutasun-politika</string>
     <string name="weather_vista_privacy_policy_updated">Azken eguneratzea: 2026ko uztailaren 28a</string>
     <string name="weather_vista_privacy_policy_intro_title">Pribatutasun Politika</string>
     <string name="weather_vista_privacy_policy_intro">Aplikazio honek («Aplikazioak») uneko eguraldi-informazioa eta zure kokalekuaren araberako eguraldi-irudi egokiak erakusten dizkizu, eta zuk aukeratutako edo ateratako argazki bat erabil dezake eguraldi-atzeko plano pertsonalizatu bat sortzeko. Zure pribatutasuna oso serio hartzen dugu. Jarraian irakurri dezakezu zehazki zer datu erabiltzen ditugun, zergatik, eta zenbat denboraz gordetzen ditugun.</string>

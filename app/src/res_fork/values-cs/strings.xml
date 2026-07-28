@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">Čtení dat LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">získávání informací o počasí z LiveWallpaperWeather, včetně souřadnic vašich lokalit, jako je vaše aktuální poloha, pokud jste ji přidali</string>
-    <string name="weather_vista_privacy_policy_summary">Přečtěte si zásady ochrany osobních údajů Weather Vista</string>
+    <string name="weather_vista_privacy_policy_summary">Přečtěte si zásady ochrany osobních údajů WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Poslední aktualizace: 28. července 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Zásady ochrany osobních údajů</string>
     <string name="weather_vista_privacy_policy_intro">Tato aplikace (\"Aplikace\") vám na základě vaší polohy zobrazuje aktuální informace o počasí a odpovídající obrázky počasí a může použít fotografii, kterou vyberete nebo vyfotíte, k vytvoření personalizovaného pozadí s počasím. Vaše soukromí bereme vážně. Níže si můžete přečíst, jaká data přesně používáme, proč, a jak dlouho je uchováváme.</string>

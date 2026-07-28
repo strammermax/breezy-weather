@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">Читати дані LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">отримувати інформацію про погоду з LiveWallpaperWeather, включно з координатами ваших місць розташування, наприклад вашим поточним місцезнаходженням, якщо ви його додали</string>
-    <string name="weather_vista_privacy_policy_summary">Ознайомтеся з політикою конфіденційності Weather Vista</string>
+    <string name="weather_vista_privacy_policy_summary">Ознайомтеся з політикою конфіденційності WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Останнє оновлення: 28 липня 2026 р.</string>
     <string name="weather_vista_privacy_policy_intro_title">Політика конфіденційності</string>
     <string name="weather_vista_privacy_policy_intro">Цей застосунок (\"Застосунок\") показує вам актуальну інформацію про погоду та відповідні зображення погоди на основі вашого місцезнаходження, а також може використовувати фотографію, яку ви обираєте або робите, для створення персоналізованого погодного фону. Ми серйозно ставимося до вашої конфіденційності. Нижче ви можете дізнатися, які саме дані ми використовуємо, навіщо та як довго ми їх зберігаємо.</string>

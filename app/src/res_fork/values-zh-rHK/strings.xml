@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">讀取 LiveWallpaperWeather 資料</string>
     <string name="content_provider_permission_description">從 LiveWallpaperWeather 取得天氣資訊，包括您所在位置的座標，例如您新增的目前位置</string>
-    <string name="weather_vista_privacy_policy_summary">閱讀 Weather Vista 私隱政策</string>
+    <string name="weather_vista_privacy_policy_summary">閱讀 WeatherChum 私隱政策</string>
     <string name="weather_vista_privacy_policy_updated">最後更新：2026年7月28日</string>
     <string name="weather_vista_privacy_policy_intro_title">私隱政策</string>
     <string name="weather_vista_privacy_policy_intro">本應用程式（「本應用程式」）會根據您的位置，向您顯示目前的天氣資訊與對應的天氣圖片，並可使用您選擇或拍攝的相片來建立個人化的天氣背景。我們非常重視您的私隱。以下您可以詳細了解我們使用哪些資料、原因為何，以及我們會保留多久。</string>

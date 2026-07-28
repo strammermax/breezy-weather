@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">Читање податоци од LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">добивање информации за времето од LiveWallpaperWeather, вклучувајќи ги координатите на вашите локации, како на пример вашата тековна локација доколку сте ја додале</string>
-    <string name="weather_vista_privacy_policy_summary">Прочитајте ја политиката за приватност на Weather Vista</string>
+    <string name="weather_vista_privacy_policy_summary">Прочитајте ја политиката за приватност на WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Последно ажурирано: 28 јули 2026 година</string>
     <string name="weather_vista_privacy_policy_intro_title">Политика за приватност</string>
     <string name="weather_vista_privacy_policy_intro">Оваа апликација (\"Апликацијата\") ви прикажува тековни информации за времето и соодветни слики за времето врз основа на вашата локација, и може да користи фотографија што ќе ја изберете или снимите за да создаде персонализирана позадина со временска прогноза. Ја сфаќаме вашата приватност сериозно. Подолу можете да прочитате точно кои податоци ги користиме, зошто, и колку долго ги чуваме.</string>

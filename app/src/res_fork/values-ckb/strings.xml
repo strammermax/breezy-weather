@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">خوێندنەوەی داتای LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">وەرگرتنی زانیاری کەشوهەوا لە LiveWallpaperWeather، لەگەڵ کۆردینەیتەکانی شوێنەکانت، وەک شوێنی ئێستات ئەگەر زیادت کردبێت</string>
-    <string name="weather_vista_privacy_policy_summary">سیاسەتی تایبەتمەندی Weather Vista بخوێنەوە</string>
+    <string name="weather_vista_privacy_policy_summary">سیاسەتی تایبەتمەندی WeatherChum بخوێنەوە</string>
     <string name="weather_vista_privacy_policy_updated">دوایین نوێکردنەوە: ٢٨ی تەممووزی ٢٠٢٦</string>
     <string name="weather_vista_privacy_policy_intro_title">سیاسەتی تایبەتمەندی</string>
     <string name="weather_vista_privacy_policy_intro">ئەم ئەپلیکەیشنە (\"ئەپەکە\") زانیاری کەشوهەوای ئێستا و وێنەی گونجاوی کەشوهەوات پیشان دەدات لەسەر بنەمای شوێنەکەت، و دەتوانێت وێنەیەک بەکاربهێنێت کە هەڵتبژاردووە یان گرتووتە بۆ دروستکردنی پاشبنەمایەکی کەشوهەوای تایبەت. ئێمە بایەخی زۆر بە تایبەتمەندیت دەدەین. لە خوارەوە دەتوانیت بخوێنیتەوە کە بە دروستی چ داتایەکمان بەکاردەهێنێت، بۆچی، و بۆ چەند ماوەیەک هەڵیدەگرین.</string>

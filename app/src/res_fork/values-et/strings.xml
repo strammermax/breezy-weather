@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">Loe LiveWallpaperWeather andmeid</string>
     <string name="content_provider_permission_description">hankida ilmateavet rakendusest LiveWallpaperWeather, sealhulgas sinu asukohtade koordinaadid, näiteks sinu praegune asukoht, kui oled selle lisanud</string>
-    <string name="weather_vista_privacy_policy_summary">Loe Weather Vista privaatsuspoliitikat</string>
+    <string name="weather_vista_privacy_policy_summary">Loe WeatherChum privaatsuspoliitikat</string>
     <string name="weather_vista_privacy_policy_updated">Viimati uuendatud: 28. juuli 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Privaatsuspoliitika</string>
     <string name="weather_vista_privacy_policy_intro">See rakendus („Rakendus") näitab sulle jooksvat ilmateavet ja sobivaid ilmapilte sinu asukoha põhjal ning võib kasutada sinu valitud või tehtud fotot personaalse ilmatausta loomiseks. Võtame sinu privaatsust tõsiselt. Allpool saad täpselt lugeda, milliseid andmeid me kasutame, miks ja kui kaua me neid säilitame.</string>

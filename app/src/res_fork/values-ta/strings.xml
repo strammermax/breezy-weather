@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">LiveWallpaperWeather தரவைப் படிக்கவும்</string>
     <string name="content_provider_permission_description">LiveWallpaperWeather இலிருந்து வானிலைத் தகவலைப் பெறுதல், நீங்கள் சேர்த்திருந்தால் உங்கள் தற்போதைய இருப்பிடம் போன்ற உங்கள் இருப்பிடங்களின் ஆயத்தொலைவுகள் உட்பட</string>
-    <string name="weather_vista_privacy_policy_summary">Weather Vista தனியுரிமைக் கொள்கையைப் படிக்கவும்</string>
+    <string name="weather_vista_privacy_policy_summary">WeatherChum தனியுரிமைக் கொள்கையைப் படிக்கவும்</string>
     <string name="weather_vista_privacy_policy_updated">கடைசியாகப் புதுப்பிக்கப்பட்டது: ஜூலை 28, 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">தனியுரிமைக் கொள்கை</string>
     <string name="weather_vista_privacy_policy_intro">இந்த பயன்பாடு (\"பயன்பாடு\") உங்கள் இருப்பிடத்தின் அடிப்படையில் தற்போதைய வானிலைத் தகவலையும் பொருத்தமான வானிலைப் படங்களையும் காட்டுகிறது, மேலும் தனிப்பயனாக்கப்பட்ட வானிலைப் பின்னணியை உருவாக்க நீங்கள் தேர்ந்தெடுக்கும் அல்லது எடுக்கும் புகைப்படத்தைப் பயன்படுத்தலாம். உங்கள் தனியுரிமையை நாங்கள் தீவிரமாக எடுத்துக்கொள்கிறோம். நாங்கள் என்ன தரவைப் பயன்படுத்துகிறோம், ஏன், எவ்வளவு காலம் அதை வைத்திருக்கிறோம் என்பதை கீழே சரியாகப் படிக்கலாம்.</string>

@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">LiveWallpaperWeather डेटा वाचा</string>
     <string name="content_provider_permission_description">LiveWallpaperWeather कडून हवामान माहिती मिळवा, ज्यामध्ये तुमच्या स्थानांचे निर्देशांक समाविष्ट आहेत, जसे की तुम्ही जोडलेले असल्यास तुमचे सध्याचे स्थान</string>
-    <string name="weather_vista_privacy_policy_summary">Weather Vista गोपनीयता धोरण वाचा</string>
+    <string name="weather_vista_privacy_policy_summary">WeatherChum गोपनीयता धोरण वाचा</string>
     <string name="weather_vista_privacy_policy_updated">शेवटचे अद्यतन: २८ जुलै २०२६</string>
     <string name="weather_vista_privacy_policy_intro_title">गोपनीयता धोरण</string>
     <string name="weather_vista_privacy_policy_intro">हे अ‍ॅप्लिकेशन (\"अ‍ॅप\") तुमच्या स्थानावर आधारित सद्य हवामान माहिती आणि जुळणाऱ्या हवामान प्रतिमा दाखवते, आणि वैयक्तिकृत हवामान पार्श्वभूमी तयार करण्यासाठी तुम्ही निवडलेला किंवा काढलेला फोटो वापरू शकते. आम्ही तुमची गोपनीयता गांभीर्याने घेतो. खाली तुम्ही आम्ही कोणता डेटा वापरतो, का, आणि किती काळ ठेवतो हे नेमके वाचू शकता.</string>

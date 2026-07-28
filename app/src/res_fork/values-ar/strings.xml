@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">قراءة بيانات LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">الحصول على معلومات الطقس من LiveWallpaperWeather، بما في ذلك إحداثيات مواقعك، مثل موقعك الحالي إذا أضفته</string>
-    <string name="weather_vista_privacy_policy_summary">قراءة سياسة خصوصية Weather Vista</string>
+    <string name="weather_vista_privacy_policy_summary">قراءة سياسة خصوصية WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">آخر تحديث: 28 يوليو 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">سياسة الخصوصية</string>
     <string name="weather_vista_privacy_policy_intro">يعرض لك هذا التطبيق (\"التطبيق\") معلومات الطقس الحالية وصور الطقس المطابقة استنادًا إلى موقعك، ويمكنه استخدام صورة تختارها أو تلتقطها لإنشاء خلفية طقس مخصصة. نحن نأخذ خصوصيتك على محمل الجد. يمكنك أدناه قراءة البيانات التي نستخدمها بالضبط، ولماذا، ولأي مدة نحتفظ بها.</string>

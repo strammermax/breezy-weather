@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">خواندن داده‌های LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">دریافت اطلاعات آب‌وهوا از LiveWallpaperWeather، از جمله مختصات مکان‌های شما، مانند موقعیت فعلی‌تان در صورتی که آن را اضافه کرده باشید</string>
-    <string name="weather_vista_privacy_policy_summary">مطالعه سیاست حریم خصوصی Weather Vista</string>
+    <string name="weather_vista_privacy_policy_summary">مطالعه سیاست حریم خصوصی WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">آخرین به‌روزرسانی: ۲۸ ژوئیه ۲۰۲۶</string>
     <string name="weather_vista_privacy_policy_intro_title">سیاست حریم خصوصی</string>
     <string name="weather_vista_privacy_policy_intro">این برنامه («برنامه») بر اساس موقعیت مکانی شما، اطلاعات فعلی آب‌وهوا و تصاویر متناسب با آن را نمایش می‌دهد و می‌تواند از عکسی که انتخاب می‌کنید یا می‌گیرید برای ساخت یک پس‌زمینه آب‌وهوایی شخصی‌سازی‌شده استفاده کند. ما حریم خصوصی شما را جدی می‌گیریم. در ادامه می‌توانید دقیقاً بخوانید که چه داده‌هایی استفاده می‌کنیم، چرا، و چه مدت آن‌ها را نگه می‌داریم.</string>

@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">LiveWallpaperWeatherのデータを読み取る</string>
     <string name="content_provider_permission_description">LiveWallpaperWeatherから天気情報を取得します。これには、現在地を追加した場合のその現在地など、位置情報の座標が含まれます</string>
-    <string name="weather_vista_privacy_policy_summary">Weather Vistaのプライバシーポリシーを読む</string>
+    <string name="weather_vista_privacy_policy_summary">WeatherChumのプライバシーポリシーを読む</string>
     <string name="weather_vista_privacy_policy_updated">最終更新日: 2026年7月28日</string>
     <string name="weather_vista_privacy_policy_intro_title">プライバシーポリシー</string>
     <string name="weather_vista_privacy_policy_intro">本アプリケーション（以下「本アプリ」）は、お客様の位置情報に基づいて現在の天気情報とそれに合った天気画像を表示し、選択または撮影した写真を使用してパーソナライズされた天気の背景を作成することができます。私たちはお客様のプライバシーを真剣に考えています。以下では、私たちがどのデータを、なぜ使用し、どのくらいの期間保管するかを正確にご確認いただけます。</string>

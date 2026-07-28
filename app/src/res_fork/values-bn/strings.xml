@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">LiveWallpaperWeather ডেটা পড়ুন</string>
     <string name="content_provider_permission_description">LiveWallpaperWeather থেকে আবহাওয়ার তথ্য সংগ্রহ করুন, যার মধ্যে রয়েছে আপনার অবস্থানের স্থানাঙ্ক, যেমন আপনি যদি আপনার বর্তমান অবস্থান যোগ করে থাকেন</string>
-    <string name="weather_vista_privacy_policy_summary">Weather Vista-র গোপনীয়তা নীতি পড়ুন</string>
+    <string name="weather_vista_privacy_policy_summary">WeatherChum-র গোপনীয়তা নীতি পড়ুন</string>
     <string name="weather_vista_privacy_policy_updated">সর্বশেষ আপডেট: ২৮ জুলাই, ২০২৬</string>
     <string name="weather_vista_privacy_policy_intro_title">গোপনীয়তা নীতি</string>
     <string name="weather_vista_privacy_policy_intro">এই অ্যাপ্লিকেশনটি (\"অ্যাপ\") আপনার অবস্থানের উপর ভিত্তি করে বর্তমান আবহাওয়ার তথ্য এবং সংশ্লিষ্ট আবহাওয়ার ছবি দেখায়, এবং একটি ব্যক্তিগতকৃত আবহাওয়া পটভূমি তৈরি করতে আপনার পছন্দ করা বা তোলা একটি ছবি ব্যবহার করতে পারে। আমরা আপনার গোপনীয়তাকে গুরুত্বের সাথে নিই। নিচে আপনি জানতে পারবেন আমরা ঠিক কী ডেটা ব্যবহার করি, কেন, এবং কতদিন সংরক্ষণ করি।</string>

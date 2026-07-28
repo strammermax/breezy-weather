@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">LiveWallpaperWeather məlumatlarını oxu</string>
     <string name="content_provider_permission_description">LiveWallpaperWeather-dan hava məlumatlarını, o cümlədən əlavə etdiyiniz cari məkanınız daxil olmaqla, məkanlarınızın koordinatlarını əldə etmək</string>
-    <string name="weather_vista_privacy_policy_summary">Weather Vista məxfilik siyasətini oxuyun</string>
+    <string name="weather_vista_privacy_policy_summary">WeatherChum məxfilik siyasətini oxuyun</string>
     <string name="weather_vista_privacy_policy_updated">Son yenilənmə: 28 iyul 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Məxfilik Siyasəti</string>
     <string name="weather_vista_privacy_policy_intro">Bu tətbiq (\"Tətbiq\") məkanınıza əsaslanaraq cari hava məlumatlarını və uyğun hava şəkillərini göstərir və şəxsi hava arxa fonu yaratmaq üçün seçdiyiniz və ya çəkdiyiniz şəkildən istifadə edə bilər. Biz məxfiliyinizi ciddi qəbul edirik. Aşağıda hansı məlumatları, niyə istifadə etdiyimizi və nə qədər müddət saxladığımızı dəqiq oxuya bilərsiniz.</string>

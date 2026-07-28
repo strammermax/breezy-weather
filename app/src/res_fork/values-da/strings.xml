@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">Læs LiveWallpaperWeather-data</string>
     <string name="content_provider_permission_description">hente vejroplysninger fra LiveWallpaperWeather, herunder koordinaterne for dine lokationer, f.eks. din nuværende placering, hvis du har tilføjet den</string>
-    <string name="weather_vista_privacy_policy_summary">Læs Weather Vistas privatlivspolitik</string>
+    <string name="weather_vista_privacy_policy_summary">Læs WeatherChums privatlivspolitik</string>
     <string name="weather_vista_privacy_policy_updated">Sidst opdateret: 28. juli 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Privatlivspolitik</string>
     <string name="weather_vista_privacy_policy_intro">Denne applikation (\"Appen\") viser dig aktuelle vejroplysninger og matchende vejrbilleder baseret på din placering, og kan bruge et foto, du vælger eller tager, til at oprette en personlig vejrbaggrund. Vi tager dit privatliv alvorligt. Nedenfor kan du læse præcis, hvilke data vi bruger, hvorfor, og hvor længe vi opbevarer dem.</string>

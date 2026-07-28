@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">Léigh sonraí LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">faisnéis aimsire a fháil ó LiveWallpaperWeather, lena n\'áirítear comhordanáidí do shuíomhanna, mar shampla do shuíomh reatha má chuir tú leis é</string>
-    <string name="weather_vista_privacy_policy_summary">Léigh polasaí príobháideachais Weather Vista</string>
+    <string name="weather_vista_privacy_policy_summary">Léigh polasaí príobháideachais WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Nuashonrú is déanaí: 28 Iúil 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Polasaí Príobháideachais</string>
     <string name="weather_vista_privacy_policy_intro">Taispeánann an feidhmchlár seo ("an Feidhmchlár") faisnéis aimsire reatha duit agus íomhánna aimsire a oireann di bunaithe ar do shuíomh, agus is féidir leis grianghraf a roghnaíonn nó a thógann tú a úsáid chun cúlra aimsire pearsantaithe a chruthú. Glacaimid do phríobháideachas dáiríre. Thíos is féidir leat léamh go beacht cad iad na sonraí a úsáidimid, cén fáth, agus cá fhad a choinnímid iad.</string>

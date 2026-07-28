@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">Đọc dữ liệu LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">lấy thông tin thời tiết từ LiveWallpaperWeather, bao gồm cả tọa độ các vị trí của bạn, chẳng hạn như vị trí hiện tại của bạn nếu bạn đã thêm</string>
-    <string name="weather_vista_privacy_policy_summary">Đọc chính sách quyền riêng tư của Weather Vista</string>
+    <string name="weather_vista_privacy_policy_summary">Đọc chính sách quyền riêng tư của WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Cập nhật lần cuối: ngày 28 tháng 7 năm 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Chính sách quyền riêng tư</string>
     <string name="weather_vista_privacy_policy_intro">Ứng dụng này (\"Ứng dụng\") hiển thị cho bạn thông tin thời tiết hiện tại và hình ảnh thời tiết phù hợp dựa trên vị trí của bạn, đồng thời có thể sử dụng một bức ảnh bạn chọn hoặc chụp để tạo hình nền thời tiết mang tính cá nhân hóa. Chúng tôi coi trọng quyền riêng tư của bạn. Dưới đây bạn có thể đọc chính xác dữ liệu nào chúng tôi sử dụng, vì sao và chúng tôi lưu giữ trong bao lâu.</string>

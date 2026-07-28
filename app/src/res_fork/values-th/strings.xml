@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">อ่านข้อมูลจาก LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">รับข้อมูลสภาพอากาศจาก LiveWallpaperWeather รวมถึงพิกัดตำแหน่งของคุณ เช่น ตำแหน่งปัจจุบันของคุณหากคุณเพิ่มไว้</string>
-    <string name="weather_vista_privacy_policy_summary">อ่านนโยบายความเป็นส่วนตัวของ Weather Vista</string>
+    <string name="weather_vista_privacy_policy_summary">อ่านนโยบายความเป็นส่วนตัวของ WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">อัปเดตล่าสุด: 28 กรกฎาคม 2569</string>
     <string name="weather_vista_privacy_policy_intro_title">นโยบายความเป็นส่วนตัว</string>
     <string name="weather_vista_privacy_policy_intro">แอปพลิเคชันนี้ ("แอป") แสดงข้อมูลสภาพอากาศปัจจุบันและภาพสภาพอากาศที่ตรงกันโดยอ้างอิงจากตำแหน่งของคุณ และสามารถใช้ภาพถ่ายที่คุณเลือกหรือถ่ายเพื่อสร้างพื้นหลังสภาพอากาศแบบส่วนตัว เราให้ความสำคัญกับความเป็นส่วนตัวของคุณอย่างจริงจัง ด้านล่างนี้คุณสามารถอ่านได้ว่าเราใช้ข้อมูลใดบ้าง เพราะเหตุใด และเราเก็บไว้นานเท่าใด</string>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App -->
-    <string name="brand_name" translatable="false">Weather Vista</string>
+    <string name="brand_name">WeatherChum</string>
     <string name="content_provider_permission_label">Read LiveWallpaperWeather data</string>
     <string name="content_provider_permission_description">get weather information from LiveWallpaperWeather, including the coordinates of your locations, such as your current location if you added it</string>
-    <string name="weather_vista_privacy_policy_summary">Read the Weather Vista privacy policy</string>
+    <string name="weather_vista_privacy_policy_summary">Read the WeatherChum privacy policy</string>
     <string name="weather_vista_privacy_policy_updated">Last updated: July 28, 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Privacy Policy</string>
     <string name="weather_vista_privacy_policy_intro">This application ("the App") shows you current weather information and matching weather images based on your location, and can use a photo you choose or take to create a personalized weather background. We take your privacy seriously. Below you can read exactly what data we use, why, and how long we keep it.</string>

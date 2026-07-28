@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">Legi datumojn de LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">akiri veterinformojn de LiveWallpaperWeather, inkluzive la koordinatojn de viaj lokoj, kiel ekzemple via nuna loko se vi aldonis ĝin</string>
-    <string name="weather_vista_privacy_policy_summary">Legu la privatecpolitikon de Weather Vista</string>
+    <string name="weather_vista_privacy_policy_summary">Legu la privatecpolitikon de WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Laste ĝisdatigita: la 28-an de julio 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Privateca Politiko</string>
     <string name="weather_vista_privacy_policy_intro">Ĉi tiu aplikaĵo („la Aplikaĵo") montras al vi aktualajn veterinformojn kaj kongruajn veterbildojn laŭ via loko, kaj povas uzi foton, kiun vi elektas aŭ faras, por krei personigitan veteran fonon. Ni traktas vian privatecon serioze. Sube vi povas legi ekzakte kiujn datumojn ni uzas, kial, kaj kiom longe ni konservas ilin.</string>

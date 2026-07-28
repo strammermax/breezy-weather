@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">LiveWallpaperWeather डेटा पढ़ें</string>
     <string name="content_provider_permission_description">LiveWallpaperWeather से मौसम की जानकारी प्राप्त करें, जिसमें आपके स्थानों के निर्देशांक शामिल हैं, जैसे कि आपका वर्तमान स्थान यदि आपने इसे जोड़ा है</string>
-    <string name="weather_vista_privacy_policy_summary">Weather Vista की गोपनीयता नीति पढ़ें</string>
+    <string name="weather_vista_privacy_policy_summary">WeatherChum की गोपनीयता नीति पढ़ें</string>
     <string name="weather_vista_privacy_policy_updated">आखिरी अपडेट: 28 जुलाई, 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">गोपनीयता नीति</string>
     <string name="weather_vista_privacy_policy_intro">यह ऐप्लिकेशन (\"ऐप\") आपके स्थान के आधार पर आपको वर्तमान मौसम की जानकारी और मेल खाती मौसम की तस्वीरें दिखाता है, और एक व्यक्तिगत मौसम पृष्ठभूमि बनाने के लिए आपके द्वारा चुनी गई या ली गई तस्वीर का उपयोग कर सकता है। हम आपकी गोपनीयता को गंभीरता से लेते हैं। नीचे आप पढ़ सकते हैं कि हम वास्तव में किस डेटा का उपयोग करते हैं, क्यों, और इसे कितने समय तक रखते हैं।</string>

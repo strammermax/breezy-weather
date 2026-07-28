@@ -2,7 +2,7 @@
 <resources>
     <string name="content_provider_permission_label">Lesa gögn frá LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">fá veðurupplýsingar frá LiveWallpaperWeather, þar á meðal hnit staðsetninga þinna, svo sem núverandi staðsetningu þína ef þú bættir henni við</string>
-    <string name="weather_vista_privacy_policy_summary">Lestu persónuverndarstefnu Weather Vista</string>
+    <string name="weather_vista_privacy_policy_summary">Lestu persónuverndarstefnu WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Síðast uppfært: 28. júlí 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Persónuverndarstefna</string>
     <string name="weather_vista_privacy_policy_intro">Þetta forrit (\"forritið\") sýnir þér núverandi veðurupplýsingar og samsvarandi veðurmyndir út frá staðsetningu þinni, og getur notað ljósmynd sem þú velur eða tekur til að búa til persónulegan veðurbakgrunn. Við tökum persónuvernd þína alvarlega. Hér fyrir neðan getur þú lesið nákvæmlega hvaða gögn við notum, hvers vegna, og hversu lengi við geymum þau.</string>
