@@ -1,7 +1,14 @@
 [
   {
-    "version": "Niet uitgebracht (+5)",
+    "version": "Niet uitgebracht (+1)",
     "date": "",
+    "changes": [
+      "Remove microphone foreground service declaration"
+    ]
+  },
+  {
+    "version": "2026.07.28.455",
+    "date": "2026-07-28",
     "changes": [
       "update icons",
       "Update LiveWeather Android app icons",
@@ -65,10 +72,5 @@
       "Open the Buienradar app (or its website) from the Buienradar radar tab/tile",
       "Smooth Main -> Details/Radar transition instead of a flash+slide"
     ]
-  },
-  {
-    "version": "2026.07.26.423",
-    "date": "2026-07-26",
-    "changes": []
   }
 ]
