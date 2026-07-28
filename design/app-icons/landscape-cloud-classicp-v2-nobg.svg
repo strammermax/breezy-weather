@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="hill" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#7fa444"/>
+      <stop offset="1" stop-color="#294e32"/>
+    </linearGradient>
+    <clipPath id="iconClip">
+      <rect x="16" y="16" width="480" height="480"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#iconClip)">
+    <circle cx="374" cy="130" r="54" fill="#ffd45b"/>
+    <path d="M 93.669 236.329 C 98.669 206.329 123.669 184.329 154.669 184.329 C 167.669 184.329 179.669 188.329 189.669 195.329 C 199.669 152.329 237.669 120.329 283.669 120.329 C 335.669 120.329 377.669 160.329 380.669 211.329 C 408.669 214.329 430.669 237.329 430.669 266.329 L 86.669 266.329 C 86.669 255.329 88.669 245.329 93.669 236.329 Z" fill="#e5eef2" opacity=".52"/>
+    <path d="M30 385 151 239l58 67 72-120 201 211v99H30Z" fill="#718695"/>
+    <path d="m151 239 58 67 23-38 49-82 52 55-32-13-20 25-21-18-40 79-31 23Z" fill="#eef5f4"/>
+    <path d="M 16 390.034 C 103.937 312.108 171.473 329.882 243.287 381.144 C 306.801 309.485 389.943 295.462 496 389.38 L 496 496 L 16 496 Z" fill="url(#hill)"/>
+  </g>
+  <g fill="#f7fbfc" opacity=".74" transform="matrix(1, 0, 0, 1, -81.501366, -142.703049)">
+    <circle cx="162" cy="264" r="48"/>
+    <circle cx="217" cy="247" r="67"/>
+    <circle cx="280" cy="264" r="50"/>
+    <circle cx="326" cy="279" r="36"/>
+  </g>
+</svg>

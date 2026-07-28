@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d69a6"/>
+      <stop offset="1" stop-color="#8fc9df"/>
+    </linearGradient>
+    <clipPath id="iconClip">
+      <rect x="16" y="16" width="480" height="480"/>
+    </clipPath>
+  </defs>
+  <path fill="url(#sky)" d="M 16.514 16 H 495.486 L 496 16.514 V 495.486 L 495.486 496 H 16.514 L 16 495.486 V 16.514 L 16.514 16 Z" bx:shape="rect 16 16 480 480 1 0.514 0.514 1 0.514 0.514 1 0.514 0.514 1 0.514 0.514 2@c875a13d"/>
+  <g clip-path="url(#iconClip)"/>
+</svg>
