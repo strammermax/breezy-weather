@@ -16,6 +16,12 @@
 
 package com.liveweatherwallpaperapp.ui.details
 
+import androidx.compose.ui.platform.LocalResources
+
+import androidx.core.graphics.createBitmap
+
+import androidx.core.graphics.drawable.toDrawable
+
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
@@ -137,6 +143,7 @@ internal fun DailyWeatherScreen(
     val detailsUiState by detailsViewModel.uiState.collectAsState()
 
     val context = LocalContext.current
+    val resources = LocalResources.current
     val activity = LocalActivity.current
 
     val isLightTheme = ThemeManager.isLightTheme(context, detailsUiState.location)
@@ -277,7 +284,7 @@ internal fun DailyWeatherScreen(
                         try {
                             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
                             var nearPhoto: Bitmap? = null
-                            val bitmap = Bitmap.createBitmap(renderWidth, renderHeight, Bitmap.Config.ARGB_8888).also {
+                            val bitmap = createBitmap(renderWidth, renderHeight).also {
                                 nearPhoto = WallpaperSceneSnapshot.render(
                                     Canvas(it),
                                     renderWidth,
@@ -309,7 +316,7 @@ internal fun DailyWeatherScreen(
                     )
                     // Avoid blending two full-window textures. The screen is already fully
                     // entered at this point, so a direct replacement is both cheaper and calm.
-                    activity.window.setBackgroundDrawable(BitmapDrawable(context.resources, background))
+                    activity.window.setBackgroundDrawable(background.toDrawable(context.resources))
                 }
 
                 // ACT-013: override the surface/outline colors so the cards and tab bar
@@ -383,6 +390,7 @@ fun DailyPagerIndicator(
     todayIndex: Int? = null,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val alternateCalendar = remember {
         CalendarHelper.getAlternateCalendarSetting(context)
     }
@@ -405,9 +413,9 @@ fun DailyPagerIndicator(
                             .clearAndSetSemantics {
                                 contentDescription = when {
                                     todayIndex == null -> date.getWeek(location, context, full = true)
-                                    i == todayIndex - 1 -> context.getString(R.string.daily_yesterday)
-                                    i == todayIndex -> context.getString(R.string.daily_today)
-                                    i == todayIndex + 1 -> context.getString(R.string.daily_tomorrow)
+                                    i == todayIndex - 1 -> resources.getString(R.string.daily_yesterday)
+                                    i == todayIndex -> resources.getString(R.string.daily_today)
+                                    i == todayIndex + 1 -> resources.getString(R.string.daily_tomorrow)
                                     else -> date.getWeek(location, context, full = true)
                                 } +
                                     " " +
@@ -447,6 +455,7 @@ fun DetailsDropdownMenu(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val detailScreenEntries = remember(location) {
         DetailScreen.toDetailScreenList(location)
     }
@@ -469,10 +478,10 @@ fun DetailsDropdownMenu(
                     modifier = Modifier
                         .semantics {
                             traversalIndex = -1f
-                            stateDescription = context.getString(
+                            stateDescription = resources.getString(
                                 if (fabMenuExpanded) R.string.label_expanded else R.string.label_collapsed
                             )
-                            contentDescription = context.getString(R.string.action_toggle_data_type_menu)
+                            contentDescription = resources.getString(R.string.action_toggle_data_type_menu)
                         }.animateFloatingActionButton(
                             visible = fabVisible || fabMenuExpanded,
                             alignment = Alignment.BottomEnd
@@ -507,7 +516,7 @@ fun DetailsDropdownMenu(
                                 customActions =
                                     listOf(
                                         CustomAccessibilityAction(
-                                            label = context.getString(R.string.action_close_menu),
+                                            label = resources.getString(R.string.action_close_menu),
                                             action = {
                                                 fabMenuExpanded = false
                                                 true

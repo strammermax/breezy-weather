@@ -8,6 +8,8 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
+import androidx.core.graphics.createBitmap
+
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -48,7 +50,7 @@ private fun isCloudLayerEnabled(index: Int, budget: Int): Boolean = when {
 
 private fun loadMaskBitmap(resources: Resources?, drawableId: Int): Bitmap =
     resources?.let { BitmapFactory.decodeResource(it, drawableId) }
-        ?: Bitmap.createBitmap(1, 1, Bitmap.Config.ALPHA_8).apply { eraseColor(Color.TRANSPARENT) }
+        ?: createBitmap(1, 1, Bitmap.Config.ALPHA_8).apply { eraseColor(Color.TRANSPARENT) }
 
 private fun filteredBitmapShader(bitmap: Bitmap, tileX: Shader.TileMode, tileY: Shader.TileMode): BitmapShader =
     BitmapShader(bitmap, tileX, tileY).apply {

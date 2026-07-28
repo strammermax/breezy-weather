@@ -16,6 +16,7 @@
 
 package com.liveweatherwallpaperapp.background.findmyphone
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -385,6 +386,7 @@ class FindMyPhoneService : Service() {
      * repeating vibration, both of which run until [stopAlarm] is called. Using the device's own
      * default sound (rather than a bundled asset) means there's exactly one sound source -- no
      * risk of it stacking with anything else. */
+    @SuppressLint("MissingPermission") // Permission must be restored if this disabled service is re-enabled.
     private fun startAlert(ringtoneType: Int) {
         if (alarmActive) return
         alarmActive = true
@@ -429,6 +431,7 @@ class FindMyPhoneService : Service() {
         registerPickupSensors()
     }
 
+    @SuppressLint("MissingPermission") // Pairs with vibration started by startAlert().
     private fun stopAlarm() {
         if (!alarmActive) return
         alarmActive = false

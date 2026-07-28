@@ -1009,7 +1009,7 @@ fun SourceViewWithContinents(
         iconId = iconId,
         selectedKey = selectedKey,
         values = sourceList.mapKeys {
-            it.key?.let { k -> context.getString(k) }
+            it.key?.let { k -> stringResource(k) }
         }.toImmutableMap(),
         summary = { _, value ->
             sourceList.values.firstOrNull { c ->

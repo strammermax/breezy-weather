@@ -16,6 +16,8 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
+import androidx.core.graphics.createBitmap
+
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.ColorMatrix
@@ -47,7 +49,7 @@ internal object WallpaperPhotoLayout {
      * Caller is responsible for recycling [source]; the returned bitmap is owned by the caller.
      */
     fun positionAtBottom(source: Bitmap, targetWidth: Int, targetHeight: Int): Bitmap {
-        val result = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
+        val result = createBitmap(targetWidth, targetHeight)
         val canvas = Canvas(result)
         val scale = maxOf(
             targetWidth.toFloat() / source.width,

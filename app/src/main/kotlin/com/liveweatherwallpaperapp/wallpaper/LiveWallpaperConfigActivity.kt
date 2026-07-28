@@ -104,6 +104,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.withContext
 import livewallpaperweather.data.location.LocationRepository
 import livewallpaperweather.data.weather.WeatherRepository
@@ -492,20 +494,26 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
             ) {
                 item {
                     Spinner(
-                        currentVal = weatherKindValueNow,
-                        names = weatherKinds,
-                        values = weatherKindValues,
+                        currentVal = weatherKindValueNow.value,
+                        names = weatherKinds.toImmutableList(),
+                        values = weatherKindValues.toImmutableList(),
                         titleId = R.string.widget_live_wallpaper_weather_kind,
-                        onSelected = { persistCoreSettings() }
+                        onSelected = {
+                            weatherKindValueNow.value = it
+                            persistCoreSettings()
+                        }
                     )
                 }
                 item {
                     Spinner(
-                        currentVal = dayNightTypeValueNow,
-                        names = dayNightTypeKinds,
-                        values = dayNightTypeValues,
+                        currentVal = dayNightTypeValueNow.value,
+                        names = dayNightTypeKinds.toImmutableList(),
+                        values = dayNightTypeValues.toImmutableList(),
                         titleId = R.string.widget_live_wallpaper_day_night_type,
-                        onSelected = { persistCoreSettings() }
+                        onSelected = {
+                            dayNightTypeValueNow.value = it
+                            persistCoreSettings()
+                        }
                     )
                 }
                 item {
@@ -1045,11 +1053,11 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
 
     @Composable
     private fun Spinner(
-        currentVal: MutableState<String>,
-        names: Array<String>,
-        values: Array<String>,
+        currentVal: String,
+        names: ImmutableList<String>,
+        values: ImmutableList<String>,
         @StringRes titleId: Int,
-        onSelected: () -> Unit = {},
+        onSelected: (String) -> Unit = {},
     ) {
         val expanded = remember { mutableStateOf(false) }
         val textFieldSize = remember { mutableStateOf(Size.Zero) }
@@ -1065,7 +1073,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
             modifier = Modifier.padding(dimensionResource(R.dimen.normal_margin))
         ) {
             OutlinedTextField(
-                value = names[if (values.indexOf(currentVal.value) != -1) values.indexOf(currentVal.value) else 0],
+                value = names[if (values.indexOf(currentVal) != -1) values.indexOf(currentVal) else 0],
                 onValueChange = {},
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1116,9 +1124,8 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                             )
                         },
                         onClick = {
-                            currentVal.value = values[index]
                             expanded.value = false
-                            onSelected()
+                            onSelected(values[index])
                         }
                     )
                 }

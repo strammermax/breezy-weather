@@ -300,7 +300,7 @@ private fun UVChart(
                 ?: "-"
         },
         trendHorizontalLines = persistentMapOf(
-            UV.UV_INDEX_MIDDLE to context.getString(R.string.uv_alert_level)
+            UV.UV_INDEX_MIDDLE to stringResource(R.string.uv_alert_level)
         ),
         endAxisItemPlacer = remember { VerticalAxis.ItemPlacer.step({ 1.0 }) }, // Every rounded UVI
         markerVisibilityListener = markerVisibilityListener

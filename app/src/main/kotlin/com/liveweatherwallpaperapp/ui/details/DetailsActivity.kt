@@ -16,6 +16,8 @@
 
 package com.liveweatherwallpaperapp.ui.details
 
+import androidx.core.graphics.drawable.toDrawable
+
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
@@ -70,7 +72,7 @@ class DetailsActivity : BreezyActivity() {
 
         // Temporary performance test: keep every decorative details background layer off.
         if (!DETAILS_BACKGROUND_ENABLED) {
-            window.setBackgroundDrawable(ColorDrawable(Color.rgb(24, 27, 34)))
+            window.setBackgroundDrawable(Color.rgb(24, 27, 34).toDrawable())
             return
         }
 

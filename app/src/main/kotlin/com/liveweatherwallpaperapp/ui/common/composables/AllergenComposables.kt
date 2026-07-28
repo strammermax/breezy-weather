@@ -16,6 +16,8 @@
 
 package com.liveweatherwallpaperapp.ui.common.composables
 
+import androidx.compose.ui.platform.LocalResources
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -59,6 +61,7 @@ fun PollenGrid(
     maxItemsInEachRow: Int = 2,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val unit = PollenConcentrationUnit.PER_CUBIC_METER
     FlowRow(
         maxItemsInEachRow = maxItemsInEachRow,
@@ -70,8 +73,8 @@ fun PollenGrid(
             .sortedWith { va1, va2 ->
                 Collator.getInstance(context.currentLocale)
                     .compare(
-                        context.getString(va1.pollenName),
-                        context.getString(va2.pollenName)
+                        resources.getString(va1.pollenName),
+                        resources.getString(va2.pollenName)
                     )
             }
             .forEach { validPollen ->

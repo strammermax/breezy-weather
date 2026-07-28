@@ -16,6 +16,8 @@
 
 package com.liveweatherwallpaperapp.ui.main.adapters.main.holder
 
+import androidx.core.net.toUri
+
 import android.content.Intent
 import android.net.Uri
 import android.view.LayoutInflater
@@ -93,7 +95,7 @@ class AppMessageViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                                 when (message.kind) {
                                     AppMessageKind.WEETJE -> {
                                         val intent = if (!message.url.isNullOrBlank()) {
-                                            Intent(Intent.ACTION_VIEW, Uri.parse(message.url))
+                                            Intent(Intent.ACTION_VIEW, message.url.toUri())
                                         } else {
                                             IntentHelper.buildMainActivityIntent(null)
                                         }

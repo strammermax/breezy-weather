@@ -251,8 +251,8 @@ class InkPageIndicator @JvmOverloads constructor(
     }
 
     private fun resetState() {
-        mJoiningFractions = FloatArray(mPageCount - 1) { 0f }
-        mDotRevealFractions = FloatArray(mPageCount) { 0f }
+        mJoiningFractions = FloatArray(mPageCount - 1)
+        mDotRevealFractions = FloatArray(mPageCount)
         mRetreatingJoinX1 = INVALID_FRACTION
         mRetreatingJoinX2 = INVALID_FRACTION
         mSelectedDotInPosition = true

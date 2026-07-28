@@ -26,6 +26,10 @@ val supportedAbi = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
 configure<ApplicationExtension> {
     namespace = "com.liveweatherwallpaperapp"
 
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+    }
+
     defaultConfig {
         applicationId = "com.liveweatherwallpaperapp"
         // LiveWallpaperWeather's own version (fork of Breezy Weather 6.2.2).
@@ -536,6 +540,8 @@ aboutLibraries {
 }
 
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+
     implementation(projects.cloudEngine)
     implementation(projects.data)
     implementation(projects.domain)

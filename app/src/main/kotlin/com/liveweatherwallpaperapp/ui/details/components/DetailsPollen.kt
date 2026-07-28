@@ -57,7 +57,7 @@ fun DetailsPollen(
                 item {
                     DetailsSectionHeader(
                         stringResource(R.string.pollen_primary),
-                        stringResource(it.pollenName)
+                        subtitle = stringResource(it.pollenName)
                     )
                 }
                 item {

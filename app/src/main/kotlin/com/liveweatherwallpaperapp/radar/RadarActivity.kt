@@ -16,6 +16,10 @@
 
 package com.liveweatherwallpaperapp.radar
 
+import androidx.core.graphics.createBitmap
+
+import androidx.core.graphics.drawable.toDrawable
+
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -270,7 +274,7 @@ class RadarActivity : BreezyActivity() {
         val depth = withContext(Dispatchers.IO) { wallpaperRepository.loadCachedDepthBitmap() }
         var nearPhoto: Bitmap? = null
         val bitmap = withContext(Dispatchers.Default) {
-            Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
+            createBitmap(width, height).also {
                 nearPhoto =
                     WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState, resources, depth)
             }
@@ -283,7 +287,7 @@ class RadarActivity : BreezyActivity() {
         // window lets the previous screen show through) on first load.
         val previous = window.decorView.background
         val crossfade = TransitionDrawable(
-            arrayOf(previous ?: ColorDrawable(android.graphics.Color.TRANSPARENT), BitmapDrawable(resources, bitmap))
+            arrayOf(previous ?: android.graphics.Color.TRANSPARENT.toDrawable(), bitmap.toDrawable(resources))
         )
         window.setBackgroundDrawable(crossfade)
         crossfade.startTransition(BACKGROUND_CROSSFADE_DURATION_MILLIS)

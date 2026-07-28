@@ -8,6 +8,9 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
+import androidx.core.graphics.createBitmap
+import androidx.annotation.RequiresApi
+
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -170,12 +173,13 @@ internal object WallpaperSceneRenderer {
     }
 
     private fun renderWithSoftwareCanvas(width: Int, height: Int, draw: (Canvas) -> Unit): Bitmap {
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val bitmap = createBitmap(width, height)
         draw(Canvas(bitmap))
         return bitmap
     }
 
     /** Used on API 29+ so AGSL `RuntimeShader` passes (Android 13+) render correctly. */
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun renderWithHardwareRenderer(width: Int, height: Int, draw: (Canvas) -> Unit): Bitmap {
         val renderer = HardwareRenderer()
         val node = RenderNode("WallpaperSceneRenderer")
@@ -194,7 +198,7 @@ internal object WallpaperSceneRenderer {
             val image = reader.acquireNextImage() ?: error("WallpaperSceneRenderer: no image produced")
             try {
                 val plane = image.planes[0]
-                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                val bitmap = createBitmap(width, height)
                 copyPlaneToBitmap(plane.buffer, plane.rowStride, plane.pixelStride, width, height, bitmap)
                 return bitmap
             } finally {

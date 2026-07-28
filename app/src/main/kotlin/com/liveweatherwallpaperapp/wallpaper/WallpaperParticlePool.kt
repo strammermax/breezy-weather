@@ -8,6 +8,8 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
+import androidx.core.graphics.createBitmap
+
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -191,7 +193,7 @@ internal class WallpaperParticlePool(
         private fun buildSpriteAtlas(kind: WallpaperParticleKind): Array<Bitmap> {
             val variants = if (kind == WallpaperParticleKind.SNOW) 4 else 3
             return Array(variants) { variant ->
-                val bitmap = Bitmap.createBitmap(SPRITE_SIZE, SPRITE_SIZE, Bitmap.Config.ARGB_8888)
+                val bitmap = createBitmap(SPRITE_SIZE, SPRITE_SIZE)
                 val canvas = Canvas(bitmap)
                 val center = SPRITE_SIZE / 2f
                 val paint = Paint(Paint.ANTI_ALIAS_FLAG)

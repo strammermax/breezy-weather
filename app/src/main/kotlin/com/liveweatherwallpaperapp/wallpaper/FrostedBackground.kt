@@ -4,6 +4,8 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
+import androidx.core.graphics.scale
+
 import android.graphics.Bitmap
 
 /**
@@ -20,8 +22,8 @@ internal fun Bitmap.toFrostedBackground(strength: Int = 2): Bitmap {
     }
     val sampleWidth = (width / downsample).coerceAtLeast(1)
     val sampleHeight = (height / downsample).coerceAtLeast(1)
-    val sample = Bitmap.createScaledBitmap(this, sampleWidth, sampleHeight, true)
-    return Bitmap.createScaledBitmap(sample, width, height, true).also {
+    val sample = this.scale(sampleWidth, sampleHeight)
+    return sample.scale(width, height).also {
         if (sample !== this && sample !== it) sample.recycle()
     }
 }

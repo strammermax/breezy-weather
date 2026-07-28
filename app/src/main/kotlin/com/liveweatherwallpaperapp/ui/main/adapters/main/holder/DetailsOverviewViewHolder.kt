@@ -349,8 +349,8 @@ class DetailsOverviewViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
     @Composable
     private fun DetailCell(
         item: DetailItem,
-        modifier: Modifier = Modifier,
         onClick: () -> Unit,
+        modifier: Modifier = Modifier,
         onInfoClick: () -> Unit,
     ) {
         Row(

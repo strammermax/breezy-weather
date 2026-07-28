@@ -131,6 +131,7 @@ fun DetailsAirQuality(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val mappedValues = remember(hourlyList, selectedPollutant) {
         hourlyList
             .filter { hourly ->
@@ -182,10 +183,10 @@ fun DetailsAirQuality(
                                     airQuality.getColor(context, pollutantIndex),
                                     airQuality.getIndex(pollutantIndex)!!.toFloat(),
                                     PollutantIndex.indexExcessivePollution.toFloat(),
-                                    context.getString(pollutantIndex.shortName),
+                                    resources.getString(pollutantIndex.shortName),
                                     PollutantIndex.getUnit(pollutantIndex).formatMeasure(context, it),
-                                    context.getString(pollutantIndex.voicedName) +
-                                        context.getString(R.string.colon_separator) +
+                                    resources.getString(pollutantIndex.voicedName) +
+                                        resources.getString(R.string.colon_separator) +
                                         PollutantIndex.getUnit(pollutantIndex)
                                             .formatMeasure(context, it, unitWidth = UnitWidth.LONG)
                                 )
@@ -202,10 +203,10 @@ fun DetailsAirQuality(
                                         airQuality.getColor(context, pollutantIndex),
                                         airQuality.getIndex(pollutantIndex)!!.toFloat(),
                                         PollutantIndex.indexExcessivePollution.toFloat(),
-                                        context.getString(pollutantIndex.shortName),
+                                        resources.getString(pollutantIndex.shortName),
                                         PollutantIndex.getUnit(pollutantIndex).formatMeasure(context, it),
-                                        context.getString(pollutantIndex.voicedName) +
-                                            context.getString(R.string.colon_separator) +
+                                        resources.getString(pollutantIndex.voicedName) +
+                                            resources.getString(R.string.colon_separator) +
                                             PollutantIndex.getUnit(pollutantIndex)
                                                 .formatMeasure(context, it, unitWidth = UnitWidth.LONG)
                                     )
@@ -287,7 +288,7 @@ fun DetailsAirQuality(
                     item {
                         DetailsSectionHeader(
                             buildAnnotatedString { append(stringResource(R.string.air_quality_pollutant_primary)) },
-                            if (it.pollutantType != PollutantIndex.PM10 && it.pollutantType != PollutantIndex.PM25) {
+                            subtitle = if (it.pollutantType != PollutantIndex.PM10 && it.pollutantType != PollutantIndex.PM25) {
                                 UnitUtils.formatPollutantName(it.pollutantType.getFullName(context))
                             } else {
                                 buildAnnotatedString {
@@ -320,7 +321,7 @@ fun DetailsAirQuality(
         item {
             DetailsCardText(
                 stringResource(R.string.air_quality_index_about_description_1),
-                stringResource(R.string.air_quality_index_about_description_2)
+                text2 = stringResource(R.string.air_quality_index_about_description_2)
             )
         }
         item {
@@ -353,6 +354,7 @@ private fun AirQualityHeader(
     defaultValue: Pair<Date, AirQuality>?,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     if (activeItem != null) {
         AirQualityItem(
@@ -383,6 +385,7 @@ private fun AirQualityItem(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     Row(
         horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.small_margin)),
         verticalAlignment = Alignment.CenterVertically,
@@ -754,6 +757,7 @@ fun AirQualityScale(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     Material3ExpressiveCardListItem(
         modifier = modifier,

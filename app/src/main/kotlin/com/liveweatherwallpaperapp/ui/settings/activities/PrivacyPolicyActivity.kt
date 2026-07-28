@@ -16,6 +16,8 @@
 
 package com.liveweatherwallpaperapp.ui.settings.activities
 
+import androidx.compose.ui.platform.LocalResources
+
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.PaddingValues
@@ -68,6 +70,7 @@ class PrivacyPolicyActivity : BreezyActivity() {
     @Composable
     private fun ContentView() {
         val context = LocalContext.current
+    val resources = LocalResources.current
         val scrollBehavior = generateCollapsedScrollBehavior()
         val uriHandler = LocalUriHandler.current
         val sources = remember {
@@ -94,7 +97,7 @@ class PrivacyPolicyActivity : BreezyActivity() {
             PreferenceScreen(
                 paddingValues = paddingValues.plus(PaddingValues(horizontal = dimensionResource(R.dimen.normal_margin)))
             ) {
-                if (!context.getString(R.string.brand_name).contains("breezy", ignoreCase = true) ||
+                if (!resources.getString(R.string.brand_name).contains("breezy", ignoreCase = true) ||
                     BreezyWeather.instance.isSignedByBreezy ||
                     BreezyWeather.instance.debugMode
                 ) {

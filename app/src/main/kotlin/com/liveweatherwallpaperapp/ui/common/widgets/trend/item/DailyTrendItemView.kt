@@ -16,6 +16,8 @@
 
 package com.liveweatherwallpaperapp.ui.common.widgets.trend.item
 
+import androidx.core.graphics.withSave
+
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -297,11 +299,11 @@ class DailyTrendItemView @JvmOverloads constructor(
             val rowCenterY = rowTop + mPrecipitationRowHeight / 2f
 
             icon?.let { drawable ->
-                val restoreCount = canvas.save()
-                drawable.setBounds(0, 0, mPrecipitationIconSize, mPrecipitationIconSize)
-                canvas.translate(groupLeft, rowCenterY - mPrecipitationIconSize / 2f)
-                drawable.draw(canvas)
-                canvas.restoreToCount(restoreCount)
+                canvas.withSave {
+                    drawable.setBounds(0, 0, mPrecipitationIconSize, mPrecipitationIconSize)
+                    canvas.translate(groupLeft, rowCenterY - mPrecipitationIconSize / 2f)
+                    drawable.draw(canvas)
+                }
             }
 
             val textFontMetrics = mPrecipitationTextPaint.fontMetrics
@@ -323,11 +325,11 @@ class DailyTrendItemView @JvmOverloads constructor(
         val groupLeft = (measuredWidth - groupWidth) / 2f
         val rowCenterY = rowTop + mWindRowHeight / 2f
 
-        val restoreCount = canvas.save()
-        icon.setBounds(0, 0, mWindIconSize, mWindIconSize)
-        canvas.translate(groupLeft, rowTop)
-        icon.draw(canvas)
-        canvas.restoreToCount(restoreCount)
+        canvas.withSave {
+            icon.setBounds(0, 0, mWindIconSize, mWindIconSize)
+            canvas.translate(groupLeft, rowTop)
+            icon.draw(canvas)
+        }
 
         forceText?.let {
             val textFontMetrics = mWindForceTextPaint.fontMetrics

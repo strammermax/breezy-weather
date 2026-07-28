@@ -1,5 +1,7 @@
 package com.liveweatherwallpaperapp.common.utils
 
+import androidx.core.content.edit
+
 import android.content.Context
 import android.util.Log
 import java.io.File
@@ -25,7 +27,7 @@ object DiagnosticLogger {
         if (!prefs.getBoolean(KEY_ENABLED, false)) return false
         val started = prefs.getLong(KEY_STARTED_AT, 0L)
         if (started == 0L || System.currentTimeMillis() - started >= MAX_AGE_MS) {
-            prefs.edit().putBoolean(KEY_ENABLED, false).apply()
+            prefs.edit {putBoolean(KEY_ENABLED, false)}
             archiveDailyLogs(context, includeToday = true)
             cleanup(context)
             return false
@@ -36,10 +38,10 @@ object DiagnosticLogger {
     }
 
     fun setEnabled(context: Context, enabled: Boolean) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().apply {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit {
             putBoolean(KEY_ENABLED, enabled)
             if (enabled) putLong(KEY_STARTED_AT, System.currentTimeMillis()) else remove(KEY_STARTED_AT)
-        }.apply()
+        }
         if (enabled) log(context, "Diagnostics", "Debug logging enabled for at most 3 days")
     }
 

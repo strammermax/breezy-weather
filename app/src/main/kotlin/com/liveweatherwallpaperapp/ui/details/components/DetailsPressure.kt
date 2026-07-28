@@ -153,7 +153,7 @@ fun DetailsPressure(
         item {
             DetailsCardText(
                 stringResource(R.string.pressure_about_description1),
-                stringResource(R.string.pressure_about_description2)
+                text2 = stringResource(R.string.pressure_about_description2)
             )
         }
         bottomDetailsInset()
@@ -292,7 +292,7 @@ private fun PressureChart(
         },
         trendHorizontalLines = persistentMapOf(
             PressureUnit.STANDARD.pascals.toDouble(pressureUnit) to
-                context.getString(R.string.pressure_standard)
+                stringResource(R.string.pressure_standard)
         ),
         minY = minY,
         topAxisValueFormatter = { _, value, _ ->

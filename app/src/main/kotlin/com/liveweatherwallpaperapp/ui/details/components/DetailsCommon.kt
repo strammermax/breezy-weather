@@ -226,8 +226,8 @@ fun NighttimeLabelWithInfo(
 @Composable
 fun DetailsSectionHeader(
     sectionName: AnnotatedString,
-    subtitle: AnnotatedString? = null,
     modifier: Modifier = Modifier,
+    subtitle: AnnotatedString? = null,
 ) {
     DetailsSectionHeader(
         section = {
@@ -260,8 +260,8 @@ fun DetailsSectionHeader(
 @Composable
 fun DetailsSectionHeader(
     sectionName: String,
-    subtitle: String? = null,
     modifier: Modifier = Modifier,
+    subtitle: String? = null,
 ) {
     DetailsSectionHeader(
         section = {
@@ -294,8 +294,8 @@ fun DetailsSectionHeader(
 @Composable
 internal fun DetailsSectionHeader(
     section: @Composable () -> Unit,
-    subtitle: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
+    subtitle: (@Composable () -> Unit)? = null,
 ) {
     Column(
         modifier = modifier
@@ -319,8 +319,8 @@ fun DetailsSectionDivider(
 @Composable
 fun DetailsCardText(
     text1: String,
-    text2: String? = null,
     modifier: Modifier = Modifier,
+    text2: String? = null,
 ) {
     Material3ExpressiveCardListItem(
         isFirst = true,

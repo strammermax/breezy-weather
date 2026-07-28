@@ -16,6 +16,8 @@
 
 package com.liveweatherwallpaperapp.ui.settings.compose
 
+import androidx.compose.ui.platform.LocalResources
+
 import android.content.Intent
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
@@ -47,6 +49,7 @@ fun RootSettingsView(
 ) {
     val scrollBehavior = generateCollapsedScrollBehavior()
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     Material3Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -71,9 +74,9 @@ fun RootSettingsView(
                 ) {
                     if (!launchLiveWallpaperPicker(context)) {
                         SnackbarHelper.showSnackbar(
-                            context.getString(
+                            resources.getString(
                                 R.string.settings_modules_live_wallpaper_error,
-                                context.getString(R.string.brand_name)
+                                resources.getString(R.string.brand_name)
                             )
                         )
                     }

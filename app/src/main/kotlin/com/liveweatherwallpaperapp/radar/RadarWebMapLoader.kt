@@ -154,7 +154,7 @@ internal object RadarWebMapLoader {
 
     private fun openExternally(view: WebView, url: String) {
         runCatching {
-            view.context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+            view.context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
         }
     }
 

@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
@@ -27,7 +28,7 @@ internal fun rememberGlassChartStyle(): GlassChartStyle {
     val background = when (settings.tileCardStyle) {
         "light" -> Color.White.copy(alpha = alpha)
         "dark" -> Color.Black.copy(alpha = alpha)
-        "auto" -> Color(context.getColor(R.color.colorGlassCardBackground)).copy(alpha = alpha)
+        "auto" -> colorResource(R.color.colorGlassCardBackground).copy(alpha = alpha)
         else -> MaterialTheme.colorScheme.surface
     }
     val content = when (settings.tileTextColor) {

@@ -16,6 +16,8 @@
 
 package com.liveweatherwallpaperapp.wallpaper.photo
 
+import androidx.core.graphics.scale
+
 import android.content.Context
 import android.graphics.Bitmap
 import org.tensorflow.lite.Interpreter
@@ -46,7 +48,7 @@ class SkySegmenter(context: Context) {
     fun eraseSky(source: Bitmap): Bitmap? {
         val interp = interpreter ?: return null
         return try {
-            val scaled = Bitmap.createScaledBitmap(source, INPUT_SIZE, INPUT_SIZE, true)
+            val scaled = source.scale(INPUT_SIZE, INPUT_SIZE)
             val scaledPixels = IntArray(INPUT_SIZE * INPUT_SIZE)
             scaled.getPixels(scaledPixels, 0, INPUT_SIZE, 0, 0, INPUT_SIZE, INPUT_SIZE)
             val input = toFloatInput(scaled)

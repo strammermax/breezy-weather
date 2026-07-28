@@ -16,6 +16,8 @@
 
 package com.liveweatherwallpaperapp.ui.details.components
 
+import androidx.compose.ui.platform.LocalResources
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -156,6 +158,7 @@ fun EphemerisChart(
     moonTimes: List<Astro>,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     val startingDate = remember(today) {
         today.date.toTimezoneSpecificHour(location.timeZone)
@@ -334,6 +337,7 @@ fun DailySun(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val sunriseTime = sun.riseDate?.getFormattedTime(location, context, context.is12Hour)
     val sunsetTime = sun.setDate?.getFormattedTime(location, context, context.is12Hour)
     ListItem(
@@ -349,22 +353,22 @@ fun DailySun(
                 text = if (BreezyWeather.instance.debugMode) {
                     (
                         sun.riseDate?.getFormattedDate("yyyy-MM-dd HH:mm", location, context)
-                            ?: context.getString(R.string.null_data_text)
+                            ?: stringResource(R.string.null_data_text)
                         ) +
                         "↑ / " +
                         (
                             sun.setDate?.getFormattedDate("yyyy-MM-dd HH:mm", location, context)
-                                ?: context.getString(R.string.null_data_text)
+                                ?: stringResource(R.string.null_data_text)
                             ) +
                         "↓" +
                         (sun.duration?.let { " / " + it.formatTime(context) } ?: "")
                 } else {
                     (
-                        sunriseTime ?: context.getString(R.string.null_data_text)
+                        sunriseTime ?: stringResource(R.string.null_data_text)
                         ) +
                         "↑ / " +
                         (
-                            sunsetTime ?: context.getString(R.string.null_data_text)
+                            sunsetTime ?: stringResource(R.string.null_data_text)
                             ) +
                         "↓" +
                         (sun.duration?.let { " / " + it.formatTime(context) } ?: "")
@@ -377,23 +381,23 @@ fun DailySun(
             .clearAndSetSemantics {
                 val talkBackBuilder = StringBuilder()
                 if (sunriseTime != null) {
-                    talkBackBuilder.append(context.getString(R.string.ephemeris_sunrise_at, sunriseTime))
+                    talkBackBuilder.append(resources.getString(R.string.ephemeris_sunrise_at, sunriseTime))
                 }
                 if (sunsetTime != null) {
                     if (talkBackBuilder.toString().isNotEmpty()) {
                         talkBackBuilder.append(
-                            context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
+                            resources.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
                         )
                     }
-                    talkBackBuilder.append(context.getString(R.string.ephemeris_sunset_at, sunsetTime))
+                    talkBackBuilder.append(resources.getString(R.string.ephemeris_sunset_at, sunsetTime))
                 }
                 sun.duration?.let {
                     if (talkBackBuilder.toString().isNotEmpty()) {
                         talkBackBuilder.append(
-                            context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
+                            resources.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
                         )
                     }
-                    talkBackBuilder.append(context.getString(R.string.sunshine_duration))
+                    talkBackBuilder.append(resources.getString(R.string.sunshine_duration))
                     talkBackBuilder.append(
                         it.formatTime(
                             context = context,
@@ -414,6 +418,7 @@ fun DailyTwilight(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val dawn = twilight.riseDate?.getFormattedTime(location, context, context.is12Hour)
     val dusk = twilight.setDate?.getFormattedTime(location, context, context.is12Hour)
     ListItem(
@@ -429,21 +434,21 @@ fun DailyTwilight(
                 text = if (BreezyWeather.instance.debugMode) {
                     (
                         twilight.riseDate?.getFormattedDate("yyyy-MM-dd HH:mm", location, context)
-                            ?: context.getString(R.string.null_data_text)
+                            ?: stringResource(R.string.null_data_text)
                         ) +
                         "↑ / " +
                         (
                             twilight.setDate?.getFormattedDate("yyyy-MM-dd HH:mm", location, context)
-                                ?: context.getString(R.string.null_data_text)
+                                ?: stringResource(R.string.null_data_text)
                             ) +
                         "↓"
                 } else {
                     (
-                        dawn ?: context.getString(R.string.null_data_text)
+                        dawn ?: stringResource(R.string.null_data_text)
                         ) +
                         "↑ / " +
                         (
-                            dusk ?: context.getString(R.string.null_data_text)
+                            dusk ?: stringResource(R.string.null_data_text)
                             ) +
                         "↓"
                 },
@@ -455,15 +460,15 @@ fun DailyTwilight(
             .clearAndSetSemantics {
                 val talkBackBuilder = StringBuilder()
                 if (dawn != null) {
-                    talkBackBuilder.append(context.getString(R.string.ephemeris_dawn_at, dawn))
+                    talkBackBuilder.append(resources.getString(R.string.ephemeris_dawn_at, dawn))
                 }
                 if (dusk != null) {
                     if (talkBackBuilder.toString().isNotEmpty()) {
                         talkBackBuilder.append(
-                            context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
+                            resources.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
                         )
                     }
-                    talkBackBuilder.append(context.getString(R.string.ephemeris_dusk_at, dusk))
+                    talkBackBuilder.append(resources.getString(R.string.ephemeris_dusk_at, dusk))
                 }
                 contentDescription = talkBackBuilder.toString()
             }
@@ -477,6 +482,7 @@ fun DailyMoon(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val moonriseTime = moon.riseDate?.getFormattedTime(location, context, context.is12Hour)
     val moonsetTime = moon.setDate?.getFormattedTime(location, context, context.is12Hour)
     ListItem(
@@ -492,21 +498,21 @@ fun DailyMoon(
                 text = if (BreezyWeather.instance.debugMode) {
                     (
                         moon.riseDate?.getFormattedDate("yyyy-MM-dd HH:mm", location, context)
-                            ?: context.getString(R.string.null_data_text)
+                            ?: stringResource(R.string.null_data_text)
                         ) +
                         "↑ / " +
                         (
                             moon.setDate?.getFormattedDate("yyyy-MM-dd HH:mm", location, context)
-                                ?: context.getString(R.string.null_data_text)
+                                ?: stringResource(R.string.null_data_text)
                             ) +
                         "↓"
                 } else {
                     (
-                        moonriseTime ?: context.getString(R.string.null_data_text)
+                        moonriseTime ?: stringResource(R.string.null_data_text)
                         ) +
                         "↑ / " +
                         (
-                            moonsetTime ?: context.getString(R.string.null_data_text)
+                            moonsetTime ?: stringResource(R.string.null_data_text)
                             ) +
                         "↓"
                 },
@@ -518,15 +524,15 @@ fun DailyMoon(
             .clearAndSetSemantics {
                 val talkBackBuilder = StringBuilder()
                 if (moonriseTime != null) {
-                    talkBackBuilder.append(context.getString(R.string.ephemeris_moonrise_at, moonriseTime))
+                    talkBackBuilder.append(resources.getString(R.string.ephemeris_moonrise_at, moonriseTime))
                 }
                 if (moonsetTime != null) {
                     if (talkBackBuilder.toString().isNotEmpty()) {
                         talkBackBuilder.append(
-                            context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
+                            resources.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator)
                         )
                     }
-                    talkBackBuilder.append(context.getString(R.string.ephemeris_moonset_at, moonsetTime))
+                    talkBackBuilder.append(resources.getString(R.string.ephemeris_moonset_at, moonsetTime))
                 }
                 contentDescription = talkBackBuilder.toString()
             }
@@ -539,6 +545,7 @@ fun DailyMoonPhase(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     ListItem(
         leadingContent = {
             AndroidView(

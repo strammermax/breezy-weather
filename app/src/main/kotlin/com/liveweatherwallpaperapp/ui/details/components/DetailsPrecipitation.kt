@@ -16,6 +16,8 @@
 
 package com.liveweatherwallpaperapp.ui.details.components
 
+import androidx.compose.ui.platform.LocalResources
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -252,6 +254,7 @@ fun PrecipitationHeader(
     activeItem: Pair<Date, Precipitation>?,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     activeItem?.let {
         PrecipitationItem(
@@ -273,6 +276,7 @@ private fun PrecipitationItem(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -343,6 +347,7 @@ internal fun PrecipitationChart(
     markerVisibilityListener: CartesianMarkerVisibilityListener,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     val precipitationUnit = SettingsManager.getInstance(context).getPrecipitationUnit(context)
     val step = precipitationUnit.chartStep
@@ -392,7 +397,7 @@ internal fun PrecipitationChart(
             put(
                 livewallpaperweather.domain.weather.model.Precipitation.PRECIPITATION_HOURLY_HEAVY
                     .millimeters.toDouble(precipitationUnit),
-                context.getString(R.string.precipitation_intensity_heavy)
+                stringResource(R.string.precipitation_intensity_heavy)
             )
             if (maxY < livewallpaperweather.domain.weather.model.Precipitation.PRECIPITATION_HOURLY_HEAVY.times(2.0)
                     .millimeters.toDouble(precipitationUnit)
@@ -400,12 +405,12 @@ internal fun PrecipitationChart(
                 put(
                     livewallpaperweather.domain.weather.model.Precipitation.PRECIPITATION_HOURLY_MEDIUM
                         .millimeters.toDouble(precipitationUnit),
-                    context.getString(R.string.precipitation_intensity_medium)
+                    stringResource(R.string.precipitation_intensity_medium)
                 )
                 put(
                     livewallpaperweather.domain.weather.model.Precipitation.PRECIPITATION_HOURLY_LIGHT
                         .millimeters.toDouble(precipitationUnit),
-                    context.getString(R.string.precipitation_intensity_light)
+                    stringResource(R.string.precipitation_intensity_light)
                 )
             }
         }.toImmutableMap(),
@@ -480,6 +485,7 @@ fun DailyPrecipitationDetail(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val unit = if (item.first == R.string.precipitation_snow) {
         SettingsManager.getInstance(context).getSnowfallUnit(context)
     } else {
@@ -494,8 +500,8 @@ fun DailyPrecipitationDetail(
             .semantics(mergeDescendants = true) {}
             .clearAndSetSemantics {
                 item.second?.let { prec ->
-                    contentDescription = context.getString(item.first) +
-                        context.getString(R.string.colon_separator) +
+                    contentDescription = resources.getString(item.first) +
+                        resources.getString(R.string.colon_separator) +
                         prec.formatMeasure(context, unit, unitWidth = UnitWidth.LONG)
                 }
             }
@@ -509,6 +515,7 @@ fun PrecipitationProbabilityHeader(
     activeItem: Pair<Date, Ratio>?,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     activeItem?.let {
         PrecipitationProbabilityItem(
@@ -530,6 +537,7 @@ private fun PrecipitationProbabilityItem(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -592,6 +600,7 @@ internal fun PrecipitationProbabilityChart(
     markerVisibilityListener: CartesianMarkerVisibilityListener,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     val maxY = 100.0
 
@@ -692,6 +701,7 @@ internal fun DailyPrecipitationProbabilityDetail(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     DetailsItem(
         headlineText = stringResource(item.first),
@@ -701,8 +711,8 @@ internal fun DailyPrecipitationProbabilityDetail(
             .semantics(mergeDescendants = true) {}
             .clearAndSetSemantics {
                 item.second?.let { pp ->
-                    contentDescription = context.getString(item.first) +
-                        context.getString(R.string.colon_separator) +
+                    contentDescription = resources.getString(item.first) +
+                        resources.getString(R.string.colon_separator) +
                         pp.formatPercent(context)
                 }
             }
@@ -715,6 +725,7 @@ private fun PrecipitationDurationSummary(
     nighttimePrecDur: PrecipitationDuration?,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val daytimePrecDurItems = mutableListOf<Pair<Int, Duration?>>()
     val nighttimePrecDurItems = mutableListOf<Pair<Int, Duration?>>()
 
@@ -823,6 +834,7 @@ fun DailyPrecipitationDurationDetail(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     DetailsItem(
         headlineText = stringResource(item.first),
         supportingText = item.second?.let { dur -> dur.formatTime(context) },
@@ -831,8 +843,8 @@ fun DailyPrecipitationDurationDetail(
             .semantics(mergeDescendants = true) {}
             .clearAndSetSemantics {
                 item.second?.let { dur ->
-                    contentDescription = context.getString(item.first) +
-                        context.getString(R.string.colon_separator) +
+                    contentDescription = resources.getString(item.first) +
+                        resources.getString(R.string.colon_separator) +
                         dur.formatTime(
                             context = context,
                             smallestUnit = DurationUnit.MINUTES,

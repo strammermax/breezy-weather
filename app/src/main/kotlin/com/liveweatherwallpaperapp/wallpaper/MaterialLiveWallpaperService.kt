@@ -16,6 +16,10 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
+import androidx.core.graphics.createBitmap
+
+import androidx.core.graphics.drawable.toDrawable
+
 import android.app.WallpaperColors
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -1090,7 +1094,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
 
             if (current == null || current.width != width || current.height != height) {
                 current?.recycle()
-                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                val bitmap = createBitmap(width, height)
                 mGlassSceneBitmap = bitmap
                 mGlassSceneCanvas = Canvas(bitmap)
                 mGlassSceneShader = android.graphics.BitmapShader(
@@ -1216,7 +1220,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     val depthSource = mWallpaperRepository.loadCachedDepthBitmap()
                     val positionedDepth = depthSource?.let { positionPhotoAtBottom(it, width, mSizes[1]) }
                     WallpaperPhotoLayout.extractNearLayer(positioned, positionedDepth, NEAR_DEPTH_THRESHOLD)
-                        ?.let { BitmapDrawable(resources, it) }
+                        ?.let { it.toDrawable(resources) }
                 } else {
                     null
                 }
@@ -1225,7 +1229,7 @@ class MaterialLiveWallpaperService : WallpaperService() {
                     "buildPhotoForeground ok: src=${source.width}x${source.height} -> " +
                         "${width}x${mSizes[1]} near=${near != null}"
                 }
-                BitmapDrawable(resources, positioned) to near
+                positioned.toDrawable(resources) to near
             } catch (e: Throwable) {
                 lwwLog { "buildPhotoForeground failed: ${e.message}" }
                 null to null

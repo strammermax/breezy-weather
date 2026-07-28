@@ -16,6 +16,10 @@
 
 package com.liveweatherwallpaperapp.ui.main
 
+import androidx.core.graphics.createBitmap
+
+import androidx.core.graphics.drawable.toDrawable
+
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -1022,7 +1026,7 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
                 }
                 var nearPhoto: Bitmap? = null
                 val bitmap = withContext(Dispatchers.Default) {
-                    Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also {
+                    createBitmap(width, height).also {
                         nearPhoto =
                             WallpaperSceneSnapshot.render(
                                 Canvas(it),
@@ -1043,10 +1047,9 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
                     if (sceneState.usesGreyscalePhoto) sceneState.photoGreyscaleAmount else 0f
                 )
                 if (this@MainActivity.getResources().configuration.orientation != 2) {
-                    binding.root.background = BitmapDrawable(
-                        resources,
+                    binding.root.background = (
                         if (frosted) bitmap.toFrostedBackground(settings.appBackgroundFrostStrength) else bitmap
-                    )
+                    ).toDrawable(resources)
                 }
             } finally {
                 if (forcePhotoRefresh) {

@@ -1,5 +1,9 @@
 package com.liveweatherwallpaperapp.ui.camera
 
+import androidx.core.graphics.createBitmap
+
+import androidx.core.graphics.toColorInt
+
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -671,6 +675,7 @@ class CameraActivity : AppCompatActivity() {
         )
     }
 
+    @SuppressLint("MissingPermission") // The caller verifies coarse/fine location first.
     private fun lastKnownLocation(locationManager: LocationManager): Location? {
         val fused = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             locationManager.getLastKnownLocation(LocationManager.FUSED_PROVIDER)
@@ -1073,7 +1078,7 @@ class CameraActivity : AppCompatActivity() {
             // later as an "upload_result" FCM push (RemoveSkyMessagingService), not here.
             data.pending -> {
                 reasonView.visibility = View.VISIBLE
-                reasonView.setTextColor(Color.parseColor("#F9A825"))
+                reasonView.setTextColor("#F9A825".toColorInt())
                 reasonView.text = "⏳ " + getString(R.string.camera_check_pending)
                 data.recordId?.let { recordId ->
                     pendingResultViews[recordId] = reasonView
@@ -1083,17 +1088,17 @@ class CameraActivity : AppCompatActivity() {
             }
             checkResult?.ok == true -> {
                 reasonView.visibility = View.VISIBLE
-                reasonView.setTextColor(Color.parseColor("#2E7D32"))
+                reasonView.setTextColor("#2E7D32".toColorInt())
                 reasonView.text = "✓ " + getString(R.string.camera_check_ok)
             }
             checkResult != null && !checkResult.ok -> {
                 reasonView.visibility = View.VISIBLE
-                reasonView.setTextColor(Color.parseColor("#C62828"))
+                reasonView.setTextColor("#C62828".toColorInt())
                 reasonView.text = "✗ " + reasonText(checkResult.reason)
             }
             data.uploadFailureReason != null -> {
                 reasonView.visibility = View.VISIBLE
-                reasonView.setTextColor(Color.parseColor("#C62828"))
+                reasonView.setTextColor("#C62828".toColorInt())
                 reasonView.text = "✗ " + reasonText(data.uploadFailureReason)
             }
             // Upload succeeded (we have a processedUrl) but /check itself didn't return a real
@@ -1102,12 +1107,12 @@ class CameraActivity : AppCompatActivity() {
             // or a genuine server-side error. Previously both silently rendered a blank card.
             check is RemoveSkyCheckOutcome.Timeout -> {
                 reasonView.visibility = View.VISIBLE
-                reasonView.setTextColor(Color.parseColor("#C62828"))
+                reasonView.setTextColor("#C62828".toColorInt())
                 reasonView.text = "✗ " + getString(R.string.camera_check_timeout)
             }
             check is RemoveSkyCheckOutcome.ServerError -> {
                 reasonView.visibility = View.VISIBLE
-                reasonView.setTextColor(Color.parseColor("#C62828"))
+                reasonView.setTextColor("#C62828".toColorInt())
                 reasonView.text = "✗ " + getString(R.string.camera_check_server_error)
             }
             else -> reasonView.visibility = View.GONE
@@ -1142,18 +1147,18 @@ class CameraActivity : AppCompatActivity() {
         view.visibility = View.VISIBLE
         when (result.result) {
             "done" -> {
-                view.setTextColor(Color.parseColor("#2E7D32"))
+                view.setTextColor("#2E7D32".toColorInt())
                 view.text = "✓ " + getString(R.string.camera_upload_result_done)
             }
             "rejected" -> {
-                view.setTextColor(Color.parseColor("#C62828"))
+                view.setTextColor("#C62828".toColorInt())
                 view.text = "✗ " + getString(
                     R.string.camera_upload_result_rejected,
                     result.reason?.let(::reasonText).orEmpty()
                 )
             }
             else -> {
-                view.setTextColor(Color.parseColor("#C62828"))
+                view.setTextColor("#C62828".toColorInt())
                 view.text = "✗ " + getString(R.string.camera_upload_result_failed)
             }
         }
@@ -1162,7 +1167,7 @@ class CameraActivity : AppCompatActivity() {
 
     private fun renderUploadProcessingProgress(view: TextView, stage: String) {
         view.visibility = View.VISIBLE
-        view.setTextColor(Color.parseColor("#F9A825"))
+        view.setTextColor("#F9A825".toColorInt())
         val text = when (stage) {
             "loading" -> getString(R.string.camera_progress_loading)
             "sky" -> getString(R.string.camera_progress_sky)
@@ -1182,14 +1187,14 @@ class CameraActivity : AppCompatActivity() {
             false -> "#FFCDD2"
             null -> "#E0E0E0"
         }
-        chip.chipBackgroundColor = ColorStateList.valueOf(Color.parseColor(color))
+        chip.chipBackgroundColor = ColorStateList.valueOf(color.toColorInt())
         group.addView(chip)
     }
 
     private fun addBadgeChip(group: ChipGroup, label: String) {
         val chip = layoutInflater.inflate(R.layout.item_camera_check_chip, group, false) as Chip
         chip.text = label
-        chip.chipBackgroundColor = ColorStateList.valueOf(Color.parseColor("#BBDEFB"))
+        chip.chipBackgroundColor = ColorStateList.valueOf("#BBDEFB".toColorInt())
         group.addView(chip)
     }
 

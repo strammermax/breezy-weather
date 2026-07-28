@@ -56,9 +56,7 @@ class BreezyWeather : Application(), Configuration.Provider {
         fun getProcessName() = try {
             val file = File("/proc/" + Process.myPid() + "/" + "cmdline")
             val mBufferedReader = BufferedReader(FileReader(file))
-            val processName = mBufferedReader.readLine().trim {
-                it <= ' '
-            }
+            val processName = mBufferedReader.readLine().trim()
             mBufferedReader.close()
 
             processName

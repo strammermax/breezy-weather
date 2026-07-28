@@ -16,6 +16,8 @@
 
 package com.liveweatherwallpaperapp.ui.details.components
 
+import androidx.compose.ui.platform.LocalResources
+
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ImageSpan
@@ -132,6 +134,7 @@ fun DetailsConditions(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val temperatureUnit = remember {
         SettingsManager.getInstance(context).getTemperatureUnit(context)
     }
@@ -308,8 +311,8 @@ fun DetailsConditions(
                             modifier = Modifier
                                 .semantics(mergeDescendants = true) {}
                                 .clearAndSetSemantics {
-                                    contentDescription = context.getString(R.string.temperature_degree_day_heating) +
-                                        context.getString(R.string.colon_separator) +
+                                    contentDescription = resources.getString(R.string.temperature_degree_day_heating) +
+                                        resources.getString(R.string.colon_separator) +
                                         daily.degreeDay!!.heating!!.toDoubleDeviation(temperatureUnit)
                                             .toTemperature(temperatureUnit)
                                             .formatMeasure(context, temperatureUnit, unitWidth = UnitWidth.LONG)
@@ -343,8 +346,8 @@ fun DetailsConditions(
                             modifier = Modifier
                                 .semantics(mergeDescendants = true) {}
                                 .clearAndSetSemantics {
-                                    contentDescription = context.getString(R.string.temperature_degree_day_cooling) +
-                                        context.getString(R.string.colon_separator) +
+                                    contentDescription = resources.getString(R.string.temperature_degree_day_cooling) +
+                                        resources.getString(R.string.colon_separator) +
                                         daily.degreeDay!!.heating!!.toDoubleDeviation(temperatureUnit)
                                             .toTemperature(temperatureUnit)
                                             .formatMeasure(context, temperatureUnit, unitWidth = UnitWidth.LONG)
@@ -421,6 +424,7 @@ fun TemperatureHeader(
     temperatureUnit: TemperatureUnit,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     activeItem?.let {
         WeatherConditionItem(
@@ -582,6 +586,7 @@ private fun WeatherConditionItem(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -617,8 +622,8 @@ private fun WeatherConditionItem(
                         modifier = Modifier
                             .clearAndSetSemantics {
                                 if (temperature?.temperature != null) {
-                                    contentDescription = context.getString(R.string.temperature_real) +
-                                        context.getString(R.string.colon_separator) +
+                                    contentDescription = resources.getString(R.string.temperature_real) +
+                                        resources.getString(R.string.colon_separator) +
                                         temperature.temperature!!.formatMeasure(
                                             context,
                                             temperatureUnit,
@@ -664,6 +669,7 @@ fun NormalsDepartureLabel(
 
     if (halfDayTemperature != null && normal != null) {
         val context = LocalContext.current
+    val resources = LocalResources.current
         val tooltipState = rememberTooltipState(isPersistent = true)
         val coroutineScope = rememberCoroutineScope()
         val departure = remember(halfDayTemperature, normal) {
@@ -739,6 +745,7 @@ fun WeatherCondition(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     Row(
         horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.small_margin)),
         verticalAlignment = Alignment.CenterVertically,
@@ -792,6 +799,7 @@ private fun TemperatureChart(
     markerVisibilityListener: CartesianMarkerVisibilityListener,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     val provider = ResourcesProviderFactory.newInstance
     val step = temperatureUnit.chartStep
@@ -904,13 +912,13 @@ private fun TemperatureChart(
                 it.daytimeTemperature?.let { normal ->
                     put(
                         normal.toDouble(temperatureUnit),
-                        context.getString(R.string.temperature_normal_short)
+                        stringResource(R.string.temperature_normal_short)
                     )
                 }
                 it.nighttimeTemperature?.let { normal ->
                     put(
                         normal.toDouble(temperatureUnit),
-                        context.getString(R.string.temperature_normal_short)
+                        stringResource(R.string.temperature_normal_short)
                     )
                 }
             }

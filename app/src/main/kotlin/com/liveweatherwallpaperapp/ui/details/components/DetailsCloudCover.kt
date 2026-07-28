@@ -16,6 +16,8 @@
 
 package com.liveweatherwallpaperapp.ui.details.components
 
+import androidx.compose.ui.platform.LocalResources
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -189,6 +191,7 @@ private fun CloudCoverHeader(
     defaultValue: Pair<Date, Ratio>?,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     if (activeItem != null) {
         CloudCoverItem(
@@ -212,6 +215,7 @@ private fun CloudCoverItem(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -238,6 +242,7 @@ private fun CloudCoverSummary(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
@@ -264,6 +269,7 @@ private fun CloudCoverChart(
     markerVisibilityListener: CartesianMarkerVisibilityListener,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     val modelProducer = remember { CartesianChartModelProducer() }
     LaunchedEffect(location) {
@@ -306,6 +312,7 @@ fun SunshineItem(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     DetailsItem(
         headlineText = stringResource(R.string.sunshine_duration),
@@ -314,8 +321,8 @@ fun SunshineItem(
         modifier = modifier
             .semantics(mergeDescendants = true) {}
             .clearAndSetSemantics {
-                contentDescription = context.getString(R.string.sunshine_duration) +
-                    context.getString(R.string.colon_separator) +
+                contentDescription = resources.getString(R.string.sunshine_duration) +
+                    resources.getString(R.string.colon_separator) +
                     sunshineDuration.formatTime(
                         context = context,
                         smallestUnit = DurationUnit.MINUTES,
@@ -331,6 +338,7 @@ fun CloudCoverScale(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val cloudCoverScaleThresholds = listOf(
         0.0.percent,
         CLOUD_COVER_SKC.percent,

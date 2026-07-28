@@ -16,6 +16,8 @@
 
 package com.liveweatherwallpaperapp.ui.details.components
 
+import androidx.compose.ui.platform.LocalResources
+
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.text.Spannable
@@ -194,6 +196,7 @@ fun WindHeader(
     defaultValue: Pair<Date, Wind>?,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     if (activeItem != null) {
         WindItem(
@@ -266,6 +269,7 @@ private fun WindItem(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -293,7 +297,7 @@ private fun WindItem(
                         contentDescription = speed.formatMeasure(context, unitWidth = UnitWidth.LONG) +
                             (
                                 wind.arrow?.let {
-                                    context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator) +
+                                    resources.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator) +
                                         wind.getDirection(context, short = false)!!
                                 } ?: ""
                                 )
@@ -310,8 +314,8 @@ private fun WindItem(
                 overflow = TextOverflow.StartEllipsis,
                 modifier = Modifier
                     .clearAndSetSemantics {
-                        contentDescription = context.getString(R.string.wind_gusts_short) +
-                            context.getString(R.string.colon_separator) +
+                        contentDescription = resources.getString(R.string.wind_gusts_short) +
+                            resources.getString(R.string.colon_separator) +
                             wind.gusts!!.formatMeasure(context, unitWidth = UnitWidth.LONG)
                     }
             )
@@ -333,6 +337,7 @@ private fun WindChart(
     markerVisibilityListener: CartesianMarkerVisibilityListener,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     val speedUnit = SettingsManager.getInstance(context).getSpeedUnit(context)
     val step = speedUnit.chartStep
@@ -494,6 +499,7 @@ fun WindScale(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val speedUnit = SettingsManager.getInstance(context).getSpeedUnit(context).let {
         if (it == SpeedUnit.BEAUFORT_SCALE) SpeedUnit.getDefaultUnit(context.currentLocale) else it
     }

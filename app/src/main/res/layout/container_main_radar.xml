@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.ExtraLarge"
@@ -43,7 +44,8 @@
             android:id="@+id/radar_map"
             android:layout_width="match_parent"
             android:layout_height="320dp"
-            android:importantForAccessibility="no" />
+            android:importantForAccessibility="no"
+            tools:ignore="WebViewLayout" />
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

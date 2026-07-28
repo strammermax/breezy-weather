@@ -94,7 +94,6 @@ object UnitUtils {
     /**
      * Units will stay at the same size if it somehow fails to parse
      */
-    @Composable
     fun formatUnitsDifferentFontSize(
         formattedMeasure: String,
         fontSize: TextUnit,
@@ -124,7 +123,6 @@ object UnitUtils {
      * Format a pollutant name so that the number are subscript
      * Units will stay at the same size if it somehow fails to parse
      */
-    @Composable
     fun formatPollutantName(
         formattedMeasure: String,
     ): AnnotatedString {
