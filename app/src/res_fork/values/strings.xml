@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App -->
-    <string name="brand_name" translatable="false">LiveWallpaperWeather</string>
+    <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">Read LiveWallpaperWeather data</string>
     <string name="content_provider_permission_description">get weather information from LiveWallpaperWeather, including the coordinates of your locations, such as your current location if you added it</string>
 </resources>
