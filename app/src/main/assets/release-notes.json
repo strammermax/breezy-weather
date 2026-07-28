@@ -1,8 +1,10 @@
 [
   {
-    "version": "Niet uitgebracht (+8)",
+    "version": "Niet uitgebracht (+10)",
     "date": "",
     "changes": [
+      "Rename brand from Weather Vista to WeatherChum (Weertje in Dutch)",
+      "Reduce remaining Android lint warnings",
       "Complete Dutch translation: add 139 missing strings",
       "Reduce Android lint warnings",
       "Correct and expand privacy policy, translate to all supported locales",
