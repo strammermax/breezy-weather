@@ -1,8 +1,11 @@
 [
   {
-    "version": "Niet uitgebracht (+1)",
+    "version": "Niet uitgebracht (+4)",
     "date": "",
     "changes": [
+      "Embed Weather Vista privacy policy",
+      "Rename app to Weather Vista",
+      "Reduce Android lint errors",
       "Remove microphone foreground service declaration"
     ]
   },
