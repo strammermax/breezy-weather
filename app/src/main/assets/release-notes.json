@@ -1,8 +1,10 @@
 [
   {
-    "version": "Niet uitgebracht (+3)",
+    "version": "Niet uitgebracht (+5)",
     "date": "",
     "changes": [
+      "Add Weertje tester invitation text and flow diagrams",
+      "Rebrand Play Store listing to Weertje: new icon, screenshots, description",
       "Fix live wallpaper weather synchronization",
       "Resolve release build warnings",
       "Publish releases to all Play test tracks"
