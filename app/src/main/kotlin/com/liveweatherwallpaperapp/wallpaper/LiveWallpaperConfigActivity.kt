@@ -63,6 +63,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -216,7 +217,7 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
         recentUrlCountValue =
             mutableFloatStateOf(wallpaperImageStore.recentUrlCount.toFloat())
         cachedPhotoCountValue = mutableIntStateOf(0)
-        cachedPhotoBytesValue = mutableStateOf(0L)
+        cachedPhotoBytesValue = mutableLongStateOf(0L)
         weatherRefreshedAtValue = mutableStateOf(null)
         photoRefreshedAtValue = mutableStateOf(null)
         // Preload the currently cached photo (decode off the main thread).

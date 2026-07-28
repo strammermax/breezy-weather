@@ -67,6 +67,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -132,7 +133,7 @@ class RadarActivity : BreezyActivity() {
     private var longitude by mutableStateOf<Double?>(null)
     private var rainTrend by mutableStateOf<List<RainTrendPoint>>(emptyList())
     private var hourlyTrend by mutableStateOf<List<RainTrendPoint>>(emptyList())
-    private var trendRange by mutableStateOf(2)
+    private var trendRange by mutableIntStateOf(2)
     private var radarSource by mutableStateOf("rainviewer") // "rainviewer" | "buienradar" | "ventusky"
 
     override fun onCreate(savedInstanceState: Bundle?) {

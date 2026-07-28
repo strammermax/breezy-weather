@@ -44,6 +44,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -93,8 +95,8 @@ internal fun AboutScreen(
     val testerModeStore = remember { TesterModeStore(context) }
     var testerModeUnlocked by remember { mutableStateOf(testerModeStore.isUnlocked) }
     var testerModeEnabled by remember { mutableStateOf(testerModeStore.isEnabled) }
-    var iconTapCount by remember { mutableStateOf(0) }
-    var previousIconTapAt by remember { mutableStateOf(0L) }
+    var iconTapCount by remember { mutableIntStateOf(0) }
+    var previousIconTapAt by remember { mutableLongStateOf(0L) }
 
     val contactLinks = buildList {
         BuildConfig.SOURCE_CODE_LINK.takeIf {

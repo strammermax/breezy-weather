@@ -470,7 +470,7 @@
     <string name="camera_step_uploading_done">✓ Photo uploaded</string>
     <string name="camera_step_checking">Checking photo…</string>
 <string name="camera_gallery">Gallery</string>
-<string name="camera_gallery_result">%1$d uploaded, %2$d failed</string>
+<string name="camera_gallery_result">Uploaded: %1$d · failed: %2$d</string>
     <string name="camera_error_timeout">Could not connect to server (timeout)</string>
     <string name="camera_error_server_down">Server is unavailable</string>
     <string name="camera_error_general">Upload failed: %s</string>
@@ -501,7 +501,7 @@
     <string name="camera_gallery_stopped">Upload gestopt door gebruiker</string>
     <string name="camera_save_selected">Bewaar</string>
     <string name="camera_card_select">Gebruiken</string>
-    <string name="camera_photos_saved">%1$d foto(\'s) opgeslagen</string>
+    <string name="camera_photos_saved">Saved photos: %1$d</string>
     <string name="camera_no_photos_selected">Selecteer eerst een geschikte foto</string>
     <string name="camera_card_source">Bron: %1$s</string>
     <string name="camera_card_location">Locatie: %1$s</string>
@@ -698,8 +698,8 @@
     <string name="widget_live_wallpaper_photo_background_summary">Use a photo of where you are as the wallpaper background, with the weather animation on top</string>
     <string name="widget_live_wallpaper_weetje_notifications">Location fun-fact notifications</string>
     <string name="widget_live_wallpaper_weetje_notifications_summary">Get a notification with a fun fact once you\'ve stayed at a location for a while. Never sent between 20:00 and 08:00.</string>
-    <string name="widget_live_wallpaper_weetje_max_per_day">Max %1$d per day</string>
-    <string name="widget_live_wallpaper_weetje_dwell_minutes">Wait %1$d minutes at a location first</string>
+    <string name="widget_live_wallpaper_weetje_max_per_day">Daily maximum: %1$d</string>
+    <string name="widget_live_wallpaper_weetje_dwell_minutes">Minimum wait at a location: %1$d min</string>
 <string name="widget_live_wallpaper_preview">Preview</string>
     <string name="widget_live_wallpaper_refresh_now">Refresh now</string>
     <string name="widget_live_wallpaper_next">Next</string>
@@ -707,7 +707,7 @@
     <string name="widget_live_wallpaper_refresh_ok">Photo updated</string>
     <string name="widget_live_wallpaper_refresh_none">No photo found for this location</string>
     <string name="widget_live_wallpaper_refresh_no_location">No location available yet</string>
-    <string name="widget_live_wallpaper_cache_usage">%1$d background photos cached · %2$.1f MB used</string>
+    <string name="widget_live_wallpaper_cache_usage">Cached background photos: %1$d · storage: %2$.1f MB</string>
     <string name="widget_live_wallpaper_parallax">Parallax effect</string>
     <string name="widget_live_wallpaper_parallax_summary">Shifts layers when scrolling between home screens</string>
     <string name="widget_live_wallpaper_refresh_interval">Background changes every %1$d min</string>
@@ -731,8 +731,8 @@
     <string name="widget_live_wallpaper_cache_selected_location">Selected location</string>
     <string name="widget_live_wallpaper_clear_cache_all">Everything</string>
     <string name="widget_live_wallpaper_clear_cache_cancel">No, never mind</string>
-    <string name="widget_live_wallpaper_recent_photos_skipped">Prevent repetition of the last %1$d photos</string>
-    <string name="widget_live_wallpaper_max_per_location">Maximum per location: %1$d photos</string>
+    <string name="widget_live_wallpaper_recent_photos_skipped">Previously used photos excluded: %1$d</string>
+    <string name="widget_live_wallpaper_max_per_location">Photos per location: max %1$d</string>
     <string name="widget_live_wallpaper_weather_age">Weather: %1$s</string>
     <string name="widget_live_wallpaper_photo_age">Photo: %1$s</string>
     <string name="widget_live_wallpaper_current_location">Current location: %1$s</string>
@@ -764,7 +764,7 @@
     <string name="wallpaper_photo_filter_current">Current location</string>
     <string name="wallpaper_photo_filter_all">All images</string>
     <string name="wallpaper_photo_manager_empty">No downloaded background images found.</string>
-    <string name="wallpaper_photo_views">Shown %1$d times</string>
+    <string name="wallpaper_photo_views">Times shown: %1$d</string>
 <string name="wallpaper_photo_disable">Disable and remove image</string>
     <string name="wallpaper_photo_enable">Enable and download again</string>
     <string name="wallpaper_photo_disabled">Disabled</string>

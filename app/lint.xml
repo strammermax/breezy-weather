@@ -17,7 +17,7 @@
 
     <!-- RemoteViews updates depend on stable widget hierarchy and view IDs. -->
     <issue id="UselessParent">
-        <ignore regexp="src[\\/]main[\\/]res[\\/]layout[\\/]widget_.*\.xml$" />
+        <ignore regexp="src[\\/]main[\\/]res[\\/]layout[\\/](?:widget_.*|item_location_card)\.xml$" />
     </issue>
 
     <!-- Weather layers use stable, dynamically constructed resource names;
@@ -48,5 +48,37 @@
     <!-- CH1 and meteoswiss_icon_ch1 are provider identifiers, not prose. -->
     <issue id="Typos">
         <ignore regexp="src[\\/]main[\\/]res[\\/]values[\\/]arrays\.xml$" />
+    </issue>
+
+    <!-- These activity roots deliberately provide their own opaque surfaces;
+         the line item is itself a separator whose background is its content. -->
+    <issue id="Overdraw">
+        <ignore regexp="src[\\/]main[\\/]res[\\/]layout[\\/](?:activity_camera|activity_card_display_manage|activity_daily_trend_display_manage|activity_details_overview_display_manage|activity_hourly_trend_display_manage|activity_preview_icon|item_line)\.xml$" />
+    </issue>
+
+    <!-- Phone navigation uses one fragment host, while the expanded tablet
+         layout intentionally exposes separate drawer and home hosts. -->
+    <issue id="InconsistentLayout">
+        <ignore regexp="src[\\/]main[\\/]res[\\/]layout(?:-w640dp)?[\\/]activity_main\.xml$" />
+    </issue>
+
+    <!-- Weather resources and the system navigation-bar workaround are looked
+         up dynamically because their names or framework availability vary. -->
+    <issue id="DiscouragedApi">
+        <ignore regexp="src[\\/]main[\\/]kotlin[\\/].*(?:ResourceUtils|AbstractWidgetConfigActivity)\.kt$" />
+    </issue>
+    <issue id="InternalInsetResource">
+        <ignore regexp="src[\\/]main[\\/]kotlin[\\/].*AbstractWidgetConfigActivity\.kt$" />
+    </issue>
+
+    <!-- These hierarchies retain stable IDs and distinct interactive/accessibility behavior. -->
+    <issue id="UseCompoundDrawables">
+        <ignore regexp="src[\\/]main[\\/]res[\\/]layout[\\/]container_main_radar\.xml$" />
+    </issue>
+
+    <!-- Dynamic location shortcuts are replaced as a set; usage is recorded by
+         normal activity navigation rather than at creation time. -->
+    <issue id="ReportShortcutUsage">
+        <ignore regexp="src[\\/]main[\\/]kotlin[\\/].*RefreshHelper\.kt$" />
     </issue>
 </lint>

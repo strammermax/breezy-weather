@@ -53,7 +53,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -103,7 +104,9 @@ private fun TimePickerPreferenceView(
     var showTimePicker by remember { mutableStateOf(false) }
     val currentTimeState = remember { mutableStateOf(currentTime) }
     val showingPicker = remember { mutableStateOf(true) }
-    val configuration = LocalConfiguration.current
+    val windowHeight = LocalWindowInfo.current.containerSize.height
+    val minimumPickerHeight = with(LocalDensity.current) { 400.dp.roundToPx() }
+    val hasEnoughHeight = windowHeight > minimumPickerHeight
     val is12Hour = LocalContext.current.is12Hour
     val time = SimpleDateFormat("HH:mm", Locale.ENGLISH).parse(currentTimeState.value)
 
@@ -170,7 +173,7 @@ private fun TimePickerPreferenceView(
                 onValueChanged(currentTimeState.value)
             },
             toggle = {
-                if (configuration.screenHeightDp > 400) {
+                if (hasEnoughHeight) {
                     // Make this take the entire viewport. This will guarantee that Screen readers
                     // focus the toggle first.
                     Box(
@@ -210,7 +213,7 @@ private fun TimePickerPreferenceView(
                 }
             }
         ) {
-            if (showingPicker.value && configuration.screenHeightDp > 400) {
+            if (showingPicker.value && hasEnoughHeight) {
                 TimePicker(state = timePickerState)
             } else {
                 TimeInput(state = timePickerState)

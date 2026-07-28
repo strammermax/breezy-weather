@@ -8,6 +8,7 @@
 
 package com.liveweatherwallpaperapp.ui.main.adapters.main.holder
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -27,6 +28,7 @@ class RadarViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
 ) {
     private val radarMap: WebView = itemView.findViewById(R.id.radar_map)
 
+    @SuppressLint("ClickableViewAccessibility") // WebView cannot override performClick; its click listener delegates explicitly.
     override fun onBindView(
         activity: BreezyActivity,
         location: Location,
@@ -63,8 +65,9 @@ class RadarViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
                 context.startActivity(RadarActivity.createIntent(context, location, settings.radarTileSource))
             }
         }
+        radarMap.setOnClickListener { itemView.performClick() }
         radarMap.setOnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_UP) itemView.performClick()
+            if (event.action == MotionEvent.ACTION_UP) radarMap.performClick()
             true
         }
     }

@@ -211,6 +211,7 @@ fun Date.getHourIn24Format(location: Location): String {
 /**
  * See CalendarHelper.supportedCalendars for full list of supported calendars
  */
+@SuppressLint("SimpleDateFormat") // The ICU formatter below receives the explicitly constructed ULocale.
 fun Date.getFormattedMediumDayAndMonthInAdditionalCalendar(
     location: Location? = null,
     context: Context,

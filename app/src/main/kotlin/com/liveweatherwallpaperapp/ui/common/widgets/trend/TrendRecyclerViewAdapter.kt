@@ -26,6 +26,6 @@ abstract class TrendRecyclerViewAdapter<VH : RecyclerView.ViewHolder>(
         get() = mLocation
         set(location) {
             mLocation = location
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, itemCount)
         }
 }

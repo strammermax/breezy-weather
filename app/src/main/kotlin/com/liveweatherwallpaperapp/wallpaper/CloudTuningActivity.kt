@@ -50,6 +50,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -344,7 +345,7 @@ private fun EasterEggDebugSection(
         Text(if (expanded) "⌄" else "›", fontSize = 24.sp, color = Color(0xFF6C4EB4))
     }
     if (expanded) {
-        var assetIndex by remember { mutableStateOf(0) }
+        var assetIndex by remember { mutableIntStateOf(0) }
         var alpha by remember { mutableFloatStateOf(0.55f) }
         var speed by remember { mutableFloatStateOf(1f) }
         var dropdownExpanded by remember { mutableStateOf(false) }

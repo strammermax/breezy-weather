@@ -120,7 +120,7 @@ class HomeFragment : MainModuleFragment() {
         // The live wallpaper provides all weather animations (clouds, rain, snow, photo).
         // Keep WeatherView paused so only the wallpaper shows through as background.
         weatherView.setDrawable(false)
-        adapter?.notifyDataSetChanged()
+        adapter?.let { it.notifyItemRangeChanged(0, it.itemCount) }
     }
 
     override fun onPause() {
