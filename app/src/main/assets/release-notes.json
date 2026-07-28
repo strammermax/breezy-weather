@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+12)",
+    "version": "Niet uitgebracht (+13)",
     "date": "",
     "changes": [
+      "Support additional Play Store test tracks",
       "Align fork branding and compliance links",
       "Resolve additional Android lint warnings",
       "Rename brand from Weather Vista to WeatherChum (Weertje in Dutch)",
