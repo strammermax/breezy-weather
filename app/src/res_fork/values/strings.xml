@@ -4,4 +4,20 @@
     <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">Read LiveWallpaperWeather data</string>
     <string name="content_provider_permission_description">get weather information from LiveWallpaperWeather, including the coordinates of your locations, such as your current location if you added it</string>
+    <string name="weather_vista_privacy_policy_summary">Read the Weather Vista privacy policy</string>
+    <string name="weather_vista_privacy_policy_updated">Last updated: July 5, 2026</string>
+    <string name="weather_vista_privacy_policy_intro_title">Privacy Policy</string>
+    <string name="weather_vista_privacy_policy_intro">This application ("the App") is designed to display the most relevant weather images based on your location. We respect your privacy and ensure that your data is processed securely. Below you can read exactly what data we collect and why.</string>
+    <string name="weather_vista_privacy_policy_data_title">1. What Data Do We Collect?</string>
+    <string name="weather_vista_privacy_policy_data">• Location Data (GPS): To request and display the correct images and weather information for your specific location, we require access to your location data. This only happens while you are actively using the App.\n\n• Server Communication: The App connects to our server to retrieve weather data and images. During this process, your IP address and technical protocol information (such as device type and operating system) are automatically sent to establish the network connection.</string>
+    <string name="weather_vista_privacy_policy_use_title">2. Why We Use This Data</string>
+    <string name="weather_vista_privacy_policy_use">• Location: We use your GPS coordinates solely to provide the core functionality of the App (displaying location-specific images).\n\n• Server Connection: The technical data is used purely to load the content onto your screen.</string>
+    <string name="weather_vista_privacy_policy_sharing_title">3. Data Sharing</string>
+    <string name="weather_vista_privacy_policy_sharing">We never sell, rent, or share your personal data or location data with third parties. Your location data is only used temporarily to fetch the images and is not permanently stored or used for analytics.</string>
+    <string name="weather_vista_privacy_policy_retention_title">4. Data Retention</string>
+    <string name="weather_vista_privacy_policy_retention">We do not store your location data after the requested images have been displayed to you. The anonymous server connection data is retained no longer than necessary for the operation of the App.</string>
+    <string name="weather_vista_privacy_policy_rights_title">5. Your Rights and Choices</string>
+    <string name="weather_vista_privacy_policy_rights">Disable Location Access: You can revoke location access for this App at any time through your Android device settings. Please note that the App will no longer be able to display location-specific images if you do so.</string>
+    <string name="weather_vista_privacy_policy_contact_title">6. Contact</string>
+    <string name="weather_vista_privacy_policy_contact">If you have any questions about our privacy policy or how we handle data, please feel free to contact us at: googleplaydeveloper@vanburik.info</string>
 </resources>

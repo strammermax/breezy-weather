@@ -16,8 +16,7 @@
 
 package com.liveweatherwallpaperapp.ui.settings.activities
 
-import androidx.compose.ui.platform.LocalResources
-
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,11 +26,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import com.liveweatherwallpaperapp.BreezyWeather
-import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -70,7 +69,7 @@ class PrivacyPolicyActivity : BreezyActivity() {
     @Composable
     private fun ContentView() {
         val context = LocalContext.current
-    val resources = LocalResources.current
+        val resources = LocalResources.current
         val scrollBehavior = generateCollapsedScrollBehavior()
         val uriHandler = LocalUriHandler.current
         val sources = remember {
@@ -102,21 +101,12 @@ class PrivacyPolicyActivity : BreezyActivity() {
                     BreezyWeather.instance.debugMode
                 ) {
                     clickablePreferenceItem(R.string.brand_name) { id ->
-                        val url = BuildConfig.PRIVACY_POLICY_LINK
                         PreferenceViewWithCard(
                             title = stringResource(id),
-                            summary = url,
+                            summary = stringResource(R.string.weather_vista_privacy_policy_summary),
                             isFirst = true
                         ) {
-                            if (url.startsWith("https://") &&
-                                (
-                                    !url.contains("breezy", ignoreCase = true) ||
-                                        BreezyWeather.instance.isSignedByBreezy ||
-                                        BreezyWeather.instance.debugMode
-                                    )
-                            ) {
-                                uriHandler.openUri(url)
-                            }
+                            context.startActivity(Intent(context, WeatherVistaPrivacyPolicyActivity::class.java))
                         }
                     }
                 }

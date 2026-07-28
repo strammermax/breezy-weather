@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="weather_vista_privacy_policy_summary">Lees het privacybeleid van Weather Vista</string>
+    <string name="weather_vista_privacy_policy_updated">Laatst bijgewerkt: 5 juli 2026</string>
+    <string name="weather_vista_privacy_policy_intro_title">Privacybeleid</string>
+    <string name="weather_vista_privacy_policy_intro">Deze applicatie ("de App") is ontworpen om op basis van je locatie de relevantste weerbeelden te tonen. We respecteren je privacy en zorgen ervoor dat je gegevens veilig worden verwerkt. Hieronder lees je precies welke gegevens we verzamelen en waarom.</string>
+    <string name="weather_vista_privacy_policy_data_title">1. Welke gegevens verzamelen we?</string>
+    <string name="weather_vista_privacy_policy_data">• Locatiegegevens (GPS): om de juiste beelden en weersinformatie voor jouw specifieke locatie op te vragen en te tonen, hebben we toegang tot je locatiegegevens nodig. Dit gebeurt alleen wanneer je de App actief gebruikt.\n\n• Servercommunicatie: de App maakt verbinding met onze server om weergegevens en beelden op te halen. Daarbij worden je IP-adres en technische protocolgegevens (zoals het apparaattype en besturingssysteem) automatisch meegestuurd om de netwerkverbinding tot stand te brengen.</string>
+    <string name="weather_vista_privacy_policy_use_title">2. Waarom gebruiken we deze gegevens?</string>
+    <string name="weather_vista_privacy_policy_use">• Locatie: we gebruiken je GPS-coördinaten uitsluitend voor de kernfunctionaliteit van de App (het tonen van locatiespecifieke beelden).\n\n• Serververbinding: de technische gegevens worden uitsluitend gebruikt om de inhoud op je scherm te laden.</string>
+    <string name="weather_vista_privacy_policy_sharing_title">3. Gegevens delen</string>
+    <string name="weather_vista_privacy_policy_sharing">We verkopen, verhuren of delen je persoonsgegevens of locatiegegevens nooit met derden. Je locatiegegevens worden alleen tijdelijk gebruikt om de beelden op te halen en worden niet permanent opgeslagen of gebruikt voor analyses.</string>
+    <string name="weather_vista_privacy_policy_retention_title">4. Bewaartermijn</string>
+    <string name="weather_vista_privacy_policy_retention">We bewaren je locatiegegevens niet nadat de gevraagde beelden aan je zijn getoond. Anonieme gegevens over de serververbinding worden niet langer bewaard dan nodig is voor de werking van de App.</string>
+    <string name="weather_vista_privacy_policy_rights_title">5. Je rechten en keuzes</string>
+    <string name="weather_vista_privacy_policy_rights">Locatietoegang uitschakelen: je kunt de locatietoegang voor deze App op elk moment intrekken via de instellingen van je Android-apparaat. Houd er rekening mee dat de App dan geen locatiespecifieke beelden meer kan tonen.</string>
+    <string name="weather_vista_privacy_policy_contact_title">6. Contact</string>
+    <string name="weather_vista_privacy_policy_contact">Heb je vragen over ons privacybeleid of over hoe we met gegevens omgaan? Neem dan contact met ons op via: googleplaydeveloper@vanburik.info</string>
+</resources>
