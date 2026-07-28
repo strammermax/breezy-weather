@@ -17,18 +17,20 @@
 
 .PARAMETER PlayTrack
     Google Play test track for the basic flavor: "internal", "alpha" (closed), or
-    "beta" (open). When omitted for a basic release, the script asks interactively.
-    Freenet releases are never published to Google Play.
+    "beta" (open). Use "all" to publish to all three test tracks, excluding production.
+    When omitted for a basic release, the script asks interactively. Freenet releases
+    are never published to Google Play.
 
 .EXAMPLE
     ./scripts/release.ps1
     ./scripts/release.ps1 -PlayTrack alpha
+    ./scripts/release.ps1 -PlayTrack all
     ./scripts/release.ps1 -Flavor freenet -Draft
 #>
 param(
     [ValidateSet("basic", "freenet")]
     [string]$Flavor = "basic",
-    [ValidateSet("internal", "alpha", "beta")]
+    [ValidateSet("internal", "alpha", "beta", "all")]
     [string]$PlayTrack,
     [switch]$Draft
 )
@@ -42,10 +44,12 @@ if ($Flavor -eq "basic" -and -not $PlayTrack) {
     Write-Host "  1. internal - trusted internal testers"
     Write-Host "  2. alpha    - closed testing"
     Write-Host "  3. beta     - open testing"
+    Write-Host "  4. all      - all test tracks (no production)"
     $trackChoice = Read-Host "Track [1]"
     $PlayTrack = switch ($trackChoice) {
         "2" { "alpha" }
         "3" { "beta" }
+        "4" { "all" }
         default { "internal" }
     }
 }

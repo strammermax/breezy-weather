@@ -14,6 +14,11 @@ on:
           - internal
           - alpha
           - beta
+          - all
+
+concurrency:
+  group: play-store-publish
+  cancel-in-progress: false
 
 jobs:
   publish:
@@ -123,10 +128,26 @@ jobs:
           CF_ACCESS_CLIENT_ID: ${{ secrets.LWW_CFACCESS_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.LWW_CFACCESS_SECRET }}
 
-      - name: Publish basic flavor to Play Store ${{ env.PLAY_TRACK }} track
+      - name: Publish basic flavor to Play Store
         run: >-
           ./gradlew publishBasicReleaseBundle
-          --track "$PLAY_TRACK"
+          --track "${{ env.PLAY_TRACK == 'all' && 'internal' || env.PLAY_TRACK }}"
+          --release-name "$PLAY_RELEASE_NAME"
+
+      - name: Promote release to closed testing
+        if: env.PLAY_TRACK == 'all'
+        run: >-
+          ./gradlew promoteBasicReleaseArtifact
+          --from-track internal
+          --promote-track alpha
+          --release-name "$PLAY_RELEASE_NAME"
+
+      - name: Promote release to open testing
+        if: env.PLAY_TRACK == 'all'
+        run: >-
+          ./gradlew promoteBasicReleaseArtifact
+          --from-track internal
+          --promote-track beta
           --release-name "$PLAY_RELEASE_NAME"
 
       - name: Remove secrets from workspace
