@@ -19,7 +19,7 @@
         android:layout_alignStart="@+id/widget_material_you_current_currentIcon"
         android:layout_alignParentEnd="true"
         android:text="@string/widget_ellipsis"
-        android:textSize="70dp"
+        android:textSize="70sp"
         android:textColor="?android:attr/textColorPrimary"
         android:gravity="center"
         tools:text="26°" />

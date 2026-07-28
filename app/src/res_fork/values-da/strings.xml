@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">Læs LiveWallpaperWeather-data</string>
     <string name="content_provider_permission_description">hente vejroplysninger fra LiveWallpaperWeather, herunder koordinaterne for dine lokationer, f.eks. din nuværende placering, hvis du har tilføjet den</string>
     <string name="weather_vista_privacy_policy_summary">Læs Weather Vistas privatlivspolitik</string>

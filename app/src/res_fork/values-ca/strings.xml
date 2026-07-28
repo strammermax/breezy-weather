@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">Llegir dades de LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">obtenir informació meteorològica de LiveWallpaperWeather, incloses les coordenades de les vostres ubicacions, com ara la vostra ubicació actual si l\'heu afegit</string>
     <string name="weather_vista_privacy_policy_summary">Llegeix la política de privacitat de Weather Vista</string>

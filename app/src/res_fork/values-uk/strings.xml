@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">Читати дані LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">отримувати інформацію про погоду з LiveWallpaperWeather, включно з координатами ваших місць розташування, наприклад вашим поточним місцезнаходженням, якщо ви його додали</string>
     <string name="weather_vista_privacy_policy_summary">Ознайомтеся з політикою конфіденційності Weather Vista</string>

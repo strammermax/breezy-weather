@@ -462,7 +462,9 @@
     <string name="action_add_as_location">Add as location</string>
     <string name="action_camera">Camera</string>
     <string name="action_retake">Retake</string>
-<string name="camera_preview_upload">Upload</string>
+    <string name="camera_preview_upload">Upload</string>
+    <string name="camera_status_with_icon">%1$s %2$s</string>
+    <string name="camera_photo_preview">Selected weather photo</string>
     <string name="camera_step_location">Getting location…</string>
     <string name="camera_step_uploading">Uploading photo…</string>
     <string name="camera_step_uploading_done">✓ Photo uploaded</string>
@@ -1541,4 +1543,5 @@
     <string name="knmi_weather_text_hail_with_sun">Hail with some sun</string>
     <string name="knmi_weather_text_slippery_due_to_sleet">Slipperiness due to sleet</string>
     <string name="knmi_weather_text_fog">@string/common_weather_text_fog</string>
+    <string name="widget_preview_temperature" translatable="false">26°</string>
 </resources>

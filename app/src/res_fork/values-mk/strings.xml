@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">Читање податоци од LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">добивање информации за времето од LiveWallpaperWeather, вклучувајќи ги координатите на вашите локации, како на пример вашата тековна локација доколку сте ја додале</string>
     <string name="weather_vista_privacy_policy_summary">Прочитајте ја политиката за приватност на Weather Vista</string>

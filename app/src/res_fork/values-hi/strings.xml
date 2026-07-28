@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">LiveWallpaperWeather डेटा पढ़ें</string>
     <string name="content_provider_permission_description">LiveWallpaperWeather से मौसम की जानकारी प्राप्त करें, जिसमें आपके स्थानों के निर्देशांक शामिल हैं, जैसे कि आपका वर्तमान स्थान यदि आपने इसे जोड़ा है</string>
     <string name="weather_vista_privacy_policy_summary">Weather Vista की गोपनीयता नीति पढ़ें</string>

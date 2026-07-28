@@ -19,4 +19,34 @@
     <issue id="UselessParent">
         <ignore regexp="src[\\/]main[\\/]res[\\/]layout[\\/]widget_.*\.xml$" />
     </issue>
+
+    <!-- Weather layers use stable, dynamically constructed resource names;
+         identical pixels do not make the semantic layers interchangeable. -->
+    <issue id="IconDuplicates">
+        <ignore regexp="src[\\/]main[\\/]res[\\/]drawable[\\/]weather_.*\.png$" />
+        <ignore regexp="src[\\/]res_fork[\\/]mipmap-[^\\/]+[\\/]ic_launcher_.*\.png$" />
+    </issue>
+
+    <!-- Adaptive/vector launchers and density-specific legacy fallbacks coexist intentionally. -->
+    <issue id="IconXmlAndPng">
+        <ignore regexp="src[\\/]res_fork[\\/].*ic_launcher_foreground.*" />
+    </issue>
+
+    <!-- These artwork vectors intentionally preserve detailed source geometry. -->
+    <issue id="VectorPath">
+        <ignore regexp="src[\\/](?:main[\\/]res|res_nonfreenet)[\\/].*(?:accu_icon|clock_shape|uv_).*\.xml$" />
+    </issue>
+    <issue id="VectorRaster">
+        <ignore regexp="src[\\/]main[\\/]res[\\/]drawable[\\/]humidity_percent_.*\.xml$" />
+    </issue>
+
+    <!-- Android still requires the legacy iw/in aliases alongside he/id. -->
+    <issue id="LocaleFolder">
+        <ignore regexp="src[\\/](?:main[\\/]res|res_fork)[\\/]values-(?:he|id)$" />
+    </issue>
+
+    <!-- CH1 and meteoswiss_icon_ch1 are provider identifiers, not prose. -->
+    <issue id="Typos">
+        <ignore regexp="src[\\/]main[\\/]res[\\/]values[\\/]arrays\.xml$" />
+    </issue>
 </lint>

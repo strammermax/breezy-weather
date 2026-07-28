@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">Loe LiveWallpaperWeather andmeid</string>
     <string name="content_provider_permission_description">hankida ilmateavet rakendusest LiveWallpaperWeather, sealhulgas sinu asukohtade koordinaadid, näiteks sinu praegune asukoht, kui oled selle lisanud</string>
     <string name="weather_vista_privacy_policy_summary">Loe Weather Vista privaatsuspoliitikat</string>

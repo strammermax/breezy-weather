@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">Ανάγνωση δεδομένων LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">λήψη πληροφοριών καιρού από το LiveWallpaperWeather, συμπεριλαμβανομένων των συντεταγμένων των τοποθεσιών σας, όπως η τρέχουσα τοποθεσία σας εάν την έχετε προσθέσει</string>
     <string name="weather_vista_privacy_policy_summary">Διαβάστε την πολιτική απορρήτου του Weather Vista</string>

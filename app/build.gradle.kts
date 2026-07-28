@@ -118,6 +118,14 @@ configure<ApplicationExtension> {
         }
     }
 
+    // The in-app language picker must be able to switch without downloading
+    // an additional language split from Google Play.
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
+
     val localProperties = Properties()
     if (project.rootProject.file("local.properties").canRead()) {
         localProperties.load(project.rootProject.file("local.properties").inputStream())
@@ -540,7 +548,7 @@ aboutLibraries {
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     implementation(projects.cloudEngine)
     implementation(projects.data)

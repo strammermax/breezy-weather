@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">Lasīt LiveWallpaperWeather datus</string>
     <string name="content_provider_permission_description">iegūt laikapstākļu informāciju no LiveWallpaperWeather, tostarp jūsu atrašanās vietu koordinātas, piemēram, jūsu pašreizējo atrašanās vietu, ja tā ir pievienota</string>
     <string name="weather_vista_privacy_policy_summary">Lasīt Weather Vista privātuma politiku</string>

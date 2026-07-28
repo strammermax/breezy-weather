@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">Skaityti LiveWallpaperWeather duomenis</string>
     <string name="content_provider_permission_description">gauti orų informaciją iš LiveWallpaperWeather, įskaitant jūsų vietovių koordinates, pavyzdžiui, dabartinę vietovę, jei ją pridėjote</string>
     <string name="weather_vista_privacy_policy_summary">Skaityti Weather Vista privatumo politiką</string>

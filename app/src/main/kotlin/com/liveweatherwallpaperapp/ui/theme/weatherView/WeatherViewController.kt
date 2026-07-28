@@ -16,6 +16,7 @@
 
 package com.liveweatherwallpaperapp.ui.theme.weatherView
 
+import android.annotation.SuppressLint
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.domain.location.model.isDaylight
@@ -25,6 +26,7 @@ import livewallpaperweather.domain.weather.reference.WeatherCode
 
 object WeatherViewController {
 
+    @SuppressLint("SwitchIntDef") // Lint rejects the same constants declared by WeatherKindRule in this module.
     fun getWeatherCode(
         @WeatherKindRule weatherKind: Int,
     ): WeatherCode = when (weatherKind) {

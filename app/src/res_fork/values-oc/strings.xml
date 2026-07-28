@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">Legir las donadas de LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">obténer d\'informacions meteorologicas de LiveWallpaperWeather, mai que mai las coordenadas de vòstres emplaçaments, coma vòstre emplaçament actual s\'o avètz ajustat</string>
     <string name="weather_vista_privacy_policy_summary">Legir la politica de confidencialitat de Weather Vista</string>

@@ -138,7 +138,6 @@ class SearchViewModel @Inject constructor(
     }
 
     override fun onCleared() {
-        super.onCleared()
         mRepository.cancel()
     }
 }

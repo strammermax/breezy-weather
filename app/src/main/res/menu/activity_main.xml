@@ -7,7 +7,7 @@
         android:orderInCategory="40"
         android:icon="@drawable/ic_camera"
         app:iconTint="@color/colorGlassTopBarText"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 
     <item android:id="@+id/action_radar"
         android:title="@string/action_radar"

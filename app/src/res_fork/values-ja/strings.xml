@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">LiveWallpaperWeatherのデータを読み取る</string>
     <string name="content_provider_permission_description">LiveWallpaperWeatherから天気情報を取得します。これには、現在地を追加した場合のその現在地など、位置情報の座標が含まれます</string>
     <string name="weather_vista_privacy_policy_summary">Weather Vistaのプライバシーポリシーを読む</string>

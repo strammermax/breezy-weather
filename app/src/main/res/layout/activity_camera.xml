@@ -92,6 +92,7 @@
             android:layout_width="match_parent"
             android:layout_height="300dp"
             android:background="#000000"
+            android:contentDescription="@string/camera_photo_preview"
             android:scaleType="fitCenter"
             android:visibility="gone" />
 

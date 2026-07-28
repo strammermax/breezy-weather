@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">قراءة بيانات LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">الحصول على معلومات الطقس من LiveWallpaperWeather، بما في ذلك إحداثيات مواقعك، مثل موقعك الحالي إذا أضفته</string>
     <string name="weather_vista_privacy_policy_summary">قراءة سياسة خصوصية Weather Vista</string>

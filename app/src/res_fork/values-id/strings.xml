@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">Membaca data LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">mendapatkan informasi cuaca dari LiveWallpaperWeather, termasuk koordinat lokasi Anda, seperti lokasi Anda saat ini jika Anda menambahkannya</string>
     <string name="weather_vista_privacy_policy_summary">Baca kebijakan privasi Weather Vista</string>

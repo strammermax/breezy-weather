@@ -24,6 +24,7 @@ import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.annotation.FloatRange
+import androidx.core.content.withStyledAttributes
 import androidx.core.view.isNotEmpty
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.dpToPx
@@ -49,10 +50,12 @@ class DrawerLayout @JvmOverloads constructor(
     private var mProgressAnimator: ValueAnimator? = null
 
     init {
-        val a = context.obtainStyledAttributes(attrs, R.styleable.DrawerLayout, defStyleAttr, 0)
-        mUnfold = a.getBoolean(R.styleable.DrawerLayout_unfold, false) && context.isLandscape
+        var unfold = false
+        context.withStyledAttributes(attrs, R.styleable.DrawerLayout, defStyleAttr, 0) {
+            unfold = getBoolean(R.styleable.DrawerLayout_unfold, false)
+        }
+        mUnfold = unfold && context.isLandscape
         mProgress = if (mUnfold) 1f else 0f
-        a.recycle()
     }
 
     override fun generateDefaultLayoutParams(): LayoutParams {

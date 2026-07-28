@@ -24,6 +24,8 @@
          ACCESS_MEDIA_LOCATION) to read real MediaStore URIs with intact GPS EXIF for the
          gallery upload picker; the Photo Picker contract alone never honors setRequireOriginal. -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Android 14+ can grant access to only the images selected by the user. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
 
     <!-- background jobs -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -140,7 +142,6 @@
 
         <activity
             android:name=".ui.main.MainActivity"
-            android:label="@string/brand_name"
             android:theme="@style/BreezyWeatherTheme.Main"
             android:exported="true">
             <intent-filter>

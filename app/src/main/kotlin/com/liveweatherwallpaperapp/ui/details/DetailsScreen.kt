@@ -234,8 +234,8 @@ internal fun DailyWeatherScreen(
                 LaunchedEffect(loc.weather, pagerPage) {
                     if (!DetailsActivity.DETAILS_BACKGROUND_ENABLED) return@LaunchedEffect
                     val weather = loc.weather
-                    val width = context.resources.displayMetrics.widthPixels
-                    val height = context.resources.displayMetrics.heightPixels
+                    val width = resources.displayMetrics.widthPixels
+                    val height = resources.displayMetrics.heightPixels
                     if (weather == null || activity == null || width <= 0 || height <= 0) {
                         return@LaunchedEffect
                     }
@@ -291,7 +291,7 @@ internal fun DailyWeatherScreen(
                                     renderHeight,
                                     photo,
                                     sceneState,
-                                    context.resources,
+                                    resources,
                                     depth
                                 )
                             }
@@ -316,7 +316,7 @@ internal fun DailyWeatherScreen(
                     )
                     // Avoid blending two full-window textures. The screen is already fully
                     // entered at this point, so a direct replacement is both cheaper and calm.
-                    activity.window.setBackgroundDrawable(background.toDrawable(context.resources))
+                    activity.window.setBackgroundDrawable(background.toDrawable(resources))
                 }
 
                 // ACT-013: override the surface/outline colors so the cards and tab bar

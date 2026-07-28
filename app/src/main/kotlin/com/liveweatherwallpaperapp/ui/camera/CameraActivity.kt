@@ -15,7 +15,6 @@ import android.graphics.Color
 import android.graphics.Matrix
 import android.location.Location
 import android.location.LocationManager
-import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -64,7 +63,7 @@ import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import javax.inject.Inject
-import androidx.exifinterface.media.ExifInterface as AndroidXExifInterface
+import androidx.exifinterface.media.ExifInterface
 
 @AndroidEntryPoint
 class CameraActivity : AppCompatActivity() {
@@ -271,6 +270,14 @@ class CameraActivity : AppCompatActivity() {
                     PackageManager.PERMISSION_GRANTED
                 ) {
                     add(readMediaPermission)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+                    ContextCompat.checkSelfPermission(
+                        this@CameraActivity,
+                        Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
                     ContextCompat.checkSelfPermission(this@CameraActivity, Manifest.permission.ACCESS_MEDIA_LOCATION) !=
@@ -563,9 +570,9 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun copyExifAttributes(sourceFile: File, destinationFile: File) {
-        val source = AndroidXExifInterface(sourceFile.absolutePath)
-        val destination = AndroidXExifInterface(destinationFile.absolutePath)
-        AndroidXExifInterface::class.java.fields
+        val source = ExifInterface(sourceFile.absolutePath)
+        val destination = ExifInterface(destinationFile.absolutePath)
+        ExifInterface::class.java.fields
             .asSequence()
             .filter {
                 it.name.startsWith("TAG_") &&
@@ -580,8 +587,8 @@ class CameraActivity : AppCompatActivity() {
                 }
             }
         destination.setAttribute(
-            AndroidXExifInterface.TAG_ORIENTATION,
-            AndroidXExifInterface.ORIENTATION_NORMAL.toString()
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.ORIENTATION_NORMAL.toString()
         )
         destination.saveAttributes()
     }
@@ -811,14 +818,14 @@ class CameraActivity : AppCompatActivity() {
 
     /** Writes [location] into [file]'s GPS EXIF tags, leaving every other tag untouched. */
     private fun addGpsToExif(file: File, location: Location) {
-        val exif = AndroidXExifInterface(file.absolutePath)
+        val exif = ExifInterface(file.absolutePath)
         exif.setLatLong(location.latitude, location.longitude)
         exif.saveAttributes()
     }
 
     /** Reads [lat, lon] from [file]'s EXIF, or null if there's none (or it can't be read). */
     private fun readGpsExif(file: File): DoubleArray? = try {
-        AndroidXExifInterface(file.absolutePath).latLong
+        ExifInterface(file.absolutePath).latLong
     } catch (e: Exception) {
         null
     }
@@ -1079,7 +1086,7 @@ class CameraActivity : AppCompatActivity() {
             data.pending -> {
                 reasonView.visibility = View.VISIBLE
                 reasonView.setTextColor("#F9A825".toColorInt())
-                reasonView.text = "⏳ " + getString(R.string.camera_check_pending)
+                reasonView.text = statusText("⏳", getString(R.string.camera_check_pending))
                 data.recordId?.let { recordId ->
                     pendingResultViews[recordId] = reasonView
                     uploadResults[recordId]?.let { renderUploadProcessingResult(reasonView, it) }
@@ -1089,17 +1096,17 @@ class CameraActivity : AppCompatActivity() {
             checkResult?.ok == true -> {
                 reasonView.visibility = View.VISIBLE
                 reasonView.setTextColor("#2E7D32".toColorInt())
-                reasonView.text = "✓ " + getString(R.string.camera_check_ok)
+                reasonView.text = statusText("✓", getString(R.string.camera_check_ok))
             }
             checkResult != null && !checkResult.ok -> {
                 reasonView.visibility = View.VISIBLE
                 reasonView.setTextColor("#C62828".toColorInt())
-                reasonView.text = "✗ " + reasonText(checkResult.reason)
+                reasonView.text = statusText("✗", reasonText(checkResult.reason))
             }
             data.uploadFailureReason != null -> {
                 reasonView.visibility = View.VISIBLE
                 reasonView.setTextColor("#C62828".toColorInt())
-                reasonView.text = "✗ " + reasonText(data.uploadFailureReason)
+                reasonView.text = statusText("✗", reasonText(data.uploadFailureReason))
             }
             // Upload succeeded (we have a processedUrl) but /check itself didn't return a real
             // answer -- a timeout (RemoveSky's CPU-only sky/CLIP inference, see
@@ -1108,12 +1115,12 @@ class CameraActivity : AppCompatActivity() {
             check is RemoveSkyCheckOutcome.Timeout -> {
                 reasonView.visibility = View.VISIBLE
                 reasonView.setTextColor("#C62828".toColorInt())
-                reasonView.text = "✗ " + getString(R.string.camera_check_timeout)
+                reasonView.text = statusText("✗", getString(R.string.camera_check_timeout))
             }
             check is RemoveSkyCheckOutcome.ServerError -> {
                 reasonView.visibility = View.VISIBLE
                 reasonView.setTextColor("#C62828".toColorInt())
-                reasonView.text = "✗ " + getString(R.string.camera_check_server_error)
+                reasonView.text = statusText("✗", getString(R.string.camera_check_server_error))
             }
             else -> reasonView.visibility = View.GONE
         }
@@ -1148,18 +1155,21 @@ class CameraActivity : AppCompatActivity() {
         when (result.result) {
             "done" -> {
                 view.setTextColor("#2E7D32".toColorInt())
-                view.text = "✓ " + getString(R.string.camera_upload_result_done)
+                view.text = statusText("✓", getString(R.string.camera_upload_result_done))
             }
             "rejected" -> {
                 view.setTextColor("#C62828".toColorInt())
-                view.text = "✗ " + getString(
-                    R.string.camera_upload_result_rejected,
-                    result.reason?.let(::reasonText).orEmpty()
+                view.text = statusText(
+                    "✗",
+                    getString(
+                        R.string.camera_upload_result_rejected,
+                        result.reason?.let(::reasonText).orEmpty()
+                    )
                 )
             }
             else -> {
                 view.setTextColor("#C62828".toColorInt())
-                view.text = "✗ " + getString(R.string.camera_upload_result_failed)
+                view.text = statusText("✗", getString(R.string.camera_upload_result_failed))
             }
         }
         pendingResultViews.remove(result.recordId)
@@ -1176,8 +1186,11 @@ class CameraActivity : AppCompatActivity() {
             "finalizing" -> getString(R.string.camera_progress_finalizing)
             else -> getString(R.string.camera_check_pending)
         }
-        view.text = "⏳ $text"
+        view.text = statusText("⏳", text)
     }
+
+    private fun statusText(icon: String, text: String): String =
+        getString(R.string.camera_status_with_icon, icon, text)
 
     private fun addCheckChip(group: ChipGroup, @StringRes labelRes: Int, value: Boolean?) {
         val chip = layoutInflater.inflate(R.layout.item_camera_check_chip, group, false) as Chip

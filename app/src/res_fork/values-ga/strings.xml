@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="brand_name" translatable="false">Weather Vista</string>
     <string name="content_provider_permission_label">Léigh sonraí LiveWallpaperWeather</string>
     <string name="content_provider_permission_description">faisnéis aimsire a fháil ó LiveWallpaperWeather, lena n\'áirítear comhordanáidí do shuíomhanna, mar shampla do shuíomh reatha má chuir tú leis é</string>
     <string name="weather_vista_privacy_policy_summary">Léigh polasaí príobháideachais Weather Vista</string>

@@ -32,6 +32,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.animation.Interpolator
 import androidx.annotation.ColorInt
+import androidx.core.content.withStyledAttributes
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.getTypefaceFromTextAppearance
@@ -119,16 +120,36 @@ class InkPageIndicator @JvmOverloads constructor(
         val density = context.resources.displayMetrics.density.toInt()
 
         // Load attributes
-        val a = getContext().obtainStyledAttributes(attrs, R.styleable.InkPageIndicator, defStyle, 0)
-        mDotDiameter = a.getDimensionPixelSize(R.styleable.InkPageIndicator_dotDiameter, DEFAULT_DOT_SIZE * density)
+        lateinit var styledValues: StyledValues
+        context.withStyledAttributes(attrs, R.styleable.InkPageIndicator, defStyle, 0) {
+            styledValues = StyledValues(
+                dotDiameter = getDimensionPixelSize(
+                    R.styleable.InkPageIndicator_dotDiameter,
+                    DEFAULT_DOT_SIZE * density,
+                ),
+                gap = getDimensionPixelSize(R.styleable.InkPageIndicator_dotGap, DEFAULT_GAP * density),
+                animationDuration = getInteger(
+                    R.styleable.InkPageIndicator_animationDuration,
+                    DEFAULT_ANIM_DURATION,
+                ).toLong(),
+                unselectedColour = getColor(
+                    R.styleable.InkPageIndicator_pageIndicatorColor,
+                    DEFAULT_UNSELECTED_COLOUR,
+                ),
+                selectedColour = getColor(
+                    R.styleable.InkPageIndicator_currentPageIndicatorColor,
+                    DEFAULT_SELECTED_COLOUR,
+                ),
+            )
+        }
+        mDotDiameter = styledValues.dotDiameter
+        mGap = styledValues.gap
+        mAnimDuration = styledValues.animationDuration
+        mUnselectedColour = styledValues.unselectedColour
+        mSelectedColour = styledValues.selectedColour
         mDotRadius = mDotDiameter / 2f
         mHalfDotRadius = mDotRadius / 2f
-        mGap = a.getDimensionPixelSize(R.styleable.InkPageIndicator_dotGap, DEFAULT_GAP * density)
-        mAnimDuration = a.getInteger(R.styleable.InkPageIndicator_animationDuration, DEFAULT_ANIM_DURATION).toLong()
         mAnimHalfDuration = mAnimDuration / 2
-        mUnselectedColour = a.getColor(R.styleable.InkPageIndicator_pageIndicatorColor, DEFAULT_UNSELECTED_COLOUR)
-        mSelectedColour = a.getColor(R.styleable.InkPageIndicator_currentPageIndicatorColor, DEFAULT_SELECTED_COLOUR)
-        a.recycle()
         mUnselectedPaint.color = mUnselectedColour
         mSelectedPaint.color = mSelectedColour
         mTextPaint.apply {
@@ -148,6 +169,14 @@ class InkPageIndicator @JvmOverloads constructor(
             startDelay = 600
         }
     }
+
+    private data class StyledValues(
+        val dotDiameter: Int,
+        val gap: Int,
+        val animationDuration: Long,
+        val unselectedColour: Int,
+        val selectedColour: Int,
+    )
 
     fun setSwitchView(switchView: SwipeSwitchLayout) {
         mSwitchView = switchView
