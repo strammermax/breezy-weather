@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="brand_name" translatable="false">Weather Vista</string>
+    <string name="content_provider_permission_label">قراءة بيانات LiveWallpaperWeather</string>
+    <string name="content_provider_permission_description">الحصول على معلومات الطقس من LiveWallpaperWeather، بما في ذلك إحداثيات مواقعك، مثل موقعك الحالي إذا أضفته</string>
+    <string name="weather_vista_privacy_policy_summary">قراءة سياسة خصوصية Weather Vista</string>
+    <string name="weather_vista_privacy_policy_updated">آخر تحديث: 28 يوليو 2026</string>
+    <string name="weather_vista_privacy_policy_intro_title">سياسة الخصوصية</string>
+    <string name="weather_vista_privacy_policy_intro">يعرض لك هذا التطبيق (\"التطبيق\") معلومات الطقس الحالية وصور الطقس المطابقة استنادًا إلى موقعك، ويمكنه استخدام صورة تختارها أو تلتقطها لإنشاء خلفية طقس مخصصة. نحن نأخذ خصوصيتك على محمل الجد. يمكنك أدناه قراءة البيانات التي نستخدمها بالضبط، ولماذا، ولأي مدة نحتفظ بها.</string>
+    <string name="weather_vista_privacy_policy_data_title">1. ما هي البيانات التي نستخدمها؟</string>
+    <string name="weather_vista_privacy_policy_data">• بيانات الموقع (GPS): لعرض معلومات الطقس وصور الخلفية الصحيحة لمنطقتك، نستخدم موقعك. يتم تخزين موقعك (مواقعك) المستخدمة مؤخرًا على جهازك الخاص، حتى يتمكن التطبيق من عرض الطقس الصحيح فورًا عند بدء التشغيل.\n\n• الصور التي تلتقطها أو تختارها: إذا التقطت صورة أو اخترت واحدة من معرض الصور لاستخدامها كخلفية طقس شخصية، يتم إرسال هذه الصورة إلى خادمنا لمعالجتها. إذا كانت صورتك تحتوي على بيانات موقع، فإننا نستخدمها لربط الصورة بالمكان الصحيح.\n\n• معرّف تقني للجهاز (للإشعارات): لكي نتمكن من إعلامك عند جاهزية خلفيتك الشخصية، نسجل معرّفًا تقنيًا لجهازك (رمز إشعارات فورية). هذا غير مرتبط باسمك أو بريدك الإلكتروني.</string>
+    <string name="weather_vista_privacy_policy_use_title">2. لماذا نستخدم هذه البيانات؟</string>
+    <string name="weather_vista_privacy_policy_use">• الموقع: لعرض معلومات طقس ذات صلة وخاصة بموقعك.\n\n• الصور: لإنشاء خلفية طقس مخصصة بناءً على طلبك، وليتسنى لنا عرض نفس المكان بشكل أسرع وأفضل في المستقبل — بما في ذلك للمستخدمين الآخرين الذين يطلبون خلفية لنفس الموقع.\n\n• معرّف الجهاز: لإعلامك عند جاهزية خلفيتك.</string>
+    <string name="weather_vista_privacy_policy_retention_title">3. إلى متى نحتفظ بهذه البيانات؟</string>
+    <string name="weather_vista_privacy_policy_retention">• على جهازك الخاص: تبقى مواقعك الأخيرة مخزنة محليًا حتى تحذفها بنفسك أو تزيل التطبيق.\n\n• على خادمنا: يتم الاحتفاظ بالصور التي ترفعها وبيانات موقع تلك الصور إلى أجل غير مسمى. هذا مقصود: فهو يبقي خلفية الطقس، بمجرد إنشائها لموقع ما، متاحة بسرعة وموثوقية — بما في ذلك للمستخدمين الآخرين.\n\n• رمز الإشعارات الفورية: يتم تحديثه تلقائيًا كلما استخدمت التطبيق، ويُحذف تلقائيًا بمجرد توقف جهازك عن الاستجابة له (على سبيل المثال بعد إلغاء تثبيت التطبيق) أو بعد 12 شهرًا من عدم النشاط.</string>
+    <string name="weather_vista_privacy_policy_traceability_title">4. هل يمكن ربط صورة بك شخصيًا؟</string>
+    <string name="weather_vista_privacy_policy_traceability">لا. نحن لا نحتفظ بحسابات مستخدمين، ولا نربط أبدًا اسمًا أو بريدًا إلكترونيًا أو أي معلومات تعريف شخصية أخرى بصورة أو موقع. نظامنا مصمم أيضًا بحيث لا يُسجَّل عنوان IP الخاص باتصالك بالإنترنت أبدًا: فهو غير مسجل ولا يُخزَّن أبدًا مع صورة أو موقع. هذا يعني أن الصورة المرفوعة لا يمكن ربطها أبدًا بعنوان IP الخاص بك أو باتصالك بالإنترنت بعد إرسالها.</string>
+    <string name="weather_vista_privacy_policy_sharing_title">5. مشاركة البيانات</string>
+    <string name="weather_vista_privacy_policy_sharing">نحن لا نبيع أو نؤجر بياناتك أبدًا لأطراف ثالثة. تُستخدم فقط لتشغيل التطبيق (عرض الطقس وإنشاء خلفيتك الشخصية)، وليس للإعلان أو التنميط.</string>
+    <string name="weather_vista_privacy_policy_rights_title">6. حقوقك وخياراتك</string>
+    <string name="weather_vista_privacy_policy_rights">• تعطيل الوصول إلى الموقع: في أي وقت من خلال إعدادات جهاز أندرويد الخاص بك. عندئذٍ لن يتمكن التطبيق من عرض معلومات خاصة بموقعك.\n\n• طلب حذف صورة قمت بإرسالها: تواصل معنا على عنوان البريد الإلكتروني أدناه.</string>
+    <string name="weather_vista_privacy_policy_contact_title">7. التواصل</string>
+    <string name="weather_vista_privacy_policy_contact">إذا كانت لديك أي أسئلة حول سياسة الخصوصية هذه أو كيفية تعاملنا مع البيانات، فلا تتردد في التواصل معنا على: googleplaydeveloper@vanburik.info</string>
+</resources>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="brand_name" translatable="false">Weather Vista</string>
+    <string name="content_provider_permission_label">讀取 LiveWallpaperWeather 資料</string>
+    <string name="content_provider_permission_description">從 LiveWallpaperWeather 取得天氣資訊，包括您所在位置的座標，例如您新增的目前位置</string>
+    <string name="weather_vista_privacy_policy_summary">閱讀 Weather Vista 私隱政策</string>
+    <string name="weather_vista_privacy_policy_updated">最後更新：2026年7月28日</string>
+    <string name="weather_vista_privacy_policy_intro_title">私隱政策</string>
+    <string name="weather_vista_privacy_policy_intro">本應用程式（「本應用程式」）會根據您的位置，向您顯示目前的天氣資訊與對應的天氣圖片，並可使用您選擇或拍攝的相片來建立個人化的天氣背景。我們非常重視您的私隱。以下您可以詳細了解我們使用哪些資料、原因為何，以及我們會保留多久。</string>
+    <string name="weather_vista_privacy_policy_data_title">1. 我們使用哪些資料？</string>
+    <string name="weather_vista_privacy_policy_data">• 位置資料（GPS）：為了向您顯示適合您所在地區的正確天氣資訊與背景圖片，我們會使用您的位置。您最近使用過的位置會儲存喺您自己的裝置上，讓本應用程式啟動時能立即顯示正確的天氣。\n\n• 您拍攝或選擇的相片：如果您拍攝相片或從相簿中選擇相片，用作個人天氣背景，該相片會被傳送至我們的伺服器進行處理。若您的相片包含位置資料，我們會使用該資料將圖片與正確的地點連結起來。\n\n• 技術性裝置識別碼（用於通知）：為了能在您的個人背景準備就緒時通知您，我們會為您的裝置註冊一組技術性識別碼（推播通知權杖）。此識別碼不會與您的姓名或電郵地址連結。</string>
+    <string name="weather_vista_privacy_policy_use_title">2. 我們為何使用這些資料？</string>
+    <string name="weather_vista_privacy_policy_use">• 位置：用於向您顯示相關且針對特定地點的天氣資訊。\n\n• 相片：依您的要求建立個人化天氣背景，並讓我們未來能更快、更好地呈現同一地點——包括為要求相同位置背景的其他使用者提供服務。\n\n• 裝置識別碼：用於通知您背景已準備就緒。</string>
+    <string name="weather_vista_privacy_policy_retention_title">3. 我們會保留這些資料多久？</string>
+    <string name="weather_vista_privacy_policy_retention">• 在您自己的裝置上：您最近使用的位置會持續儲存喺本機，直到您自行刪除或移除本應用程式為止。\n\n• 在我們的伺服器上：您上傳的相片及呢啲相片的位置資料會被無限期保留。這是刻意為之：這樣可確保一旦為某個地點建立咗天氣背景，就能快速且可靠地供人使用——包括其他使用者。\n\n• 推播通知權杖：每次您使用本應用程式時都會自動更新，並會在您的裝置停止回應該權杖後（例如您解除安裝本應用程式後）或喺 12 個月未使用後自動刪除。</string>
+    <string name="weather_vista_privacy_policy_traceability_title">4. 相片能否被追溯到您個人？</string>
+    <string name="weather_vista_privacy_policy_traceability">不能。我們不會保留使用者帳戶，亦絕不會將姓名、電郵地址或其他個人識別資訊與相片或位置連結。我們的系統喺設計上亦確保您網絡連線的 IP 位址永遠不會被記錄：不會被記錄，亦不會與相片或位置一齊儲存。這代表上傳的相片喺傳送後，永遠無法追溯返您的 IP 位址或網絡連線。</string>
+    <string name="weather_vista_privacy_policy_sharing_title">5. 資料共享</string>
+    <string name="weather_vista_privacy_policy_sharing">我們絕不會將您的資料出售或出租畀第三方。資料僅用於讓本應用程式正常運作（顯示天氣及建立您的個人背景），並非用於廣告或建立使用者輪廓。</string>
+    <string name="weather_vista_privacy_policy_rights_title">6. 您的權利與選擇</string>
+    <string name="weather_vista_privacy_policy_rights">• 停用位置存取權限：您可隨時透過 Android 裝置設定停用。此後本應用程式將無法再顯示針對特定地點的資訊。\n\n• 要求刪除您提交的相片：請透過下方的電郵地址與我們聯絡。</string>
+    <string name="weather_vista_privacy_policy_contact_title">7. 聯絡我們</string>
+    <string name="weather_vista_privacy_policy_contact">如果您對本私隱政策或我們處理資料的方式有任何疑問，歡迎透過以下方式與我們聯絡：googleplaydeveloper@vanburik.info</string>
+</resources>

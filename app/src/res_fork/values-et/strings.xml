@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="brand_name" translatable="false">Weather Vista</string>
+    <string name="content_provider_permission_label">Loe LiveWallpaperWeather andmeid</string>
+    <string name="content_provider_permission_description">hankida ilmateavet rakendusest LiveWallpaperWeather, sealhulgas sinu asukohtade koordinaadid, näiteks sinu praegune asukoht, kui oled selle lisanud</string>
+    <string name="weather_vista_privacy_policy_summary">Loe Weather Vista privaatsuspoliitikat</string>
+    <string name="weather_vista_privacy_policy_updated">Viimati uuendatud: 28. juuli 2026</string>
+    <string name="weather_vista_privacy_policy_intro_title">Privaatsuspoliitika</string>
+    <string name="weather_vista_privacy_policy_intro">See rakendus („Rakendus") näitab sulle jooksvat ilmateavet ja sobivaid ilmapilte sinu asukoha põhjal ning võib kasutada sinu valitud või tehtud fotot personaalse ilmatausta loomiseks. Võtame sinu privaatsust tõsiselt. Allpool saad täpselt lugeda, milliseid andmeid me kasutame, miks ja kui kaua me neid säilitame.</string>
+    <string name="weather_vista_privacy_policy_data_title">1. Milliseid Andmeid Me Kasutame?</string>
+    <string name="weather_vista_privacy_policy_data">• Asukohaandmed (GPS): et näidata sulle õiget ilmateavet ja taustapilte sinu piirkonna kohta, kasutame sinu asukohta. Sinu viimati kasutatud asukoht(ad) salvestatakse sinu enda seadmesse, et Rakendus saaks käivitumisel kohe õiget ilma näidata.\n\n• Sinu tehtud või valitud fotod: kui teed foto või valid ühe oma galeriist, et kasutada seda isikliku ilmataustana, saadetakse see foto töötlemiseks meie serverisse. Kui foto sisaldab asukohaandmeid, kasutame neid pildi õige kohaga sidumiseks.\n\n• Tehniline seadme identifikaator (teavituste jaoks): et saaksime sind teavitada, kui sinu isiklik taust on valmis, registreerime sinu seadmele tehnilise identifikaatori (push-teavituse tokeni). See ei ole seotud sinu nime ega e-posti aadressiga.</string>
+    <string name="weather_vista_privacy_policy_use_title">2. Miks Me Neid Andmeid Kasutame?</string>
+    <string name="weather_vista_privacy_policy_use">• Asukoht: et näidata sulle asjakohast, asukohapõhist ilmateavet.\n\n• Fotod: et luua sinu soovil personaalne ilmataust ning et saaksime tulevikus sama kohta kiiremini ja paremini kuvada — sealhulgas teistele kasutajatele, kes soovivad tausta samast asukohast.\n\n• Seadme identifikaator: et anda sulle teada, kui sinu taust on valmis.</string>
+    <string name="weather_vista_privacy_policy_retention_title">3. Kui Kaua Me Neid Andmeid Säilitame?</string>
+    <string name="weather_vista_privacy_policy_retention">• Sinu enda seadmes: sinu hiljutised asukohad jäävad kohalikult salvestatuks, kuni sa need ise kustutad või eemaldad Rakenduse.\n\n• Meie serveris: sinu üleslaaditud fotod ja nende fotode asukohaandmed säilitatakse tähtajatult. See on tahtlik: nii jääb konkreetse asukoha jaoks loodud ilmataust kiiresti ja usaldusväärselt kättesaadavaks — ka teistele kasutajatele.\n\n• Push-teavituse token: see uueneb automaatselt iga kord, kui kasutad Rakendust, ja kustutatakse automaatselt niipea, kui sinu seade lakkab sellele reageerimast (näiteks pärast Rakenduse desinstallimist) või pärast 12 kuud tegevusetust.</string>
+    <string name="weather_vista_privacy_policy_traceability_title">4. Kas Foto Saab Siduda Sinu Isikuga?</string>
+    <string name="weather_vista_privacy_policy_traceability">Ei. Me ei säilita kasutajakontosid ja me ei seo kunagi nime, e-posti aadressi ega muud isikut tuvastavat teavet foto ega asukohaga. Meie süsteem on üles ehitatud ka nii, et sinu internetiühenduse IP-aadressi ei salvestata kunagi: seda ei logita ega hoita kunagi koos foto või asukohaga. See tähendab, et üleslaaditud fotot ei saa kunagi pärast selle saatmist siduda sinu IP-aadressi ega internetiühendusega.</string>
+    <string name="weather_vista_privacy_policy_sharing_title">5. Andmete Jagamine</string>
+    <string name="weather_vista_privacy_policy_sharing">Me ei müü ega rendi kunagi sinu andmeid kolmandatele osapooltele. Neid kasutatakse üksnes Rakenduse toimimiseks (ilma näitamine ja sinu isikliku tausta loomine), mitte reklaami ega profileerimise eesmärgil.</string>
+    <string name="weather_vista_privacy_policy_rights_title">6. Sinu Õigused ja Valikud</string>
+    <string name="weather_vista_privacy_policy_rights">• Keela asukohale juurdepääs: igal ajal oma Androidi seadme seadete kaudu. Sellisel juhul ei saa Rakendus enam näidata asukohapõhist teavet.\n\n• Taotle enda esitatud foto kustutamist: võta meiega ühendust allolevale e-posti aadressile.</string>
+    <string name="weather_vista_privacy_policy_contact_title">7. Kontakt</string>
+    <string name="weather_vista_privacy_policy_contact">Kui sul on küsimusi selle privaatsuspoliitika või meie andmekäsitluse kohta, võta meiega julgelt ühendust aadressil: googleplaydeveloper@vanburik.info</string>
+</resources>

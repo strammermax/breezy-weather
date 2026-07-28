@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="brand_name" translatable="false">Weather Vista</string>
+    <string name="content_provider_permission_label">Legi datumojn de LiveWallpaperWeather</string>
+    <string name="content_provider_permission_description">akiri veterinformojn de LiveWallpaperWeather, inkluzive la koordinatojn de viaj lokoj, kiel ekzemple via nuna loko se vi aldonis ĝin</string>
+    <string name="weather_vista_privacy_policy_summary">Legu la privatecpolitikon de Weather Vista</string>
+    <string name="weather_vista_privacy_policy_updated">Laste ĝisdatigita: la 28-an de julio 2026</string>
+    <string name="weather_vista_privacy_policy_intro_title">Privateca Politiko</string>
+    <string name="weather_vista_privacy_policy_intro">Ĉi tiu aplikaĵo („la Aplikaĵo") montras al vi aktualajn veterinformojn kaj kongruajn veterbildojn laŭ via loko, kaj povas uzi foton, kiun vi elektas aŭ faras, por krei personigitan veteran fonon. Ni traktas vian privatecon serioze. Sube vi povas legi ekzakte kiujn datumojn ni uzas, kial, kaj kiom longe ni konservas ilin.</string>
+    <string name="weather_vista_privacy_policy_data_title">1. Kiujn Datumojn Ni Uzas?</string>
+    <string name="weather_vista_privacy_policy_data">• Lokdatumoj (GPS): por montri al vi la ĝustajn veterinformojn kaj fonbildojn por via areo, ni uzas vian lokon. Viaj plej lastatempe uzitaj lokoj estas konservataj sur via propra aparato, por ke la Aplikaĵo povu tuj montri la ĝustan veteron kiam ĝi ekfunkcias.\n\n• Fotoj, kiujn vi faras aŭ elektas: se vi faras foton aŭ elektas unu el via galerio por uzi kiel personan veteran fonon, tiu foto estas sendata al nia servilo por prilaborado. Se via foto enhavas lokdatumojn, ni uzas ilin por ligi la bildon al la ĝusta loko.\n\n• Teknika aparatidentigilo (por sciigoj): por povi sciigi vin kiam via persona fono pretas, ni registras teknikan identigilon por via aparato (puŝsciiga ĵetono). Ĉi tio ne estas ligita al via nomo aŭ retpoŝta adreso.</string>
+    <string name="weather_vista_privacy_policy_use_title">2. Kial Ni Uzas Ĉi Tiujn Datumojn?</string>
+    <string name="weather_vista_privacy_policy_use">• Loko: por montri al vi rilatajn, lokspecifajn veterinformojn.\n\n• Fotoj: por krei personigitan veteran fonon laŭ via peto, kaj por povi montri tiun saman lokon pli rapide kaj pli bone estonte — inkluzive al aliaj uzantoj, kiuj petas fonon de la sama loko.\n\n• Aparatidentigilo: por informi vin kiam via fono pretas.</string>
+    <string name="weather_vista_privacy_policy_retention_title">3. Kiom Longe Ni Konservas Ĉi Tiujn Datumojn?</string>
+    <string name="weather_vista_privacy_policy_retention">• Sur via propra aparato: viaj lastatempaj lokoj restas konservataj loke ĝis vi mem forigas ilin aŭ forigas la Aplikaĵon.\n\n• Sur nia servilo: fotoj, kiujn vi alŝutas, kaj la lokdatumoj de tiuj fotoj estas konservataj senfine. Ĉi tio estas intenca: ĝi konservas veteran fonon, post kiam ĝi estas kreita por loko, rapide kaj fidinde disponebla — inkluzive por aliaj uzantoj.\n\n• Puŝsciiga ĵetono: ĉi tio memaŭtomate refreŝiĝas kiam ajn vi uzas la Aplikaĵon, kaj estas aŭtomate forigata tuj kiam via aparato ĉesas respondi al ĝi (ekzemple post kiam vi malinstalas la Aplikaĵon) aŭ post 12 monatoj de neaktiveco.</string>
+    <string name="weather_vista_privacy_policy_traceability_title">4. Ĉu Foto Povas Esti Ligita Reen al Vi Persone?</string>
+    <string name="weather_vista_privacy_policy_traceability">Ne. Ni ne konservas uzantajn kontojn, kaj ni neniam ligas nomon, retpoŝtan adreson, aŭ alian person-identigan informon al foto aŭ loko. Nia sistemo ankaŭ estas konstruita tiel, ke la IP-adreso de via interreta konekto neniam estas registrata: ĝi ne estas protokolata kaj neniam konservata kune kun foto aŭ loko. Ĉi tio signifas, ke alŝutita foto neniam povas esti religita al via IP-adreso aŭ interreta konekto post ĝia sendo.</string>
+    <string name="weather_vista_privacy_policy_sharing_title">5. Kunhavigo de Datumoj</string>
+    <string name="weather_vista_privacy_policy_sharing">Ni neniam vendas aŭ luigas viajn datumojn al triaj partioj. Ili estas uzataj nur por igi la Aplikaĵon funkcii (montrado de vetero kaj kreado de via persona fono), ne por reklamado aŭ profilado.</string>
+    <string name="weather_vista_privacy_policy_rights_title">6. Viaj Rajtoj kaj Elektoj</string>
+    <string name="weather_vista_privacy_policy_rights">• Malŝalti lokan aliron: iam ajn per la agordoj de via Android-aparato. La Aplikaĵo tiam ne plu povos montri lokspecifajn informojn.\n\n• Peti forigon de foto, kiun vi sendis: kontaktu nin ĉe la retpoŝta adreso sube.</string>
+    <string name="weather_vista_privacy_policy_contact_title">7. Kontakto</string>
+    <string name="weather_vista_privacy_policy_contact">Se vi havas demandojn pri ĉi tiu privateca politiko aŭ kiel ni traktas datumojn, bonvolu kontakti nin ĉe: googleplaydeveloper@vanburik.info</string>
+</resources>

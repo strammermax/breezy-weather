@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="brand_name" translatable="false">Weather Vista</string>
+    <string name="content_provider_permission_label">LiveWallpaperWeather 데이터 읽기</string>
+    <string name="content_provider_permission_description">LiveWallpaperWeather에서 날씨 정보를 가져옵니다. 여기에는 현재 위치를 추가한 경우 그 위치를 포함한 사용자 위치의 좌표가 포함됩니다</string>
+    <string name="weather_vista_privacy_policy_summary">Weather Vista 개인정보처리방침 읽기</string>
+    <string name="weather_vista_privacy_policy_updated">최종 업데이트: 2026년 7월 28일</string>
+    <string name="weather_vista_privacy_policy_intro_title">개인정보처리방침</string>
+    <string name="weather_vista_privacy_policy_intro">이 애플리케이션(이하 \"앱\")은 사용자의 위치를 기반으로 현재 날씨 정보와 그에 어울리는 날씨 이미지를 보여주며, 사용자가 선택하거나 촬영한 사진을 사용하여 개인화된 날씨 배경화면을 만들 수 있습니다. 저희는 사용자의 개인정보를 중요하게 생각합니다. 아래에서 저희가 어떤 데이터를 사용하는지, 왜 사용하는지, 그리고 얼마나 오래 보관하는지 정확히 확인하실 수 있습니다.</string>
+    <string name="weather_vista_privacy_policy_data_title">1. 어떤 데이터를 사용하나요?</string>
+    <string name="weather_vista_privacy_policy_data">• 위치 데이터(GPS): 사용자의 지역에 맞는 날씨 정보와 배경 이미지를 보여주기 위해 위치 정보를 사용합니다. 최근에 사용한 위치는 사용자의 기기에 저장되어, 앱이 시작될 때 바로 올바른 날씨를 보여줄 수 있습니다.\n\n• 촬영하거나 선택한 사진: 개인 날씨 배경화면으로 사용하기 위해 사진을 촬영하거나 갤러리에서 선택하면, 해당 사진은 처리를 위해 저희 서버로 전송됩니다. 사진에 위치 데이터가 포함되어 있는 경우, 이를 사용하여 이미지를 올바른 장소와 연결합니다.\n\n• 기술적 기기 식별자(알림용): 개인 배경화면이 준비되었을 때 알려드리기 위해, 사용자의 기기에 대한 기술적 식별자(푸시 알림 토큰)를 등록합니다. 이는 사용자의 이름이나 이메일 주소와 연결되지 않습니다.</string>
+    <string name="weather_vista_privacy_policy_use_title">2. 이 데이터를 왜 사용하나요?</string>
+    <string name="weather_vista_privacy_policy_use">• 위치: 관련성 있는, 위치별 날씨 정보를 보여드리기 위함입니다.\n\n• 사진: 사용자의 요청에 따라 개인화된 날씨 배경화면을 만들고, 향후 동일한 장소를 더 빠르고 더 좋은 품질로 보여드리기 위함입니다 — 동일한 위치의 배경화면을 요청하는 다른 사용자에게도 마찬가지입니다.\n\n• 기기 식별자: 배경화면이 준비되었을 때 알려드리기 위함입니다.</string>
+    <string name="weather_vista_privacy_policy_retention_title">3. 이 데이터를 얼마나 오래 보관하나요?</string>
+    <string name="weather_vista_privacy_policy_retention">• 사용자의 기기: 최근 위치 정보는 사용자가 직접 삭제하거나 앱을 제거할 때까지 로컬에 계속 저장됩니다.\n\n• 저희 서버: 업로드한 사진과 해당 사진의 위치 데이터는 무기한 보관됩니다. 이는 의도적인 것으로, 한 번 생성된 특정 위치의 날씨 배경화면을 빠르고 안정적으로 계속 이용할 수 있도록 하기 위함입니다 — 다른 사용자를 위해서도 마찬가지입니다.\n\n• 푸시 알림 토큰: 이는 사용자가 앱을 사용할 때마다 자동으로 갱신되며, 사용자의 기기가 더 이상 응답하지 않게 되는 즉시(예: 앱을 제거한 후) 또는 12개월간 활동이 없을 경우 자동으로 삭제됩니다.</string>
+    <string name="weather_vista_privacy_policy_traceability_title">4. 사진이 개인적으로 사용자와 연결될 수 있나요?</string>
+    <string name="weather_vista_privacy_policy_traceability">아니요. 저희는 사용자 계정을 보관하지 않으며, 이름, 이메일 주소 또는 기타 개인 식별 정보를 사진이나 위치와 연결하지 않습니다. 또한 저희 시스템은 사용자의 인터넷 연결 IP 주소가 절대 기록되지 않도록 설계되어 있습니다. IP 주소는 로그에 남지 않으며 사진이나 위치와 함께 저장되지도 않습니다. 이는 업로드된 사진이 전송된 후 사용자의 IP 주소나 인터넷 연결과 결코 연결될 수 없음을 의미합니다.</string>
+    <string name="weather_vista_privacy_policy_sharing_title">5. 데이터 공유</string>
+    <string name="weather_vista_privacy_policy_sharing">저희는 사용자의 데이터를 제3자에게 판매하거나 대여하지 않습니다. 데이터는 오직 앱이 작동하도록(날씨를 보여주고 개인 배경화면을 만드는 데) 사용될 뿐, 광고나 프로파일링 목적으로는 사용되지 않습니다.</string>
+    <string name="weather_vista_privacy_policy_rights_title">6. 사용자의 권리와 선택</string>
+    <string name="weather_vista_privacy_policy_rights">• 위치 접근 비활성화: 언제든지 Android 기기 설정을 통해 가능합니다. 이 경우 앱은 더 이상 위치별 정보를 표시할 수 없습니다.\n\n• 제출한 사진의 삭제 요청: 아래 이메일 주소로 문의해 주세요.</string>
+    <string name="weather_vista_privacy_policy_contact_title">7. 문의</string>
+    <string name="weather_vista_privacy_policy_contact">이 개인정보처리방침이나 저희의 데이터 처리 방식에 대해 궁금한 점이 있으시면 언제든지 다음 이메일 주소로 문의해 주세요: googleplaydeveloper@vanburik.info</string>
+</resources>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="brand_name" translatable="false">Weather Vista</string>
+    <string name="content_provider_permission_label">קריאת נתוני LiveWallpaperWeather</string>
+    <string name="content_provider_permission_description">קבלת מידע מזג אוויר מ-LiveWallpaperWeather, כולל קואורדינטות המיקומים שלך, כגון המיקום הנוכחי שלך אם הוספת אותו</string>
+    <string name="weather_vista_privacy_policy_summary">קרא/י את מדיניות הפרטיות של Weather Vista</string>
+    <string name="weather_vista_privacy_policy_updated">עדכון אחרון: 28 ביולי 2026</string>
+    <string name="weather_vista_privacy_policy_intro_title">מדיניות פרטיות</string>
+    <string name="weather_vista_privacy_policy_intro">אפליקציה זו (\"האפליקציה\") מציגה לך מידע עדכני על מזג האוויר ותמונות מזג אוויר מתאימות בהתאם למיקומך, ויכולה להשתמש בתמונה שתבחר/י או תצלם/י כדי ליצור רקע מזג אוויר מותאם אישית. אנו מתייחסים לפרטיותך ברצינות רבה. להלן תוכל/י לקרוא בדיוק אילו נתונים אנו משתמשים בהם, מדוע, ולכמה זמן אנו שומרים אותם.</string>
+    <string name="weather_vista_privacy_policy_data_title">1. באילו נתונים אנו משתמשים?</string>
+    <string name="weather_vista_privacy_policy_data">• נתוני מיקום (GPS): כדי להציג לך את מידע מזג האוויר ותמונות הרקע הנכונים עבור האזור שלך, אנו משתמשים במיקום שלך. המיקומים האחרונים שבהם השתמשת נשמרים במכשיר שלך עצמו, כך שהאפליקציה יכולה להציג מיד את מזג האוויר הנכון עם ההפעלה.\n\n• תמונות שצילמת או בחרת: אם תצלם/י תמונה או תבחר/י אחת מהגלריה שלך לשימוש כרקע מזג אוויר אישי, תמונה זו נשלחת לשרת שלנו לעיבוד. אם התמונה שלך מכילה נתוני מיקום, אנו משתמשים בהם כדי לקשר את התמונה למקום הנכון.\n\n• מזהה מכשיר טכני (עבור התראות): כדי שנוכל להודיע לך כאשר הרקע האישי שלך מוכן, אנו רושמים מזהה טכני עבור המכשיר שלך (אסימון התראות דחיפה). מזהה זה אינו מקושר לשמך או לכתובת הדוא\"ל שלך.</string>
+    <string name="weather_vista_privacy_policy_use_title">2. מדוע אנו משתמשים בנתונים אלו?</string>
+    <string name="weather_vista_privacy_policy_use">• מיקום: כדי להציג לך מידע מזג אוויר רלוונטי וספציפי למיקום.\n\n• תמונות: כדי ליצור רקע מזג אוויר מותאם אישית לפי בקשתך, ולהיות מסוגלים להציג את אותו מקום מהר וטוב יותר בעתיד — כולל למשתמשים אחרים המבקשים רקע של אותו מיקום.\n\n• מזהה מכשיר: כדי להודיע לך כאשר הרקע שלך מוכן.</string>
+    <string name="weather_vista_privacy_policy_retention_title">3. לכמה זמן אנו שומרים נתונים אלו?</string>
+    <string name="weather_vista_privacy_policy_retention">• במכשיר שלך עצמו: המיקומים האחרונים שלך נשארים מאוחסנים באופן מקומי עד שתמחק/י אותם בעצמך או תסיר/י את האפליקציה.\n\n• בשרת שלנו: תמונות שהעלית ונתוני המיקום של תמונות אלו נשמרים ללא הגבלת זמן. זה מכוון: זה שומר על רקע מזג אוויר, לאחר שנוצר עבור מיקום מסוים, זמין במהירות ובאמינות — כולל עבור משתמשים אחרים.\n\n• אסימון התראות דחיפה: הוא מתחדש אוטומטית בכל פעם שאתה/את משתמש/ת באפליקציה, ונמחק אוטומטית ברגע שהמכשיר שלך מפסיק להגיב אליו (למשל לאחר הסרת ההתקנה של האפליקציה) או לאחר 12 חודשים של חוסר פעילות.</string>
+    <string name="weather_vista_privacy_policy_traceability_title">4. האם ניתן לקשר תמונה אליך אישית?</string>
+    <string name="weather_vista_privacy_policy_traceability">לא. איננו שומרים חשבונות משתמשים, ולעולם איננו מקשרים שם, כתובת דוא\"ל או מידע מזהה אישי אחר לתמונה או למיקום. המערכת שלנו בנויה כך שכתובת ה-IP של חיבור האינטרנט שלך לעולם אינה נרשמת: היא אינה נרשמת ואינה נשמרת לצד תמונה או מיקום. משמעות הדבר היא שתמונה שהועלתה לעולם לא ניתנת לקישור חזרה לכתובת ה-IP או לחיבור האינטרנט שלך לאחר שנשלחה.</string>
+    <string name="weather_vista_privacy_policy_sharing_title">5. שיתוף נתונים</string>
+    <string name="weather_vista_privacy_policy_sharing">אנו לעולם לא מוכרים או משכירים את נתוניך לצדדים שלישיים. הם משמשים אך ורק כדי להפעיל את האפליקציה (הצגת מזג האוויר ויצירת הרקע האישי שלך), לא לפרסום או לפרופיילינג.</string>
+    <string name="weather_vista_privacy_policy_rights_title">6. הזכויות והבחירות שלך</string>
+    <string name="weather_vista_privacy_policy_rights">• השבתת גישה למיקום: בכל עת דרך הגדרות מכשיר האנדרואיד שלך. במקרה זה האפליקציה לא תוכל עוד להציג מידע ספציפי למיקום.\n\n• בקשת מחיקה של תמונה שהגשת: צור/י איתנו קשר בכתובת הדוא\"ל שלהלן.</string>
+    <string name="weather_vista_privacy_policy_contact_title">7. יצירת קשר</string>
+    <string name="weather_vista_privacy_policy_contact">אם יש לך שאלות כלשהן לגבי מדיניות פרטיות זו או לגבי אופן הטיפול שלנו בנתונים, אל תהסס/י ליצור איתנו קשר בכתובת: googleplaydeveloper@vanburik.info</string>
+</resources>

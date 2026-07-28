@@ -82,12 +82,16 @@ class WeatherVistaPrivacyPolicyActivity : BreezyActivity() {
                         body = stringResource(R.string.weather_vista_privacy_policy_use)
                     )
                     PolicySection(
-                        title = stringResource(R.string.weather_vista_privacy_policy_sharing_title),
-                        body = stringResource(R.string.weather_vista_privacy_policy_sharing)
-                    )
-                    PolicySection(
                         title = stringResource(R.string.weather_vista_privacy_policy_retention_title),
                         body = stringResource(R.string.weather_vista_privacy_policy_retention)
+                    )
+                    PolicySection(
+                        title = stringResource(R.string.weather_vista_privacy_policy_traceability_title),
+                        body = stringResource(R.string.weather_vista_privacy_policy_traceability)
+                    )
+                    PolicySection(
+                        title = stringResource(R.string.weather_vista_privacy_policy_sharing_title),
+                        body = stringResource(R.string.weather_vista_privacy_policy_sharing)
                     )
                     PolicySection(
                         title = stringResource(R.string.weather_vista_privacy_policy_rights_title),
@@ -104,17 +108,19 @@ class WeatherVistaPrivacyPolicyActivity : BreezyActivity() {
 
     @Composable
     private fun PolicySection(title: String, body: String) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = 10.dp, bottom = 6.dp)
-        )
-        Text(
-            text = body,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
+        Column {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 10.dp, bottom = 6.dp)
+            )
+            Text(
+                text = body,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+        }
     }
 }
