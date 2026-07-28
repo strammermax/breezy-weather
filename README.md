@@ -1,13 +1,13 @@
 <div align="center">
 <br />
-<img src="app/src/res_breezy/mipmap-xxxhdpi/ic_launcher_round.webp" alt="Logo" />
+<img src="app/src/res_fork/mipmap-xxxhdpi/ic_launcher.png" alt="WeatherChum logo" />
 </div>
 
-<h1 align="center">LiveWeatherApp</h1>
+<h1 align="center">WeatherChum</h1>
 <h3 align="center">Enhanced fork of Breezy Weather</h3>
 
 <div align="center">
-  <small>Based on <a href="https://github.com/strammermax/breezy-weather">Breezy Weather</a> with additional features and improvements</small>
+  <small>Based on <a href="https://github.com/breezy-weather/breezy-weather">Breezy Weather</a>, with distinct branding and additional live-wallpaper features</small>
 </div>
 
 <br />

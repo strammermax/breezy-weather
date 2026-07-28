@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Legi datumojn de LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">akiri veterinformojn de LiveWallpaperWeather, inkluzive la koordinatojn de viaj lokoj, kiel ekzemple via nuna loko se vi aldonis ĝin</string>
+    <string name="content_provider_permission_label">Legi datumojn de WeatherChum</string>
+    <string name="content_provider_permission_description">akiri veterinformojn de WeatherChum, inkluzive la koordinatojn de viaj lokoj, kiel ekzemple via nuna loko se vi aldonis ĝin</string>
     <string name="weather_vista_privacy_policy_summary">Legu la privatecpolitikon de WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Laste ĝisdatigita: la 28-an de julio 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Privateca Politiko</string>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Čítanie údajov LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">získavanie informácií o počasí z LiveWallpaperWeather, vrátane súradníc vašich lokalít, ako je vaša aktuálna poloha, ak ste ju pridali</string>
+    <string name="content_provider_permission_label">Čítanie údajov WeatherChum</string>
+    <string name="content_provider_permission_description">získavanie informácií o počasí z WeatherChum, vrátane súradníc vašich lokalít, ako je vaša aktuálna poloha, ak ste ju pridali</string>
     <string name="weather_vista_privacy_policy_summary">Prečítať si zásady ochrany osobných údajov WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Posledná aktualizácia: 28. júla 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Zásady ochrany osobných údajov</string>

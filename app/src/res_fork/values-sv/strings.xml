@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Läsa data från LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">hämta väderinformation från LiveWallpaperWeather, inklusive koordinaterna för dina platser, till exempel din nuvarande plats om du har lagt till den</string>
+    <string name="content_provider_permission_label">Läsa data från WeatherChum</string>
+    <string name="content_provider_permission_description">hämta väderinformation från WeatherChum, inklusive koordinaterna för dina platser, till exempel din nuvarande plats om du har lagt till den</string>
     <string name="weather_vista_privacy_policy_summary">Läs WeatherChums integritetspolicy</string>
     <string name="weather_vista_privacy_policy_updated">Senast uppdaterad: 28 juli 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Integritetspolicy</string>

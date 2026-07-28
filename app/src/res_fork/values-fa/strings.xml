@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">خواندن داده‌های LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">دریافت اطلاعات آب‌وهوا از LiveWallpaperWeather، از جمله مختصات مکان‌های شما، مانند موقعیت فعلی‌تان در صورتی که آن را اضافه کرده باشید</string>
+    <string name="content_provider_permission_label">خواندن داده‌های WeatherChum</string>
+    <string name="content_provider_permission_description">دریافت اطلاعات آب‌وهوا از WeatherChum، از جمله مختصات مکان‌های شما، مانند موقعیت فعلی‌تان در صورتی که آن را اضافه کرده باشید</string>
     <string name="weather_vista_privacy_policy_summary">مطالعه سیاست حریم خصوصی WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">آخرین به‌روزرسانی: ۲۸ ژوئیه ۲۰۲۶</string>
     <string name="weather_vista_privacy_policy_intro_title">سیاست حریم خصوصی</string>

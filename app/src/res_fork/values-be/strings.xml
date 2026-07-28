@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Чытанне даных LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">атрымліваць звесткі аб надвор\'і з LiveWallpaperWeather, у тым ліку каардынаты вашых месцаў, напрыклад, вашага бягучага месцазнаходжання, калі вы яго дадалі</string>
+    <string name="content_provider_permission_label">Чытанне даных WeatherChum</string>
+    <string name="content_provider_permission_description">атрымліваць звесткі аб надвор\'і з WeatherChum, у тым ліку каардынаты вашых месцаў, напрыклад, вашага бягучага месцазнаходжання, калі вы яго дадалі</string>
     <string name="weather_vista_privacy_policy_summary">Прачытаць палітыку прыватнасці WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Апошняе абнаўленне: 28 ліпеня 2026 г.</string>
     <string name="weather_vista_privacy_policy_intro_title">Палітыка прыватнасці</string>

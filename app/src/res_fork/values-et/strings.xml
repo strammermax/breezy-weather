@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Loe LiveWallpaperWeather andmeid</string>
-    <string name="content_provider_permission_description">hankida ilmateavet rakendusest LiveWallpaperWeather, sealhulgas sinu asukohtade koordinaadid, näiteks sinu praegune asukoht, kui oled selle lisanud</string>
+    <string name="content_provider_permission_label">Loe WeatherChum andmeid</string>
+    <string name="content_provider_permission_description">hankida ilmateavet rakendusest WeatherChum, sealhulgas sinu asukohtade koordinaadid, näiteks sinu praegune asukoht, kui oled selle lisanud</string>
     <string name="weather_vista_privacy_policy_summary">Loe WeatherChum privaatsuspoliitikat</string>
     <string name="weather_vista_privacy_policy_updated">Viimati uuendatud: 28. juuli 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Privaatsuspoliitika</string>

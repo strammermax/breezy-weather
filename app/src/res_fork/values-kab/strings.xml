@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Ɣr isefka n LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">awi-d talɣut n aksum seg LiveWallpaperWeather, gar-asent tignatin n imukan-ik, am wemkan-ik ilaqen ma yella turiḍ-t</string>
+    <string name="content_provider_permission_label">Ɣr isefka n WeatherChum</string>
+    <string name="content_provider_permission_description">awi-d talɣut n aksum seg WeatherChum, gar-asent tignatin n imukan-ik, am wemkan-ik ilaqen ma yella turiḍ-t</string>
     <string name="weather_vista_privacy_policy_summary">Ɣr tasertit n tbaḍnit n WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Aleqqem aneggaru: 28 Yulyu 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Tasertit n tbaḍnit</string>

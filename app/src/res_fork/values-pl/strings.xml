@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Odczyt danych LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">pobieranie informacji pogodowych z LiveWallpaperWeather, w tym współrzędnych Twoich lokalizacji, takich jak Twoja bieżąca lokalizacja, jeśli została dodana</string>
+    <string name="content_provider_permission_label">Odczyt danych WeatherChum</string>
+    <string name="content_provider_permission_description">pobieranie informacji pogodowych z WeatherChum, w tym współrzędnych Twoich lokalizacji, takich jak Twoja bieżąca lokalizacja, jeśli została dodana</string>
     <string name="weather_vista_privacy_policy_summary">Przeczytaj politykę prywatności WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Ostatnia aktualizacja: 28 lipca 2026 r.</string>
     <string name="weather_vista_privacy_policy_intro_title">Polityka prywatności</string>

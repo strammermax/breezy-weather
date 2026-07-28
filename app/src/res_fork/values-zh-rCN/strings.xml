@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">读取 LiveWallpaperWeather 数据</string>
-    <string name="content_provider_permission_description">从 LiveWallpaperWeather 获取天气信息，包括您所在位置的坐标，例如您添加的当前位置</string>
+    <string name="content_provider_permission_label">读取 WeatherChum 数据</string>
+    <string name="content_provider_permission_description">从 WeatherChum 获取天气信息，包括您所在位置的坐标，例如您添加的当前位置</string>
     <string name="weather_vista_privacy_policy_summary">阅读 WeatherChum 隐私政策</string>
     <string name="weather_vista_privacy_policy_updated">最后更新：2026年7月28日</string>
     <string name="weather_vista_privacy_policy_intro_title">隐私政策</string>

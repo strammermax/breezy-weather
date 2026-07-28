@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">LiveWallpaperWeather datuak irakurri</string>
-    <string name="content_provider_permission_description">LiveWallpaperWeather-etik eguraldi-informazioa lortu, zure kokalekuen koordenatuak barne, adibidez, gehitu baduzu, zure uneko kokalekua</string>
+    <string name="content_provider_permission_label">WeatherChum datuak irakurri</string>
+    <string name="content_provider_permission_description">WeatherChum-etik eguraldi-informazioa lortu, zure kokalekuen koordenatuak barne, adibidez, gehitu baduzu, zure uneko kokalekua</string>
     <string name="weather_vista_privacy_policy_summary">Irakurri WeatherChum-ren pribatutasun-politika</string>
     <string name="weather_vista_privacy_policy_updated">Azken eguneratzea: 2026ko uztailaren 28a</string>
     <string name="weather_vista_privacy_policy_intro_title">Pribatutasun Politika</string>

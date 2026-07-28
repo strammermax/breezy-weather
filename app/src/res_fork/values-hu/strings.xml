@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">LiveWallpaperWeather adatok olvasása</string>
-    <string name="content_provider_permission_description">időjárási információk lekérése a LiveWallpaperWeather alkalmazásból, beleértve a helyszíneid koordinátáit, például a jelenlegi helyzetedet, ha hozzáadtad</string>
+    <string name="content_provider_permission_label">WeatherChum adatok olvasása</string>
+    <string name="content_provider_permission_description">időjárási információk lekérése a WeatherChum alkalmazásból, beleértve a helyszíneid koordinátáit, például a jelenlegi helyzetedet, ha hozzáadtad</string>
     <string name="weather_vista_privacy_policy_summary">Olvasd el a WeatherChum adatvédelmi szabályzatát</string>
     <string name="weather_vista_privacy_policy_updated">Utolsó frissítés: 2026. július 28.</string>
     <string name="weather_vista_privacy_policy_intro_title">Adatvédelmi szabályzat</string>

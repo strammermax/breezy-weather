@@ -1,4 +1,4 @@
-Breezy Weather är en funktionsrik, fri och öppen väderapp med Material 3 Expressive-design och genomtänkta visualiseringar. Den stöder prognoser, väderförhållanden i realtid, korttidsprognoser, luftkvalitet, pollen och varningar från fler än 50 väderkällor, såsom SMHI, DMI, MET Norway, Met Office UK, Met Éireann, ECCC och Open-Meteo.
+WeatherChum är en funktionsrik, fri och öppen väderapp med Material 3 Expressive-design och genomtänkta visualiseringar. Den stöder prognoser, väderförhållanden i realtid, korttidsprognoser, luftkvalitet, pollen och varningar från fler än 50 väderkällor, såsom SMHI, DMI, MET Norway, Met Office UK, Met Éireann, ECCC och Open-Meteo.
 
 <b>Funktioner</b>
 

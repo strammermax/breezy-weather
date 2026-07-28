@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Citire date LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">obținerea informațiilor meteo de la LiveWallpaperWeather, inclusiv coordonatele locațiilor dvs., cum ar fi locația dvs. curentă, dacă ați adăugat-o</string>
+    <string name="content_provider_permission_label">Citire date WeatherChum</string>
+    <string name="content_provider_permission_description">obținerea informațiilor meteo de la WeatherChum, inclusiv coordonatele locațiilor dvs., cum ar fi locația dvs. curentă, dacă ați adăugat-o</string>
     <string name="weather_vista_privacy_policy_summary">Citiți politica de confidențialitate WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Ultima actualizare: 28 iulie 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Politica de Confidențialitate</string>

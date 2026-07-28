@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Legir las donadas de LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">obténer d\'informacions meteorologicas de LiveWallpaperWeather, mai que mai las coordenadas de vòstres emplaçaments, coma vòstre emplaçament actual s\'o avètz ajustat</string>
+    <string name="content_provider_permission_label">Legir las donadas de WeatherChum</string>
+    <string name="content_provider_permission_description">obténer d\'informacions meteorologicas de WeatherChum, mai que mai las coordenadas de vòstres emplaçaments, coma vòstre emplaçament actual s\'o avètz ajustat</string>
     <string name="weather_vista_privacy_policy_summary">Legir la politica de confidencialitat de WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Darrièra mesa a jorn : 28 de julhet de 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Politica de confidencialitat</string>

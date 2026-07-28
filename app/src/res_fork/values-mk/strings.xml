@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Читање податоци од LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">добивање информации за времето од LiveWallpaperWeather, вклучувајќи ги координатите на вашите локации, како на пример вашата тековна локација доколку сте ја додале</string>
+    <string name="content_provider_permission_label">Читање податоци од WeatherChum</string>
+    <string name="content_provider_permission_description">добивање информации за времето од WeatherChum, вклучувајќи ги координатите на вашите локации, како на пример вашата тековна локација доколку сте ја додале</string>
     <string name="weather_vista_privacy_policy_summary">Прочитајте ја политиката за приватност на WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Последно ажурирано: 28 јули 2026 година</string>
     <string name="weather_vista_privacy_policy_intro_title">Политика за приватност</string>

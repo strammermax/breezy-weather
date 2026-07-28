@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">LiveWallpaperWeather தரவைப் படிக்கவும்</string>
-    <string name="content_provider_permission_description">LiveWallpaperWeather இலிருந்து வானிலைத் தகவலைப் பெறுதல், நீங்கள் சேர்த்திருந்தால் உங்கள் தற்போதைய இருப்பிடம் போன்ற உங்கள் இருப்பிடங்களின் ஆயத்தொலைவுகள் உட்பட</string>
+    <string name="content_provider_permission_label">WeatherChum தரவைப் படிக்கவும்</string>
+    <string name="content_provider_permission_description">WeatherChum இலிருந்து வானிலைத் தகவலைப் பெறுதல், நீங்கள் சேர்த்திருந்தால் உங்கள் தற்போதைய இருப்பிடம் போன்ற உங்கள் இருப்பிடங்களின் ஆயத்தொலைவுகள் உட்பட</string>
     <string name="weather_vista_privacy_policy_summary">WeatherChum தனியுரிமைக் கொள்கையைப் படிக்கவும்</string>
     <string name="weather_vista_privacy_policy_updated">கடைசியாகப் புதுப்பிக்கப்பட்டது: ஜூலை 28, 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">தனியுரிமைக் கொள்கை</string>

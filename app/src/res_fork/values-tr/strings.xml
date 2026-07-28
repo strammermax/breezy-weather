@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">LiveWallpaperWeather verilerini oku</string>
-    <string name="content_provider_permission_description">LiveWallpaperWeather uygulamasından hava durumu bilgilerini alır; buna, eklediyseniz mevcut konumunuz gibi konumlarınızın koordinatları da dahildir</string>
+    <string name="content_provider_permission_label">WeatherChum verilerini oku</string>
+    <string name="content_provider_permission_description">WeatherChum uygulamasından hava durumu bilgilerini alır; buna, eklediyseniz mevcut konumunuz gibi konumlarınızın koordinatları da dahildir</string>
     <string name="weather_vista_privacy_policy_summary">WeatherChum gizlilik politikasını okuyun</string>
     <string name="weather_vista_privacy_policy_updated">Son güncelleme: 28 Temmuz 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Gizlilik Politikası</string>

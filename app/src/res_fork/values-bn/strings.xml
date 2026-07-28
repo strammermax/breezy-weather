@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">LiveWallpaperWeather ডেটা পড়ুন</string>
-    <string name="content_provider_permission_description">LiveWallpaperWeather থেকে আবহাওয়ার তথ্য সংগ্রহ করুন, যার মধ্যে রয়েছে আপনার অবস্থানের স্থানাঙ্ক, যেমন আপনি যদি আপনার বর্তমান অবস্থান যোগ করে থাকেন</string>
+    <string name="content_provider_permission_label">WeatherChum ডেটা পড়ুন</string>
+    <string name="content_provider_permission_description">WeatherChum থেকে আবহাওয়ার তথ্য সংগ্রহ করুন, যার মধ্যে রয়েছে আপনার অবস্থানের স্থানাঙ্ক, যেমন আপনি যদি আপনার বর্তমান অবস্থান যোগ করে থাকেন</string>
     <string name="weather_vista_privacy_policy_summary">WeatherChum-র গোপনীয়তা নীতি পড়ুন</string>
     <string name="weather_vista_privacy_policy_updated">সর্বশেষ আপডেট: ২৮ জুলাই, ২০২৬</string>
     <string name="weather_vista_privacy_policy_intro_title">গোপনীয়তা নীতি</string>

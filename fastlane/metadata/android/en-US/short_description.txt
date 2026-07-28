@@ -1,1 +1,1 @@
-A feature-rich weather app with good visualizations and many sources.
+Live weather and dynamic wallpapers made from your own surroundings.

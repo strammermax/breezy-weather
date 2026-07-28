@@ -1,4 +1,4 @@
-Breezy Weather is a feature-rich free and open source Material 3 Expressive weather app with well-thought-out visualizations, supporting forecast, real-time weather conditions, nowcasting, air quality, pollen, alerts, from more than 50 weather sources, such as NWS, Met Office UK, Met Éireann, ECCC and Open-Meteo.
+WeatherChum is a free and open-source weather app centered on dynamic live wallpapers. Turn a photo of your surroundings into a weather-aware background whose clouds, rain, lighting, time of day, forecasts, air quality, pollen and alerts respond to current conditions.
 
 <b>Features</b>
 

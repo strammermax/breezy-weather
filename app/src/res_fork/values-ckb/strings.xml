@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">خوێندنەوەی داتای LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">وەرگرتنی زانیاری کەشوهەوا لە LiveWallpaperWeather، لەگەڵ کۆردینەیتەکانی شوێنەکانت، وەک شوێنی ئێستات ئەگەر زیادت کردبێت</string>
+    <string name="content_provider_permission_label">خوێندنەوەی داتای WeatherChum</string>
+    <string name="content_provider_permission_description">وەرگرتنی زانیاری کەشوهەوا لە WeatherChum، لەگەڵ کۆردینەیتەکانی شوێنەکانت، وەک شوێنی ئێستات ئەگەر زیادت کردبێت</string>
     <string name="weather_vista_privacy_policy_summary">سیاسەتی تایبەتمەندی WeatherChum بخوێنەوە</string>
     <string name="weather_vista_privacy_policy_updated">دوایین نوێکردنەوە: ٢٨ی تەممووزی ٢٠٢٦</string>
     <string name="weather_vista_privacy_policy_intro_title">سیاسەتی تایبەتمەندی</string>

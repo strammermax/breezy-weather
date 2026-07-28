@@ -1,2 +1,2 @@
 Versionsinformation finns på GitHub:
-https://github.com/breezy-weather/breezy-weather/releases
+https://github.com/strammermax/breezy-weather/releases

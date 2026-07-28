@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">قراءة بيانات LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">الحصول على معلومات الطقس من LiveWallpaperWeather، بما في ذلك إحداثيات مواقعك، مثل موقعك الحالي إذا أضفته</string>
+    <string name="content_provider_permission_label">قراءة بيانات WeatherChum</string>
+    <string name="content_provider_permission_description">الحصول على معلومات الطقس من WeatherChum، بما في ذلك إحداثيات مواقعك، مثل موقعك الحالي إذا أضفته</string>
     <string name="weather_vista_privacy_policy_summary">قراءة سياسة خصوصية WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">آخر تحديث: 28 يوليو 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">سياسة الخصوصية</string>

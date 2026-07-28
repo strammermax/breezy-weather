@@ -1,4 +1,4 @@
-Breezy Weather je bezplatná aplikácia s otvoreným kódom na sledovanie počasia v štýle Material 3 s bohatou ponukou funkcií a prepracovanými vizualizáciami, ktorá ponúka predpovede, aktuálne poveternostné podmienky, nowcasting, informácie o kvalite ovzdušia, peľovej záťaži a výstrahy z viac ako 50 zdrojov, ako sú NWS, Met Office UK, Met Éireann, ECCC a Open-Meteo.
+WeatherChum je bezplatná aplikácia s otvoreným kódom na sledovanie počasia v štýle Material 3 s bohatou ponukou funkcií a prepracovanými vizualizáciami, ktorá ponúka predpovede, aktuálne poveternostné podmienky, nowcasting, informácie o kvalite ovzdušia, peľovej záťaži a výstrahy z viac ako 50 zdrojov, ako sú NWS, Met Office UK, Met Éireann, ECCC a Open-Meteo.
 
 <b>Funkcie</b>
 

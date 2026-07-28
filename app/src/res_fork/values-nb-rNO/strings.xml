@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Les LiveWallpaperWeather-data</string>
-    <string name="content_provider_permission_description">hente værinformasjon fra LiveWallpaperWeather, inkludert koordinatene til stedene dine, for eksempel din nåværende posisjon hvis du har lagt den til</string>
+    <string name="content_provider_permission_label">Les WeatherChum-data</string>
+    <string name="content_provider_permission_description">hente værinformasjon fra WeatherChum, inkludert koordinatene til stedene dine, for eksempel din nåværende posisjon hvis du har lagt den til</string>
     <string name="weather_vista_privacy_policy_summary">Les personvernerklæringen for WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Sist oppdatert: 28. juli 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Personvernerklæring</string>

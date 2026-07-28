@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Ler dados do LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">obter informações meteorológicas do LiveWallpaperWeather, incluindo as coordenadas dos seus locais, como sua localização atual, caso você a tenha adicionado</string>
+    <string name="content_provider_permission_label">Ler dados do WeatherChum</string>
+    <string name="content_provider_permission_description">obter informações meteorológicas do WeatherChum, incluindo as coordenadas dos seus locais, como sua localização atual, caso você a tenha adicionado</string>
     <string name="weather_vista_privacy_policy_summary">Leia a política de privacidade do WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Última atualização: 28 de julho de 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Política de Privacidade</string>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Lasīt LiveWallpaperWeather datus</string>
-    <string name="content_provider_permission_description">iegūt laikapstākļu informāciju no LiveWallpaperWeather, tostarp jūsu atrašanās vietu koordinātas, piemēram, jūsu pašreizējo atrašanās vietu, ja tā ir pievienota</string>
+    <string name="content_provider_permission_label">Lasīt WeatherChum datus</string>
+    <string name="content_provider_permission_description">iegūt laikapstākļu informāciju no WeatherChum, tostarp jūsu atrašanās vietu koordinātas, piemēram, jūsu pašreizējo atrašanās vietu, ja tā ir pievienota</string>
     <string name="weather_vista_privacy_policy_summary">Lasīt WeatherChum privātuma politiku</string>
     <string name="weather_vista_privacy_policy_updated">Pēdējoreiz atjaunināts: 2026. gada 28. jūlijā</string>
     <string name="weather_vista_privacy_policy_intro_title">Privātuma politika</string>

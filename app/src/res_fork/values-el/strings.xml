@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Ανάγνωση δεδομένων LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">λήψη πληροφοριών καιρού από το LiveWallpaperWeather, συμπεριλαμβανομένων των συντεταγμένων των τοποθεσιών σας, όπως η τρέχουσα τοποθεσία σας εάν την έχετε προσθέσει</string>
+    <string name="content_provider_permission_label">Ανάγνωση δεδομένων WeatherChum</string>
+    <string name="content_provider_permission_description">λήψη πληροφοριών καιρού από το WeatherChum, συμπεριλαμβανομένων των συντεταγμένων των τοποθεσιών σας, όπως η τρέχουσα τοποθεσία σας εάν την έχετε προσθέσει</string>
     <string name="weather_vista_privacy_policy_summary">Διαβάστε την πολιτική απορρήτου του WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Τελευταία ενημέρωση: 28 Ιουλίου 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Πολιτική Απορρήτου</string>

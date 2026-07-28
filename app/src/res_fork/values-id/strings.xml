@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Membaca data LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">mendapatkan informasi cuaca dari LiveWallpaperWeather, termasuk koordinat lokasi Anda, seperti lokasi Anda saat ini jika Anda menambahkannya</string>
+    <string name="content_provider_permission_label">Membaca data WeatherChum</string>
+    <string name="content_provider_permission_description">mendapatkan informasi cuaca dari WeatherChum, termasuk koordinat lokasi Anda, seperti lokasi Anda saat ini jika Anda menambahkannya</string>
     <string name="weather_vista_privacy_policy_summary">Baca kebijakan privasi WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Terakhir diperbarui: 28 Juli 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Kebijakan Privasi</string>

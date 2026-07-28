@@ -2,8 +2,8 @@
 <resources>
     <!-- App -->
     <string name="brand_name">WeatherChum</string>
-    <string name="content_provider_permission_label">Read LiveWallpaperWeather data</string>
-    <string name="content_provider_permission_description">get weather information from LiveWallpaperWeather, including the coordinates of your locations, such as your current location if you added it</string>
+    <string name="content_provider_permission_label">Read WeatherChum data</string>
+    <string name="content_provider_permission_description">get weather information from WeatherChum, including the coordinates of your locations, such as your current location if you added it</string>
     <string name="weather_vista_privacy_policy_summary">Read the WeatherChum privacy policy</string>
     <string name="weather_vista_privacy_policy_updated">Last updated: July 28, 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Privacy Policy</string>
@@ -22,4 +22,6 @@
     <string name="weather_vista_privacy_policy_rights">• Disable location access: at any time through your Android device settings. The App will then no longer be able to show location-specific information.\n\n• Request deletion of a photo you submitted: contact us at the email address below.</string>
     <string name="weather_vista_privacy_policy_contact_title">7. Contact</string>
     <string name="weather_vista_privacy_policy_contact">If you have any questions about this privacy policy or how we handle data, please feel free to contact us at: googleplaydeveloper@vanburik.info</string>
+    <string name="about_fork_description" translatable="false">WeatherChum is a modified open-source fork of Breezy Weather, distributed under the GNU LGPL v3. Source code and modification history are available on GitHub. Many thanks to the Breezy Weather project and its contributors.</string>
+    <string name="about_fork_source" translatable="false">WeatherChum source code on GitHub</string>
 </resources>

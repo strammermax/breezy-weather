@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Đọc dữ liệu LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">lấy thông tin thời tiết từ LiveWallpaperWeather, bao gồm cả tọa độ các vị trí của bạn, chẳng hạn như vị trí hiện tại của bạn nếu bạn đã thêm</string>
+    <string name="content_provider_permission_label">Đọc dữ liệu WeatherChum</string>
+    <string name="content_provider_permission_description">lấy thông tin thời tiết từ WeatherChum, bao gồm cả tọa độ các vị trí của bạn, chẳng hạn như vị trí hiện tại của bạn nếu bạn đã thêm</string>
     <string name="weather_vista_privacy_policy_summary">Đọc chính sách quyền riêng tư của WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Cập nhật lần cuối: ngày 28 tháng 7 năm 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Chính sách quyền riêng tư</string>

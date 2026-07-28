@@ -1,2 +1,2 @@
 Poznámky k vydaniu sú dostupné na GitHube:
-https://github.com/breezy-weather/breezy-weather/releases
+https://github.com/strammermax/breezy-weather/releases

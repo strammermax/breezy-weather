@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">LiveWallpaperWeatherのデータを読み取る</string>
-    <string name="content_provider_permission_description">LiveWallpaperWeatherから天気情報を取得します。これには、現在地を追加した場合のその現在地など、位置情報の座標が含まれます</string>
+    <string name="content_provider_permission_label">WeatherChumのデータを読み取る</string>
+    <string name="content_provider_permission_description">WeatherChumから天気情報を取得します。これには、現在地を追加した場合のその現在地など、位置情報の座標が含まれます</string>
     <string name="weather_vista_privacy_policy_summary">WeatherChumのプライバシーポリシーを読む</string>
     <string name="weather_vista_privacy_policy_updated">最終更新日: 2026年7月28日</string>
     <string name="weather_vista_privacy_policy_intro_title">プライバシーポリシー</string>

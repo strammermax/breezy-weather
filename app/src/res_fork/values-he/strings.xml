@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">קריאת נתוני LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">קבלת מידע מזג אוויר מ-LiveWallpaperWeather, כולל קואורדינטות המיקומים שלך, כגון המיקום הנוכחי שלך אם הוספת אותו</string>
+    <string name="content_provider_permission_label">קריאת נתוני WeatherChum</string>
+    <string name="content_provider_permission_description">קבלת מידע מזג אוויר מ-WeatherChum, כולל קואורדינטות המיקומים שלך, כגון המיקום הנוכחי שלך אם הוספת אותו</string>
     <string name="weather_vista_privacy_policy_summary">קרא/י את מדיניות הפרטיות של WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">עדכון אחרון: 28 ביולי 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">מדיניות פרטיות</string>

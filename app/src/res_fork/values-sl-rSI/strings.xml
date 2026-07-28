@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Branje podatkov LiveWallpaperWeather</string>
-    <string name="content_provider_permission_description">pridobivanje vremenskih informacij iz LiveWallpaperWeather, vključno s koordinatami vaših lokacij, kot je vaša trenutna lokacija, če ste jo dodali</string>
+    <string name="content_provider_permission_label">Branje podatkov WeatherChum</string>
+    <string name="content_provider_permission_description">pridobivanje vremenskih informacij iz WeatherChum, vključno s koordinatami vaših lokacij, kot je vaša trenutna lokacija, če ste jo dodali</string>
     <string name="weather_vista_privacy_policy_summary">Preberite pravilnik o zasebnosti WeatherChum</string>
     <string name="weather_vista_privacy_policy_updated">Nazadnje posodobljeno: 28. julij 2026</string>
     <string name="weather_vista_privacy_policy_intro_title">Pravilnik o zasebnosti</string>

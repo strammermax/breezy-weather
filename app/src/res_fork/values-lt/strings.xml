@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="content_provider_permission_label">Skaityti LiveWallpaperWeather duomenis</string>
-    <string name="content_provider_permission_description">gauti orų informaciją iš LiveWallpaperWeather, įskaitant jūsų vietovių koordinates, pavyzdžiui, dabartinę vietovę, jei ją pridėjote</string>
+    <string name="content_provider_permission_label">Skaityti WeatherChum duomenis</string>
+    <string name="content_provider_permission_description">gauti orų informaciją iš WeatherChum, įskaitant jūsų vietovių koordinates, pavyzdžiui, dabartinę vietovę, jei ją pridėjote</string>
     <string name="weather_vista_privacy_policy_summary">Skaityti WeatherChum privatumo politiką</string>
     <string name="weather_vista_privacy_policy_updated">Paskutinį kartą atnaujinta: 2026 m. liepos 28 d.</string>
     <string name="weather_vista_privacy_policy_intro_title">Privatumo politika</string>
