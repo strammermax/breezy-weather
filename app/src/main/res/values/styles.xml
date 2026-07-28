@@ -90,7 +90,7 @@
         <item name="titleTextColor">?attr/colorOnSurface</item>
         <item name="subtitleTextColor">@color/material_on_primary_emphasis_medium</item>
 
-        <item name="android:maxButtonHeight" tools:ignore="NewApi">@dimen/mtrl_toolbar_default_height</item>
+        <item name="android:maxButtonHeight" tools:ignore="NewApi">@dimen/app_toolbar_default_height</item>
         <item name="navigationIconTint">?attr/colorOnSurface</item>
 
         <item name="android:theme">@style/ThemeOverlay.MaterialComponents.Toolbar.Surface</item>
@@ -134,32 +134,8 @@
     </style>
 
     <!-- view. -->
-    <style name="week_weather_week_info">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">96dp</item>
-        <item name="android:layout_weight">1</item>
-        <item name="android:foreground">@drawable/selectable_item_background</item>
-    </style>
-
-    <!-- image. -->
-    <style name="material_icon">
-        <item name="android:layout_width">@dimen/material_icon_size</item>
-        <item name="android:layout_height">@dimen/material_icon_size</item>
-        <item name="android:layout_marginTop">@dimen/normal_margin</item>
-        <item name="android:layout_marginLeft">@dimen/normal_margin</item>
-        <item name="android:layout_marginRight">@dimen/normal_margin</item>
-        <item name="android:layout_marginBottom">@dimen/normal_margin</item>
-        <item name="android:tint">@color/colorTextContent</item>
-    </style>
-
-    <style name="widget_week_icon">
-        <item name="android:layout_width">36dp</item>
-        <item name="android:layout_height">36dp</item>
-        <item name="android:layout_centerHorizontal">true</item>
-        <item name="android:src">@drawable/weather_cloudy</item>
-    </style>
-
-    <!-- text. -->
+<!-- image. -->
+<!-- text. -->
     <style name="large_title_text" parent="TextAppearance.Material3.TitleLarge">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -234,13 +210,7 @@
         <item name="android:textSize">@dimen/content_text_size</item>
         <item name="android:textColor">?attr/colorPrimary</item>
     </style>
-
-    <style name="activity_create_widget_done_button" parent="material_button">
-        <item name="android:layout_alignParentRight">true</item>
-        <item name="android:text">@string/action_done</item>
-    </style>
-
-    <style name="material_image_button">
+<style name="material_image_button">
         <item name="android:layout_width">40dp</item>
         <item name="android:layout_height">40dp</item>
         <item name="android:padding">@dimen/small_margin</item>

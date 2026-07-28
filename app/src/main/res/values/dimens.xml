@@ -10,10 +10,7 @@
 
     <!-- image. -->
     <dimen name="current_weather_icon_container_size">128dp</dimen>
-    <dimen name="current_weather_icon_size">80dp</dimen>
-    <dimen name="standard_weather_icon_container_size">88dp</dimen>
-    <dimen name="small_weather_icon_container_size">74dp</dimen>
-    <dimen name="standard_weather_icon_size">56dp</dimen>
+<dimen name="standard_weather_icon_size">56dp</dimen>
     <dimen name="small_weather_icon_size">42dp</dimen>
     <dimen name="material_icon_size">24dp</dimen>
 
@@ -22,15 +19,9 @@
     <dimen name="material3_card_settings_small_separator">2dp</dimen>
     <dimen name="material3_card_settings_large_separator">16dp</dimen>
     <dimen name="material3_card_list_item_corner_radius">16dp</dimen>
-    <dimen name="material3_card_list_item_inner_radius">12dp</dimen>
-    <dimen name="material3_widget_corner_radius">16dp</dimen>
-    <dimen name="material3_widget_inner_radius">12dp</dimen>
-    <dimen name="spinner_drop_width">150dp</dimen>
-    <dimen name="share_view_height">260dp</dimen>
-    <dimen name="progress_view_size">36dp</dimen>
-    <dimen name="trend_item_width">67dp</dimen>
-    <dimen name="trend_item_height_min">144dp</dimen>
-    <dimen name="daily_trend_item_height">440dp</dimen>
+<dimen name="material3_widget_corner_radius">16dp</dimen>
+<dimen name="trend_item_width">67dp</dimen>
+<dimen name="daily_trend_item_height">440dp</dimen>
     <dimen name="hourly_trend_item_height">270dp</dimen>
     <dimen name="nowcasting_chart_height">150dp</dimen>
     <dimen name="action_bar_height">64dp</dimen>
@@ -42,11 +33,7 @@
     <dimen name="title_text_size">16sp</dimen>
     <dimen name="content_text_size">14sp</dimen>
     <dimen name="subtitle_text_size">12sp</dimen>
-    <dimen name="current_weather_text_size">23sp</dimen>
-    <dimen name="current_weather_details_name_text_size">15sp</dimen>
-    <dimen name="current_weather_details_value_text_size">15sp</dimen>
-
-    <!-- widget. -->
+<!-- widget. -->
     <dimen name="widget_grid_1">40dp</dimen>
     <dimen name="widget_grid_2">110dp</dimen>
     <dimen name="widget_grid_3">180dp</dimen>
@@ -84,5 +71,11 @@
 
     <dimen name="widget_material_you_current_default_icon_size">75dp</dimen>
     <dimen name="widget_material_you_current_default_icon_margin">25dp</dimen>
+
+    <!-- Stable copies of Material snackbar/toolbar dimensions used by app-owned layouts. -->
+    <dimen name="app_snackbar_extra_spacing_horizontal">0dp</dimen>
+    <dimen name="app_snackbar_padding_horizontal">12dp</dimen>
+    <dimen name="app_snackbar_padding_vertical">14dp</dimen>
+    <dimen name="app_toolbar_default_height">56dp</dimen>
 
 </resources>

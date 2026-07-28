@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- app. -->
-    <string name="app_name">Време</string>
-    <!-- keyword. -->
+<!-- keyword. -->
     <string name="location_current">Тренутна локација</string>
     <string name="daily_today_short">Данас</string>
     <string name="notification_refreshed_at">Освежено у</string>
@@ -41,8 +40,7 @@
     <string name="settings_enabled">Омогућено</string>
     <string name="settings_disabled">Онемогућено</string>
     <string name="about_app">О апликацији</string>
-    <string name="about_translators">Преводиоци</string>
-    <!-- feedback. -->
+<!-- feedback. -->
     <string name="location_message_failed_to_locate">Проналажење тренутне локације није успело</string>
     <string name="weather_message_data_refresh_failed">Освежавање података није успело</string>
     <string name="widget_label_view_style">Стил приказа</string>
@@ -114,8 +112,7 @@
     <string name="sunshine_duration">Сунчани сати</string>
     <string name="visibility">Видљивост</string>
     <string name="dew_point">Тачка росе</string>
-    <string name="ceiling">Облачни плафон</string>
-    <string name="weather_source_accu_preference_hours_24">24 сата</string>
+<string name="weather_source_accu_preference_hours_24">24 сата</string>
     <string name="weather_source_accu_preference_hours_72">72 сата</string>
     <string name="weather_source_accu_preference_hours_12">12 сати</string>
     <string name="action_undo">Поништи</string>
@@ -257,8 +254,7 @@
     <string name="message_network_unavailable">Мрежа није доступна</string>
     <string name="widget_material_you_current">Material You – Тренутно</string>
     <string name="widget_clock_day_details">Сат + Дневно (Детаљи)</string>
-    <string name="temperature_average_short">Просек</string>
-    <string name="temperature_normal_short">Нормала</string>
+<string name="temperature_normal_short">Нормала</string>
     <string name="precipitation_rain">Киша</string>
     <string name="precipitation_snow">Снег</string>
     <string name="precipitation_ice">Лед</string>
@@ -331,8 +327,7 @@
     <string name="precipitation_intensity_heavy">Јако</string>
     <string name="widget_text">Текст</string>
     <string name="alerts_to_follow">Предстојећа упозорења, додирните овде да бисте их видели.</string>
-    <string name="temperature_degree_day">Степен дана</string>
-    <string name="precipitation_none">Без падавина</string>
+<string name="precipitation_none">Без падавина</string>
     <string name="air_quality_level_1">Одлично</string>
     <string name="air_quality_level_5">Веома нездраво</string>
     <string name="air_quality_level_6">Опасно</string>
@@ -344,8 +339,7 @@
     <string name="widget_subtitle_data_feels_like">Осећа се као температура</string>
     <string name="settings_automatic">Аутоматски</string>
     <string name="widget_custom_subtitle_keyword_hd_description">Опис по сатима</string>
-    <string name="action_edit">Измени</string>
-    <string name="action_preview">Преглед</string>
+<string name="action_preview">Преглед</string>
     <string name="settings_weather_sources">Извори времена</string>
     <string name="settings_weather_sources_summary">Подразумевани извор времена за нове локације, прилагођени API кључеви, остала подешавања извора</string>
     <string name="action_location_list">Листа локација</string>
@@ -353,10 +347,8 @@
     <string name="settings_main_gravity_sensor_switch">Гравитациони сензор</string>
     <string name="settings_notifications">Обавештења</string>
     <string name="about_source_code">Изворни кôд</string>
-    <string name="about_contributors">Сарадници</string>
-    <string name="openmeteo_weather_text_depositing_rime_fog">Таложење магле</string>
-    <string name="action_refresh">Освежи</string>
-    <string name="action_restart">Рестартуј</string>
+<string name="openmeteo_weather_text_depositing_rime_fog">Таложење магле</string>
+<string name="action_restart">Рестартуј</string>
     <string name="message_parsing_error_content">Уверите се да сте ажурирали апликацију на најновију верзију. Сервер може бити привремено недоступан, у том случају, покушајте поново касније. Ако се проблем настави, извуците евиденцију о отказивању апликације из подешавања за отклањање грешака и пријавите проблем на GitHub-у.</string>
     <string name="widget_custom_subtitle_keyword_xdw_description">Дневно време - данас, сутра, …, 4 дана касније</string>
     <string name="widget_style_oreo">Oreo</string>
@@ -433,12 +425,9 @@
     <string name="common_weather_text_rain_snow_mixed_showers">Помешани пљускови са кишом и снегом</string>
     <string name="air_quality_level_4_description">Осетљиве групе особа могу одмах осетити последице по здравље. Здраве особе могу имати отежано дисање и иритацију грла при продуженом излагању. Ограничите активности на отвореном простору.</string>
     <string name="air_quality_level_2_description">Квалитет ваздуха је генерално прихватљив за већину особа. Међутим, осетљиве групе особа могу имати мање до умерених симптома од дуготрајне изложености.</string>
-    <string name="temperature_apparent">Привидно</string>
-    <string name="temperature_wind_chill">Хладан ветар</string>
-    <string name="temperature_degree_day_cooling">Степен дан хлађења</string>
+<string name="temperature_degree_day_cooling">Степен дан хлађења</string>
     <string name="precipitation_nowcasting">Падавине из минута у минут</string>
-    <string name="temperature">Температура</string>
-    <string name="precipitation_probability">Вероватноћа падавина</string>
+<string name="precipitation_probability">Вероватноћа падавина</string>
     <string name="precipitation_duration">Трајање падавина</string>
     <string name="precipitation_thunderstorm">Олуја са грмљавином</string>
     <string name="pollen_level_2">Ниско</string>
@@ -470,8 +459,7 @@
     <string name="settings_location_summary">Подешавања услуга за локацију</string>
     <string name="settings_location_access_background_title">Приступ локацији у позадини</string>
     <string name="settings_location_access_precise_title">Употреба GPS-а на уређају</string>
-    <string name="settings_modules_broadcast_send_data_title">Слање података о времену на %s</string>
-    <string name="about_matrix">Matrix соба</string>
+<string name="about_matrix">Matrix соба</string>
     <string name="pollen">Алергени</string>
     <string name="pollen_tree">Дрво</string>
     <string name="settings_color_app">Прати апликацију</string>
@@ -490,16 +478,10 @@
     <string name="settings_weather_source_none">Ниједан</string>
     <string name="location_search_source">Извор претраге локације</string>
     <string name="location_search_change_source">Промените извор претраге локације</string>
-    <string name="cloud_cover_short">Облачност</string>
-    <string name="humidity_short">Влажност</string>
-    <string name="uv_index_short">УВ индекс</string>
-    <string name="pressure_short">Притисак</string>
-    <string name="dew_point_short">Тачка росе</string>
-    <string name="settings_weather_source_unavailable">%s (недоступно)</string>
+<string name="uv_index_short">УВ индекс</string>
+<string name="settings_weather_source_unavailable">%s (недоступно)</string>
     <string name="settings_weather_source_freenet_disclaimer">Користите Freenet верзију апликације. Пребаците се на Стандардну верзију, ако желите да користите неслободне мрежне услуге.</string>
-    <string name="visibility_short">Видљивост</string>
-    <string name="ceiling_short">Облачни плафон</string>
-    <string name="settings_weather_sources_default_source">Подразумевани извор за нове локације</string>
+<string name="settings_weather_sources_default_source">Подразумевани извор за нове локације</string>
     <string name="settings_per_location_summary">Додатна прилагођавања за ову локацију</string>
     <string name="settings_weather_source_open_meteo_weather_models">Модели времена</string>
     <string name="settings_weather_source_open_meteo_weather_models_best_match">Најбоље подударање</string>
@@ -537,9 +519,7 @@
     <string name="settings_source_instance_geocoding">Инстанца геокодирања</string>
     <string name="settings_weather_source_open_meteo_instance_forecast">Инстанца прогнозе</string>
     <string name="settings_weather_source_open_meteo_instance_air_quality">Инстанца квалитета ваздуха</string>
-    <string name="settings_modules_broadcast_title">Дељење мојих података о времену у друге апликације</string>
-    <string name="settings_per_location_theme">Тема</string>
-    <string name="message_invalid_incomplete_data">Неважећи или непотпуни подаци примљени са сервера</string>
+<string name="message_invalid_incomplete_data">Неважећи или непотпуни подаци примљени са сервера</string>
     <string name="settings_source_instance_invalid">Мора да буде https URL који се завршава с /</string>
     <string name="settings_invalid_syntax">Неважећа синтакса</string>
     <string name="alert_source">Извор: %s</string>
@@ -558,16 +538,8 @@
     <string name="action_edit_location">Измена ове локације</string>
     <string name="settings_global">Глобална подешавања</string>
     <string name="precipitation_intensity_medium">Средње</string>
-    <string name="action_download">Преузми</string>
-    <string name="dialog_app_update_check_title">Остани у току</string>
-    <string name="notification_channel_app_updates">Ажурирања апликације</string>
-    <string name="notification_app_update_available">Доступна нова верзија!</string>
-    <string name="about_check_for_app_updates">Провера ажурирања</string>
-    <string name="about_no_new_updates">Нема доступних нових ажурирања</string>
-    <string name="common_weather_text_sand_storm">Пешчана олуја</string>
-    <string name="dialog_app_update_check_content">Додирните овде да бисте омогућили обавештења о ажурирањима апликације.</string>
-    <string name="settings_notifications_app_updates_check">Обавештења о ажурирањима апликације</string>
-    <string name="meteoam_weather_text_tornado_watersprout">Торнадо или излив воде</string>
+<string name="common_weather_text_sand_storm">Пешчана олуја</string>
+<string name="meteoam_weather_text_tornado_watersprout">Торнадо или излив воде</string>
     <string name="common_weather_text_smoke">Дим</string>
     <string name="settings_unavailable_no_animations">Недоступно, прво омогућите анимације у Android подешавањима</string>
     <string name="current_weather">Тренутно време</string>
@@ -598,14 +570,7 @@
     <string name="settings_weather_source_current_position_disclaimer">Више извора о времену може бити доступно за вашу локацију након првог освежавања.</string>
     <string name="forecast">Прогноза</string>
     <string name="settings_weather_source_not_configured">%s (није подешено)</string>
-    <string name="pollen_acer">Јавор</string>
-    <string name="pollen_alternaria">Алтернарија</string>
-    <string name="pollen_atriplex">Лобода</string>
-    <string name="pollen_juniperus">Клека</string>
-    <string name="pollen_picea">Смрча</string>
-    <string name="pollen_pinus">Бор</string>
-    <string name="pollen_ulmus">Брест</string>
-    <string name="common_weather_text_blowing_snow">Снежна мећава</string>
+<string name="common_weather_text_blowing_snow">Снежна мећава</string>
     <string name="common_weather_text_drifting_snow">Наносни снег</string>
     <string name="common_weather_text_glaze">Леђење</string>
     <string name="action_grant_permission">Додирните да бисте дали дозволу.</string>
@@ -656,9 +621,7 @@
     <string name="uv_index_about">О УВ индексу</string>
     <string name="uv_index_about_description">УВ индекс мери јачину сунчевог ултраљубичастог зрачења. Што је виши, јаче и брже може изазвати опекотине од сунца, рак коже и оштећење ока.</string>
     <string name="uv_index_scale">Скала УВ индекса</string>
-    <string name="uv_index_time_to_burn">Време до опекотина</string>
-    <string name="uv_index_time_to_burn_explanations">Тачно време до опекотина зависи од надморске висине, присуства рефлектујућег тла попут воде или снега, типа коже и употребе креме за сунчање.</string>
-    <string name="air_quality_index_short">AQI</string>
+<string name="air_quality_index_short">AQI</string>
     <string name="air_quality_index_about">О индексу квалитета ваздуха</string>
     <string name="air_quality_index_about_description_1">Индекс квалитета ваздуха (AQI) је скала осмишљена да вам помогне да разумете колико је ваздух загађен у одређеном подручју и потенцијалне ризике по ваше здравље.</string>
     <string name="air_quality_index_about_description_2">Скала која се користи у овој апликацији заснована је на препорукама Светске здравствене организације, а не на локалним прописима, како би се имале смислене категорије и олакшало поређење нивоа загађења између земаља.</string>
@@ -687,10 +650,7 @@
     <string name="humidity_about_description">Релативна влажност, чешће позната само као влажност, је проценат водене паре присутне у ваздуху у поређењу са максималном количином коју ваздух може да задржи на датој температури.</string>
     <string name="dew_point_about">О тачки росе</string>
     <string name="dew_point_about_description">Тачка росе је температура на коју би требало да се охлади да би се постигла релативна влажност од %s.</string>
-    <string name="pressure_rising">Излажење</string>
-    <string name="pressure_steady">Стабилно</string>
-    <string name="pressure_falling">Падање</string>
-    <string name="pressure_about">О притиску</string>
+<string name="pressure_about">О притиску</string>
     <string name="pressure_about_description1">Атмосферски притисак је притисак који Земљина атмосфера врши надоле. Ова апликација користи средњи притисак на нивоу мора како би омогућила лакше поређење притиска са места са различитом надморском висином.</string>
     <string name="pressure_about_description2">Значајне, брзе промене притиска користе се за предвиђање промена времена. На пример, пад притиска може значити да долази киша или снег, а пораст притиска може значити да ће се време побољшати. Ненормалан атмосферски притисак може изазвати главобоље, болове у зглобовима, умор и друге последице.</string>
     <string name="visibility_about">О видљивости</string>
@@ -757,8 +717,7 @@
     <string name="widget_custom_subtitle_alert_box_title">Помоћ за прилагођене титлове</string>
     <string name="settings_appearance_dark_mode_locations_day_night">Прати дан/ноћ</string>
     <string name="settings_appearance_dark_mode_locations_dark">Увек тамно када је апликација у тамном режиму</string>
-    <string name="about_update_check_eol">Ова верзија Android-а више није подржана</string>
-    <string name="humidity_from_to_number">%1$s до %2$s</string>
+<string name="humidity_from_to_number">%1$s до %2$s</string>
     <string name="dew_point_from_to_number">%1$s до %2$s</string>
     <string name="visibility_scale">Скала видљивости</string>
     <string name="cloud_cover_from_to_number">%1$s до %2$s</string>
@@ -776,10 +735,8 @@
     <string name="action_pull_down_to_refresh">Повуците надоле да бисте освежили</string>
     <string name="message_source_non_free_network_title">Овај извор захтева Стандардну верзију апликације</string>
     <string name="message_source_non_free_network_content">Користите Freenet верзију апликације, која подржава само изворе хостоване на бесплатној мрежи. Да бисте наставили да користите овај извор, вратите се на Стандардну верзију. У супротном, изаберите други извор.</string>
-    <string name="widget_live_wallpaper_animations_enable_dangerous">ОПАСНО</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Да ли желите да омогућите анимације? Имајте на уму да то може утицати на перформансе вашег телефона.</string>
-    <string name="widget_live_wallpaper_animations_enable_warning2">Ако одлучите да их омогућите, преузимате пуну одговорност за сваки проблем који може настати и неће вам бити пружена никаква подршка.</string>
-    <string name="settings_weather_source_non_freenet">%s (неслободна мрежна услуга)</string>
+<string name="widget_live_wallpaper_animations_enable_warning1">Да ли желите да омогућите анимације? Имајте на уму да то може утицати на перформансе вашег телефона.</string>
+<string name="settings_weather_source_non_freenet">%s (неслободна мрежна услуга)</string>
     <string name="settings_appearance_dark_mode_custom">Тамни режим од %1$s до %2$s</string>
     <string name="settings_regional_preference">Регионалне преференције</string>
 
@@ -788,22 +745,15 @@
     <string name="details_overview_select">Одаберите детаље</string>
     <string name="widget_tile">Видгет</string>
     <string name="widget_tile_select">Изабери виџет</string>
-    <string name="widget_tile_day">Дан</string>
-    <string name="widget_tile_clock_day_vertical">Сат + дан (вертикално)</string>
-    <string name="widget_tile_clock_day_horizontal">Сат + дан (хоризонтално)</string>
-    <string name="widget_tile_week">Недељно</string>
-    <string name="precipitation_probability_about_description">Вероватноћа падавина је вероватноћа појаве мерљиве кише, снега или других падавина током датог сата.</string>
+<string name="precipitation_probability_about_description">Вероватноћа падавина је вероватноћа појаве мерљиве кише, снега или других падавина током датог сата.</string>
     <string name="precipitation_about_description">Количина падавина је укупна количина кише, снега или других падавина која се очекује да падне током датог сата.</string>
     <string name="wind_direction">Смер ветра</string>
     <string name="wind_direction_about_description">Правац ветра вам говори одакле ветар дува, приказан као смер компаса (нпр. северозапад).</string>
     <string name="details_overview_visibility_label">Видљивост: %1$s</string>
     <string name="action_camera">Камера</string>
     <string name="action_retake">Поново узети</string>
-    <string name="camera_uploading">Уплоадинг пхото...</string>
-    <string name="camera_upload_success">Пхото уплоадед</string>
-    <string name="camera_gallery">Галерија</string>
-    <string name="camera_gallery_uploading">Отпремање фотографије %1$d од %2$d…</string>
-    <string name="camera_gallery_result">%1$d је отпремљено, %2$d није успело</string>
+<string name="camera_gallery">Галерија</string>
+<string name="camera_gallery_result">%1$d је отпремљено, %2$d није успело</string>
     <string name="camera_error_timeout">Није могуће повезати се са сервером (временско ограничење)</string>
     <string name="camera_error_server_down">Сервер је недоступан</string>
     <string name="camera_error_general">Отпремање није успело: %s</string>
@@ -829,10 +779,7 @@
     <string name="widget_live_wallpaper_weather_rotating">Ротирајући тест (10 секунди)</string>
     <string name="widget_live_wallpaper_photo_background">Позадина фотографије локације</string>
     <string name="widget_live_wallpaper_photo_background_summary">Користите фотографију где се налазите као позадину за позадину, са анимацијом времена на врху</string>
-    <string name="widget_live_wallpaper_unsplash_key">Кључ за приступ Унспласх</string>
-    <string name="widget_live_wallpaper_unsplash_key_hint">Налепите свој приступни кључ Унспласх (ИД клијента)</string>
-    <string name="widget_live_wallpaper_bg_source">Извор позадине</string>
-    <string name="widget_live_wallpaper_preview">Превиев</string>
+<string name="widget_live_wallpaper_preview">Превиев</string>
     <string name="widget_live_wallpaper_refresh_now">Освежи сада</string>
     <string name="widget_live_wallpaper_refresh_running">Тражим фотографију…</string>
     <string name="widget_live_wallpaper_refresh_ok">Фотографија ажурирана</string>
@@ -845,8 +792,7 @@
     <string name="widget_live_wallpaper_refresh_interval_summary">Бира другу кеширану фотографију тренутне локације или преузима нову када је кеш празна.</string>
     <string name="widget_live_wallpaper_background_location_summary">Дозволите приступ локацији све време тако да се позадина мења и када се крећете док је апликација затворена. Без ове дозволе, користи се последња позната локација.</string>
     <string name="widget_live_wallpaper_background_location_action">Конфигуришите приступ локацији</string>
-    <string name="widget_live_wallpaper_experimental">Експериментално</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Оцењивање</string>
+<string name="widget_live_wallpaper_seasonal_grading">Оцењивање</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Суптилна боја заснована на сезони и светлост се померају на врху сцене. Не мења позадину фотографије.</string>
     <string name="widget_live_wallpaper_grading_strength">Снага оцењивања: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Фото кеш: %1$d МБ</string>
@@ -884,9 +830,7 @@
     <string name="wallpaper_photo_filter_all">Све слике</string>
     <string name="wallpaper_photo_manager_empty">Није пронађена ниједна преузета позадинска слика.</string>
     <string name="wallpaper_photo_views">Приказано %1$d пута</string>
-    <string name="wallpaper_photo_rate_up">Тхумбс уп</string>
-    <string name="wallpaper_photo_rate_down">Тхумбс довн</string>
-    <string name="wallpaper_photo_disable">Онемогућите и уклоните слику</string>
+<string name="wallpaper_photo_disable">Онемогућите и уклоните слику</string>
     <string name="wallpaper_photo_enable">Омогућите и поново преузмите</string>
     <string name="wallpaper_photo_disabled">Дисаблед</string>
     <string name="wallpaper_photo_file_missing">Слика није кеширана</string>
@@ -900,24 +844,16 @@
     <string name="wallpaper_photo_meta_season_spring">пролеће</string>
     <string name="wallpaper_photo_meta_season_summer">лето</string>
     <string name="wallpaper_photo_meta_season_autumn">јесен</string>
-    <string name="forecast_days_available">Доступни %1$d дана · превуците за више</string>
-    <string name="live_wallpaper_data_age_unknown">непознато</string>
+<string name="live_wallpaper_data_age_unknown">непознато</string>
     <string name="live_wallpaper_data_stale">устајао</string>
     <string name="action_radar">Радар за кишу</string>
     <string name="radar_title">Радар за падавине</string>
     <string name="radar_section_rain_trend">Тренд кише (Буиенрадар)</string>
-    <string name="radar_section_radar_map">Радарска карта (РаинВиевер)</string>
-    <string name="radar_frames_available">Доступни оквири %1$d, најновији %2$s</string>
-    <string name="radar_frames_unavailable">Радарски оквири недоступни</string>
+<string name="radar_frames_unavailable">Радарски оквири недоступни</string>
     <string name="radar_attribution">Подаци: Буиенрадар.нл &amp; РаинВиевер.цом</string>
     <string name="radar_attribution_buienradar">Подаци: Буиенрадар.нл</string>
-    <string name="radar_attribution_windy">Подаци: Винди.цом</string>
-    <string name="radar_attribution_meteoblue">Подаци: Метеоблуе.цом</string>
-    <string name="radar_source_world">Широм света</string>
-    <string name="radar_source_nl">Холандија (5 дана)</string>
-    <string name="radar_source_wind">Ветар и притисак</string>
-    <string name="radar_source_meteoblue">Метеоблуе</string>
-    <string name="radar_source_buienradar">Буиенрадар</string>
+<string name="radar_source_world">Широм света</string>
+<string name="radar_source_buienradar">Буиенрадар</string>
     <string name="settings_radar_tile_title">Радар за кишу</string>
     <string name="settings_radar_tile_source">Радарски извор</string>
     <string name="settings_radar_tile_world_style">Стил мапе света</string>

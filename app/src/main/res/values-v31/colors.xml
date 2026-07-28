@@ -33,8 +33,6 @@
     <color name="md_theme_onSurfaceVariant">@android:color/system_neutral2_700</color>
     <color name="md_theme_inverseOnSurface">@android:color/system_neutral1_100</color>
     <color name="md_theme_inverseSurface">@android:color/system_neutral1_900</color>
-    <color name="md_theme_inversePrimary">@android:color/system_accent1_600</color>
-    <color name="md_theme_shadow">#000000</color>
-    <color name="md_theme_primaryInverse">@android:color/system_accent1_600</color>
+<color name="md_theme_primaryInverse">@android:color/system_accent1_600</color>
 
 </resources>

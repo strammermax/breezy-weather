@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App -->
-    <string name="app_name">Vetero</string>
-    <!-- Card names -->
+<!-- Card names -->
     <string name="daily_forecast">Ĉiutagaj prognozoj</string>
     <string name="hourly_forecast">Ĉiuhoraj prognozoj</string>
     <string name="precipitation_nowcasting">Ĉiuminutaj precipitaĵoj</string>
@@ -21,18 +20,13 @@
     <string name="daily_today_short">Hod</string>
     <string name="daily_tomorrow_short">Mor</string>
     <!-- Temperature -->
-    <string name="temperature">Temperaturo</string>
-    <string name="temperature_feels_like">Sentotemperaturo</string>
+<string name="temperature_feels_like">Sentotemperaturo</string>
     <string name="temperature_feels_like_with_unit">Sentotemperaturo %s</string>
-    <string name="temperature_apparent">Aspektotemperaturo</string>
-    <string name="temperature_wind_chill">Ventmalvarmtemperaturo</string>
-    <!-- You might want to read https://en.wikipedia.org/wiki/Heating_degree_day -->
-    <string name="temperature_degree_day">Grado-tago</string>
-    <string name="temperature_degree_day_heating">Hejtado grado-tago</string>
+<!-- You might want to read https://en.wikipedia.org/wiki/Heating_degree_day -->
+<string name="temperature_degree_day_heating">Hejtado grado-tago</string>
     <string name="temperature_degree_day_cooling">Malvarmigo grado-tago</string>
     <!-- It’s actually a median, but the word “Average” is probably easier to understand -->
-    <string name="temperature_average_short">Mez</string>
-    <string name="temperature_normal_short">Norm</string>
+<string name="temperature_normal_short">Norm</string>
     <string name="temperature_normals">Normalna temperaturo</string>
     <!-- Precipitation -->
     <string name="precipitation">Precipitaĵo</string>
@@ -159,19 +153,12 @@
     <string name="sunshine">Sunbrilo</string>
     <string name="sunshine_duration">Daŭro da sunbrilo</string>
     <string name="humidity">Humido</string>
-    <string name="humidity_short">Humido</string>
-    <string name="humidity_dew_point">Humido / Rosopunkto</string>
+<string name="humidity_dew_point">Humido / Rosopunkto</string>
     <string name="pressure">Premo</string>
-    <string name="pressure_short">Premo</string>
-    <string name="visibility">Vidodistanco</string>
-    <string name="visibility_short">Vidodist.</string>
-    <string name="dew_point">Rosopunkto</string>
-    <string name="dew_point_short">Rosopunkto</string>
-    <string name="cloud_cover">Nubkovro</string>
-    <string name="cloud_cover_short">Nubkovro</string>
-    <string name="ceiling">Nubplafono</string>
-    <string name="ceiling_short">Nubplafono</string>
-    <!-- Weather sources -->
+<string name="visibility">Vidodistanco</string>
+<string name="dew_point">Rosopunkto</string>
+<string name="cloud_cover">Nubkovro</string>
+<!-- Weather sources -->
     <string name="current_weather">Nuna vetero</string>
     <string name="weather_source_continent_worldwide">Tutmonda</string>
     <string name="weather_source_continent_africa">Afriko</string>
@@ -213,11 +200,9 @@
     <string name="action_settings">Agordoj</string>
     <string name="action_preview">Antaŭmontri</string>
     <string name="action_about">Pri</string>
-    <string name="action_refresh">Aktualigi</string>
-    <string name="action_restart">Restarti</string>
+<string name="action_restart">Restarti</string>
     <string name="action_more">Pli</string>
-    <string name="action_edit">Modifi</string>
-    <string name="action_delete">Forigi</string>
+<string name="action_delete">Forigi</string>
     <string name="action_back">Reen</string>
     <string name="action_next">Sekven</string>
     <string name="action_done">Farite</string>
@@ -398,9 +383,7 @@
     <string name="about_matrix">Matrix ĉambro</string>
     <string name="about_source_code">Fontkodo</string>
     <string name="about_dependencies">Dependecoj</string>
-    <string name="about_contributors">Kontribuantoj</string>
-    <string name="about_translators">Tradukistoj</string>
-    <string name="about_contribution_designer">Loga aspektigisto</string>
+<string name="about_contribution_designer">Loga aspektigisto</string>
     <!-- %s is a link -->
     <string name="about_open_link_message">Malfermi %s?</string>
     <!-- Weather condition text -->
@@ -476,9 +459,7 @@
     <string name="dialog_time_picker_toggle_touch_input_voice">Ŝanĝi al tuŝa enigo</string>
     <string name="widget_custom_subtitle_keyword_xmr_description">Lunleviĝo hodiaŭa, morgaŭa, …, postpostpostmorgaŭa</string>
     <string name="settings_appearance_calendar_title">Alternativa kalendaro</string>
-    <string name="settings_modules_broadcast_send_data_title">Sendi datenojn pri %s</string>
-    <string name="settings_per_location_theme">Etoso</string>
-    <string name="settings_global">Ĝeneralaj agordoj</string>
+<string name="settings_global">Ĝeneralaj agordoj</string>
     <string name="dialog_time_picker_input_time">Tajpi tempon</string>
     <string name="widget_label_hide_alternate_calendar">Kaŝi alternativan kalendaron</string>
     <string name="settings_source_instance_invalid">Devas esti retadreso komenciĝanta per “https://” kaj finiĝanta per “/”</string>
@@ -513,8 +494,7 @@
     <string name="location_search_change_source">Ŝanĝi loko serĉa fonto</string>
     <string name="dialog_permissions_notification_title">Restu informata</string>
     <string name="widget_custom_subtitle_keyword_hd_description">Ĉiuhora priskribo</string>
-    <string name="settings_modules_broadcast_title">Kunhavigo de datenoj</string>
-    <string name="widget_custom_subtitle_keyword_xdt_description">Taga temperaturo hodiaŭa, morgaŭa, …, postpostpostmorgaŭa (°C/°F)</string>
+<string name="widget_custom_subtitle_keyword_xdt_description">Taga temperaturo hodiaŭa, morgaŭa, …, postpostpostmorgaŭa (°C/°F)</string>
     <string name="widget_custom_subtitle_keyword_xnt_description">Nokta temperaturo hodiaŭa, morgaŭa, …, postpostpostmorgaŭa (°C/°F)</string>
     <string name="widget_custom_subtitle_keyword_xdtd_description">Taga temperaturo hodiaŭa, morgaŭa, …, postpostpostmorgaŭa (°)</string>
     <string name="widget_custom_subtitle_keyword_xntd_description">Nokta temperaturo hodiaŭa, morgaŭa, …, postpostpostmorgaŭa (°)</string>
@@ -592,25 +572,17 @@
     <string name="location_message_permission_background_missing">Mankas permeso atingi lokon fone</string>
     <string name="dialog_permissions_notification_content">Tuŝeti ĉi tie por aktivigi sciigojn pri veteraj atentigoj, aŭ decidu malfrue en Agordoj.</string>
     <string name="weather_api_unauthorized_title">API aliro neaŭtoritata</string>
-    <string name="action_download">Elŝuti</string>
-    <string name="dialog_app_update_check_content">Tuŝeti ĉi tie por aktivigi sciigojn pri apon aktualigoj.</string>
-    <string name="dialog_app_update_check_title">Resti aktuala</string>
-    <string name="settings_location_access_background_summaryOff">Bonvolu ebligi “Permesi ĉiam” por ekhavi fonajn aktualigojn de vian nunan lokon.</string>
+<string name="settings_location_access_background_summaryOff">Bonvolu ebligi “Permesi ĉiam” por ekhavi fonajn aktualigojn de vian nunan lokon.</string>
     <string name="location_delete_location_dialog_message">Vi estas forigonta “%s” el via listo de konservitaj lokoj.</string>
     <string name="location_delete_location_dialog_message_no_name">Vi estas forigonta ĉi tiun lokon el via listo de konservitaj lokoj.</string>
     <string name="message_source_not_installed_error_content">Aŭ ŝanĝu la veterfontojn por tiu loko, aŭ forigu kaj realdonu tiun lokon.</string>
     <string name="settings_per_location_summary">Aldonaj agordoj por tiu loko</string>
     <string name="settings_weather_sources_per_location_summary">Agordi veterdatenfontojn uzatajn por tiu loko</string>
-    <string name="settings_notifications_app_updates_check">Sciigoj pri apon aktualigoj</string>
-    <string name="settings_debug_dump_crash_logs_saved">Kraŝaj protokoloj registritaj</string>
+<string name="settings_debug_dump_crash_logs_saved">Kraŝaj protokoloj registritaj</string>
     <string name="settings_background_updates_dont_kill_my_app_title">Instrukcioj fabrikantspecifaj</string>
     <string name="settings_location_access_switch_summaryOff">Bonvolu permesi se vi volas povi aldoni vian nunan lokon kiel loko.</string>
     <string name="settings_unavailable_no_animations">Nedisponebla, ebligi efektojn en Androidagordoj unue</string>
-    <string name="notification_channel_app_updates">Apon aktualigoj</string>
-    <string name="notification_app_update_available">Estas nova versio disponebla!</string>
-    <string name="about_check_for_app_updates">Kontrolu aplikaĵajn aktualigojn</string>
-    <string name="about_no_new_updates">Neniu nova ĝisdatigo disponebla</string>
-    <string name="common_weather_text_sand_storm">Sabltempesto</string>
+<string name="common_weather_text_sand_storm">Sabltempesto</string>
     <string name="meteoam_weather_text_tornado_watersprout">Tornado aŭ trombo</string>
     <string name="common_weather_text_smoke">Fumo</string>
     <string name="settings_location_access_background_summaryOn">Aktivigita. Apo povos fone aktualigi veterajn datenojn por via nuna loko.</string>
@@ -629,17 +601,10 @@
     <string name="location_reverse_geocoding">Adreso serĉo</string>
     <string name="location_message_location_access_off">Malŝalta loko aliro</string>
     <string name="location_has_active_alerts">Aktivaj atentigoj</string>
-    <string name="pollen_acer">Acer</string>
-    <string name="settings_background_updates_refresh_never_warning1">Malŝalti fonaj ĝisdatigoj, vi jam ne ricevos sciigojn de atentigoj aŭ precipitaĵo. Fenestraĵoj ne estos refreŝigita ĝis vi malfermas la aplikaĵo.</string>
+<string name="settings_background_updates_refresh_never_warning1">Malŝalti fonaj ĝisdatigoj, vi jam ne ricevos sciigojn de atentigoj aŭ precipitaĵo. Fenestraĵoj ne estos refreŝigita ĝis vi malfermas la aplikaĵo.</string>
     <string name="location_search_no_results_advice">Certigi vian serĉon estas literumita ĝuste kaj ne tro preciza. Alternative, vi povas provi alian lokan serĉfonton kiu povas produkti malsamajn rezultojn.</string>
     <string name="widget_custom_subtitle_explanation">Vi povas enmeti ion ajn, sed bonvolu atenti la longon de la teksto. Se vi volas citi vetera datumojn, bonvolu uzi $ por referenco la ekvivalenta ŝlosilvorto.\n\nEkzemple, “Nuna vetero estas: $cw$.” estos montrita kiel “Nuna vetero estas: Klara ĉielo.”.</string>
-    <string name="pollen_alternaria">Alternario</string>
-    <string name="pollen_atriplex">Atriplekso</string>
-    <string name="pollen_juniperus">Junipero</string>
-    <string name="pollen_picea">Piceo</string>
-    <string name="pollen_pinus">Pino</string>
-    <string name="pollen_ulmus">Ulmo</string>
-    <string name="weather_message_unsupported_feature">Fonto ne subtenas unu el la petitaj funkcioj</string>
+<string name="weather_message_unsupported_feature">Fonto ne subtenas unu el la petitaj funkcioj</string>
     <string name="settings_background_updates_refresh_never_warning2">La fona ĝisdatigo procezo estas malpeza: ĝi nur refreŝigas vian unuan lokon ĉe via elektita rapideco, kaj duagradaj lokoj nur se vi bezonas ilin, unufoje tage. Ĝi estas baterio-efika kaj ne devus superi %d MB de datenkonsumo monaton.</string>
     <string name="settings_background_updates_refresh_never_warning3">Konsideru uzi malpli oftan aktualiga indicon prefere ol malŝalti fonajn ĝisdatigojn, alie frapeti “Daŭri” se vi ankoraŭ deziras procedi.</string>
     <string name="action_grant_permission">Tuŝeti por aprobi la permeson.</string>
@@ -673,9 +638,7 @@
     <string name="uv_index_about">Pri UV indico</string>
     <string name="uv_index_about_description">La UV indico mezuras la forton de la suna ultraviola radiado. Ju pli alta estas, des pli granda kaj rapida kaŭzas sunbruligon, haŭtan kanceron kaj okuldifekton.</string>
     <string name="uv_index_scale">UV indico skalo</string>
-    <string name="uv_index_time_to_burn">Tempo ĝis sunbruligo</string>
-    <string name="uv_index_time_to_burn_explanations">La preciza tempo ĝis sunbruligo dependas de la alteco, la ĉeesto de reflekta surfaco kiel akvo aŭ neĝo, via haŭtospeco, kaj la uzo de sunekrano.</string>
-    <string name="air_quality_index_short">AKI</string>
+<string name="air_quality_index_short">AKI</string>
     <string name="air_quality_index_about">Pri aerkvalito indico</string>
     <string name="air_quality_index_about_description_1">Aerkvalito indico (AKI) estas skalo desegnita helpi vin kompreni kiel malpurigita la aero estas en aparta zono kaj la eblaj sanaj riskoj.</string>
     <string name="air_quality_index_about_description_2">La skalo uzita en tiu aplikaĵo estas bazita sur Monda Organizaĵo pri Sano rekomendoj, prefere ol lokaj regularoj, por havi seriozajn kategoriojn, kaj igi ĝin pli facila kompari malpureconivelojn inter landoj.</string>
@@ -706,10 +669,7 @@
     <string name="humidity_about_description">Relativa humideco, pli ofte konata nur kiel humideco, estas la procento de akvovaporo ĉeesta en la aero komparita kun la maksimuma kvanto kiun la aero povas teni ĉe antaŭfiksita temperaturo.</string>
     <string name="dew_point_about">Pri rosopunkto</string>
     <string name="dew_point_about_description">Rosopunkto estas kio la temperaturo devus esti malvarmigita por atingi relativan humidecon de %s.</string>
-    <string name="pressure_rising">Grandiganta</string>
-    <string name="pressure_steady">Stabila</string>
-    <string name="pressure_falling">Malgrandiganta</string>
-    <string name="pressure_about">Pri premo</string>
+<string name="pressure_about">Pri premo</string>
     <string name="pressure_about_description1">Atmosfera premo estas la malsupreniĝa premo aplikata de la Tera atmosfero. Tiu aplikaĵo uzas mezuman marnivelan premon por ebligi pli facilan komparon de premo de lokoj kun malsamaj altecoj.</string>
     <string name="pressure_about_description2">Signifaj, rapidaj ŝanĝoj en premo estas uzataj antaŭdiri ŝanĝojn en la vetero. Ekzemple, falo en premo povas signifi ke pluvo aŭ neĝo estas venonta, kaj altiĝanta premo povas signifi ke vetero pliboniĝos. Abnormala atmosfera premo povas kaŭzi kapdolorojn, artikolan doloron, lacecon kaj aliajn efikojn.</string>
     <string name="visibility_about">Pri vidodistanco</string>
@@ -804,16 +764,13 @@
     <string name="message_incompatible_times_content">Ŝanĝu vian prognozon aŭ aerkvalita fonto por ke tempa kongruas.</string>
     <string name="widget_custom_subtitle_help_content_description">Montri propraj subtekstaj ŝlosilvortoj helpo</string>
     <string name="widget_custom_subtitle_alert_box_title">Propra subteksto helpo</string>
-    <string name="widget_live_wallpaper_animations_enable_dangerous">DANĜERA</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Ĉu vi volas ŝalti la animaciojn? Bonvolu noti, ke ĉi tio povus influi la rendimenton de via telefono.</string>
-    <string name="widget_live_wallpaper_animations_enable_warning2">Se vi decidus ebligi ilin, vi akceptas plenan respondecon por iu problemo kiu povas ekesti, kaj neniu subteno estos disponigita.</string>
-    <string name="settings_appearance_section_regional">Lingvo kaj regiono</string>
+<string name="widget_live_wallpaper_animations_enable_warning1">Ĉu vi volas ŝalti la animaciojn? Bonvolu noti, ke ĉi tio povus influi la rendimenton de via telefono.</string>
+<string name="settings_appearance_section_regional">Lingvo kaj regiono</string>
     <string name="settings_appearance_section_theme">Etoso</string>
     <string name="settings_appearance_dark_mode_locations_day_night">Sekvu tagon/nokton</string>
     <string name="settings_appearance_dark_mode_locations_dark">Ĉiam malhela, kiam aplikaĵo estas en malhela reĝimo</string>
     <string name="settings_regional_preference">Regiona prefero</string>
-    <string name="about_update_check_eol">Ĉi tiu Android versio ne plu estas subtenata</string>
-    <string name="content_provider_permission_label">Legu Breezy Weather datenojn</string>
+<string name="content_provider_permission_label">Legu Breezy Weather datenojn</string>
     <string name="content_provider_permission_description">akiri veterinformojn de Breezy Weather, enhavita koordinatoj de viaj lokoj, kiel ekzemple via nuna loko se vi aldonis ĝin</string>
     <string name="common_weather_text_mostly_cloudy">Plejparte nuba</string>
     <string name="action_pull_down_to_refresh">Subentiri por aktualigi</string>
@@ -831,22 +788,15 @@
     <string name="details_overview_select">Elektu detalojn</string>
     <string name="widget_tile">Fenestraĵo</string>
     <string name="widget_tile_select">Elektu fenestraĵo</string>
-    <string name="widget_tile_day">Tago</string>
-    <string name="widget_tile_clock_day_vertical">Horloĝo + Tago (Vertikala)</string>
-    <string name="widget_tile_clock_day_horizontal">Horloĝo + Tago (Horizontala)</string>
-    <string name="widget_tile_week">Ĉiusemajne</string>
-    <string name="precipitation_probability_about_description">La precipitaĵprobablo estas la verŝajneco de mezurebla pluvo, neĝo aŭ alia precipitaĵo okazanta dum la antaŭfiksita horo.</string>
+<string name="precipitation_probability_about_description">La precipitaĵprobablo estas la verŝajneco de mezurebla pluvo, neĝo aŭ alia precipitaĵo okazanta dum la antaŭfiksita horo.</string>
     <string name="precipitation_about_description">La precipitaĵkvanto estas la totala kvanto de pluvo, neĝo aŭ alia precipitaĵo atendita fali dum la donita horo.</string>
     <string name="wind_direction">Ventodirekto</string>
     <string name="wind_direction_about_description">Ventodirekto diras al vi de kie la vento blovas, montrita kiel kompasdirekto (ekz. Nord-Okcidento).</string>
     <string name="details_overview_visibility_label">Videbleco: %1$s</string>
     <string name="action_camera">Fotilo</string>
     <string name="action_retake">Repreni</string>
-    <string name="camera_uploading">Alŝutante foton...</string>
-    <string name="camera_upload_success">Foto alŝutita</string>
-    <string name="camera_gallery">Galerio</string>
-    <string name="camera_gallery_uploading">Alŝutante foton %1$d de %2$d…</string>
-    <string name="camera_gallery_result">%1$d alŝutita, %2$d malsukcesis</string>
+<string name="camera_gallery">Galerio</string>
+<string name="camera_gallery_result">%1$d alŝutita, %2$d malsukcesis</string>
     <string name="camera_error_timeout">Ne eblis konektiĝi al servilo (tempofor)</string>
     <string name="camera_error_server_down">Servilo estas nedisponebla</string>
     <string name="camera_error_general">Alŝuto malsukcesis: %s</string>
@@ -872,10 +822,7 @@
     <string name="widget_live_wallpaper_weather_rotating">Rotacia testo (10 sekundoj)</string>
     <string name="widget_live_wallpaper_photo_background">Loka foto fono</string>
     <string name="widget_live_wallpaper_photo_background_summary">Uzu foton de kie vi estas kiel la tapeta fonon, kun la veteranimacio supre</string>
-    <string name="widget_live_wallpaper_unsplash_key">Malŝprucigi alirklavon</string>
-    <string name="widget_live_wallpaper_unsplash_key_hint">Algluu vian alirŝlosilon Unsplash (Kliento-ID)</string>
-    <string name="widget_live_wallpaper_bg_source">Fona fonto</string>
-    <string name="widget_live_wallpaper_preview">Antaŭrigardo</string>
+<string name="widget_live_wallpaper_preview">Antaŭrigardo</string>
     <string name="widget_live_wallpaper_refresh_now">Refreŝigu nun</string>
     <string name="widget_live_wallpaper_refresh_running">Serĉante foton…</string>
     <string name="widget_live_wallpaper_refresh_ok">Foto ĝisdatigita</string>
@@ -888,8 +835,7 @@
     <string name="widget_live_wallpaper_refresh_interval_summary">Elektas alian kaŝmemoron foton de la nuna loko, aŭ elŝutas novan kiam la kaŝmemoro estas malplena.</string>
     <string name="widget_live_wallpaper_background_location_summary">Permesu lokan aliron la tutan tempon, por ke la fono ankaŭ ŝanĝiĝu kiam vi moviĝas dum la programo estas fermita. Sen ĉi tiu permeso, la lasta konata loko estas uzata.</string>
     <string name="widget_live_wallpaper_background_location_action">Agordi lokan aliron</string>
-    <string name="widget_live_wallpaper_experimental">Eksperimenta</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Klasado</string>
+<string name="widget_live_wallpaper_seasonal_grading">Klasado</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Subtila, sezon-bazita koloro kaj lumŝanĝo supre de la sceno. Ne ŝanĝas la fonan foton.</string>
     <string name="widget_live_wallpaper_grading_strength">Grada forto: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Fotokaŝmemoro: %1$d MB</string>
@@ -917,7 +863,7 @@
     <string name="camera_gallery_cannot_read">%1$s: ✗ ne povis legi dosieron</string>
     <string name="camera_gallery_no_exif_gps">%1$s: ✗ neniu EXIF-GPS en la foto; saltis</string>
     <string name="camera_gallery_exif_gps_found">%1$s: EXIF ​​GPS trovita: %2$.5f, %3$.5f</string>
-    <string name="camera_gallery_processing">%1$s: alŝuto kaj prilaborado en servilo...</string>
+    <string name="camera_gallery_processing">%1$s: alŝuto kaj prilaborado en servilo…</string>
     <string name="camera_gallery_saved">%1$s: ✓ konservita</string>
     <string name="camera_gallery_failed">%1$s: ✗ %2$s</string>
     <string name="settings_debug_dump_logs_failed">Malsukcesis kolekti protokolojn</string>
@@ -927,9 +873,7 @@
     <string name="wallpaper_photo_filter_all">Ĉiuj bildoj</string>
     <string name="wallpaper_photo_manager_empty">Neniuj elŝutitaj fonbildoj trovitaj.</string>
     <string name="wallpaper_photo_views">Montritaj %1$d fojojn</string>
-    <string name="wallpaper_photo_rate_up">Dikfingroj supren</string>
-    <string name="wallpaper_photo_rate_down">Dikfingroj malsupren</string>
-    <string name="wallpaper_photo_disable">Malebligu kaj forigu bildon</string>
+<string name="wallpaper_photo_disable">Malebligu kaj forigu bildon</string>
     <string name="wallpaper_photo_enable">Ebligu kaj elŝutu denove</string>
     <string name="wallpaper_photo_disabled">Malebligita</string>
     <string name="wallpaper_photo_file_missing">Bildo ne estas kaŝmemorigita</string>
@@ -943,24 +887,16 @@
     <string name="wallpaper_photo_meta_season_spring">printempo</string>
     <string name="wallpaper_photo_meta_season_summer">somero</string>
     <string name="wallpaper_photo_meta_season_autumn">aŭtuno</string>
-    <string name="forecast_days_available">%1$d tagoj disponeblaj · glitu por pli</string>
-    <string name="live_wallpaper_data_age_unknown">nekonata</string>
+<string name="live_wallpaper_data_age_unknown">nekonata</string>
     <string name="live_wallpaper_data_stale">malfreŝa</string>
     <string name="action_radar">Radaro de pluvo</string>
     <string name="radar_title">Precipitaĵradaro</string>
     <string name="radar_section_rain_trend">Pluvotendenco (Buienradar)</string>
-    <string name="radar_section_radar_map">Radara mapo (RainViewer)</string>
-    <string name="radar_frames_available">%1$d-kadroj haveblaj, plej novaj %2$s</string>
-    <string name="radar_frames_unavailable">Radaraj kadroj nedisponeblaj</string>
+<string name="radar_frames_unavailable">Radaraj kadroj nedisponeblaj</string>
     <string name="radar_attribution">Datumoj: Buienradar.nl &amp; RainViewer.com</string>
     <string name="radar_attribution_buienradar">Datumoj: Buienradar.nl</string>
-    <string name="radar_attribution_windy">Datumoj: Windy.com</string>
-    <string name="radar_attribution_meteoblue">Datumoj: Meteoblue.com</string>
-    <string name="radar_source_world">Tutmonde</string>
-    <string name="radar_source_nl">Nederlando (5 tagoj)</string>
-    <string name="radar_source_wind">Vento &amp; premo</string>
-    <string name="radar_source_meteoblue">Meteoblue</string>
-    <string name="radar_source_buienradar">Buienradar</string>
+<string name="radar_source_world">Tutmonde</string>
+<string name="radar_source_buienradar">Buienradar</string>
     <string name="settings_radar_tile_title">Radarkahelo de pluvo</string>
     <string name="settings_radar_tile_source">Radara fonto</string>
     <string name="settings_radar_tile_world_style">Tutmonde mapstilo</string>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!--
+      These legacy weather, shortcut, clock, and wallpaper bitmaps are loaded by
+      resource name and rely on the existing Android density scaling behavior.
+      Moving them to drawable-nodpi would change their rendered size.
+    -->
+    <issue id="IconLocation">
+        <ignore regexp="src[\\/]main[\\/]res[\\/]drawable[\\/].*\.png$" />
+    </issue>
+
+    <!-- Progressive accessibility and text-sizing attributes are intentionally
+         ignored by Android versions below the API level that introduced them. -->
+    <issue id="UnusedAttribute">
+        <ignore regexp="src[\\/]main[\\/]res[\\/]layout(?:-v\d+)?[\\/]container_main_.*\.xml$" />
+    </issue>
+
+    <!-- RemoteViews updates depend on stable widget hierarchy and view IDs. -->
+    <issue id="UselessParent">
+        <ignore regexp="src[\\/]main[\\/]res[\\/]layout[\\/]widget_.*\.xml$" />
+    </issue>
+</lint>

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="Nederlands">
     <!-- app. -->
-    <string name="app_name">Weer</string>
-    <string name="weather_kind_hollandse_lucht">Holl. wolken</string>
+<string name="weather_kind_hollandse_lucht">Holl. wolken</string>
     <string name="weather_kind_fog_light">Lichte mist</string>
     <string name="weather_kind_fog_heavy">Zware mist</string>
     <!-- keyword. -->
@@ -42,8 +41,7 @@
     <string name="settings_enabled">Aan</string>
     <string name="settings_disabled">Uit</string>
     <string name="about_app">Over de app</string>
-    <string name="about_translators">Vertalers</string>
-    <!-- feedback. -->
+<!-- feedback. -->
     <string name="location_message_failed_to_locate">Huidige locatie niet gevonden</string>
     <string name="weather_message_data_refresh_failed">Verversen van weergegevens mislukt</string>
     <string name="widget_label_view_style">Weergavestijl</string>
@@ -93,11 +91,7 @@
     <string name="warning_photo_refresh_failed_body">Tik om de instellingen van de achtergrondfoto te bekijken.</string>
     <string name="warning_removesky_health_failed">Achtergrondfoto-service niet beschikbaar</string>
     <string name="warning_removesky_health_failed_body">Tik om de instellingen van de achtergrondfoto te bekijken.</string>
-    <string name="temperature">Temperatuur</string>
-    <string name="temperature_apparent">Gevoeld</string>
-    <string name="temperature_wind_chill">Windkou</string>
-    <string name="temperature_degree_day">Daggraad dag</string>
-    <string name="precipitation_nowcasting">Verwachte neerslag</string>
+<string name="precipitation_nowcasting">Verwachte neerslag</string>
     <string name="details_overview">Details</string>
     <string name="details_overview_select">Onderdelen kiezen</string>
     <string name="common_weather_text_rain_snow_mixed_showers">Regen- en sneeuwbuien</string>
@@ -235,8 +229,7 @@
     <string name="pressure">Luchtdruk</string>
     <string name="dialog_permissions_notification_title">Op de hoogte blijven</string>
     <string name="dialog_permissions_notification_content">Tik hier om meldingen over weerwaarschuwingen in te schakelen, of beslis later in Instellingen.</string>
-    <string name="temperature_average_short">Gem.</string>
-    <string name="temperature_normal_short">Normaal</string>
+<string name="temperature_normal_short">Normaal</string>
     <string name="temperature_normals">Temperatuurnormaal</string>
     <string name="uv_index_0_2">Laag</string>
     <string name="uv_index_8_10">Zeer hoog</string>
@@ -288,8 +281,7 @@
     <string name="weather_source_accu_preference_days_10">10 dagen</string>
     <string name="location_message_search_failed">Locatie zoeken is mislukt</string>
     <string name="location_message_reverse_geocoding_failed">Weerbron heeft geen overeenkomstige locatie gevonden</string>
-    <string name="action_refresh">Vernieuwen</string>
-    <string name="action_delete">Verwijderen</string>
+<string name="action_delete">Verwijderen</string>
     <string name="action_undo">Ongedaan maken</string>
     <string name="action_close">Sluiten</string>
     <string name="action_show_errors">Tik voor details</string>
@@ -353,8 +345,7 @@
     <string name="locations">Locaties</string>
     <string name="action_add_new_location">Nieuwe locatie toevoegen</string>
     <string name="action_restart">Opnieuw starten</string>
-    <string name="action_edit">Bewerken</string>
-    <string name="action_set">Instellen</string>
+<string name="action_set">Instellen</string>
     <string name="action_help">Hulp</string>
     <string name="action_learn_more">Meer informatie</string>
     <string name="dialog_permissions_location_background_title">Locatietoegang op achtergrond</string>
@@ -391,8 +382,7 @@
     <string name="ephemeris_moon_phase_new_moon">Nieuwe maan</string>
     <string name="ephemeris_moon_phase_first_quarter">Eerste kwartier</string>
     <string name="ephemeris_moon_phase_waxing_gibbous">Wassende maan</string>
-    <string name="ceiling">Plafond</string>
-    <string name="openmeteo_weather_text_depositing_rime_fog">Rijpneerslag</string>
+<string name="openmeteo_weather_text_depositing_rime_fog">Rijpneerslag</string>
     <string name="settings_units_temperature">Temperatuurseenheid</string>
     <string name="settings_units_precipitation">Neerslageenheid</string>
     <string name="settings_main_summary">Volgorde van tegels, weergegeven items, animaties</string>
@@ -412,8 +402,7 @@
     <string name="common_weather_text_drizzle_freezing_light">Licht-ijzelende motregen</string>
     <string name="common_weather_text_drizzle_freezing_heavy">Hevig-ijzelende motregen</string>
     <string name="dialog_permissions_location_content">Om deze functie te gebruiken, moet je de app toegang geven tot je huidige locatie. Deze zal enkel met je gekozen weersinformatiebronnen gedeeld worden. Als je van gedachte verandert, kan je op eender welk moment je toestemming intrekken en een manuele locatie ingeven.</string>
-    <string name="settings_modules_broadcast_send_data_title">Weergegevens sturen naar %s</string>
-    <string name="settings_location_access_permission_already_granted">Toestemming reeds verleend</string>
+<string name="settings_location_access_permission_already_granted">Toestemming reeds verleend</string>
     <string name="settings_location_access_switch_summaryOff">Geef toestemming als je je huidige locatie wilt kunnen toevoegen als locatie.</string>
     <string name="settings_location_access_background_summaryOn">Ingeschakeld. De app kan de weergegevens voor je huidige locatie op de achtergrond verversen.</string>
     <string name="settings_location_access_background_summaryOff">Schakel “Altijd toestaan” in als je op de achtergrond ververst wilt worden voor je huidige locatie.</string>
@@ -438,8 +427,7 @@
     <string name="about_tester_mode_hidden">Testmodus verborgen</string>
     <string name="widget_live_wallpaper_new_clouds_tuning">Wolken afstellen</string>
     <string name="release_notes_unavailable">Kan de release notes niet laden. Controleer je verbinding en probeer het later opnieuw.</string>
-    <string name="release_notes_view_on_github">Bekijk op GitHub</string>
-    <string name="air_quality_index">Luchtkwaliteitsindex</string>
+<string name="air_quality_index">Luchtkwaliteitsindex</string>
     <string name="air_quality_level_1_description">De luchtkwaliteit is voor de meeste mensen ideaal; ga lekker naar buiten, zoals normaal.</string>
     <string name="air_quality_level_2">Redelijk</string>
     <string name="air_quality_level_4_description">Het effect op de gezondheid is direct merkbaar voor groepen die hier gevoelig voor zijn. Gezonde personen kunnen bij langdurige blootstelling last hebben van moeite met ademhalen en keelirritatie. Beperk buitenactiviteiten.</string>
@@ -457,8 +445,7 @@
     <string name="widget_custom_subtitle_keyword_xsr_description">Zonsopgang van vandaag, morgen, …, 4 dagen later</string>
     <string name="notification_channel_alerts">Waarschuwingen</string>
     <string name="about_source_code">Broncode</string>
-    <string name="about_contributors">Bijdragen</string>
-    <string name="common_weather_text_mostly_clear">Overwegend onbewolkt</string>
+<string name="common_weather_text_mostly_clear">Overwegend onbewolkt</string>
     <string name="common_weather_text_partly_cloudy">Licht bewolkt</string>
     <string name="common_weather_text_rain_heavy">Zware regen</string>
     <string name="common_weather_text_rain_moderate">Matige regen</string>
@@ -472,9 +459,7 @@
     <string name="find_my_phone_summary_on">Luistert naar 3 keer klappen of fluiten</string>
     <string name="find_my_phone_summary_off">Uit</string>
     <string name="find_my_phone_notification_channel">Vind mijn telefoon actief</string>
-    <string name="find_my_phone_notification_title">Vind mijn telefoon luistert mee</string>
-    <string name="find_my_phone_notification_text">Klap 3 keer of fluit om je telefoon te laten reageren.</string>
-    <string name="find_my_phone_tester_rms_gate">Vind mijn telefoon: geluidsdrempel (%1$d dB)</string>
+<string name="find_my_phone_tester_rms_gate">Vind mijn telefoon: geluidsdrempel (%1$d dB)</string>
     <string name="find_my_phone_tester_rms_gate_summary">Alleen tester mode. Lager = gevoeliger (reageert op zachter geluid). Geldt vanaf de volgende keer dat de detectie (opnieuw) actief wordt.</string>
     <string name="find_my_phone_tester_arm_delay">Vind mijn telefoon: wachttijd (%1$d min)</string>
     <string name="find_my_phone_tester_arm_delay_summary">Alleen tester mode. Hoe lang het scherm vergrendeld moet blijven voordat de microfoon gaat luisteren. Geldt vanaf de volgende keer dat het scherm vergrendelt.</string>
@@ -525,13 +510,8 @@
     <string name="settings_debug_delete_logs_message">De ZIP is aangemaakt. Wil je alle verzamelde debuglogs van deze telefoon verwijderen?</string>
     <string name="settings_debug_keep_logs">Bewaren</string>
     <string name="notification_channel_crash_logs">Crashlogs</string>
-    <string name="dew_point_short">Dauwpunt</string>
-    <string name="cloud_cover_short">Bewolking</string>
-    <string name="ceiling_short">Plafond</string>
-    <string name="uv_index_short">UV-index</string>
-    <string name="visibility_short">Zicht</string>
-    <string name="pressure_short">Luchtdruk</string>
-    <string name="alert">Waarschuwing</string>
+<string name="uv_index_short">UV-index</string>
+<string name="alert">Waarschuwing</string>
     <string name="dialog_time_picker_select_time">Tijd selecteren</string>
     <string name="dialog_time_picker_toggle_text_input_voice">Overschakelen naar tekstinvoer</string>
     <string name="dialog_time_picker_toggle_touch_input_voice">Overschakelen naar Touch Input</string>
@@ -551,8 +531,7 @@
     <string name="widget_custom_subtitle_keyword_caqi_description">Huidige luchtkwaliteitsindex</string>
     <string name="pollen_carpinus">Haagbeuk</string>
     <string name="pollen_tilia">Linde</string>
-    <string name="humidity_short">Vochtigheid</string>
-    <string name="location_delete_location_dialog_message_no_name">Je staat op het punt deze locatie uit de opgeslagen locaties te verwijderen.</string>
+<string name="location_delete_location_dialog_message_no_name">Je staat op het punt deze locatie uit de opgeslagen locaties te verwijderen.</string>
     <string name="location_search_no_results_advice">Zorg dat je zoekopdracht juist gespeld en niet te specifiek is. Je kan ook proberen een andere locatiezoekbron te gebruiken, die kan andere resultaten genereren.</string>
     <string name="widget_label_hide_header">Kop verbergen</string>
     <string name="settings_weather_source_freenet_disclaimer">Je gebruikt de Freenet-versie van de app. Schakel over naar de Standaardversie als je gebruik wil maken van niet-vrije netwerkservices.</string>
@@ -585,8 +564,7 @@
     <string name="settings_background_updates_refresh_never_warning1">Door achtergrond updates uit te schakelen krijg je geen meldingen van waarschuwingen of regen. Widgets worden niet meer ververst tot je de app opent.</string>
     <string name="settings_weather_source_open_meteo_weather_models_seamless">Naadloos</string>
     <string name="settings_weather_source_open_meteo_weather_models">Weermodellen</string>
-    <string name="settings_per_location_theme">Thema</string>
-    <string name="pollen_cupressaceae_taxaceae">Cipres</string>
+<string name="pollen_cupressaceae_taxaceae">Cipres</string>
     <string name="pollen_plantaginaceae">Wegbree</string>
     <string name="pollen_platanus">Plataan</string>
     <string name="settings_background_updates_refresh_never_warning3">Overweeg minder vaak te updaten, eerder dan achtergrondupdates volledig uit te zetten. Klik op “Verder” als je toch verder wilt gaan.</string>
@@ -605,24 +583,15 @@
     <string name="settings_source_instance">Instantie</string>
     <string name="settings_source_instance_geocoding">Geocoderingsserver</string>
     <string name="settings_weather_source_open_meteo_weather_models_seamless_description">Combineert alle modellen van deze provider tot een naadloze weersverwachting</string>
-    <string name="dialog_app_update_check_content">Tik hier om meldingen over app-updates aan te zetten.</string>
-    <string name="action_download">Download</string>
-    <string name="dialog_app_update_check_title">Up-to-date blijven</string>
-    <string name="settings_appearance_calendar_title">Alternatieve kalender</string>
+<string name="settings_appearance_calendar_title">Alternatieve kalender</string>
     <string name="settings_unavailable_no_animations">Niet beschikbaar, activeer animaties in Android instellingen</string>
-    <string name="settings_notifications_app_updates_check">Meldingen van app-updates</string>
-    <string name="about_no_new_updates">Geen nieuwe updates beschikbaar</string>
-    <string name="notification_channel_app_updates">App-updates</string>
-    <string name="notification_app_updated_title">Bijgewerkt naar %1$s</string>
+<string name="notification_app_updated_title">Bijgewerkt naar %1$s</string>
     <string name="notification_channel_weetje">Weetjes over locaties</string>
-    <string name="notification_app_update_available">Nieuwe versie beschikbaar!</string>
-    <string name="common_weather_text_sand_storm">Zandstorm</string>
+<string name="common_weather_text_sand_storm">Zandstorm</string>
     <string name="common_weather_text_smoke">Rook</string>
-    <string name="about_check_for_app_updates">Controleren op app-updates</string>
-    <string name="action_grant_permission">Tik voor toestemming.</string>
+<string name="action_grant_permission">Tik voor toestemming.</string>
     <string name="settings_notifications_permission">Toestemming vereist voor meldingen</string>
-    <string name="settings_modules_broadcast_title">Gegevens delen</string>
-    <string name="settings_modules_broadcast_send_data_summary_empty">Geen overeenkomende pakketten gevonden</string>
+<string name="settings_modules_broadcast_send_data_summary_empty">Geen overeenkomende pakketten gevonden</string>
     <string name="settings_debug_notification_permission">Vereist voor meldingen over crashlogs en mislukte weerupdates. %s</string>
     <string name="about_open_link_message">%s openen?</string>
     <string name="common_weather_text_glaze">IJzel</string>
@@ -652,11 +621,9 @@
     <string name="action_show">Weergeven</string>
     <string name="dialog_refresh_error_details_title">Foutmeldingen vernieuwen</string>
     <string name="dialog_refresh_error_details_content">Tik op foutmeldingen met een vraagteken voor verdere hulp.</string>
-    <string name="pollen_juniperus">Jeneverbes</string>
-    <string name="settings_notifications_permission_summary">Vereist voor meldingen over waarschuwingen, verwachtingen en app updates. %s</string>
+<string name="settings_notifications_permission_summary">Vereist voor meldingen over waarschuwingen, verwachtingen en app updates. %s</string>
     <string name="common_weather_text_drifting_snow">Sneeuwjacht</string>
-    <string name="pollen_atriplex">Melde</string>
-    <string name="settings_modules_notification_permission_summary">Vereist om de meldingenwidget weer te geven. %s</string>
+<string name="settings_modules_notification_permission_summary">Vereist om de meldingenwidget weer te geven. %s</string>
     <string name="common_weather_text_cold">Koud</string>
     <string name="common_weather_text_warm">Warm</string>
     <string name="location_last_updated_x">Laatste update %s</string>
@@ -664,12 +631,7 @@
     <string name="settings_weather_source_not_configured">%s (niet ingesteld)</string>
     <string name="location_custom_name">Aangepaste naam</string>
     <string name="forecast">Verwachting</string>
-    <string name="pollen_acer">Esdoorn</string>
-    <string name="pollen_alternaria">Alternaria</string>
-    <string name="pollen_picea">Spar</string>
-    <string name="pollen_pinus">Den</string>
-    <string name="pollen_ulmus">Iep</string>
-    <string name="meteoam_weather_text_tornado_watersprout">Wervelwind of waterhoos</string>
+<string name="meteoam_weather_text_tornado_watersprout">Wervelwind of waterhoos</string>
     <string name="wind_direction_W">West</string>
     <string name="wind_direction_NW">Noordwest</string>
     <string name="daily_yesterday">Gisteren</string>
@@ -697,9 +659,7 @@
     <string name="uv_index_about">Over UV-index</string>
     <string name="uv_index_about_description">De UV-index meet de sterkte van de ultraviolette straling van de zon. Hoe hoger het is, hoe sterker en sneller het zonnebrand, huidkanker en oogbeschadiging kan veroorzaken.</string>
     <string name="uv_index_scale">UV-indexschaal</string>
-    <string name="uv_index_time_to_burn">Tijd voor verbranding</string>
-    <string name="uv_index_time_to_burn_explanations">De exacte tijd om te verbranden hangt af van de hoogte, de aanwezigheid van reflecterende oppervlakte zoals water of sneeuw, huidtype en het gebruik van zonnebrandcrème.</string>
-    <string name="air_quality_index_short">LKI</string>
+<string name="air_quality_index_short">LKI</string>
     <string name="air_quality_index_about">Over de luchtkwaliteitsindex</string>
     <string name="air_quality_index_about_description_1">De Luchtkwaliteitsindex (LKI) is een schaal die wordt gebruikt om inzicht te krijgen in de mate van luchtverontreiniging in een bepaald gebied en de potentiële gezondheidsrisico’s die daarmee gepaard gaan.</string>
     <string name="air_quality_short">Luchtkwaliteit</string>
@@ -784,10 +744,7 @@
     <string name="dew_point_about">Over dauwpunt</string>
     <string name="dew_point_about_description">Dauwpunt is waartoe de temperatuur moet worden afgekoeld om een relatieve vochtigheid van %s te bereiken.</string>
     <string name="dew_point_from_to_number">%1$s tot %2$s</string>
-    <string name="pressure_rising">Toenemend</string>
-    <string name="pressure_steady">Gelijkblijvend</string>
-    <string name="pressure_falling">Dalend</string>
-    <string name="pressure_about">Over druk</string>
+<string name="pressure_about">Over druk</string>
     <string name="pressure_about_description1">Atmosferische druk is de neerwaartse druk die wordt uitgeoefend door de atmosfeer van de aarde. Deze app maakt gebruik van de druk op gemiddeld zeeniveau om de druk van plaatsen met verschillende hoogten gemakkelijker te kunnen vergelijken.</string>
     <string name="pressure_about_description2">Significante, snelle drukveranderingen worden gebruikt om veranderingen in het weer te voorspellen. Een daling van de druk kan bijvoorbeeld betekenen dat er regen of sneeuw op komst is en stijgende druk kan betekenen dat het weer zal verbeteren. Abnormale atmosferische druk kan hoofdpijn, gewrichtspijn, vermoeidheid en andere effecten veroorzaken.</string>
     <string name="visibility_about">Over het zicht</string>
@@ -828,14 +785,11 @@
     <string name="settings_appearance_section_regional">Taal en regio</string>
     <string name="settings_appearance_section_theme">Thema</string>
     <string name="settings_regional_preference">Regionale voorkeuren</string>
-    <string name="about_update_check_eol">Deze Android-versie wordt niet meer ondersteund</string>
-    <string name="content_provider_permission_label">Gegevens van Breezy Weather lezen</string>
+<string name="content_provider_permission_label">Gegevens van Breezy Weather lezen</string>
     <string name="content_provider_permission_description">weerinformatie van Breezy Weather ophalen, inclusief de coördinaten van je locaties, zoals je huidige locatie als je deze hebt toegevoegd</string>
     <string name="common_weather_text_mostly_cloudy">Grotendeels bewolkt</string>
-    <string name="widget_live_wallpaper_animations_enable_dangerous">GEVAARLIJK</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Wil je animaties inschakelen? Let op: dit kan de prestaties van je telefoon beïnvloeden.</string>
-    <string name="widget_live_wallpaper_animations_enable_warning2">Als je besluit ze in te schakelen, dan neem je de volledige verantwoordelijkheid op je voor elk probleem dat zich kan voordoen en wordt er geen ondersteuning geboden.</string>
-    <string name="settings_appearance_dark_mode_custom">Donkere modus van %1$s tot %2$s</string>
+<string name="widget_live_wallpaper_animations_enable_warning1">Wil je animaties inschakelen? Let op: dit kan de prestaties van je telefoon beïnvloeden.</string>
+<string name="settings_appearance_dark_mode_custom">Donkere modus van %1$s tot %2$s</string>
     <string name="message_source_non_free_network_title">Deze bron vereist de standaardversie van de app</string>
     <string name="message_source_non_free_network_content">Je gebruikt de Freenet-versie van de app, die alleen bronnen ondersteunt die op een vrij netwerk worden gehost. Schakel terug naar de standaardversie om deze bron te blijven gebruiken of kies een andere bron.</string>
     <string name="settings_weather_source_non_freenet">%s (niet-vrije netwerkservice)</string>
@@ -848,8 +802,7 @@
     <string name="knmi_weather_text_drizzle_with_sun">Motregen afgewisseld door zon</string>
     <string name="knmi_weather_text_thunderstorm_moderate_rain_heavy_clouds">Onweer met matige regen en zware bewolking</string>
     <string name="knmi_weather_text_thunderstorm_moderate_rain_with_sun">Onweer met matige regen afgewisseld door zon</string>
-    <string name="knmi_weather_text_thunderstorm_heavy_rain_sun">Onweer met zware regen afgewisseld door zon</string>
-    <string name="knmi_weather_text_thunderstorm_hail_heavy_clouds">Onweer met hagel en zware bewolking</string>
+<string name="knmi_weather_text_thunderstorm_hail_heavy_clouds">Onweer met hagel en zware bewolking</string>
     <string name="knmi_weather_text_thunderstorm_heavy_rain_heavy_clouds">Onweer met zware regen en zware bewolking</string>
     <string name="knmi_weather_text_thunderstorm_heavy_rain_with_sun">Onweer met zware regen afgewisseld door zon</string>
     <string name="knmi_weather_text_thunderstorm_hail_with_sun">Onweer met hagel afgewisseld door zon</string>
@@ -888,12 +841,10 @@
     <string name="camera_close">Sluiten</string>
     <string name="camera_live_wallpaper_unavailable">Live wallpaper kon niet worden geopend</string>
     <string name="camera_gallery">Galerij</string>
-    <string name="camera_gallery_uploading">Foto %1$d van %2$d uploaden…</string>
-    <string name="camera_gallery_result">%1$d geüpload, %2$d mislukt</string>
+<string name="camera_gallery_result">%1$d geüpload, %2$d mislukt</string>
     <string name="action_radar">Weer Radar</string>
     <string name="radar_title">Weer Radar</string>
-    <string name="radar_section_radar_map">Radarkaart (RainViewer)</string>
-    <string name="radar_section_rain_trend">Regen-trend (Buienradar)</string>
+<string name="radar_section_rain_trend">Regen-trend (Buienradar)</string>
     <string name="radar_section_rain_trend_general">Regen-trend</string>
     <string name="radar_frames_unavailable">Radar niet beschikbaar</string>
     <string name="radar_source_buienradar">Buienradar</string>
@@ -924,8 +875,7 @@
     <string name="widget_live_wallpaper_refresh_interval_summary">Kiest een andere gecachte foto van de huidige locatie, of haalt een nieuwe op als de cache leeg is.</string>
     <string name="widget_live_wallpaper_background_location_summary">Sta locatie altijd toe zodat de achtergrond ook verandert wanneer je verhuist terwijl de app gesloten is. Zonder deze toestemming wordt de laatst bekende locatie gebruikt.</string>
     <string name="widget_live_wallpaper_background_location_action">Locatietoegang instellen</string>
-    <string name="widget_live_wallpaper_experimental">Experimenteel</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Kleuring</string>
+<string name="widget_live_wallpaper_seasonal_grading">Kleuring</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Een subtiele, seizoensgebonden verschuiving van kleur en licht over de scène. De achtergrondfoto zelf verandert niet.</string>
     <string name="widget_live_wallpaper_grading_strength">Kleursterkte: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Fotocache: %1$d MB</string>
@@ -963,8 +913,7 @@
     <string name="camera_gallery_cannot_read">%1$s: ✗ kon bestand niet lezen</string>
     <string name="camera_gallery_no_exif_gps">%1$s: ✗ geen EXIF-GPS in foto en huidige locatie onbekend; overgeslagen</string>
     <string name="camera_gallery_exif_gps_found">%1$s: EXIF-GPS gevonden: %2$.5f, %3$.5f</string>
-    <string name="camera_gallery_using_current_location">%1$s: geen EXIF-GPS in foto; huidige locatie gebruikt: %2$.5f, %3$.5f</string>
-    <string name="camera_gallery_processing">%1$s: uploaden en controleren op server…</string>
+<string name="camera_gallery_processing">%1$s: uploaden en controleren op server…</string>
     <string name="camera_gallery_saved">%1$s: ✓ opgeslagen</string>
     <string name="camera_gallery_failed">%1$s: ✗ %2$s</string>
     <string name="settings_debug_dump_logs_failed">Logs verzamelen mislukt</string>
@@ -974,9 +923,7 @@
     <string name="wallpaper_photo_filter_all">Alle afbeeldingen</string>
     <string name="wallpaper_photo_manager_empty">Geen gedownloade achtergrondafbeeldingen gevonden.</string>
     <string name="wallpaper_photo_views">%1$d keer getoond</string>
-    <string name="wallpaper_photo_rate_up">Duimpje omhoog</string>
-    <string name="wallpaper_photo_rate_down">Duimpje omlaag</string>
-    <string name="wallpaper_photo_disable">Uitschakelen en afbeelding verwijderen</string>
+<string name="wallpaper_photo_disable">Uitschakelen en afbeelding verwijderen</string>
     <string name="wallpaper_photo_enable">Inschakelen en opnieuw downloaden</string>
     <string name="wallpaper_photo_disabled">Uitgeschakeld</string>
     <string name="wallpaper_photo_file_missing">Afbeelding staat niet in de cache</string>
@@ -990,22 +937,14 @@
     <string name="wallpaper_photo_meta_season_spring">lente</string>
     <string name="wallpaper_photo_meta_season_summer">zomer</string>
     <string name="wallpaper_photo_meta_season_autumn">herfst</string>
-    <string name="forecast_days_available">%1$d dagen beschikbaar · veeg voor meer</string>
-    <string name="widget_live_wallpaper_bg_source">Achtergrond-bron</string>
-    <string name="about_fork_title">Gebaseerd op</string>
+<string name="about_fork_title">Gebaseerd op</string>
 
     <!-- Recent app strings -->
     <string name="widget_tile">Widget</string>
     <string name="widget_tile_select">Kies widget</string>
-    <string name="widget_tile_day">Dag</string>
-    <string name="widget_tile_clock_day_vertical">Klok + dag (verticaal)</string>
-    <string name="widget_tile_clock_day_horizontal">Klok + Dag (horizontaal)</string>
-    <string name="widget_tile_week">Wekelijks</string>
-    <string name="action_camera">Camera</string>
+<string name="action_camera">Camera</string>
     <string name="action_retake">Herkansing</string>
-    <string name="camera_uploading">Foto uploaden...</string>
-    <string name="camera_upload_success">Foto geüpload</string>
-    <string name="camera_error_timeout">Kan geen verbinding maken met de server (time-out)</string>
+<string name="camera_error_timeout">Kan geen verbinding maken met de server (time-out)</string>
     <string name="camera_error_server_down">Server is niet beschikbaar</string>
     <string name="camera_error_general">Uploaden mislukt: %s</string>
     <string name="camera_horizon_guide">Houd de lucht boven deze lijn</string>
@@ -1026,15 +965,10 @@
     <string name="camera_check_gps">GPS</string>
     <string name="camera_check_date">Datum</string>
     <string name="widget_live_wallpaper_weather_rotating">Roterende test (10 seconden)</string>
-    <string name="widget_live_wallpaper_unsplash_key">Unsplash-toegangssleutel</string>
-    <string name="widget_live_wallpaper_unsplash_key_hint">Plak uw Unsplash-toegangssleutel (Client-ID)</string>
-    <string name="radar_frames_available">%1$d-frames beschikbaar, nieuwste %2$s</string>
-    <string name="radar_attribution">Gegevens: RainViewer.com</string>
+<string name="radar_attribution">Gegevens: RainViewer.com</string>
     <string name="radar_attribution_buienradar">Gegevens: Buienradar.nl</string>
-    <string name="radar_attribution_windy">Gegevens: Windy.com</string>
-    <string name="radar_source_world">RainViewer</string>
-    <string name="radar_source_wind">Wind en druk</string>
-    <string name="radar_source_ventusky">Ventusky</string>
+<string name="radar_source_world">RainViewer</string>
+<string name="radar_source_ventusky">Ventusky</string>
     <string name="settings_tile_appearance_title">Blokstijl</string>
     <string name="settings_tile_card_alpha_label">Dekking: %d%%</string>
     <string name="settings_tile_text_color_title">Tekstkleur</string>

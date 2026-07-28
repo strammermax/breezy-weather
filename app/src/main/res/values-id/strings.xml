@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- app. -->
-    <string name="app_name">Cuaca</string>
-    <!-- keyword. -->
+<!-- keyword. -->
     <string name="location_current">Lokasi saat ini</string>
     <string name="daily_today_short">Hari ini</string>
     <string name="notification_refreshed_at">Dimuat ulang pada</string>
     <string name="precipitation">Curah hujan</string>
     <string name="precipitation_probability">Kemungkinan curah hujan</string>
     <string name="precipitation_duration">Durasi curah hujan</string>
-    <string name="temperature">Suhu</string>
-    <string name="wind">Angin</string>
+<string name="wind">Angin</string>
     <string name="humidity">Kelembapan</string>
     <string name="humidity_dew_point">Kelembapan / Titik embun</string>
     <string name="uv_index">Indeks UV</string>
@@ -26,19 +24,13 @@
     <string name="dew_point">Titik embun</string>
     <string name="cloud_cover">Tutupan awan</string>
     <!-- ? -->
-    <string name="ceiling">Tinggi dasar awan</string>
-    <!-- ? -->
+<!-- ? -->
     <string name="settings_icon_packs_get_more">Dapatkan lebih banyak</string>
-    <string name="action_refresh">Muat ulang</string>
-    <string name="action_restart">Mulai ulang</string>
-    <string name="action_edit">Sunting</string>
-    <string name="daily_yesterday_short">Kmrn</string>
+<string name="action_restart">Mulai ulang</string>
+<string name="daily_yesterday_short">Kmrn</string>
     <string name="daily_tomorrow_short">Bsk</string>
-    <string name="temperature_apparent">Tampak</string>
-    <string name="temperature_wind_chill">Kesejukan angin</string>
-    <!-- ? -->
-    <string name="temperature_degree_day">Hari derajat</string>
-    <string name="precipitation_thunderstorm">Badai petir</string>
+<!-- ? -->
+<string name="precipitation_thunderstorm">Badai petir</string>
     <string name="precipitation_rain">Hujan</string>
     <string name="precipitation_snow">Salju</string>
     <string name="precipitation_ice">Es</string>
@@ -82,9 +74,7 @@
     <string name="action_help">Bantuan</string>
     <string name="action_learn_more">Pelajari lebih lanjut</string>
     <string name="about_app">Tentang aplikasi</string>
-    <string name="about_contributors">Kontributor</string>
-    <string name="about_translators">Penerjemah</string>
-    <!-- feedback. -->
+<!-- feedback. -->
     <string name="dialog_permissions_location_title">Akses informasi lokasi</string>
     <string name="dialog_permissions_location_content">Untuk menggunakan fitur ini, Anda perlu memberikan izin aplikasi agar dapat mengakses lokasi Anda saat ini. Lokasi tersebut hanya akan dibagikan dengan sumber cuaca yang dipilih. Jika Anda berubah pikiran, Anda dapat membatalkan izin tersebut dan menambahkan lokasi tetap secara manual.</string>
     <string name="dialog_permissions_location_background_title">Akses lokasi di latar belakang</string>
@@ -244,8 +234,7 @@
     <string name="air_quality_level_1_description">Kualitas udara bersifat sangat ideal bagi sebagian besar individu; nikmati aktivitas luar ruangan seperti biasa.</string>
     <string name="air_quality_level_2">Cukup</string>
     <string name="air_quality_level_2_description">Kualitas udara pada umumnya dapat diterima oleh sebagian besar individu. Namun, kelompok yang sensitif dapat mengalami gejala ringan hingga sedang akibat paparan jangka panjang.</string>
-    <string name="temperature_average_short">Rata-rata</string>
-    <string name="temperature_normal_short">Normal</string>
+<string name="temperature_normal_short">Normal</string>
     <string name="temperature_normals">Suhu normal</string>
     <string name="wind_direction_W_short">B</string>
     <string name="uv_index_11">Ekstrem</string>
@@ -452,8 +441,7 @@
     <string name="settings_modules_summary">Widget, widget notifikasi, wallpaper, berbagi data dengan aplikasi lain</string>
     <string name="action_show_errors">Ketuk untuk lihat detail</string>
     <string name="settings_weather_sources_per_location_summary">Ubah sumber data cuaca yang digunakan untuk lokasi ini</string>
-    <string name="settings_modules_broadcast_send_data_title">Kirimkan data cuaca ke %s</string>
-    <string name="settings_appearance_dark_mode_locations_title">Mode gelap berbasis lokasi</string>
+<string name="settings_appearance_dark_mode_locations_title">Mode gelap berbasis lokasi</string>
     <string name="common_weather_text_snow_showers_heavy">Hujan salju berat</string>
     <string name="settings_background_updates_worker_info_summary">Terakhir dijalankan: %s</string>
     <string name="openmeteo_weather_text_thunderstorm_slight_or_moderate">Badai petir ringan atau sedang</string>
@@ -488,12 +476,8 @@
     <string name="common_weather_text_snow_showers_light">Hujan salju ringan</string>
     <string name="settings_notifications_forecast_time_tomorrow_title">Waktu notifikasi prakiraan hari esok</string>
     <string name="about_contribution_WangDaYeeeeee">Pengembang proyek Geometric Weather yang asli</string>
-    <string name="cloud_cover_short">Awan</string>
-    <string name="ceiling_short">Batas awan</string>
-    <string name="uv_index_short">Indeks UV</string>
-    <string name="visibility_short">Ketampakan</string>
-    <string name="pressure_short">Tekanan</string>
-    <string name="settings_unavailable_no_background_updates">Tidak tersedia. Aktifkan pembaruan latar belakang terlebih dahulu</string>
+<string name="uv_index_short">Indeks UV</string>
+<string name="settings_unavailable_no_background_updates">Tidak tersedia. Aktifkan pembaruan latar belakang terlebih dahulu</string>
     <string name="notification_precipitation_starting_desc">Diperkirakan akan mulai pada %s</string>
     <string name="notification_precipitation_starting">Segera hujan</string>
     <string name="notification_precipitation_continuing">Hujan</string>
@@ -504,9 +488,7 @@
     <string name="location_message_already_exists">Daftar lokasi sudah berisi lokasi ini dengan sumber prakiraan ini.</string>
     <string name="location_search_no_results_advice">Pastikan pencarian lokasi Anda tereja dengan benar dan tidak terlalu spesifik. Cara lainnya: coba sumber pencarian lokasi lain yang dapat memberikan hasil yang berbeda.</string>
     <string name="settings_color_app">Ikuti aplikasi</string>
-    <string name="humidity_short">Kelembapan</string>
-    <string name="dew_point_short">Titik embun</string>
-    <string name="settings_weather_source_none">Tidak ada</string>
+<string name="settings_weather_source_none">Tidak ada</string>
     <string name="location_search_source">Sumber pencarian lokasi</string>
     <string name="location_search_change_source">Ubah sumber pencarian lokasi</string>
     <string name="settings_weather_sources_default_source">Sumber bawaan untuk lokasi baru</string>
@@ -549,10 +531,8 @@
     <string name="alert">Peringatan</string>
     <string name="settings_source_instance">Server</string>
     <string name="settings_source_instance_geocoding">Server geokode</string>
-    <string name="settings_modules_broadcast_title">Bagikan data cuaca saya kepada aplikasi lain</string>
-    <string name="message_invalid_incomplete_data">Data yang diterima dari server tidak valid atau tidak lengkap</string>
-    <string name="settings_per_location_theme">Tema</string>
-    <string name="settings_source_instance_invalid">Harus merupakan URL HTTPS berakhirkan /</string>
+<string name="message_invalid_incomplete_data">Data yang diterima dari server tidak valid atau tidak lengkap</string>
+<string name="settings_source_instance_invalid">Harus merupakan URL HTTPS berakhirkan /</string>
     <string name="settings_invalid_syntax">Sintaks takvalid</string>
     <string name="alert_source">Sumber: %s</string>
     <string name="dialog_time_picker_toggle_touch_input_voice">Ubah ke Masukan Sentuhan</string>
@@ -570,16 +550,8 @@
     <string name="settings_global">Pengaturan global</string>
     <string name="action_edit_location">Sunting lokasi ini</string>
     <string name="precipitation_intensity_medium">Sedang</string>
-    <string name="action_download">Unduh</string>
-    <string name="settings_notifications_app_updates_check">Notifikasi pembaruan aplikasi</string>
-    <string name="common_weather_text_sand_storm">Badai pasir</string>
-    <string name="dialog_app_update_check_title">Tetap terkini</string>
-    <string name="dialog_app_update_check_content">Ketuk di sini untuk mengaktifkan notifikasi pembaruan aplikasi.</string>
-    <string name="notification_channel_app_updates">Pembaruan aplikasi</string>
-    <string name="notification_app_update_available">Versi baru tersedia!</string>
-    <string name="about_check_for_app_updates">Periksa pembaruan aplikasi</string>
-    <string name="about_no_new_updates">Tidak ada pembaruan aplikasi tersedia</string>
-    <string name="meteoam_weather_text_tornado_watersprout">Angin topan atau puting beliung</string>
+<string name="common_weather_text_sand_storm">Badai pasir</string>
+<string name="meteoam_weather_text_tornado_watersprout">Angin topan atau puting beliung</string>
     <string name="common_weather_text_smoke">Asap</string>
     <string name="settings_unavailable_no_animations">Tidak tersedia. Mohon nyalakan animasi pada setelan Android terlebih dahulu</string>
     <string name="current_weather">Cuaca saat ini</string>
@@ -668,15 +640,8 @@
     <string name="settings_weather_source_not_configured">%s (tidak diatur)</string>
     <string name="settings_weather_source_current_position_disclaimer">Lebih banyak sumber cuaca dapat tersedia untuk lokasi Anda setelah penyegaran pertama.</string>
     <string name="common_weather_text_drifting_snow">Salju melayang</string>
-    <string name="pollen_juniperus">Juniperus</string>
-    <string name="common_weather_text_blowing_snow">Salju bertiup</string>
-    <string name="pollen_acer">Acer</string>
-    <string name="pollen_alternaria">Alternaria</string>
-    <string name="pollen_atriplex">Semak garam</string>
-    <string name="pollen_picea">Picea</string>
-    <string name="pollen_pinus">Pinus</string>
-    <string name="pollen_ulmus">Ulmus</string>
-    <string name="common_weather_text_glaze">Glasir</string>
+<string name="common_weather_text_blowing_snow">Salju bertiup</string>
+<string name="common_weather_text_glaze">Glasir</string>
     <string name="location_last_updated_x">Terakhir diperbarui %s</string>
     <string name="location_has_active_alerts">Peringatan aktif</string>
     <string name="settings_notifications_permission">Perizinan notifikasi diperlukan</string>
@@ -723,9 +688,7 @@
     <string name="uv_index_about">Tentang indeks UV</string>
     <string name="uv_index_about_description">Indeks UV mengukur kekuatan radiasi ultraviolet dari matahari. Semakin tinggi nilainya, semakin besar dan cepat risiko kulit terbakar, kanker kulit, dan kerusakan mata.</string>
     <string name="uv_index_scale">Skala indeks UV</string>
-    <string name="uv_index_time_to_burn">Waktu hingga kulit terbakar</string>
-    <string name="uv_index_time_to_burn_explanations">Waktu pasti hingga kulit terbakar tergantung pada ketinggian, keberadaan permukaan reflektif seperti air atau salju, jenis kulit Anda, dan penggunaan tabir surya.</string>
-    <string name="air_quality_index_short">AQI</string>
+<string name="air_quality_index_short">AQI</string>
     <string name="air_quality_index_about">Tentang indeks kualitas udara</string>
     <string name="air_quality_index_about_description_1">Indeks kualitas udara (AQI) adalah skala yang dirancang untuk membantu Anda memahami seberapa tercemarnya udara di suatu area, dan potensi risiko terhadap kesehatan Anda.</string>
     <string name="air_quality_index_about_description_2">Skala yang digunakan dalam aplikasi ini didasarkan pada rekomendasi Organisasi Kesehatan Dunia, bukan peraturan lokal, agar kategorinya bermakna dan memudahkan perbandingan tingkat polusi antarnegara.</string>
@@ -755,8 +718,7 @@
     <string name="action_share_no_app">Tidak ada aplikasi untuk berbagi yang ditemukan</string>
     <string name="action_open_in_other_app_description">Buka lokasi ini di aplikasi lain</string>
     <string name="action_change">Ubah</string>
-    <string name="about_update_check_eol">Versi Android ini tidak lagi didukung</string>
-    <string name="action_add_as_location">Tambahkan sebagai lokasi</string>
+<string name="action_add_as_location">Tambahkan sebagai lokasi</string>
     <string name="action_close_menu">Tutup menu</string>
     <string name="action_toggle_data_type_menu">Alihkan menu pemilihan jenis data</string>
     <string name="action_open_in_other_app">Buka di aplikasi lain</string>
@@ -802,11 +764,8 @@
     <string name="dew_point_about">Tentang titik embun</string>
     <string name="dew_point_about_description">Titik embun adalah suhu yang diperlukan untuk mendinginkan udara guna mencapai kelembapan relatif sebesar %s.</string>
     <string name="dew_point_from_to_number">%1$s hingga %2$s</string>
-    <string name="pressure_rising">Meningkat</string>
-    <string name="pressure_steady">Stabil</string>
-    <string name="pressure_standard">Standar</string>
-    <string name="pressure_falling">Menurun</string>
-    <string name="pressure_about">Tentang tekanan</string>
+<string name="pressure_standard">Standar</string>
+<string name="pressure_about">Tentang tekanan</string>
     <string name="pressure_about_description1">Tekanan atmosfer adalah tekanan ke bawah yang diberikan oleh atmosfer bumi. Aplikasi ini menggunakan tekanan permukaan laut rata-rata untuk memudahkan perbandingan tekanan dari tempat-tempat dengan ketinggian yang berbeda.</string>
     <string name="pressure_about_description2">Perubahan tekanan yang signifikan dan cepat digunakan untuk memprediksi perubahan cuaca. Misalnya, penurunan tekanan dapat berarti hujan atau salju akan datang, dan tekanan yang meningkat dapat berarti cuaca akan membaik. Tekanan atmosfer yang tidak normal dapat menyebabkan sakit kepala, nyeri sendi, kelelahan, dan efek lainnya.</string>
     <string name="visibility_about">Tentang jarak pandang</string>
@@ -839,10 +798,8 @@
     <string name="message_source_non_free_network_content">Anda menggunakan aplikasi versi Freenet, yang hanya mendukung sumber yang di-host di jaringan bebas. Untuk terus menggunakan sumber ini, beralihlah kembali ke versi Standar. Jika tidak, pilih sumber lain.</string>
     <string name="widget_custom_subtitle_help_content_description">Tampilkan bantuan kata kunci subjudul khusus</string>
     <string name="widget_custom_subtitle_alert_box_title">Bantuan subjudul khusus</string>
-    <string name="widget_live_wallpaper_animations_enable_dangerous">BERBAHAYA</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Apakah Anda ingin mengaktifkan animasi? Perlu diketahui bahwa ini dapat memengaruhi performa ponsel Anda.</string>
-    <string name="widget_live_wallpaper_animations_enable_warning2">Jika Anda memutuskan untuk mengaktifkannya, Anda bertanggung jawab penuh atas segala masalah yang mungkin timbul, dan dukungan tidak akan diberikan.</string>
-    <string name="settings_weather_source_non_freenet">%s (layanan jaringan tidak bebas)</string>
+<string name="widget_live_wallpaper_animations_enable_warning1">Apakah Anda ingin mengaktifkan animasi? Perlu diketahui bahwa ini dapat memengaruhi performa ponsel Anda.</string>
+<string name="settings_weather_source_non_freenet">%s (layanan jaringan tidak bebas)</string>
     <string name="settings_appearance_section_regional">Bahasa dan wilayah</string>
     <string name="settings_appearance_section_theme">Tema</string>
     <string name="settings_appearance_dark_mode_custom">Mode gelap dari %1$s hingga %2$s</string>
@@ -861,22 +818,15 @@
     <string name="details_overview_select">Pilih detail</string>
     <string name="widget_tile">Widget</string>
     <string name="widget_tile_select">Pilih widget</string>
-    <string name="widget_tile_day">Hari</string>
-    <string name="widget_tile_clock_day_vertical">Jam + Hari (Vertikal)</string>
-    <string name="widget_tile_clock_day_horizontal">Jam + Hari (Horizontal)</string>
-    <string name="widget_tile_week">Mingguan</string>
-    <string name="precipitation_probability_about_description">Probabilitas curah hujan adalah kemungkinan terjadinya hujan, salju, atau curah hujan lainnya yang dapat diukur selama jam tertentu.</string>
+<string name="precipitation_probability_about_description">Probabilitas curah hujan adalah kemungkinan terjadinya hujan, salju, atau curah hujan lainnya yang dapat diukur selama jam tertentu.</string>
     <string name="precipitation_about_description">Jumlah curah hujan adalah jumlah total hujan, salju, atau curah hujan lainnya yang diperkirakan akan turun pada jam tertentu.</string>
     <string name="wind_direction">Arah angin</string>
     <string name="wind_direction_about_description">Arah angin memberi tahu Anda dari mana angin bertiup, ditunjukkan sebagai arah kompas (misalnya Barat Laut).</string>
     <string name="details_overview_visibility_label">Visibilitas: %1$s</string>
     <string name="action_camera">Kamera</string>
     <string name="action_retake">Ambil kembali</string>
-    <string name="camera_uploading">Mengunggah foto...</string>
-    <string name="camera_upload_success">Foto diunggah</string>
-    <string name="camera_gallery">Galeri</string>
-    <string name="camera_gallery_uploading">Mengunggah foto %1$d dari %2$d…</string>
-    <string name="camera_gallery_result">%1$d diunggah, %2$d gagal</string>
+<string name="camera_gallery">Galeri</string>
+<string name="camera_gallery_result">%1$d diunggah, %2$d gagal</string>
     <string name="camera_error_timeout">Tidak dapat terhubung ke server (batas waktu)</string>
     <string name="camera_error_server_down">Server tidak tersedia</string>
     <string name="camera_error_general">Gagal mengunggah: %s</string>
@@ -902,10 +852,7 @@
     <string name="widget_live_wallpaper_weather_rotating">Tes berputar (10 detik)</string>
     <string name="widget_live_wallpaper_photo_background">Latar belakang foto lokasi</string>
     <string name="widget_live_wallpaper_photo_background_summary">Gunakan foto lokasi Anda sebagai background wallpaper, dengan animasi cuaca di atasnya</string>
-    <string name="widget_live_wallpaper_unsplash_key">Hapus kunci akses</string>
-    <string name="widget_live_wallpaper_unsplash_key_hint">Tempel kunci akses Unsplash Anda (ID Klien)</string>
-    <string name="widget_live_wallpaper_bg_source">Sumber latar belakang</string>
-    <string name="widget_live_wallpaper_preview">Pratinjau</string>
+<string name="widget_live_wallpaper_preview">Pratinjau</string>
     <string name="widget_live_wallpaper_refresh_now">Segarkan sekarang</string>
     <string name="widget_live_wallpaper_refresh_running">Mencari foto…</string>
     <string name="widget_live_wallpaper_refresh_ok">Foto diperbarui</string>
@@ -918,8 +865,7 @@
     <string name="widget_live_wallpaper_refresh_interval_summary">Memilih foto cache lain dari lokasi saat ini, atau mendownload foto baru saat cache kosong.</string>
     <string name="widget_live_wallpaper_background_location_summary">Izinkan akses lokasi sepanjang waktu sehingga latar belakang juga berubah saat Anda bergerak saat aplikasi ditutup. Tanpa izin ini, lokasi terakhir yang diketahui akan digunakan.</string>
     <string name="widget_live_wallpaper_background_location_action">Konfigurasikan akses lokasi</string>
-    <string name="widget_live_wallpaper_experimental">Eksperimental</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Penilaian</string>
+<string name="widget_live_wallpaper_seasonal_grading">Penilaian</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Peralihan warna dan cahaya yang halus berdasarkan musim di bagian atas pemandangan. Tidak mengubah latar belakang foto.</string>
     <string name="widget_live_wallpaper_grading_strength">Kekuatan penilaian: %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Cache foto: %1$d MB</string>
@@ -957,9 +903,7 @@
     <string name="wallpaper_photo_filter_all">Semua gambar</string>
     <string name="wallpaper_photo_manager_empty">Tidak ditemukan gambar latar belakang yang diunduh.</string>
     <string name="wallpaper_photo_views">Ditampilkan kali %1$d</string>
-    <string name="wallpaper_photo_rate_up">Jempol</string>
-    <string name="wallpaper_photo_rate_down">Tidak suka</string>
-    <string name="wallpaper_photo_disable">Nonaktifkan dan hapus gambar</string>
+<string name="wallpaper_photo_disable">Nonaktifkan dan hapus gambar</string>
     <string name="wallpaper_photo_enable">Aktifkan dan unduh lagi</string>
     <string name="wallpaper_photo_disabled">Dengan disabilitas</string>
     <string name="wallpaper_photo_file_missing">Gambar tidak di-cache</string>
@@ -973,24 +917,16 @@
     <string name="wallpaper_photo_meta_season_spring">musim semi</string>
     <string name="wallpaper_photo_meta_season_summer">musim panas</string>
     <string name="wallpaper_photo_meta_season_autumn">musim gugur</string>
-    <string name="forecast_days_available">%1$d hari tersedia · geser untuk mengetahui lebih lanjut</string>
-    <string name="live_wallpaper_data_age_unknown">tidak diketahui</string>
+<string name="live_wallpaper_data_age_unknown">tidak diketahui</string>
     <string name="live_wallpaper_data_stale">basi</string>
     <string name="action_radar">Radar hujan</string>
     <string name="radar_title">Radar curah hujan</string>
     <string name="radar_section_rain_trend">Tren hujan (Buienradar)</string>
-    <string name="radar_section_radar_map">Peta radar (RainViewer)</string>
-    <string name="radar_frames_available">Tersedia frame %1$d, %2$s terbaru</string>
-    <string name="radar_frames_unavailable">Bingkai radar tidak tersedia</string>
+<string name="radar_frames_unavailable">Bingkai radar tidak tersedia</string>
     <string name="radar_attribution">Data: Buienradar.nl &amp; RainViewer.com</string>
     <string name="radar_attribution_buienradar">Data: Buienradar.nl</string>
-    <string name="radar_attribution_windy">Data: Windy.com</string>
-    <string name="radar_attribution_meteoblue">Data: Meteoblue.com</string>
-    <string name="radar_source_world">Seluruh dunia</string>
-    <string name="radar_source_nl">Belanda (5 hari)</string>
-    <string name="radar_source_wind">Angin &amp; tekanan</string>
-    <string name="radar_source_meteoblue">Meteorbiru</string>
-    <string name="radar_source_buienradar">Buienradar</string>
+<string name="radar_source_world">Seluruh dunia</string>
+<string name="radar_source_buienradar">Buienradar</string>
     <string name="settings_radar_tile_title">Ubin radar hujan</string>
     <string name="settings_radar_tile_source">Sumber radar</string>
     <string name="settings_radar_tile_world_style">Gaya peta seluruh dunia</string>

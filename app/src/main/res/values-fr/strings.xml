@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- app -->
-    <string name="app_name">Météo</string>
-    <!-- mots-clés -->
+<!-- mots-clés -->
     <string name="location_current">Ma position</string>
     <string name="location_custom_name">Nom personnalisé</string>
     <string name="location_reverse_geocoding">Recherche d’adresse</string>
@@ -16,15 +15,13 @@
     <string name="precipitation_duration">Durée des précipitations</string>
     <!-- Selon l’échelle de Beaufort -->
     <string name="humidity">Humidité</string>
-    <string name="humidity_short">Humidité</string>
-    <string name="humidity_dew_point">Humidité / Point de rosée</string>
+<string name="humidity_dew_point">Humidité / Point de rosée</string>
     <string name="humidity_about">À propos de l’humidité relative</string>
     <string name="humidity_about_description">L’humidité relative, plus couramment appelée simplement humidité, correspond au pourcentage de vapeur d’eau présent dans l’air par rapport à la quantité maximale que l’air peut contenir à une température donnée.</string>
     <!-- 40 to 90 %, %1$s = 40, %2$s = 90 % -->
     <string name="humidity_from_to_number">%1$s à %2$s</string>
     <string name="dew_point">Point de rosée</string>
-    <string name="dew_point_short">P. de rosée</string>
-    <string name="dew_point_about">À propos du point de rosée</string>
+<string name="dew_point_about">À propos du point de rosée</string>
     <!-- %s = 100 % -->
     <string name="dew_point_about_description">Le point de rosée est la température à laquelle il faudrait refroidir l’air pour atteindre une humidité relative de %s.</string>
     <!-- 10 to 20°, %1$s = 10, %2$s = 20° -->
@@ -43,19 +40,13 @@
     <string name="notification_channel_widget">Widget</string>
     <string name="notification_channel_background_services">Services en arrière-plan</string>
     <string name="notification_channel_crash_logs">Journaux d’incident</string>
-    <string name="notification_channel_app_updates">Mises à jour de l’appli</string>
-    <string name="pressure">Pression</string>
-    <string name="pressure_short">Pression</string>
-    <string name="pressure_rising">En hausse</string>
-    <string name="pressure_steady">Stable</string>
-    <string name="pressure_falling">En baisse</string>
-    <string name="pressure_standard">Normale</string>
+<string name="pressure">Pression</string>
+<string name="pressure_standard">Normale</string>
     <string name="pressure_about">À propos de la pression</string>
     <string name="pressure_about_description1">La pression atmosphérique est la pression exercée par l’atmosphère terrestre. Cette appli utilise la pression moyenne au niveau de la mer pour faciliter la comparaison de pression d’emplacements situés à des altitudes différentes.</string>
     <string name="pressure_about_description2">Les variations importantes et rapides de la pression sont utilisées pour prévoir les changements météorologiques. Par exemple, une baisse de pression peut signifier que de la pluie ou de la neige se prépare, et une hausse de pression peut signifier que le temps va s’améliorer. Une pression atmosphérique anormale peut provoquer, entre autres, des maux de tête, des douleurs articulaires et de la fatigue.</string>
     <string name="visibility">Visibilité</string>
-    <string name="visibility_short">Visibilité</string>
-    <string name="visibility_about">À propos de la visibilité</string>
+<string name="visibility_about">À propos de la visibilité</string>
     <string name="visibility_about_description">La visibilité indique la distance à laquelle des objets tels que des bâtiments et des collines peuvent être clairement distingués. Elle peut être affectée par les précipitations, le brouillard, la poussière, la fumée ou la brume.</string>
     <string name="visibility_scale">Échelle de visibilité</string>
     <!-- 10 to 20 km, %1$s = 10, %2$s = 20 km -->
@@ -69,23 +60,18 @@
     <string name="visibility_clear">Dégagé</string>
     <string name="visibility_perfectly_clear">Complètement dégagé</string>
     <string name="cloud_cover">Couverture nuageuse</string>
-    <string name="cloud_cover_short">Couverture</string>
-    <string name="cloud_cover_about">À propos de la couverture nuageuse</string>
+<string name="cloud_cover_about">À propos de la couverture nuageuse</string>
     <string name="cloud_cover_about_description">La couverture nuageuse désigne le pourcentage du ciel obscurci par les nuages, en moyenne. La couverture nuageuse est corrélée à la durée d’ensoleillement.</string>
     <!-- 40 to 90 %, %1$s = 40, %2$s = 90 % -->
     <string name="cloud_cover_from_to_number">%1$s à %2$s</string>
     <!-- Partly cloudy to Clear, %1$s = Partly cloudy, %2$s = Cloudy -->
     <string name="cloud_cover_from_to_description">%1$s à %2$s</string>
     <string name="cloud_cover_scale">Échelle de couverture nuageuse</string>
-    <string name="ceiling">Plafond nuageux</string>
-    <string name="ceiling_short">Plafond</string>
-    <string name="settings_icon_packs_get_more">Voir plus</string>
-    <string name="action_refresh">Actualiser</string>
-    <string name="action_pull_down_to_refresh">Tirer vers le bas pour actualiser</string>
+<string name="settings_icon_packs_get_more">Voir plus</string>
+<string name="action_pull_down_to_refresh">Tirer vers le bas pour actualiser</string>
     <string name="action_restart">Redémarrer</string>
     <string name="action_more">Plus</string>
-    <string name="action_edit">Modifier</string>
-    <string name="action_change">Changer</string>
+<string name="action_change">Changer</string>
     <string name="daily_yesterday">Hier</string>
     <string name="daily_today">Aujourd’hui</string>
     <string name="daily_tomorrow">Demain</string>
@@ -101,21 +87,16 @@
     <string name="chart_average">Moyenne</string>
     <string name="chart_maximum_value">Valeur maximale</string>
     <string name="conditions">Conditions</string>
-    <string name="temperature">Température</string>
-    <string name="temperature_real">Réel</string>
+<string name="temperature_real">Réel</string>
     <string name="temperature_real_details">La température réelle.</string>
     <string name="temperature_feels_like">Ressenti</string>
     <string name="temperature_feels_like_with_unit">Ressenti %s</string>
     <string name="temperature_feels_like_details">La température telle qu’elle est perçue sous l’effet de l’humidité, du vent et/ou du soleil.</string>
-    <string name="temperature_apparent">Ressentie</string>
-    <string name="temperature_wind_chill">Refroidissement éolien</string>
-    <string name="temperature_degree_day">Degré jour unifié</string>
-    <string name="temperature_degree_day_heating">Degré-jour de chauffe</string>
+<string name="temperature_degree_day_heating">Degré-jour de chauffe</string>
     <string name="temperature_degree_day_heating_explanation">Différence entre la température extérieure et une température de confort de référence utilisée pour estimer les besoins en énergie de chauffage</string>
     <string name="temperature_degree_day_cooling">Degré-jour froid</string>
     <string name="temperature_degree_day_cooling_explanation">Différence entre la température extérieure et une température de confort de référence utilisée pour estimer les besoins en énergie de réfrigération</string>
-    <string name="temperature_average_short">Moy.</string>
-    <string name="temperature_normal_short">Normale</string>
+<string name="temperature_normal_short">Normale</string>
     <string name="temperature_normals">Normales de température</string>
     <string name="temperature_normals_deviation">Écart</string>
     <!-- %s = July -->
@@ -180,23 +161,17 @@
     <string name="pollen_primary">Pollen principal</string>
     <string name="pollen_details">Détails des pollens</string>
     <string name="pollen_tree">Arbres</string>
-    <string name="pollen_acer">Érable</string>
-    <string name="pollen_alnus">Aulne</string>
-    <string name="pollen_alternaria">Alternaria</string>
-    <string name="pollen_ambrosia">Ambroisies</string>
+<string name="pollen_alnus">Aulne</string>
+<string name="pollen_ambrosia">Ambroisies</string>
     <string name="pollen_artemisia">Armoises</string>
-    <string name="pollen_atriplex">Arroches</string>
-    <string name="pollen_betula">Bouleau</string>
+<string name="pollen_betula">Bouleau</string>
     <string name="pollen_carpinus">Charme</string>
     <string name="pollen_castanea">Châtaignier</string>
     <string name="pollen_corylus">Noisetier</string>
     <string name="pollen_cupressaceae_taxaceae">Cyprès</string>
     <string name="pollen_fraxinus">Frêne</string>
-    <string name="pollen_juniperus">Genévrier</string>
-    <string name="pollen_olea">Olivier</string>
-    <string name="pollen_picea">Épicéas</string>
-    <string name="pollen_pinus">Pin</string>
-    <string name="pollen_plantaginaceae">Plantain</string>
+<string name="pollen_olea">Olivier</string>
+<string name="pollen_plantaginaceae">Plantain</string>
     <string name="pollen_platanus">Platane</string>
     <string name="pollen_poaeceae">Graminées</string>
     <string name="pollen_populus">Peuplier</string>
@@ -204,8 +179,7 @@
     <string name="pollen_rumex">Oseille</string>
     <string name="pollen_salix">Saule</string>
     <string name="pollen_tilia">Tilleul</string>
-    <string name="pollen_ulmus">Orme</string>
-    <string name="pollen_urticaceae">Urticacées</string>
+<string name="pollen_urticaceae">Urticacées</string>
     <string name="pollen_mold">Moisissure</string>
     <!-- Pollen level means “Potential risk of allergy” -->
     <string name="pollen_level_0">Aucun</string>
@@ -225,9 +199,7 @@
     <string name="uv_index_about">À propos de l’indice UV</string>
     <string name="uv_index_about_description">L’indice UV mesure l’intensité du rayonnement ultraviolet émis par le soleil. Plus elle est élevée, plus elle risque de provoquer rapidement des coups de soleil, des cancers de la peau et des lésions oculaires.</string>
     <string name="uv_index_scale">Échelle de l’indice UV</string>
-    <string name="uv_index_time_to_burn">Temps avant brûlure</string>
-    <string name="uv_index_time_to_burn_explanations">Le temps exact avant brûlure dépend de l’altitude, de la présence de surfaces réfléchissantes comme l’eau ou la neige, du type de peau et de l’utilisation de crème solaire.</string>
-    <string name="forecast">Prévisions</string>
+<string name="forecast">Prévisions</string>
     <string name="daily_forecast">Prévisions quotidiennes</string>
     <string name="hourly_forecast">Prévisions heure par heure</string>
     <string name="current_weather">Météo actuelle</string>
@@ -275,18 +247,11 @@
     <string name="action_share_no_app">Aucune appli compatible avec le partage trouvée</string>
     <string name="action_translate">Traduire</string>
     <string name="action_translate_no_app">Aucune appli de traduction compatible trouvée</string>
-    <string name="action_download">Télécharger</string>
-    <string name="locations">Emplacements</string>
+<string name="locations">Emplacements</string>
     <string name="about_app">À propos</string>
-    <string name="about_check_for_app_updates">Vérifier les mises à jour de l’appli</string>
-    <string name="about_no_new_updates">Pas de nouvelle version disponible</string>
-    <string name="about_update_check_eol">Cette version d’Android n’est plus supportée</string>
-    <string name="about_contact">Contact</string>
-    <string name="about_translators">Traducteurs</string>
-    <!-- feedback. -->
-    <string name="dialog_app_update_check_title">Restez à jour</string>
-    <string name="dialog_app_update_check_content">Appuyez ici pour activer les notifications des mises à jour de l’application.</string>
-    <string name="dialog_permissions_notification_title">Restez informés</string>
+<string name="about_contact">Contact</string>
+<!-- feedback. -->
+<string name="dialog_permissions_notification_title">Restez informés</string>
     <string name="dialog_permissions_notification_content">Appuyez ici pour activer les notifications de vigilances météo, ou décidez plus tard depuis les paramètres.</string>
     <string name="dialog_permissions_location_title">Accéder aux informations de localisation</string>
     <string name="dialog_permissions_location_content">Pour utiliser cette fonctionnalité, vous devez autoriser l’application à accéder à votre position actuelle. Celle-ci ne sera partagée qu’avec les sources météorologiques sélectionnées. Si vous avez changé d’avis, vous pouvez annuler l’opération et ajouter un emplacement fixe manuellement.</string>
@@ -382,10 +347,8 @@
     <string name="widget_custom_subtitle_keyword_xmp_description">Phase lunaire d’aujourd’hui, demain, …, dans 4 jours</string>
     <string name="widget_live_wallpaper_weather_kind">Météo</string>
     <string name="widget_live_wallpaper_day_night_type">Période</string>
-    <string name="widget_live_wallpaper_animations_enable_dangerous">DANGEREUX</string>
-    <string name="widget_live_wallpaper_animations_enable_warning1">Voulez-vous activer les animations ? Notez que cela peut affecter les performances de votre téléphone.</string>
-    <string name="widget_live_wallpaper_animations_enable_warning2">Si vous décidez de les activer, vous assumez l’entière responsabilité des problèmes qui pourraient survenir, et aucune assistance ne sera fournie.</string>
-    <string name="location_message_added">Emplacement ajouté</string>
+<string name="widget_live_wallpaper_animations_enable_warning1">Voulez-vous activer les animations ? Notez que cela peut affecter les performances de votre téléphone.</string>
+<string name="location_message_added">Emplacement ajouté</string>
     <string name="location_message_updated">Emplacement mis à jour</string>
     <string name="location_message_already_exists">La liste d’emplacements contient déjà cet emplacement avec cette source de prévisions.</string>
     <string name="location_message_deleted">Emplacement supprimé</string>
@@ -458,8 +421,7 @@
     <string name="settings_global">Paramètres communs</string>
     <string name="settings_per_location">Préférences de l’emplacement</string>
     <string name="settings_per_location_summary">Personnalisations supplémentaires pour cet emplacement</string>
-    <string name="settings_per_location_theme">Thème</string>
-    <string name="settings_weather_sources">Sources météo</string>
+<string name="settings_weather_sources">Sources météo</string>
     <string name="settings_weather_sources_summary">Source météo par défaut pour les nouveaux emplacements, clés API personnalisées, autres paramètres de source</string>
     <string name="settings_weather_sources_default_source">Source par défaut pour les nouveaux emplacements</string>
     <string name="settings_weather_source_non_freenet">%s (service réseau non libre)</string>
@@ -574,8 +536,7 @@
     <string name="label_expanded">Développé</string>
     <string name="label_collapsed">Réduit</string>
     <string name="settings_background_updates_refresh_skip_when_battery_low">Ignorer quand la batterie est faible</string>
-    <string name="settings_notifications_app_updates_check">Notifications des mises à jour de l’appli</string>
-    <string name="settings_notifications_permission">Permission de notification requise</string>
+<string name="settings_notifications_permission">Permission de notification requise</string>
     <!-- %s is the string with the key action_grant_permission -->
     <string name="settings_notifications_permission_summary">Nécessaire pour envoyer des notifications de vigilances, prévisions et mises à jour de l’appli. %s</string>
     <string name="settings_background_updates_section_troubleshoot">Résolution de problèmes</string>
@@ -646,9 +607,7 @@
     <string name="settings_modules_notification_style_title">Style</string>
     <string name="settings_modules_notification_temp_icon_switch">Température dans la barre d’état</string>
     <string name="settings_modules_notification_feels_like_switch">Utiliser la température ressentie</string>
-    <string name="settings_modules_broadcast_title">Partage de données</string>
-    <string name="settings_modules_broadcast_send_data_title">Envoyer des données %s</string>
-    <string name="settings_modules_broadcast_send_data_summary_empty">Aucun paquet compatible trouvé</string>
+<string name="settings_modules_broadcast_send_data_summary_empty">Aucun paquet compatible trouvé</string>
     <string name="about_privacy_policy">Politique de confidentialité</string>
     <string name="settings_debug">Débogage</string>
     <string name="settings_debug_notification_permission">Nécessaire pour envoyer des notifications de journaux d’incident et d’échecs de mise à jour. %s</string>
@@ -717,8 +676,7 @@
     <string name="settings_invalid_syntax">Syntaxe invalide</string>
     <string name="about_source_code">Code source</string>
     <string name="about_dependencies">Dépendences</string>
-    <string name="about_contributors">Contributeurs</string>
-    <string name="about_contribution_WangDaYeeeeee">Développeur du projet d’origine Geometric Weather</string>
+<string name="about_contribution_WangDaYeeeeee">Développeur du projet d’origine Geometric Weather</string>
     <string name="about_contribution_designer">Concepteur du logo</string>
     <string name="about_open_link_message">Ouvrir %s ?</string>
     <string name="action_location_list">Liste des emplacements</string>
@@ -740,8 +698,7 @@
     <string name="settings_automatic">Automatique</string>
     <string name="notification_style_native">Natif</string>
     <string name="notification_style_cities">Villes</string>
-    <string name="notification_app_update_available">Nouvelle version disponible !</string>
-    <string name="widget_style_rectangle">Rectangle</string>
+<string name="widget_style_rectangle">Rectangle</string>
     <string name="widget_style_symmetry">Symétrie</string>
     <string name="widget_style_tile">Carreau</string>
     <string name="widget_style_mini">Mini</string>
@@ -840,22 +797,15 @@
     <string name="details_overview_select">Choisir les détails</string>
     <string name="widget_tile">Widget</string>
     <string name="widget_tile_select">Choisissez le widget</string>
-    <string name="widget_tile_day">Jour</string>
-    <string name="widget_tile_clock_day_vertical">Horloge + Jour (Vertical)</string>
-    <string name="widget_tile_clock_day_horizontal">Horloge + Jour (Horizontal)</string>
-    <string name="widget_tile_week">Hebdomadaire</string>
-    <string name="precipitation_probability_about_description">La probabilité de précipitation est la probabilité que de la pluie, de la neige ou d’autres précipitations mesurables se produisent au cours d’une heure donnée.</string>
+<string name="precipitation_probability_about_description">La probabilité de précipitation est la probabilité que de la pluie, de la neige ou d’autres précipitations mesurables se produisent au cours d’une heure donnée.</string>
     <string name="precipitation_about_description">La quantité de précipitations est la quantité totale de pluie, de neige ou d’autres précipitations attendue au cours d’une heure donnée.</string>
     <string name="wind_direction">Direction du vent</string>
     <string name="wind_direction_about_description">La direction du vent vous indique d\'où vient le vent, indiquée par la direction de la boussole (par exemple Nord-Ouest).</string>
     <string name="details_overview_visibility_label">Visibilité : %1$s</string>
     <string name="action_camera">Caméra</string>
     <string name="action_retake">Reprendre</string>
-    <string name="camera_uploading">Téléchargement de la photo...</string>
-    <string name="camera_upload_success">Photo téléchargée</string>
-    <string name="camera_gallery">Galerie</string>
-    <string name="camera_gallery_uploading">Téléchargement de la photo %1$d de %2$d…</string>
-    <string name="camera_gallery_result">%1$d téléchargé, %2$d a échoué</string>
+<string name="camera_gallery">Galerie</string>
+<string name="camera_gallery_result">%1$d téléchargé, %2$d a échoué</string>
     <string name="camera_error_timeout">Impossible de se connecter au serveur (délai d\'expiration)</string>
     <string name="camera_error_server_down">Le serveur n\'est pas disponible</string>
     <string name="camera_error_general">Échec du téléchargement : %s</string>
@@ -881,10 +831,7 @@
     <string name="widget_live_wallpaper_weather_rotating">Test de rotation (10 secondes)</string>
     <string name="widget_live_wallpaper_photo_background">Fond de photo de localisation</string>
     <string name="widget_live_wallpaper_photo_background_summary">Utilisez une photo de l\'endroit où vous vous trouvez comme fond d\'écran, avec l\'animation météo en haut</string>
-    <string name="widget_live_wallpaper_unsplash_key">Clé d\'accès Unsplash</string>
-    <string name="widget_live_wallpaper_unsplash_key_hint">Collez votre clé d\'accès Unsplash (Client-ID)</string>
-    <string name="widget_live_wallpaper_bg_source">Source de fond</string>
-    <string name="widget_live_wallpaper_preview">Aperçu</string>
+<string name="widget_live_wallpaper_preview">Aperçu</string>
     <string name="widget_live_wallpaper_refresh_now">Actualiser maintenant</string>
     <string name="widget_live_wallpaper_refresh_running">Recherche d\'une photo…</string>
     <string name="widget_live_wallpaper_refresh_ok">Photo mise à jour</string>
@@ -897,8 +844,7 @@
     <string name="widget_live_wallpaper_refresh_interval_summary">Choisit une autre photo en cache de l\'emplacement actuel ou en télécharge une nouvelle lorsque le cache est vide.</string>
     <string name="widget_live_wallpaper_background_location_summary">Autorisez l\'accès à la localisation à tout moment afin que l\'arrière-plan change également lorsque vous vous déplacez pendant que l\'application est fermée. Sans cette autorisation, le dernier emplacement connu est utilisé.</string>
     <string name="widget_live_wallpaper_background_location_action">Configurer l\'accès à la localisation</string>
-    <string name="widget_live_wallpaper_experimental">Expérimental</string>
-    <string name="widget_live_wallpaper_seasonal_grading">Classement</string>
+<string name="widget_live_wallpaper_seasonal_grading">Classement</string>
     <string name="widget_live_wallpaper_seasonal_grading_summary">Des couleurs et des changements de lumière subtils, basés sur la saison, au-dessus de la scène. Ne change pas la photo d\'arrière-plan.</string>
     <string name="widget_live_wallpaper_grading_strength">Résistance de classement : %1$d%%</string>
     <string name="widget_live_wallpaper_photo_cache">Cache photos : %1$d Mo</string>
@@ -936,9 +882,7 @@
     <string name="wallpaper_photo_filter_all">Toutes les images</string>
     <string name="wallpaper_photo_manager_empty">Aucune image d\'arrière-plan téléchargée trouvée.</string>
     <string name="wallpaper_photo_views">Affichage des heures %1$d</string>
-    <string name="wallpaper_photo_rate_up">Bravo</string>
-    <string name="wallpaper_photo_rate_down">Pouce vers le bas</string>
-    <string name="wallpaper_photo_disable">Désactiver et supprimer l\'image</string>
+<string name="wallpaper_photo_disable">Désactiver et supprimer l\'image</string>
     <string name="wallpaper_photo_enable">Activez et téléchargez à nouveau</string>
     <string name="wallpaper_photo_disabled">Désactivé</string>
     <string name="wallpaper_photo_file_missing">L\'image n\'est pas mise en cache</string>
@@ -952,24 +896,16 @@
     <string name="wallpaper_photo_meta_season_spring">printemps</string>
     <string name="wallpaper_photo_meta_season_summer">été</string>
     <string name="wallpaper_photo_meta_season_autumn">automne</string>
-    <string name="forecast_days_available">%1$d jours disponibles · faites glisser votre doigt pour en savoir plus</string>
-    <string name="live_wallpaper_data_age_unknown">inconnu</string>
+<string name="live_wallpaper_data_age_unknown">inconnu</string>
     <string name="live_wallpaper_data_stale">périmé</string>
     <string name="action_radar">Radar de pluie</string>
     <string name="radar_title">Radar de précipitations</string>
     <string name="radar_section_rain_trend">Tendance de la pluie (Buienradar)</string>
-    <string name="radar_section_radar_map">Carte radar (RainViewer)</string>
-    <string name="radar_frames_available">Cadres %1$d disponibles, dernier modèle %2$s</string>
-    <string name="radar_frames_unavailable">Trames radar indisponibles</string>
+<string name="radar_frames_unavailable">Trames radar indisponibles</string>
     <string name="radar_attribution">Données : Buienradar.nl et RainViewer.com</string>
     <string name="radar_attribution_buienradar">Données : Buienradar.nl</string>
-    <string name="radar_attribution_windy">Données : Windy.com</string>
-    <string name="radar_attribution_meteoblue">Données : Meteoblue.com</string>
-    <string name="radar_source_world">Dans le monde entier</string>
-    <string name="radar_source_nl">Pays-Bas (5 jours)</string>
-    <string name="radar_source_wind">Vent et pression</string>
-    <string name="radar_source_meteoblue">Météobleu</string>
-    <string name="radar_source_buienradar">Buienradar</string>
+<string name="radar_source_world">Dans le monde entier</string>
+<string name="radar_source_buienradar">Buienradar</string>
     <string name="settings_radar_tile_title">Tuile radar de pluie</string>
     <string name="settings_radar_tile_source">Source radar</string>
     <string name="settings_radar_tile_world_style">Style de carte mondiale</string>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="app_snackbar_extra_spacing_horizontal">24dp</dimen>
+    <dimen name="app_toolbar_default_height">64dp</dimen>
+    <integer name="app_snackbar_text_max_lines">1</integer>
+</resources>

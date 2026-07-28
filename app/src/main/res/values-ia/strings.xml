@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="daily_tomorrow_short">Dmn</string>
-    <string name="temperature">Temperatura</string>
-    <string name="nighttime">Nocte</string>
-    <string name="visibility_short">Visibilitate</string>
-    <string name="widget_week_style_5_days">5 dies</string>
+<string name="nighttime">Nocte</string>
+<string name="widget_week_style_5_days">5 dies</string>
     <string name="settings_section_general">General</string>
-    <string name="app_name">Tempore</string>
-    <string name="daily_yesterday_short">Heri</string>
+<string name="daily_yesterday_short">Heri</string>
     <string name="daily_today_short">Hodie</string>
     <string name="daytime">Die</string>
     <string name="visibility">Visibilitate</string>
