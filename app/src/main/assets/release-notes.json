@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+2)",
+    "version": "Niet uitgebracht (+3)",
     "date": "",
     "changes": [
+      "Fix live wallpaper weather synchronization",
       "Resolve release build warnings",
       "Publish releases to all Play test tracks"
     ]
