@@ -1021,6 +1021,58 @@
     <string name="settings_modules_live_wallpaper_summary">Set a weather animation as wallpaper</string>
     <!-- %s = Breezy Weather -->
     <string name="settings_modules_live_wallpaper_error">Couldn’t launch wallpaper chooser. You can still enable %s wallpaper by choosing “Live Wallpaper” in your home screen wallpaper picker.</string>
+    <!-- Setup wizard: first-run flow covering location(s), weather sources, live wallpaper,
+         main screen layout and a home screen widget. -->
+    <string name="setup_wizard_title">Setup</string>
+    <string name="setup_wizard_action_next">Next</string>
+    <string name="setup_wizard_action_back">Back</string>
+    <string name="setup_wizard_action_skip">Skip</string>
+    <string name="setup_wizard_action_finish">Finish</string>
+    <string name="setup_wizard_action_close">Close</string>
+    <string name="setup_wizard_action_start">Start</string>
+    <string name="setup_wizard_action_yes">Yes</string>
+    <string name="setup_wizard_action_no">No</string>
+    <!-- Step 0: welcome -->
+    <string name="setup_wizard_welcome_title">Setup</string>
+    <string name="setup_wizard_welcome_summary">With a few short questions we\'ll get the app set up right for you.</string>
+    <!-- Step 1: location choice -->
+    <string name="setup_wizard_location_choice_title">Add a location</string>
+    <string name="setup_wizard_location_choice_summary">You can set up one or more places here.</string>
+    <!-- Weather sources summary (read-only, shown after adding a location either way) -->
+    <string name="setup_wizard_sources_title">Weather data sources</string>
+    <string name="setup_wizard_sources_summary">To fetch weather, we\'ve selected the sources below. You can change them later; more sources may become available over time.</string>
+    <string name="setup_wizard_sources_unavailable">Not available</string>
+    <!-- "Add other city?" decision -->
+    <string name="setup_wizard_add_other_city_title">Add another city?</string>
+    <string name="setup_wizard_add_other_city_summary">You can set up more than one location.</string>
+    <!-- Which location to use as wallpaper source, only shown when multiple locations exist -->
+    <string name="setup_wizard_pick_wallpaper_location_title">Which location?</string>
+    <string name="setup_wizard_pick_wallpaper_location_summary">Pick which location\'s weather and surroundings should power your live wallpaper.</string>
+    <!-- Wallpaper preview steps -->
+    <string name="setup_wizard_step_wallpaper_title">Set your live wallpaper</string>
+    <string name="setup_wizard_step_wallpaper_summary">Turn your home and lock screen into a live weather scene of your own surroundings.</string>
+    <string name="setup_wizard_step_wallpaper_button">Set live wallpaper</string>
+    <string name="setup_wizard_wallpaper_no_photo_yet">No pictures of this location yet — we\'re looking for some good ones now, give us a few minutes.</string>
+    <string name="setup_wizard_wallpaper_refresh_now">Refresh now</string>
+    <string name="setup_wizard_wallpaper_next_image">Next image</string>
+    <!-- Animations/parallax step -->
+    <string name="setup_wizard_step_appearance_title">Wallpaper motion</string>
+    <!-- Location permission (app-level explanation before the system dialogs) -->
+    <string name="setup_wizard_location_permission_title">Location access</string>
+    <string name="setup_wizard_location_permission_summary">To use this feature, you need to grant location access. It\'s only shared with your chosen weather source. You can change your mind at any time and set a manual location instead.</string>
+    <string name="setup_wizard_location_permission_background_title">Always allow location access</string>
+    <string name="setup_wizard_location_permission_background_summary">To refresh the weather based on your most recent location known to Android, set location permission to “Allow all the time”. Otherwise, weather will refresh based on the last coordinates retrieved in the foreground, which can be outdated.</string>
+    <string name="setup_wizard_location_permission_settings_action">Go to settings</string>
+    <!-- Main screen step -->
+    <string name="setup_wizard_step_main_screen_title">Main screen</string>
+    <string name="setup_wizard_step_main_screen_summary">Choose which cards show on your main screen, and in what order.</string>
+    <string name="setup_wizard_step_main_screen_button">Customize main screen</string>
+    <!-- Widget step -->
+    <string name="setup_wizard_step_widget_title">Add a widget</string>
+    <string name="setup_wizard_step_widget_summary">Pick a widget to pin to your home screen.</string>
+    <string name="setup_wizard_widget_pin_unsupported">Your launcher doesn’t support adding widgets this way. Long-press your home screen, choose Widgets, and look for the app name.</string>
+    <string name="settings_setup_wizard_redo">Redo setup wizard</string>
+    <string name="settings_setup_wizard_redo_summary">Walk through location, weather sources, live wallpaper, main screen and widget setup again</string>
     <string name="settings_modules_week_icon_mode_title">Icon to display in weekly views</string>
     <string name="settings_modules_monochrome_icons_title">Monochrome icons</string>
     <string name="settings_modules_section_widgets_in_use">Widgets in use</string>

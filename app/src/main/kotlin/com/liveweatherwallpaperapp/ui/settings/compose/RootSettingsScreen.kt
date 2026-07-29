@@ -32,6 +32,7 @@ import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3Scaffold
 import com.liveweatherwallpaperapp.ui.common.widgets.generateCollapsedScrollBehavior
 import com.liveweatherwallpaperapp.ui.common.widgets.insets.FitStatusBarTopAppBar
+import com.liveweatherwallpaperapp.ui.onboarding.SetupWizardActivity
 import com.liveweatherwallpaperapp.ui.settings.preference.bottomInsetItem
 import com.liveweatherwallpaperapp.ui.settings.preference.clickablePreferenceItem
 import com.liveweatherwallpaperapp.ui.settings.preference.composables.PreferenceScreen
@@ -87,10 +88,20 @@ fun RootSettingsView(
                 PreferenceViewWithCard(
                     titleId = id,
                     iconId = R.drawable.ic_palette,
-                    summaryId = R.string.settings_live_wallpaper_location_summary,
-                    isLast = true
+                    summaryId = R.string.settings_live_wallpaper_location_summary
                 ) {
                     context.startActivity(Intent(context, LiveWallpaperConfigActivity::class.java))
+                }
+            }
+            smallSeparatorItem()
+            clickablePreferenceItem(R.string.settings_setup_wizard_redo) { id ->
+                PreferenceViewWithCard(
+                    titleId = id,
+                    iconId = R.drawable.ic_replay,
+                    summaryId = R.string.settings_setup_wizard_redo_summary,
+                    isLast = true
+                ) {
+                    context.startActivity(Intent(context, SetupWizardActivity::class.java))
                 }
             }
             largeSeparatorItem()
