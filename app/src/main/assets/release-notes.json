@@ -1,5 +1,18 @@
 [
   {
+    "version": "Niet uitgebracht (+2)",
+    "date": "",
+    "changes": [
+      "Apply spotless formatting repo-wide",
+      "Add full first-run setup wizard (location, sources, wallpaper, main screen, widget)"
+    ]
+  },
+  {
+    "version": "2026.07.29.492",
+    "date": "2026-07-29",
+    "changes": []
+  },
+  {
     "version": "2026.07.28.491",
     "date": "2026-07-28",
     "changes": [
@@ -73,21 +86,5 @@
     "version": "2026.07.27.436",
     "date": "2026-07-27",
     "changes": []
-  },
-  {
-    "version": "2026.07.27.435",
-    "date": "2026-07-27",
-    "changes": [
-      "Fix wallpaper photo refresh getting permanently stuck after a restart"
-    ]
-  },
-  {
-    "version": "2026.07.26.433",
-    "date": "2026-07-26",
-    "changes": [
-      "Retune the daily easter egg: every 5 min, 1-2 at a time, 50% alpha, cloud-speed pace",
-      "Add tilt-driven, depth-aware parallax to the live wallpaper photo",
-      "Fix import order in RadarActivity.kt to satisfy spotlessKotlinCheck"
-    ]
   }
 ]
