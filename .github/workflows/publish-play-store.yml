@@ -13,7 +13,6 @@ on:
         options:
           - internal
           - alpha
-          - beta
           - all
 
 concurrency:
@@ -142,13 +141,11 @@ jobs:
           --promote-track alpha
           --release-name "$PLAY_RELEASE_NAME"
 
-      - name: Promote release to open testing
-        if: env.PLAY_TRACK == 'all'
-        run: >-
-          ./gradlew promoteBasicReleaseArtifact
-          --from-track internal
-          --promote-track beta
-          --release-name "$PLAY_RELEASE_NAME"
+      # Open testing (beta) and production are deliberately not promoted here: Google Play
+      # doesn't allow this app onto the open-testing track yet (new developer account /
+      # closed-testing requirements not yet met -- "Open test" isn't even selectable in Play
+      # Console). Re-add a "Promote release to open testing" step (promote-track beta) once
+      # that becomes available.
 
       - name: Remove secrets from workspace
         if: always()
