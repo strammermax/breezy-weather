@@ -1077,7 +1077,7 @@
     <string name="setup_wizard_step_widget_title">Add a widget</string>
     <string name="setup_wizard_step_widget_summary">Pick a widget to pin to your home screen.</string>
     <string name="setup_wizard_widget_pin_unsupported">Your launcher doesn’t support adding widgets this way. Long-press your home screen, choose Widgets, and look for the app name.</string>
-    <string name="settings_setup_wizard_redo">Redo setup wizard</string>
+    <string name="settings_setup_wizard_redo">Setup wizard</string>
     <string name="settings_setup_wizard_redo_summary">Walk through location, weather sources, live wallpaper, main screen and widget setup again</string>
     <string name="settings_modules_week_icon_mode_title">Icon to display in weekly views</string>
     <string name="settings_modules_monochrome_icons_title">Monochrome icons</string>

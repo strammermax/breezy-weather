@@ -84,8 +84,6 @@ import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
 import com.liveweatherwallpaperapp.domain.location.model.getPlace
 import com.liveweatherwallpaperapp.domain.settings.SetupWizardStore
 import com.liveweatherwallpaperapp.domain.source.resourceName
-import com.liveweatherwallpaperapp.ui.common.widgets.Material3Scaffold
-import com.liveweatherwallpaperapp.ui.common.widgets.insets.FitStatusBarTopAppBar
 import com.liveweatherwallpaperapp.ui.search.SearchActivity
 import com.liveweatherwallpaperapp.ui.settings.preference.composables.SwitchPreferenceView
 import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
@@ -200,13 +198,8 @@ private fun SetupWizardScreen(
         }
     }
 
-    Material3Scaffold(
-        topBar = {
-            FitStatusBarTopAppBar(title = { Text(stringResource(R.string.setup_wizard_title)) })
-        }
-    ) { paddings ->
-        Box(modifier = Modifier.fillMaxSize().padding(paddings)) {
-            when (val current = step) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        when (val current = step) {
                 WizardStep.Welcome -> WelcomeStep(
                     onStart = { step = WizardStep.LocationChoice },
                     onClose = onFinish
@@ -309,7 +302,6 @@ private fun SetupWizardScreen(
                 )
             }
         }
-    }
 }
 
 @Composable
