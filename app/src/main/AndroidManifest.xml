@@ -175,6 +175,11 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
+            android:name=".ui.onboarding.SetupWizardActivity"
+            android:label="@string/setup_wizard_title"
+            android:theme="@style/BreezyWeatherTheme" />
+
+        <activity
             android:name=".ui.details.DetailsActivity"
             android:label="@string/daily_forecast"
             android:theme="@style/BreezyWeatherTheme.Details" />

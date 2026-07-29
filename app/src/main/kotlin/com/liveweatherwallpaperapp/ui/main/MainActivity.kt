@@ -90,6 +90,7 @@ import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
 import com.liveweatherwallpaperapp.databinding.ActivityMainBinding
 import com.liveweatherwallpaperapp.domain.settings.SettingsChangedMessage
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
+import com.liveweatherwallpaperapp.domain.settings.SetupWizardStore
 import com.liveweatherwallpaperapp.remoteviews.Notifications
 import com.liveweatherwallpaperapp.sources.SourceManager
 import com.liveweatherwallpaperapp.ui.common.composables.AlertDialogConfirmOnly
@@ -99,6 +100,7 @@ import com.liveweatherwallpaperapp.ui.main.dialogs.LicenseComplianceDialog
 import com.liveweatherwallpaperapp.ui.main.fragments.HomeFragment
 import com.liveweatherwallpaperapp.ui.main.fragments.ManagementFragment
 import com.liveweatherwallpaperapp.ui.main.fragments.PushedManagementFragment
+import com.liveweatherwallpaperapp.ui.onboarding.SetupWizardActivity
 import com.liveweatherwallpaperapp.ui.search.SearchActivity
 import com.liveweatherwallpaperapp.ui.theme.ThemeManager
 import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
@@ -293,7 +295,16 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
         initView()
 
         if (viewModel.validLocationList.value.isEmpty()) {
-            setManagementFragmentVisibility(true)
+            // First run (or every location was later deleted again): the setup wizard owns
+            // location-adding itself (see SetupWizardActivity/SetupWizardViewModel) and only
+            // needs to run once ever -- once SetupWizardStore.completed is true, fall back to
+            // the plain management screen instead of re-showing the whole wizard just because
+            // the location list emptied out again.
+            if (SetupWizardStore(this).completed) {
+                setManagementFragmentVisibility(true)
+            } else {
+                startActivity(Intent(this, SetupWizardActivity::class.java))
+            }
         } else if (viewModel.validLocationList.value.size == 1 && isLandscape && isDrawerLayoutVisible) {
             setManagementFragmentVisibility(false)
         }
