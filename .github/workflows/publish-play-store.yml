@@ -13,7 +13,7 @@ on:
         options:
           - internal
           - alpha
-          - all
+          - internal-alpha
 
 concurrency:
   group: play-store-publish
@@ -130,11 +130,11 @@ jobs:
       - name: Publish basic flavor to Play Store
         run: >-
           ./gradlew publishBasicReleaseBundle
-          --track "${{ env.PLAY_TRACK == 'all' && 'internal' || env.PLAY_TRACK }}"
+          --track "${{ env.PLAY_TRACK == 'internal-alpha' && 'internal' || env.PLAY_TRACK }}"
           --release-name "$PLAY_RELEASE_NAME"
 
       - name: Promote release to closed testing
-        if: env.PLAY_TRACK == 'all'
+        if: env.PLAY_TRACK == 'internal-alpha'
         run: >-
           ./gradlew promoteBasicReleaseArtifact
           --from-track internal

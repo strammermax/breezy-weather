@@ -16,21 +16,23 @@
     Create the GitHub release as a draft instead of publishing it immediately.
 
 .PARAMETER PlayTrack
-    Google Play test track for the basic flavor: "internal", "alpha" (closed), or
-    "beta" (open). Use "all" to publish to all three test tracks, excluding production.
-    When omitted for a basic release, the script asks interactively. Freenet releases
-    are never published to Google Play.
+    Google Play test track for the basic flavor: "internal" or "alpha" (closed). Use
+    "internal-alpha" to publish to internal and promote to closed testing in one go.
+    Open testing (beta) and production aren't offered here -- Google Play doesn't allow
+    this app onto the open-testing track yet ("Open test" isn't even selectable in Play
+    Console for this developer account). When omitted for a basic release, the script
+    asks interactively. Freenet releases are never published to Google Play.
 
 .EXAMPLE
     ./scripts/release.ps1
     ./scripts/release.ps1 -PlayTrack alpha
-    ./scripts/release.ps1 -PlayTrack all
+    ./scripts/release.ps1 -PlayTrack internal-alpha
     ./scripts/release.ps1 -Flavor freenet -Draft
 #>
 param(
     [ValidateSet("basic", "freenet")]
     [string]$Flavor = "basic",
-    [ValidateSet("internal", "alpha", "beta", "all")]
+    [ValidateSet("internal", "alpha", "internal-alpha")]
     [string]$PlayTrack,
     [switch]$Draft
 )
@@ -41,15 +43,13 @@ Set-Location $repoRoot
 
 if ($Flavor -eq "basic" -and -not $PlayTrack) {
     Write-Host "Choose the Google Play track:" -ForegroundColor Cyan
-    Write-Host "  1. internal - trusted internal testers"
-    Write-Host "  2. alpha    - closed testing"
-    Write-Host "  3. beta     - open testing"
-    Write-Host "  4. all      - all test tracks (no production)"
+    Write-Host "  1. internal       - trusted internal testers"
+    Write-Host "  2. alpha          - closed testing"
+    Write-Host "  3. internal-alpha - internal, then promote to closed testing"
     $trackChoice = Read-Host "Track [1]"
     $PlayTrack = switch ($trackChoice) {
         "2" { "alpha" }
-        "3" { "beta" }
-        "4" { "all" }
+        "3" { "internal-alpha" }
         default { "internal" }
     }
 }
