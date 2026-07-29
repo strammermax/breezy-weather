@@ -1,7 +1,14 @@
 [
   {
-    "version": "Niet uitgebracht (+6)",
+    "version": "Niet uitgebracht (+1)",
     "date": "",
+    "changes": [
+      "setup to dutch"
+    ]
+  },
+  {
+    "version": "2026.07.29.504",
+    "date": "2026-07-29",
     "changes": [
       "update",
       "Fix first-run wallpaper location and photo selection",
@@ -85,10 +92,5 @@
     "changes": [
       "Fix fixed/fictional locations getting corrupted by device GPS, add immediate refresh triggers and a one-time cache hotfix"
     ]
-  },
-  {
-    "version": "2026.07.27.436",
-    "date": "2026-07-27",
-    "changes": []
   }
 ]
