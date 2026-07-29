@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+4)",
+    "version": "Niet uitgebracht (+5)",
     "date": "",
     "changes": [
+      "Fix first-run wallpaper location and photo selection",
       "Rename 'all' Play track option to 'internal-alpha'",
       "Stop promoting Play releases to open testing (beta)",
       "Apply spotless formatting repo-wide",
