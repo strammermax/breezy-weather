@@ -705,8 +705,14 @@
     <string name="widget_live_wallpaper_next">Next</string>
     <string name="widget_live_wallpaper_refresh_running">Searching for a photo…</string>
     <string name="widget_live_wallpaper_refresh_ok">Photo updated</string>
+    <string name="widget_live_wallpaper_refresh_result">%1$d new photos downloaded · %2$d photos available</string>
+    <string name="widget_live_wallpaper_refresh_no_usable_photo">%1$d photos found, but none could be activated</string>
     <string name="widget_live_wallpaper_refresh_none">No photo found for this location</string>
     <string name="widget_live_wallpaper_refresh_no_location">No location available yet</string>
+    <string name="widget_live_wallpaper_location_source_device">current device location</string>
+    <string name="widget_live_wallpaper_location_source_network">network location</string>
+    <string name="widget_live_wallpaper_location_source_stored">last stored location</string>
+    <string name="widget_live_wallpaper_location_source_pending">determining location</string>
     <string name="widget_live_wallpaper_cache_usage">Cached background photos: %1$d · storage: %2$.1f MB</string>
     <string name="widget_live_wallpaper_parallax">Parallax effect</string>
     <string name="widget_live_wallpaper_parallax_summary">Shifts layers when scrolling between home screens</string>

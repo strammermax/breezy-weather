@@ -1033,7 +1033,6 @@ class WallpaperRepository @Inject constructor(
                 latitude,
                 longitude,
                 minimal,
-                store.maxCachedPhotosPerLocation,
                 currentWeather
             )
         } else {

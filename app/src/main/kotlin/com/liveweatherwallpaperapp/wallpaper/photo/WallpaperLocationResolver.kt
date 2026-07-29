@@ -30,7 +30,13 @@ data class WallpaperLocationFix(
     val latitude: Double,
     val longitude: Double,
     val place: PlaceQuery,
+    val source: WallpaperLocationSource,
 )
+
+enum class WallpaperLocationSource {
+    DEVICE,
+    NETWORK,
+}
 
 /**
  * Resolves a fresh device position into a [WallpaperLocationFix] for [WallpaperPhotoRefreshWorker],
@@ -46,13 +52,39 @@ class WallpaperLocationResolver @Inject constructor(
     private val sourceManager: SourceManager,
 ) {
 
-    suspend fun resolve(): WallpaperLocationFix? {
-        val position = androidLocationService.requestNetworkLocation(context) ?: return null
+    suspend fun resolve(allowForegroundPermission: Boolean = false): WallpaperLocationFix? {
+        // While the settings screen is open, foreground permission is sufficient and lets the
+        // normal Android fused provider try GPS/network first. A background worker deliberately
+        // stays on the background-safe network provider.
+        val devicePosition = if (allowForegroundPermission) {
+            try {
+                androidLocationService.requestLocation(context).awaitFirstOrElse { null }
+            } catch (e: Throwable) {
+                null
+            }
+        } else {
+            null
+        }
+        val position = devicePosition ?: androidLocationService.requestNetworkLocation(
+            context,
+            requireBackgroundPermission = !allowForegroundPermission
+        ) ?: return null
+        val locationSource = if (devicePosition != null) {
+            WallpaperLocationSource.DEVICE
+        } else {
+            WallpaperLocationSource.NETWORK
+        }
 
+        val place = resolvePlace(position.latitude, position.longitude) ?: PlaceQuery()
+        return WallpaperLocationFix(position.latitude, position.longitude, place, locationSource)
+    }
+
+    /** Resolves an already-known position without requesting device location again. */
+    suspend fun resolvePlace(latitude: Double, longitude: Double): PlaceQuery? {
         val address = try {
             sourceManager
                 .getReverseGeocodingSourceOrDefault(BuildConfig.DEFAULT_GEOCODING_SOURCE)
-                .requestNearestLocation(context, position.latitude, position.longitude)
+                .requestNearestLocation(context, latitude, longitude)
                 .awaitFirstOrElse { emptyList() }
                 .firstOrNull()
         } catch (e: Throwable) {
@@ -65,6 +97,6 @@ class WallpaperLocationResolver @Inject constructor(
             state = address?.admin1?.ifBlank { null },
             country = address?.country?.ifBlank { null }
         )
-        return WallpaperLocationFix(position.latitude, position.longitude, place)
+        return place.takeIf { it.displayName.isNotBlank() }
     }
 }

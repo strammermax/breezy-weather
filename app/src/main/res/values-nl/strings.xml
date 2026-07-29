@@ -263,7 +263,7 @@
     <string name="settings_location_service">Locatieservice</string>
     <string name="settings_notifications">Meldingen</string>
     <string name="settings_notifications_summary">Meldingen van weeralarmen, neerslag of verwachtingen voor de eerste locatie</string>
-    <string name="settings_set_live_wallpaper">Live achtergrond instellen</string>
+    <string name="settings_set_live_wallpaper">Zet Live achtergrond</string>
     <string name="settings_set_live_wallpaper_summary">Stel LiveWallpaperWeather in als je start-/vergrendelscherm-achtergrond</string>
     <string name="settings_modules">Externe modules</string>
     <string name="settings_modules_summary">Widgets, meldingenwidget, achtergrond, gegevens delen met andere apps</string>
@@ -291,7 +291,7 @@
     <string name="settings_icon_packs_weather_icon_dark">Donker pictogram</string>
     <string name="settings_units_speed">Snelheidseenheid</string>
     <string name="settings_main_background_animation_enabled">Aan</string>
-    <string name="settings_modules_live_wallpaper_title">Live achtergrond</string>
+    <string name="settings_modules_live_wallpaper_title">Live achtergrond instellingen</string>
     <string name="weather_source_accu_preference_days_15">15 dagen</string>
     <string name="weather_source_accu_preference_hours_1">1 uur</string>
     <string name="weather_source_accu_preference_hours_24">24 uur</string>
@@ -879,8 +879,14 @@
     <string name="widget_live_wallpaper_next">Volgende</string>
     <string name="widget_live_wallpaper_refresh_running">Foto zoeken…</string>
     <string name="widget_live_wallpaper_refresh_ok">Foto bijgewerkt</string>
+    <string name="widget_live_wallpaper_refresh_result">%1$d nieuwe foto’s gedownload · %2$d foto’s beschikbaar</string>
+    <string name="widget_live_wallpaper_refresh_no_usable_photo">%1$d afbeeldingen gevonden, maar geen afbeelding kon worden geactiveerd</string>
     <string name="widget_live_wallpaper_refresh_none">Geen foto gevonden voor deze locatie</string>
     <string name="widget_live_wallpaper_refresh_no_location">Nog geen locatie beschikbaar</string>
+    <string name="widget_live_wallpaper_location_source_device">actuele apparaatlocatie</string>
+    <string name="widget_live_wallpaper_location_source_network">netwerklocatie</string>
+    <string name="widget_live_wallpaper_location_source_stored">laatst opgeslagen locatie</string>
+    <string name="widget_live_wallpaper_location_source_pending">locatie wordt bepaald</string>
     <string name="live_wallpaper_data_age_unknown">onbekend</string>
     <string name="live_wallpaper_data_stale">verouderd</string>
     <string name="widget_live_wallpaper_parallax">Parallaxeffect</string>

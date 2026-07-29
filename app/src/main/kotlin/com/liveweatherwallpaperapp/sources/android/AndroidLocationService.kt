@@ -123,8 +123,15 @@ class AndroidLocationService @Inject constructor() : LocationSource {
      * permissions are missing, disabled, or no fix could be obtained in time, so callers can fall
      * back to their last-known location.
      */
-    suspend fun requestNetworkLocation(context: Context): LocationPositionWrapper? {
-        if (!hasBackgroundCapableLocationPermission(context)) return null
+    suspend fun requestNetworkLocation(
+        context: Context,
+        requireBackgroundPermission: Boolean = true,
+    ): LocationPositionWrapper? {
+        if (requireBackgroundPermission) {
+            if (!hasBackgroundCapableLocationPermission(context)) return null
+        } else if (!hasPermissions(context)) {
+            return null
+        }
 
         if (!this::locationManager.isInitialized) {
             locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager

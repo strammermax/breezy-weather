@@ -99,6 +99,8 @@ import com.liveweatherwallpaperapp.ui.theme.compose.themeRipple
 import com.liveweatherwallpaperapp.unit.formatting.format
 import com.liveweatherwallpaperapp.wallpaper.photo.PlaceQuery
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperImageStore
+import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperLocationResolver
+import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperLocationSource
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperPhotoRefreshWorker
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
 import dagger.hilt.android.AndroidEntryPoint
@@ -111,6 +113,7 @@ import kotlinx.coroutines.withContext
 import livewallpaperweather.data.location.LocationRepository
 import livewallpaperweather.data.weather.WeatherRepository
 import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
@@ -125,6 +128,9 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
 
     @Inject
     lateinit var wallpaperRepository: WallpaperRepository
+
+    @Inject
+    lateinit var wallpaperLocationResolver: WallpaperLocationResolver
     private lateinit var previewBitmapValue: MutableState<Bitmap?>
     private lateinit var refreshBusyValue: MutableState<Boolean>
     private lateinit var refreshStatusValue: MutableState<String>
@@ -251,8 +257,44 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
             attributionValue.value = wallpaperImageStore.cachedPhotoAttribution.orEmpty()
             cachedPhotoCountValue.value = cacheStats.photoCount
             cachedPhotoBytesValue.value = cacheStats.totalBytes
-            currentLocationValue.value = location?.city?.takeIf { it.isNotBlank() }
-                ?: location?.country.orEmpty()
+            currentLocationValue.value = location?.let(::locationDisplayName).orEmpty()
+
+            // A current-position row can contain valid coordinates while its city is still
+            // empty. Resolve its fresh position in the background so this screen does not
+            // incorrectly show only the country (for example "Nederland").
+            if (location?.isCurrentPosition == true) {
+                val resolvedFix = withContext(Dispatchers.IO) {
+                    wallpaperLocationResolver.resolve(allowForegroundPermission = true)
+                }
+                resolvedFix?.let {
+                    currentLocationValue.value = locationDisplayName(
+                        place = it.place,
+                        latitude = it.latitude,
+                        longitude = it.longitude,
+                        hasCoordinates = true,
+                        sourceLabel = getString(
+                            if (it.source == WallpaperLocationSource.DEVICE) {
+                                R.string.widget_live_wallpaper_location_source_device
+                            } else {
+                                R.string.widget_live_wallpaper_location_source_network
+                            }
+                        )
+                    )
+                } ?: withContext(Dispatchers.IO) {
+                    // Location can be deliberately switched off. We can still turn the last
+                    // stored coordinates into a human-readable city without asking Android for
+                    // a fresh device position.
+                    wallpaperLocationResolver.resolvePlace(location.latitude, location.longitude)
+                }?.let { storedPlace ->
+                    currentLocationValue.value = locationDisplayName(
+                        place = storedPlace,
+                        latitude = location.latitude,
+                        longitude = location.longitude,
+                        hasCoordinates = location.isUsable,
+                        sourceLabel = getString(R.string.widget_live_wallpaper_location_source_stored)
+                    )
+                }
+            }
 
             if (location != null) {
                 photoRefreshedAtValue.value = wallpaperImageStore.photoRefreshedAtFor(location.formattedId)
@@ -262,6 +304,47 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 }?.base?.refreshTime?.time
             }
         }
+    }
+
+    private fun locationDisplayName(
+        location: livewallpaperweather.domain.location.model.Location
+    ): String = locationDisplayName(
+        place = PlaceQuery(
+            // A newly-created current-position row starts with the internal placeholder
+            // "location". It is not a city and must not leak into the user-facing screen
+            // while Android is still obtaining the first real fix.
+            city = location.city.takeUnless { it.isBlank() || it.equals("location", ignoreCase = true) },
+            municipality = location.admin2?.takeIf { it.isNotBlank() },
+            state = location.admin1?.takeIf { it.isNotBlank() },
+            country = location.country.ifBlank { null }
+        ),
+        latitude = location.latitude,
+        longitude = location.longitude,
+        hasCoordinates = location.isUsable,
+        sourceLabel = when {
+            location.isCurrentPosition && location.isUsable ->
+                getString(R.string.widget_live_wallpaper_location_source_stored)
+            location.isCurrentPosition ->
+                getString(R.string.widget_live_wallpaper_location_source_pending)
+            else -> ""
+        }
+    )
+
+    private fun locationDisplayName(
+        place: PlaceQuery,
+        latitude: Double,
+        longitude: Double,
+        hasCoordinates: Boolean,
+        sourceLabel: String = ""
+    ): String {
+        val coordinates = if (hasCoordinates) {
+            String.format(Locale.US, "%.5f, %.5f", latitude, longitude)
+        } else {
+            ""
+        }
+        return listOf(place.displayName, coordinates, sourceLabel)
+            .filter { it.isNotBlank() }
+            .joinToString(" · ")
     }
 
     /**
@@ -298,13 +381,13 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
                 refreshBusyValue.value = false
                 return@launch
             }
-            val place = PlaceQuery(
-                city = location.city.ifBlank { null },
-                municipality = location.admin2,
-                state = location.admin1,
-                country = location.country.ifBlank { null }
-            )
-            currentLocationValue.value = place.displayName
+            currentLocationValue.value = locationDisplayName(location)
+
+            val photosBefore = withContext(Dispatchers.IO) {
+                wallpaperRepository.managedPhotos(location.formattedId)
+                    .filterNot { it.disabled }
+                    .associate { it.id to (it.filePath != null) }
+            }
 
             val started = withContext(Dispatchers.IO) {
                 WallpaperPhotoRefreshWorker.startNowAndAwait(this@LiveWallpaperConfigActivity)
@@ -317,18 +400,33 @@ class LiveWallpaperConfigActivity : BreezyActivity() {
             }
 
             photoRefreshedAtValue.value = wallpaperImageStore.photoRefreshedAtFor(location.formattedId)
+            val photosAfter = withContext(Dispatchers.IO) {
+                wallpaperRepository.managedPhotos(location.formattedId).filterNot { it.disabled }
+            }
+            // This status is for the user: count photos that became locally usable during this
+            // refresh, not merely records newly returned by RemoveSky. The latter can be zero
+            // while a first install still downloads and activates its very first wallpaper.
+            val newPhotoCount = photosAfter.count { photo ->
+                photo.filePath != null && photosBefore[photo.id] != true
+            }
+            val totalPhotoCount = photosAfter.size
             val cachedPath = wallpaperImageStore.cachedPhotoPath
             if (cachedPath != null) {
                 previewBitmapValue.value = withContext(Dispatchers.IO) {
                     wallpaperRepository.loadCachedBitmap()
                 }
                 attributionValue.value = wallpaperImageStore.cachedPhotoAttribution.orEmpty()
-                refreshStatusValue.value = buildString {
-                    append(getString(R.string.widget_live_wallpaper_refresh_ok))
-                    append(" (RemoveSky: $removeSkyHealthStatus)")
-                }
+                refreshStatusValue.value = getString(
+                    R.string.widget_live_wallpaper_refresh_result,
+                    newPhotoCount,
+                    totalPhotoCount
+                )
             } else {
-                refreshStatusValue.value = getString(R.string.widget_live_wallpaper_refresh_none)
+                refreshStatusValue.value = if (totalPhotoCount > 0) {
+                    getString(R.string.widget_live_wallpaper_refresh_no_usable_photo, totalPhotoCount)
+                } else {
+                    getString(R.string.widget_live_wallpaper_refresh_none)
+                }
             }
             refreshCacheStats()
             refreshBusyValue.value = false

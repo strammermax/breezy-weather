@@ -25,16 +25,14 @@ import livewallpaperweather.data.wallpaper.WallpaperPhotoRecord
  * see section 7.4 for why), then hands that ring to [getMinimalLocationRecs] for the final
  * context-relaxation + [SortItem.DISTANCE] sort.
  *
- * [maxImages] is [com.liveweatherwallpaperapp.domain.settings.ConfigStore]'s existing
- * `maxCachedPhotosPerLocation` setting, reused as-is (not a new setting, see docs/ACT-021
- * section 7).
+ * A ring needs at least four photos; otherwise the search widens again. The separate cache limit
+ * still controls how many selected photos are downloaded, not whether a radius is usable.
  */
 fun sortLocationRecsByGPSLocation(
     records: List<WallpaperPhotoRecord>,
     latitude: Double,
     longitude: Double,
     minimal: Int,
-    maxImages: Int,
     currentWeather: String? = null,
     now: Long = System.currentTimeMillis(),
 ): List<WallpaperPhotoRecord> {
@@ -48,15 +46,27 @@ fun sortLocationRecsByGPSLocation(
         locationRecs200m(records, latitude, longitude),
         locationRecs100m(records, latitude, longitude)
     )
-    for ((index, ring) in rings.withIndex()) {
-        val isLastRing = index == rings.lastIndex
-        if (!hasEnough(ring, maxImages) || isLastRing) {
-            return getMinimalLocationRecs(ring, minimal, SortItem.DISTANCE, location, currentWeather, now)
-        }
-        // else: this ring already has enough candidates -- try the next, smaller ring.
-    }
-    error("unreachable: the last ring above always returns")
+    val selectedRing = smallestRingWithEnoughPhotos(rings, MIN_NEARBY_PHOTOS)
+    return getMinimalLocationRecs(selectedRing, minimal, SortItem.DISTANCE, location, currentWeather, now)
 }
+
+/**
+ * Returns the narrowest radius ring that still contains [maxImages]. If even the unrestricted
+ * ring has fewer records, it remains the best available fallback. Crucially, the first ring that
+ * is *too small* must not be selected: doing that used to turn a healthy catalog (for example
+ * 190 records location-wide but fewer than 12 inside 5 km) into an empty wallpaper list.
+ */
+internal fun <T> smallestRingWithEnoughPhotos(rings: List<List<T>>, minimumRequired: Int): List<T> {
+    require(rings.isNotEmpty())
+    var selected = rings.first()
+    for (ring in rings.drop(1)) {
+        if (ring.size < minimumRequired) break
+        selected = ring
+    }
+    return selected
+}
+
+private const val MIN_NEARBY_PHOTOS = 4
 
 /**
  * `SortLocationRecsByLocation(location, minimal, fictief)` from docs/ACT-021 section 7a --
