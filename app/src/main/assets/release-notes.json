@@ -1,8 +1,10 @@
 [
   {
-    "version": "Niet uitgebracht (+2)",
+    "version": "Niet uitgebracht (+4)",
     "date": "",
     "changes": [
+      "Rename 'all' Play track option to 'internal-alpha'",
+      "Stop promoting Play releases to open testing (beta)",
       "Apply spotless formatting repo-wide",
       "Add full first-run setup wizard (location, sources, wallpaper, main screen, widget)"
     ]
