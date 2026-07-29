@@ -76,6 +76,7 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
     private var currentLocationKey by mutableStateOf<String?>(null)
     private var currentLocationCoords by mutableStateOf<CurrentLocationCoords?>(null)
     private var showAll by mutableStateOf(false)
+    private var hideUnavailable by mutableStateOf(false)
     private var busyPhotoId by mutableStateOf<String?>(null)
     private var checkingNewPhotos by mutableStateOf(false)
 
@@ -168,11 +169,19 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
                 )
             }
         ) { paddings ->
-            val visiblePhotos = if (showAll || currentLocationKey == null) {
-                photos
-            } else {
-                photos.filter { it.locationKey == currentLocationKey }
-            }
+            val visiblePhotos = (
+                if (showAll || currentLocationKey == null) {
+                    photos
+                } else {
+                    photos.filter { it.locationKey == currentLocationKey }
+                }
+                ).let { list ->
+                    if (hideUnavailable) {
+                        list.filterNot { it.disabled || it.filePath == null || !File(it.filePath).isFile }
+                    } else {
+                        list
+                    }
+                }
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -198,6 +207,19 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
                         Switch(
                             checked = showAll,
                             onCheckedChange = { showAll = it }
+                        )
+                    }
+                }
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(stringResource(R.string.wallpaper_photo_hide_unavailable))
+                        Switch(
+                            checked = hideUnavailable,
+                            onCheckedChange = { hideUnavailable = it }
                         )
                     }
                 }

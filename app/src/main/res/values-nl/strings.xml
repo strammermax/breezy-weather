@@ -983,6 +983,7 @@
     <string name="wallpaper_photo_manager_title">Achtergrondafbeeldingen beheren</string>
     <string name="wallpaper_photo_filter_current">Huidige locatie</string>
     <string name="wallpaper_photo_filter_all">Alle afbeeldingen</string>
+    <string name="wallpaper_photo_hide_unavailable">Uitgeschakelde en niet-gecachete afbeeldingen verbergen</string>
     <string name="wallpaper_photo_manager_empty">Geen gedownloade achtergrondafbeeldingen gevonden.</string>
     <string name="wallpaper_photo_views">%1$d keer getoond</string>
 <string name="wallpaper_photo_disable">Uitschakelen en afbeelding verwijderen</string>

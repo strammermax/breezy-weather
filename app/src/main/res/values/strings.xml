@@ -769,6 +769,7 @@
     <string name="wallpaper_photo_manager_title">Manage background images</string>
     <string name="wallpaper_photo_filter_current">Current location</string>
     <string name="wallpaper_photo_filter_all">All images</string>
+    <string name="wallpaper_photo_hide_unavailable">Hide disabled and not-cached images</string>
     <string name="wallpaper_photo_manager_empty">No downloaded background images found.</string>
     <string name="wallpaper_photo_views">Times shown: %1$d</string>
 <string name="wallpaper_photo_disable">Disable and remove image</string>
