@@ -8,8 +8,6 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
-import androidx.core.graphics.createBitmap
-
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -17,6 +15,7 @@ import android.graphics.Paint
 import android.graphics.RadialGradient
 import android.graphics.RectF
 import android.graphics.Shader
+import androidx.core.graphics.createBitmap
 import java.util.Random
 
 /**

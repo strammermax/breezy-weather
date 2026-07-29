@@ -16,8 +16,6 @@
 
 package com.liveweatherwallpaperapp.ui.details
 
-import androidx.core.graphics.drawable.toDrawable
-
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
@@ -25,6 +23,7 @@ import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.activity.compose.setContent
+import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.liveweatherwallpaperapp.R

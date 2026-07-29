@@ -16,8 +16,6 @@
 
 package com.liveweatherwallpaperapp.ui.main.adapters.main.holder
 
-import androidx.core.net.toUri
-
 import android.content.Intent
 import android.net.Uri
 import android.view.LayoutInflater
@@ -40,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.net.toUri
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.AppMessage
 import com.liveweatherwallpaperapp.common.AppMessageKind

@@ -16,10 +16,9 @@
 
 package com.liveweatherwallpaperapp.wallpaper.photo
 
-import androidx.core.graphics.scale
-
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.core.graphics.scale
 import org.tensorflow.lite.Interpreter
 import java.nio.ByteBuffer
 import java.nio.ByteOrder

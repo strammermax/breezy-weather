@@ -16,14 +16,13 @@
 
 package com.liveweatherwallpaperapp.ui.settings.compose
 
-import androidx.compose.ui.platform.LocalResources
-
 import android.content.Intent
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import com.liveweatherwallpaperapp.R

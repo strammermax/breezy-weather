@@ -28,7 +28,8 @@ class RadarViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
 ) {
     private val radarMap: WebView = itemView.findViewById(R.id.radar_map)
 
-    @SuppressLint("ClickableViewAccessibility") // WebView cannot override performClick; its click listener delegates explicitly.
+    // WebView cannot override performClick; its click listener delegates explicitly.
+    @SuppressLint("ClickableViewAccessibility")
     override fun onBindView(
         activity: BreezyActivity,
         location: Location,

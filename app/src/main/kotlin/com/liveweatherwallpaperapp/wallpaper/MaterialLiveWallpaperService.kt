@@ -16,10 +16,6 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
-import androidx.core.graphics.createBitmap
-
-import androidx.core.graphics.drawable.toDrawable
-
 import android.app.WallpaperColors
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -51,6 +47,8 @@ import android.view.SurfaceHolder
 import androidx.annotation.RequiresApi
 import androidx.annotation.Size
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.withTranslation
 import androidx.lifecycle.Observer
 import com.liveweatherwallpaperapp.BreezyWeather

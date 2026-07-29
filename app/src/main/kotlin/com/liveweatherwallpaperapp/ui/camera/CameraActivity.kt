@@ -1,9 +1,5 @@
 package com.liveweatherwallpaperapp.ui.camera
 
-import androidx.core.graphics.createBitmap
-
-import androidx.core.graphics.toColorInt
-
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -36,7 +32,10 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.toColorInt
 import androidx.core.location.LocationManagerCompat
+import androidx.exifinterface.media.ExifInterface
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.liveweatherwallpaperapp.R
@@ -63,7 +62,6 @@ import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import javax.inject.Inject
-import androidx.exifinterface.media.ExifInterface
 
 @AndroidEntryPoint
 class CameraActivity : AppCompatActivity() {
@@ -274,7 +272,7 @@ class CameraActivity : AppCompatActivity() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
                     ContextCompat.checkSelfPermission(
                         this@CameraActivity,
-                        Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+                        Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
                     add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)

@@ -8,8 +8,6 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
-import androidx.core.graphics.createBitmap
-
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -27,6 +25,7 @@ import android.graphics.RuntimeShader
 import android.graphics.Shader
 import android.os.Build
 import android.util.Log
+import androidx.core.graphics.createBitmap
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.domain.settings.AppDefaults
 import com.liveweatherwallpaperapp.ui.theme.weatherView.WeatherView

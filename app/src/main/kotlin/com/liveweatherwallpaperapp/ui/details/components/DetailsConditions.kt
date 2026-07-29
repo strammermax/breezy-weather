@@ -16,8 +16,6 @@
 
 package com.liveweatherwallpaperapp.ui.details.components
 
-import androidx.compose.ui.platform.LocalResources
-
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ImageSpan
@@ -63,6 +61,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -669,7 +668,7 @@ fun NormalsDepartureLabel(
 
     if (halfDayTemperature != null && normal != null) {
         val context = LocalContext.current
-    val resources = LocalResources.current
+        val resources = LocalResources.current
         val tooltipState = rememberTooltipState(isPersistent = true)
         val coroutineScope = rememberCoroutineScope()
         val departure = remember(halfDayTemperature, normal) {

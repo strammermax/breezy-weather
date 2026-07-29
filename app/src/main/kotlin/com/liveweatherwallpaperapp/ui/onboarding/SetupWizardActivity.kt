@@ -354,7 +354,11 @@ private fun NextOnlyButton(label: String, onNext: () -> Unit) {
 
 /** Back/Next footer pair, for the wallpaper -> main screen -> widget tail. */
 @Composable
-private fun BackNextButtons(onBack: () -> Unit, onNext: () -> Unit, nextLabel: String = stringResource(R.string.setup_wizard_action_next)) {
+private fun BackNextButtons(
+    onBack: () -> Unit,
+    onNext: () -> Unit,
+    nextLabel: String = stringResource(R.string.setup_wizard_action_next),
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.normal_margin))
@@ -620,7 +624,9 @@ private fun WallpaperPreviewStep(viewModel: SetupWizardViewModel, onBack: () -> 
                                     viewModel.wallpaperRepository.getNextSortedResultlistItem(location.formattedId)
                                 }
                                 next?.let {
-                                    withContext(Dispatchers.IO) { viewModel.wallpaperRepository.activateRotationItem(it) }
+                                    withContext(Dispatchers.IO) {
+                                        viewModel.wallpaperRepository.activateRotationItem(it)
+                                    }
                                 }
                                 reload()
                             }
@@ -688,7 +694,9 @@ private fun WallpaperAppearanceStep(onBack: () -> Unit, onNext: () -> Unit) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 SwitchPreferenceView(
                     title = stringResource(R.string.settings_main_section_animations),
-                    summary = { c, enabled -> if (enabled) c.getString(R.string.settings_enabled) else c.getString(R.string.settings_disabled) },
+                    summary = { c, enabled ->
+                        if (enabled) c.getString(R.string.settings_enabled) else c.getString(R.string.settings_disabled)
+                    },
                     checked = animationsEnabled,
                     withState = false,
                     card = false

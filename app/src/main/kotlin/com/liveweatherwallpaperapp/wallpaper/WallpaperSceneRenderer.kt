@@ -8,9 +8,6 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
-import androidx.core.graphics.createBitmap
-import androidx.annotation.RequiresApi
-
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -22,6 +19,8 @@ import android.graphics.RenderNode
 import android.graphics.Shader
 import android.media.ImageReader
 import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.core.graphics.createBitmap
 import java.nio.ByteBuffer
 
 /**

@@ -16,8 +16,6 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
-import androidx.core.graphics.drawable.toDrawable
-
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Bitmap
@@ -35,6 +33,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.Choreographer
 import android.view.View
+import androidx.core.graphics.drawable.toDrawable
 import com.liveweatherwallpaperapp.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

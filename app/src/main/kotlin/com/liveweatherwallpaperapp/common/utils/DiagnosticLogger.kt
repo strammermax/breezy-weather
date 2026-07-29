@@ -1,9 +1,8 @@
 package com.liveweatherwallpaperapp.common.utils
 
-import androidx.core.content.edit
-
 import android.content.Context
 import android.util.Log
+import androidx.core.content.edit
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -27,7 +26,7 @@ object DiagnosticLogger {
         if (!prefs.getBoolean(KEY_ENABLED, false)) return false
         val started = prefs.getLong(KEY_STARTED_AT, 0L)
         if (started == 0L || System.currentTimeMillis() - started >= MAX_AGE_MS) {
-            prefs.edit {putBoolean(KEY_ENABLED, false)}
+            prefs.edit { putBoolean(KEY_ENABLED, false) }
             archiveDailyLogs(context, includeToday = true)
             cleanup(context)
             return false

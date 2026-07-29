@@ -16,8 +16,6 @@
 
 package com.liveweatherwallpaperapp.ui.common.widgets.trend.item
 
-import androidx.core.graphics.withSave
-
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -28,6 +26,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.IntDef
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.graphics.withSave
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.dpToPx
 import com.liveweatherwallpaperapp.common.extensions.fontScaleToApply

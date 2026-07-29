@@ -4,9 +4,8 @@
 
 package com.liveweatherwallpaperapp.wallpaper
 
-import androidx.core.graphics.scale
-
 import android.graphics.Bitmap
+import androidx.core.graphics.scale
 
 /**
  * Creates a deliberately low-detail version of a scene bitmap for the frosted

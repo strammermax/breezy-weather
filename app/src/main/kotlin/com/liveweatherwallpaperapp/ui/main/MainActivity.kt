@@ -16,10 +16,6 @@
 
 package com.liveweatherwallpaperapp.ui.main
 
-import androidx.core.graphics.createBitmap
-
-import androidx.core.graphics.drawable.toDrawable
-
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -57,6 +53,8 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.toDrawable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
@@ -1059,7 +1057,7 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
                 if (this@MainActivity.getResources().configuration.orientation != 2) {
                     binding.root.background = (
                         if (frosted) bitmap.toFrostedBackground(settings.appBackgroundFrostStrength) else bitmap
-                    ).toDrawable(resources)
+                        ).toDrawable(resources)
                 }
             } finally {
                 if (forcePhotoRefresh) {

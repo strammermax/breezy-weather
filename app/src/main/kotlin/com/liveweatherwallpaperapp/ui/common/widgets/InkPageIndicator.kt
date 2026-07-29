@@ -125,21 +125,21 @@ class InkPageIndicator @JvmOverloads constructor(
             styledValues = StyledValues(
                 dotDiameter = getDimensionPixelSize(
                     R.styleable.InkPageIndicator_dotDiameter,
-                    DEFAULT_DOT_SIZE * density,
+                    DEFAULT_DOT_SIZE * density
                 ),
                 gap = getDimensionPixelSize(R.styleable.InkPageIndicator_dotGap, DEFAULT_GAP * density),
                 animationDuration = getInteger(
                     R.styleable.InkPageIndicator_animationDuration,
-                    DEFAULT_ANIM_DURATION,
+                    DEFAULT_ANIM_DURATION
                 ).toLong(),
                 unselectedColour = getColor(
                     R.styleable.InkPageIndicator_pageIndicatorColor,
-                    DEFAULT_UNSELECTED_COLOUR,
+                    DEFAULT_UNSELECTED_COLOUR
                 ),
                 selectedColour = getColor(
                     R.styleable.InkPageIndicator_currentPageIndicatorColor,
-                    DEFAULT_SELECTED_COLOUR,
-                ),
+                    DEFAULT_SELECTED_COLOUR
+                )
             )
         }
         mDotDiameter = styledValues.dotDiameter

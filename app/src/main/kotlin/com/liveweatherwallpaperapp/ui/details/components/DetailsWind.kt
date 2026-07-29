@@ -16,8 +16,6 @@
 
 package com.liveweatherwallpaperapp.ui.details.components
 
-import androidx.compose.ui.platform.LocalResources
-
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.text.Spannable
@@ -49,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
