@@ -58,9 +58,25 @@ class HourlyTemperatureAdapter(
     provider: ResourceProvider,
     private val temperatureUnit: TemperatureUnit,
     private val showPrecipitationProbability: Boolean = true,
+    /** When true, the feels-like temperature is drawn as a second (gray) line alongside the real temperature. */
+    private val showFeelsLikeLine: Boolean = false,
 ) : AbsHourlyTrendAdapter(activity, location) {
+    /**
+     * When set, only this position is drawn highlighted instead of the default "now" (position 0).
+     * Mutable (with [setHighlightedPosition]) rather than reconstructing the adapter, since
+     * replacing a RecyclerView's adapter mid-fling interrupts the scroll — which threw an
+     * uncaught CancellationException up through an enclosing Compose Pager's nested-scroll
+     * connection and crashed the app when this adapter lived inside an AndroidView `update` block.
+     */
+    var highlightedPosition: Int? = null
+        private set
+
+    /** When set, tapping an hour invokes this instead of navigating to the daily details screen. */
+    var onHourClicked: ((Int) -> Unit)? = null
+
     private val mResourceProvider: ResourceProvider = provider
     private val mTemperatures: Array<Float?>
+    private val mFeelsLikeTemperatures: Array<Float?>
     private val mHourlyPrecipitation: Array<Float?>
     private var mHighestTemperature: Float? = null
     private var mLowestTemperature: Float? = null
@@ -79,11 +95,22 @@ class HourlyTemperatureAdapter(
         fun onBindView(activity: BreezyActivity, location: Location, position: Int) {
             val talkBackBuilder = StringBuilder(activity.getString(R.string.tag_temperature))
             super.onBindView(activity, location, talkBackBuilder, position)
+            if (highlightedPosition != null) {
+                hourlyItem.setHighlighted(position == highlightedPosition)
+            }
             val weather = location.weather!!
             val hourly = weather.nextHourlyForecast[position]
             hourly.temperature?.temperature?.let {
                 talkBackBuilder.append(activity.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
                     .append(it.formatMeasure(activity, temperatureUnit, unitWidth = UnitWidth.LONG))
+            }
+            if (showFeelsLikeLine) {
+                hourly.temperature?.feelsLikeTemperature?.let {
+                    talkBackBuilder.append(activity.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
+                        .append(activity.getString(R.string.temperature_feels_like))
+                        .append(activity.getString(R.string.colon_separator))
+                        .append(it.formatMeasure(activity, temperatureUnit, unitWidth = UnitWidth.LONG))
+                }
             }
             if (!hourly.weatherText.isNullOrEmpty()) {
                 talkBackBuilder.append(activity.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
@@ -104,14 +131,23 @@ class HourlyTemperatureAdapter(
             }
             mPolylineAndHistogramView.setData(
                 buildTemperatureArrayForItem(mTemperatures, position),
-                null,
+                if (showFeelsLikeLine) buildTemperatureArrayForItem(mFeelsLikeTemperatures, position) else null,
                 hourly.temperature?.temperature?.formatMeasure(
                     activity,
                     temperatureUnit,
                     valueWidth = UnitWidth.NARROW,
                     unitWidth = UnitWidth.NARROW
                 ),
-                null,
+                if (showFeelsLikeLine) {
+                    hourly.temperature?.feelsLikeTemperature?.formatMeasure(
+                        activity,
+                        temperatureUnit,
+                        valueWidth = UnitWidth.NARROW,
+                        unitWidth = UnitWidth.NARROW
+                    )
+                } else {
+                    null
+                },
                 mHighestTemperature,
                 mLowestTemperature,
                 null,
@@ -133,7 +169,14 @@ class HourlyTemperatureAdapter(
             )
             val lightTheme = ThemeManager.isLightTheme(itemView.context, location)
             val dayColor = ContextCompat.getColor(itemView.context, R.color.colorTemperatureDay)
-            val nightColor = ContextCompat.getColor(itemView.context, R.color.colorTemperatureNight)
+            val nightColor = if (showFeelsLikeLine) {
+                ContextCompat.getColor(
+                    itemView.context,
+                    if (lightTheme) R.color.colorTextGrey else R.color.colorTextGrey2nd
+                )
+            } else {
+                ContextCompat.getColor(itemView.context, R.color.colorTemperatureNight)
+            }
             mPolylineAndHistogramView.setLineColors(
                 dayColor,
                 nightColor,
@@ -174,7 +217,12 @@ class HourlyTemperatureAdapter(
             )
             hourlyItem.contentDescription = talkBackBuilder.toString()
             hourlyItem.setOnClickListener {
-                onItemClicked(activity, location, bindingAdapterPosition, DetailScreen.TAG_CONDITIONS)
+                val listener = onHourClicked
+                if (listener != null) {
+                    listener.invoke(bindingAdapterPosition)
+                } else {
+                    onItemClicked(activity, location, bindingAdapterPosition, DetailScreen.TAG_CONDITIONS)
+                }
             }
         }
 
@@ -218,6 +266,24 @@ class HourlyTemperatureAdapter(
                 i += 2
             }
         }
+        mFeelsLikeTemperatures = arrayOfNulls(max(0, weather.nextHourlyForecast.size * 2 - 1))
+        if (showFeelsLikeLine) {
+            var i = 0
+            while (i < mFeelsLikeTemperatures.size) {
+                mFeelsLikeTemperatures[i] =
+                    weather.nextHourlyForecast.getOrNull(i / 2)?.temperature?.feelsLikeTemperature?.value?.toFloat()
+                i += 2
+            }
+            i = 1
+            while (i < mFeelsLikeTemperatures.size) {
+                if (mFeelsLikeTemperatures[i - 1] != null && mFeelsLikeTemperatures[i + 1] != null) {
+                    mFeelsLikeTemperatures[i] = (mFeelsLikeTemperatures[i - 1]!! + mFeelsLikeTemperatures[i + 1]!!) * 0.5f
+                } else {
+                    mFeelsLikeTemperatures[i] = null
+                }
+                i += 2
+            }
+        }
         weather.normals.getOrElse(Date().getCalendarMonth(location)) { null }?.let { normals ->
             mHighestTemperature = normals.daytimeTemperature?.value?.toFloat()
             mLowestTemperature = normals.nighttimeTemperature?.value?.toFloat()
@@ -230,6 +296,16 @@ class HourlyTemperatureAdapter(
                     }
                     if (mLowestTemperature == null || it < mLowestTemperature!!) {
                         mLowestTemperature = it.toFloat()
+                    }
+                }
+                if (showFeelsLikeLine) {
+                    hourly.temperature?.feelsLikeTemperature?.value?.let {
+                        if (mHighestTemperature == null || it > mHighestTemperature!!) {
+                            mHighestTemperature = it.toFloat()
+                        }
+                        if (mLowestTemperature == null || it < mLowestTemperature!!) {
+                            mLowestTemperature = it.toFloat()
+                        }
                     }
                 }
             }
@@ -259,6 +335,14 @@ class HourlyTemperatureAdapter(
                     mHighestHourlyPrecipitation = it.toFloat()
                 }
             }
+        }
+    }
+
+    /** Updates which position is highlighted, refreshing only if it actually changed. */
+    fun setHighlightedPosition(position: Int?) {
+        if (highlightedPosition != position) {
+            highlightedPosition = position
+            notifyDataSetChanged()
         }
     }
 

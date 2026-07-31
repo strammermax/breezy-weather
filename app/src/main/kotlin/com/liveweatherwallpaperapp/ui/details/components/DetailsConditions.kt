@@ -16,9 +16,6 @@
 
 package com.liveweatherwallpaperapp.ui.details.components
 
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ImageSpan
 import android.view.View
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -36,14 +33,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
-import androidx.compose.material3.ToggleButton
-import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
@@ -54,15 +47,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -73,43 +65,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
-import com.liveweatherwallpaperapp.common.extensions.dpToPx
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
 import com.liveweatherwallpaperapp.common.extensions.getCalendarMonth
 import com.liveweatherwallpaperapp.common.extensions.getFormattedTime
+import com.liveweatherwallpaperapp.common.extensions.getThemeColor
 import com.liveweatherwallpaperapp.common.extensions.is12Hour
 import com.liveweatherwallpaperapp.common.extensions.isLandscape
-import com.liveweatherwallpaperapp.common.extensions.roundDownToNearestMultiplier
-import com.liveweatherwallpaperapp.common.extensions.roundUpToNearestMultiplier
 import com.liveweatherwallpaperapp.common.extensions.toBitmap
 import com.liveweatherwallpaperapp.common.extensions.toDate
 import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
-import com.liveweatherwallpaperapp.ui.common.charts.BreezyLineChart
-import com.liveweatherwallpaperapp.ui.common.charts.TimeTopAxisItemPlacer
 import com.liveweatherwallpaperapp.ui.common.widgets.AnimatableIconView
-import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
+import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendLayoutManager
+import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendRecyclerView
+import com.liveweatherwallpaperapp.ui.main.adapters.trend.hourly.HourlyTemperatureAdapter
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourcesProviderFactory
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.ratio.Ratio
 import com.liveweatherwallpaperapp.unit.temperature.Temperature
-import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
-import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.deciCelsius
 import com.liveweatherwallpaperapp.unit.temperature.TemperatureUnit
 import com.liveweatherwallpaperapp.unit.temperature.toTemperature
-import com.patrykandpatrick.vico.compose.cartesian.axis.fixed
-import com.patrykandpatrick.vico.core.cartesian.axis.BaseAxis
-import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
-import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
 import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarkerVisibilityListener
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.launch
 import livewallpaperweather.domain.location.model.Location
@@ -118,9 +99,6 @@ import livewallpaperweather.domain.weather.model.Hourly
 import livewallpaperweather.domain.weather.model.Normals
 import livewallpaperweather.domain.weather.reference.WeatherCode
 import java.util.Date
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.roundToInt
 
 @Composable
 fun DetailsConditions(
@@ -151,25 +129,6 @@ fun DetailsConditions(
             .toImmutableMap()
     }
     var activeItem: Pair<Date, Hourly>? by remember { mutableStateOf(null) }
-    val markerVisibilityListener = remember {
-        object : CartesianMarkerVisibilityListener {
-            override fun onShown(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
-                activeItem = targets.firstOrNull()?.let { target ->
-                    mappedValues.getOrElse(target.x.toLong()) { null }?.let {
-                        Pair(target.x.toLong().toDate(), it)
-                    }
-                }
-            }
-
-            override fun onUpdated(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
-                onShown(marker, targets)
-            }
-
-            override fun onHidden(marker: CartesianMarker) {
-                activeItem = null
-            }
-        }
-    }
 
     val mappedProbabilityValues = remember(hourlyList) {
         hourlyList
@@ -223,23 +182,16 @@ fun DetailsConditions(
         }
         if (mappedValues.size >= DetailScreen.CHART_MIN_COUNT) {
             item {
-                TemperatureChart(
+                HourlyForecastChart(
                     location,
-                    mappedValues,
-                    selectedChart != DetailScreen.TAG_FEELS_LIKE,
-                    normals,
-                    daily,
                     temperatureUnit,
-                    markerVisibilityListener
-                )
+                    activeItem
+                ) { activeItem = it }
             }
         } else {
             item {
                 UnavailableChart(mappedValues.size)
             }
-        }
-        item {
-            TemperatureSwitcher(setShowRealTemp, selectedChart != DetailScreen.TAG_FEELS_LIKE)
         }
         item {
             Text(
@@ -451,62 +403,6 @@ fun TemperatureHeader(
         daily.date.getCalendarMonth(location).getDisplayName(context.currentLocale),
         temperatureUnit
     )
-}
-
-@Composable
-private fun TemperatureSwitcher(
-    onRealTempSwitch: (Boolean) -> Unit,
-    showRealTemp: Boolean,
-) {
-    // ACT-013: the default unchecked ToggleButton colors come from
-    // colorScheme.surfaceContainer/onSurfaceVariant, which we don't override for
-    // the glass theme - against the sky-gradient background that renders as a
-    // near-opaque white pill with low-contrast text. Use the same translucent
-    // glass colors as the cards for the unchecked state instead.
-    val glassContainer = colorResource(R.color.colorGlassCardBackground)
-    val glassContent = colorResource(R.color.colorGlassTopBarText)
-    val toggleColors = ToggleButtonDefaults.toggleButtonColors(
-        containerColor = glassContainer,
-        contentColor = glassContent,
-        disabledContainerColor = glassContainer.copy(alpha = glassContainer.alpha * 0.5f),
-        disabledContentColor = glassContent.copy(alpha = 0.38f)
-    )
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
-    ) {
-        ToggleButton(
-            checked = showRealTemp,
-            onCheckedChange = { onRealTempSwitch(true) },
-            modifier = Modifier.weight(1f),
-            shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
-            colors = toggleColors
-        ) {
-            if (showRealTemp) {
-                Icon(
-                    Icons.Filled.Check,
-                    contentDescription = stringResource(R.string.settings_enabled)
-                )
-                Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
-            }
-            Text(stringResource(R.string.temperature_real))
-        }
-        ToggleButton(
-            checked = !showRealTemp,
-            onCheckedChange = { onRealTempSwitch(false) },
-            modifier = Modifier.weight(1f),
-            shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
-            colors = toggleColors
-        ) {
-            if (!showRealTemp) {
-                Icon(
-                    Icons.Filled.Check,
-                    contentDescription = stringResource(R.string.settings_enabled)
-                )
-                Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
-            }
-            Text(stringResource(R.string.temperature_feels_like))
-        }
-    }
 }
 
 @Composable
@@ -787,143 +683,81 @@ fun WeatherCondition(
     }
 }
 
+/**
+ * Hour-by-hour forecast strip. This embeds the exact same [TrendRecyclerView] +
+ * [HourlyTemperatureAdapter] widget used on the main-page "Verwachting per uur" card
+ * (hour, weather icon, precipitation probability, wind, temperature lines against the
+ * daytime/nighttime normals reference lines, precipitation), so the two look identical.
+ * Both the real temperature (yellow) and the feels-like temperature (gray) are drawn at
+ * once. Tapping an hour selects it via [onHourSelected] instead of the adapter's normal
+ * behavior of navigating to that hour's daily details screen.
+ */
 @Composable
-private fun TemperatureChart(
+private fun HourlyForecastChart(
     location: Location,
-    mappedValues: ImmutableMap<Long, Hourly>,
-    showRealTemp: Boolean,
-    normals: Normals?,
-    daily: Daily,
     temperatureUnit: TemperatureUnit,
-    markerVisibilityListener: CartesianMarkerVisibilityListener,
+    activeItem: Pair<Date, Hourly>?,
+    onHourSelected: (Pair<Date, Hourly>?) -> Unit,
 ) {
     val context = LocalContext.current
-    val resources = LocalResources.current
-
+    val activity = context as BreezyActivity
     val provider = ResourcesProviderFactory.newInstance
-    val step = temperatureUnit.chartStep
-    val minY = remember(mappedValues, showRealTemp, normals) {
-        if (showRealTemp) {
-            mappedValues.values.minOf { it.temperature!!.temperature!!.inDeciCelsius }
-        } else {
-            min(
-                mappedValues.values.minOf { it.temperature!!.temperature!!.inDeciCelsius },
-                mappedValues.values.minOf { it.temperature!!.feelsLikeTemperature!!.inDeciCelsius }
-            )
-        }.let {
-            normals?.nighttimeTemperature?.let { normal ->
-                if (normal.inDeciCelsius < it) normal.inDeciCelsius else it
-            } ?: it
-        }.deciCelsius.toDouble(temperatureUnit).roundDownToNearestMultiplier(step)
+    val hourlyList = remember(location) { location.weather?.nextHourlyForecast.orEmpty() }
+    val highlightedPosition = remember(activeItem, hourlyList) {
+        activeItem?.let { (date, _) -> hourlyList.indexOfFirst { it.date.time == date.time }.takeIf { it >= 0 } }
     }
-    val maxY = remember(mappedValues, showRealTemp, normals) {
-        if (showRealTemp) {
-            mappedValues.values.maxOf { it.temperature!!.temperature!!.inDeciCelsius }
-        } else {
-            max(
-                mappedValues.values.maxOf { it.temperature!!.temperature!!.inDeciCelsius },
-                mappedValues.values.maxOf { it.temperature!!.feelsLikeTemperature!!.inDeciCelsius }
-            )
-        }.let {
-            normals?.daytimeTemperature?.let { normal ->
-                if (normal.inDeciCelsius > it) normal.inDeciCelsius else it
-            } ?: it
-        }.deciCelsius.toDouble(temperatureUnit).roundUpToNearestMultiplier(step)
-    }
+    // rememberUpdatedState so the click listener set once in `factory` always calls the latest
+    // lambda, without needing to touch the adapter/RecyclerView on every recomposition.
+    val onHourSelectedState = rememberUpdatedState(onHourSelected)
+    val hourlyListState = rememberUpdatedState(hourlyList)
 
-    val modelProducer = remember { CartesianChartModelProducer() }
-
-    LaunchedEffect(location, showRealTemp) {
-        modelProducer.runTransaction {
-            lineSeries {
-                series(
-                    x = mappedValues.keys,
-                    y = mappedValues.values.map {
-                        if (showRealTemp) {
-                            it.temperature!!.temperature!!
-                        } else {
-                            it.temperature!!.feelsLikeTemperature!!
-                        }.toDouble(temperatureUnit)
-                    }
-                )
-                if (!showRealTemp) {
-                    series(
-                        x = mappedValues.keys,
-                        y = mappedValues.values.map {
-                            it.temperature!!.temperature!!.toDouble(temperatureUnit)
-                        }
-                    )
-                }
+    AndroidView(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(dimensionResource(R.dimen.hourly_trend_item_height)),
+        factory = { ctx ->
+            val trendRecyclerView = TrendRecyclerView(ctx).apply {
+                setHasFixedSize(true)
+                layoutManager = TrendLayoutManager(ctx)
+                // This RecyclerView already disambiguates horizontal drags itself (see
+                // NestedHorizontalRecyclerView) via requestDisallowInterceptTouchEvent, so it
+                // doesn't need nested-scroll dispatch. With it enabled, flinging this list bridges
+                // into the enclosing Compose day-tabs Pager's nested-scroll connection, and a
+                // cancelled Pager scroll throws an uncaught CancellationException from the fling
+                // loop and crashes the app.
+                isNestedScrollingEnabled = false
             }
+            val adapter = HourlyTemperatureAdapter(
+                activity,
+                location,
+                provider,
+                temperatureUnit = temperatureUnit,
+                showFeelsLikeLine = true
+            )
+            adapter.onHourClicked = { position ->
+                val hourly = hourlyListState.value.getOrNull(position)
+                onHourSelectedState.value(
+                    if (hourly == null || adapter.highlightedPosition == position) null else Pair(hourly.date, hourly)
+                )
+            }
+            trendRecyclerView.setLineColor(
+                context.getThemeColor(com.google.android.material.R.attr.colorOutline)
+            )
+            trendRecyclerView.setTextColor(
+                context.getThemeColor(R.attr.colorTitleText)
+            )
+            // Set once here (not in `update`) — reassigning a RecyclerView's adapter on every
+            // recomposition interrupts an in-progress fling, which crashed the app with an
+            // uncaught CancellationException from an enclosing Compose Pager's nested scroll.
+            trendRecyclerView.adapter = adapter
+            trendRecyclerView.setKeyLineVisibility(
+                SettingsManager.getInstance(context).isTrendHorizontalLinesEnabled
+            )
+            adapter.bindBackgroundForHost(trendRecyclerView)
+            trendRecyclerView
+        },
+        update = { trendRecyclerView ->
+            (trendRecyclerView.adapter as HourlyTemperatureAdapter).setHighlightedPosition(highlightedPosition)
         }
-    }
-
-    BreezyLineChart(
-        location = location,
-        modelProducer = modelProducer,
-        theDay = daily.date,
-        maxY = maxY,
-        topAxisItemPlacer = remember(mappedValues) {
-            TimeTopAxisItemPlacer(mappedValues.keys.toImmutableList())
-        },
-        topAxisSize = BaseAxis.Size.fixed(23.dp),
-        endAxisValueFormatter = { _, value, _ ->
-            value.toTemperature(temperatureUnit)
-                .formatMeasure(context, temperatureUnit, valueWidth = UnitWidth.NARROW, unitWidth = UnitWidth.NARROW)
-        },
-        colors = remember {
-            persistentListOf(
-                persistentMapOf(
-                    47.celsius.toDouble(temperatureUnit).toFloat() to Color(71, 14, 0),
-                    30.celsius.toDouble(temperatureUnit).toFloat() to Color(232, 83, 25),
-                    21.celsius.toDouble(temperatureUnit).toFloat() to Color(243, 183, 4),
-                    10.celsius.toDouble(temperatureUnit).toFloat() to Color(128, 147, 24),
-                    1.celsius.toDouble(temperatureUnit).toFloat() to Color(68, 125, 99),
-                    0.celsius.toDouble(temperatureUnit).toFloat() to Color(93, 133, 198),
-                    -4.celsius.toDouble(temperatureUnit).toFloat() to Color(100, 166, 189),
-                    -8.celsius.toDouble(temperatureUnit).toFloat() to Color(106, 191, 181),
-                    -15.celsius.toDouble(temperatureUnit).toFloat() to Color(157, 219, 217),
-                    -25.celsius.toDouble(temperatureUnit).toFloat() to Color(143, 89, 169),
-                    -40.celsius.toDouble(temperatureUnit).toFloat() to Color(162, 70, 145),
-                    -55.celsius.toDouble(temperatureUnit).toFloat() to Color(202, 172, 195),
-                    -70.celsius.toDouble(temperatureUnit).toFloat() to Color(115, 70, 105)
-                ),
-                persistentMapOf(
-                    50f to Color(128, 128, 128, 160),
-                    0f to Color(128, 128, 128, 160)
-                )
-            )
-        },
-        topAxisValueFormatter = { _, value, _ ->
-            mappedValues.getOrElse(value.toLong()) { null }?.let { hourly ->
-                hourly.weatherCode?.let {
-                    val ss = SpannableString("abc")
-                    val d = ResourceHelper.getWeatherIcon(provider, it, hourly.isDaylight)
-                    d.setBounds(0, 0, context.dpToPx(18f).roundToInt(), context.dpToPx(18f).roundToInt())
-                    val span = ImageSpan(d, ImageSpan.ALIGN_BASELINE)
-                    ss.setSpan(span, 0, 3, Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
-                    ss
-                }
-            } ?: "-"
-        },
-        trendHorizontalLines = buildMap {
-            normals?.let {
-                it.daytimeTemperature?.let { normal ->
-                    put(
-                        normal.toDouble(temperatureUnit),
-                        stringResource(R.string.temperature_normal_short)
-                    )
-                }
-                it.nighttimeTemperature?.let { normal ->
-                    put(
-                        normal.toDouble(temperatureUnit),
-                        stringResource(R.string.temperature_normal_short)
-                    )
-                }
-            }
-        }.toImmutableMap(),
-        minY = minY,
-        endAxisItemPlacer = remember { VerticalAxis.ItemPlacer.step({ step }) },
-        markerVisibilityListener = markerVisibilityListener
     )
 }
