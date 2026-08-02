@@ -1,5 +1,17 @@
 [
   {
+    "version": "Niet uitgebracht (+1)",
+    "date": "",
+    "changes": [
+      "other grafiek"
+    ]
+  },
+  {
+    "version": "2026.07.30.509",
+    "date": "2026-07-30",
+    "changes": []
+  },
+  {
     "version": "2026.07.30.508",
     "date": "2026-07-30",
     "changes": [
@@ -80,18 +92,6 @@
     "changes": [
       "Move docs/*.md into docs/Eisen/ and commit the updated content that was sitting there uncommitted",
       "Add docs/APP_FUNCTIES.md: full app feature overview"
-    ]
-  },
-  {
-    "version": "2026.07.27.439",
-    "date": "2026-07-27",
-    "changes": []
-  },
-  {
-    "version": "2026.07.27.438",
-    "date": "2026-07-27",
-    "changes": [
-      "Fix fixed/fictional locations getting corrupted by device GPS, add immediate refresh triggers and a one-time cache hotfix"
     ]
   }
 ]
