@@ -118,7 +118,7 @@ fun BWCenterAlignedTopAppBar(
     onBackPressed: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
     windowInsets: WindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-    colors: TopAppBarColors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
+    colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(),
 ) = CenterAlignedTopAppBar(
     title = { Text(text = title) },
     modifier = modifier,

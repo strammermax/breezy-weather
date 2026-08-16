@@ -54,7 +54,7 @@ class HourlyCloudCoverAdapter(
         fun onBindView(activity: BreezyActivity, location: Location, position: Int) {
             val talkBackBuilder = StringBuilder(activity.getString(R.string.tag_cloud_cover))
             super.onBindView(activity, location, talkBackBuilder, position)
-            val hourly = location.weather!!.nextHourlyForecast[position]
+            val hourly = location.weather!!.hourlyTrendForecast[position]
 
             hourly.cloudCover?.let { cloudCover ->
                 talkBackBuilder
@@ -114,9 +114,9 @@ class HourlyCloudCoverAdapter(
         (holder as ViewHolder).onBindView(activity, location, position)
     }
 
-    override fun getItemCount() = location.weather!!.nextHourlyForecast.size
+    override fun getItemCount() = location.weather!!.hourlyTrendForecast.size
 
-    override fun isValid(location: Location) = location.weather!!.nextHourlyForecast.any {
+    override fun isValid(location: Location) = location.weather!!.hourlyTrendForecast.any {
         it.cloudCover != null
     }
 

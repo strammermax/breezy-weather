@@ -32,10 +32,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -117,7 +117,7 @@ private fun TestSettingsScreen(onBackPressed: () -> Unit) {
                 context.startActivity(Intent(context, LiveWallpaperConfigActivity::class.java))
             },
             TestSettingsItem(
-                icon = Icons.Filled.VolumeUp,
+                icon = Icons.AutoMirrored.Filled.VolumeUp,
                 titleId = R.string.test_settings_find_my_phone,
                 summaryId = R.string.test_settings_find_my_phone_summary
             ) {

@@ -53,7 +53,9 @@ internal class BreezyTextToolbar(
             val clipboardManager = view.context.clipboardManager
             val previousClipboard = clipboardManager.primaryClip
             onCopyRequested?.invoke()
-            val text = clipboardManager.text
+            // clipboardManager.text resolves to the deprecated getText()/setText() pair
+            // inherited from the legacy android.text.ClipboardManager base class.
+            val text = clipboardManager.primaryClip?.getItemAt(0)?.coerceToText(view.context) ?: ""
             if (previousClipboard != null) {
                 clipboardManager.setPrimaryClip(previousClipboard)
             } else {
@@ -84,7 +86,9 @@ internal class BreezyTextToolbar(
             val clipboardManager = view.context.clipboardManager
             val previousClipboard = clipboardManager.primaryClip
             onCopyRequested?.invoke()
-            val text = clipboardManager.text
+            // clipboardManager.text resolves to the deprecated getText()/setText() pair
+            // inherited from the legacy android.text.ClipboardManager base class.
+            val text = clipboardManager.primaryClip?.getItemAt(0)?.coerceToText(view.context) ?: ""
             if (previousClipboard != null) {
                 clipboardManager.setPrimaryClip(previousClipboard)
             } else {

@@ -62,7 +62,7 @@ class HourlyFeelsLikeAdapter(
             val talkBackBuilder = StringBuilder(activity.getString(R.string.tag_feels_like))
             super.onBindView(activity, location, talkBackBuilder, position)
             val weather = location.weather!!
-            val hourly = weather.nextHourlyForecast[position]
+            val hourly = weather.hourlyTrendForecast[position]
             hourly.temperature?.feelsLikeTemperature?.let {
                 talkBackBuilder.append(activity.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
                     .append(it.formatMeasure(activity, temperatureUnit, unitWidth = UnitWidth.LONG))
@@ -142,13 +142,13 @@ class HourlyFeelsLikeAdapter(
 
     init {
         val weather = location.weather!!
-        mTemperatures = arrayOfNulls(max(0, weather.nextHourlyForecast.size * 2 - 1))
+        mTemperatures = arrayOfNulls(max(0, weather.hourlyTrendForecast.size * 2 - 1))
         run {
             var i = 0
             while (i < mTemperatures.size) {
                 mTemperatures[i] =
-                    weather.nextHourlyForecast.getOrNull(i / 2)?.temperature?.feelsLikeTemperature?.value?.toFloat()
-                        ?: weather.nextHourlyForecast.getOrNull(i / 2)?.temperature?.temperature?.value?.toFloat()
+                    weather.hourlyTrendForecast.getOrNull(i / 2)?.temperature?.feelsLikeTemperature?.value?.toFloat()
+                        ?: weather.hourlyTrendForecast.getOrNull(i / 2)?.temperature?.temperature?.value?.toFloat()
                 i += 2
             }
         }
@@ -163,7 +163,7 @@ class HourlyFeelsLikeAdapter(
                 i += 2
             }
         }
-        weather.nextHourlyForecast
+        weather.hourlyTrendForecast
             .forEach { hourly ->
                 (hourly.temperature?.feelsLikeTemperature ?: hourly.temperature?.temperature)?.value?.let {
                     if (mHighestTemperature == null || it > mHighestTemperature!!) {
@@ -185,10 +185,10 @@ class HourlyFeelsLikeAdapter(
         (holder as ViewHolder).onBindView(activity, location, position)
     }
 
-    override fun getItemCount() = location.weather!!.nextHourlyForecast.size
+    override fun getItemCount() = location.weather!!.hourlyTrendForecast.size
 
     override fun isValid(location: Location): Boolean {
-        return location.weather?.nextHourlyForecast?.any {
+        return location.weather?.hourlyTrendForecast?.any {
             it.temperature?.feelsLikeTemperature != null
         } == true
     }

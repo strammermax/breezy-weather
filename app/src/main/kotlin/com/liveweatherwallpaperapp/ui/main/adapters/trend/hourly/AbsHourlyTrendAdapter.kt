@@ -47,7 +47,7 @@ abstract class AbsHourlyTrendAdapter(
         ) {
             val context = itemView.context
             val weather = location.weather!!
-            val hourly = weather.nextHourlyForecast[position]
+            val hourly = weather.hourlyTrendForecast[position]
             talkBackBuilder
                 .append(context.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
                 .append(hourly.date.getHour(location, activity))
@@ -55,7 +55,9 @@ abstract class AbsHourlyTrendAdapter(
             // Hour text is always shown in the title color (white), matching the
             // live wallpaper background.
             hourlyItem.setTextColor(context.getThemeColor(R.attr.colorTitleText))
-            hourlyItem.setHighlighted(position == 0)
+            // Highlight the current hour rather than index 0, since [Weather.hourlyTrendForecast]
+            // always starts at midnight and may span multiple days.
+            hourlyItem.setHighlighted(position == weather.hourlyTrendCurrentIndex)
         }
 
         protected fun onItemClicked(
@@ -65,7 +67,7 @@ abstract class AbsHourlyTrendAdapter(
             detailScreen: DetailScreen,
         ) {
             if (activity.isActivityResumed) {
-                val hourlyDate = location.weather!!.nextHourlyForecast[adapterPosition].date
+                val hourlyDate = location.weather!!.hourlyTrendForecast[adapterPosition].date
                 // Might not work with sources like AccuWeather not starting the day at 00:00
                 val dailyIndex = location.weather!!.dailyForecast.indexOfFirst {
                     it.date.time > hourlyDate.time - 1.days.inWholeMilliseconds

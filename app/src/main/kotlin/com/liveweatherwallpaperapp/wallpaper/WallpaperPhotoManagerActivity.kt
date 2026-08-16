@@ -177,7 +177,10 @@ class WallpaperPhotoManagerActivity : BreezyActivity() {
                 }
                 ).let { list ->
                     if (hideUnavailable) {
-                        list.filterNot { it.disabled || it.filePath == null || !File(it.filePath).isFile }
+                        list.filterNot {
+                            val filePath = it.filePath
+                            it.disabled || filePath == null || !File(filePath).isFile
+                        }
                     } else {
                         list
                     }

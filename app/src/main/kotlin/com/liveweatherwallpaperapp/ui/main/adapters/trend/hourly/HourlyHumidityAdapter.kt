@@ -63,7 +63,7 @@ class HourlyHumidityAdapter(
             val talkBackBuilder = StringBuilder()
             super.onBindView(activity, location, talkBackBuilder, position)
             val weather = location.weather!!
-            val hourly = weather.nextHourlyForecast[position]
+            val hourly = weather.hourlyTrendForecast[position]
             hourly.relativeHumidity?.let {
                 talkBackBuilder.append(activity.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
                     .append(activity.getString(R.string.humidity))
@@ -150,11 +150,11 @@ class HourlyHumidityAdapter(
 
     init {
         val weather = location.weather!!
-        mDewPoints = arrayOfNulls(max(0, weather.nextHourlyForecast.size * 2 - 1))
+        mDewPoints = arrayOfNulls(max(0, weather.hourlyTrendForecast.size * 2 - 1))
         run {
             var i = 0
             while (i < mDewPoints.size) {
-                mDewPoints[i] = weather.nextHourlyForecast.getOrNull(i / 2)?.dewPoint?.value?.toFloat()
+                mDewPoints[i] = weather.hourlyTrendForecast.getOrNull(i / 2)?.dewPoint?.value?.toFloat()
                 i += 2
             }
         }
@@ -169,7 +169,7 @@ class HourlyHumidityAdapter(
                 i += 2
             }
         }
-        weather.nextHourlyForecast
+        weather.hourlyTrendForecast
             .forEach { hourly ->
                 hourly.dewPoint?.value?.let {
                     if (mHighestDewPoint == null || it > mHighestDewPoint!!) {
@@ -191,7 +191,7 @@ class HourlyHumidityAdapter(
         (holder as ViewHolder).onBindView(activity, location, position)
     }
 
-    override fun getItemCount() = location.weather!!.nextHourlyForecast.size
+    override fun getItemCount() = location.weather!!.hourlyTrendForecast.size
 
     override fun isValid(location: Location): Boolean {
         return mHighestDewPoint != null && mLowestDewPoint != null

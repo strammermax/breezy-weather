@@ -64,9 +64,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.recyclerview.widget.RecyclerView
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
+import com.liveweatherwallpaperapp.common.extensions.fontScaleToApply
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
 import com.liveweatherwallpaperapp.common.extensions.getCalendarMonth
 import com.liveweatherwallpaperapp.common.extensions.getFormattedTime
@@ -77,6 +79,7 @@ import com.liveweatherwallpaperapp.common.extensions.toBitmap
 import com.liveweatherwallpaperapp.common.extensions.toDate
 import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
+import com.liveweatherwallpaperapp.domain.weather.model.isToday
 import com.liveweatherwallpaperapp.ui.common.widgets.AnimatableIconView
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendLayoutManager
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendRecyclerView
@@ -99,6 +102,7 @@ import livewallpaperweather.domain.weather.model.Hourly
 import livewallpaperweather.domain.weather.model.Normals
 import livewallpaperweather.domain.weather.reference.WeatherCode
 import java.util.Date
+import kotlin.math.roundToInt
 
 @Composable
 fun DetailsConditions(
@@ -109,6 +113,7 @@ fun DetailsConditions(
     selectedChart: DetailScreen,
     setShowRealTemp: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    onCenteredDayChanged: ((Int) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val resources = LocalResources.current
@@ -185,8 +190,11 @@ fun DetailsConditions(
                 HourlyForecastChart(
                     location,
                     temperatureUnit,
-                    activeItem
-                ) { activeItem = it }
+                    daily,
+                    activeItem,
+                    onHourSelected = { activeItem = it },
+                    onCenteredDayChanged = onCenteredDayChanged
+                )
             }
         } else {
             item {
@@ -691,24 +699,47 @@ fun WeatherCondition(
  * Both the real temperature (yellow) and the feels-like temperature (gray) are drawn at
  * once. Tapping an hour selects it via [onHourSelected] instead of the adapter's normal
  * behavior of navigating to that hour's daily details screen.
+ *
+ * Since [hourlyList] spans multiple days (see [hourlyTrendForecast]), scrolling this strip past
+ * a midnight boundary reports the newly-centered day via [onCenteredDayChanged] (a
+ * `dailyForecast` index), so the caller can follow along with the day-tab row above -- without
+ * changing the rest of the page, which stays on whichever day was actually navigated to.
  */
 @Composable
 private fun HourlyForecastChart(
     location: Location,
     temperatureUnit: TemperatureUnit,
+    daily: Daily,
     activeItem: Pair<Date, Hourly>?,
     onHourSelected: (Pair<Date, Hourly>?) -> Unit,
+    onCenteredDayChanged: ((Int) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val activity = context as BreezyActivity
     val provider = ResourcesProviderFactory.newInstance
-    val hourlyList = remember(location) { location.weather?.nextHourlyForecast.orEmpty() }
+    // Must match the adapter's own internal list (weather.hourlyTrendForecast, see
+    // HourlyTemperatureAdapter) 1:1 -- onHourClicked below maps an adapter position back to a
+    // Hourly via this list, so a mismatched source list here would select the wrong hour.
+    val hourlyList = remember(location) { location.weather?.hourlyTrendForecast.orEmpty() }
+    // Every day's page shares the same underlying [hourlyList], so opening a page other than
+    // today must NOT reuse [Weather.hourlyTrendCurrentIndex] (that's always "now", i.e. today) --
+    // otherwise every day's strip opens showing today's hours instead of that day's own. Center
+    // on "now" only for today's page; for any other day, center on that day's first hour.
+    val initialCenterIndex = remember(location, daily) {
+        if (daily.isToday(location)) {
+            location.weather?.hourlyTrendCurrentIndex ?: 0
+        } else {
+            hourlyList.indexOfFirst { it.date.time >= daily.date.time }.takeIf { it >= 0 } ?: 0
+        }
+    }
+    val dailyDates = remember(location) { location.weather?.dailyForecast?.map { it.date }.orEmpty() }
     val highlightedPosition = remember(activeItem, hourlyList) {
         activeItem?.let { (date, _) -> hourlyList.indexOfFirst { it.date.time == date.time }.takeIf { it >= 0 } }
     }
     // rememberUpdatedState so the click listener set once in `factory` always calls the latest
     // lambda, without needing to touch the adapter/RecyclerView on every recomposition.
     val onHourSelectedState = rememberUpdatedState(onHourSelected)
+    val onCenteredDayChangedState = rememberUpdatedState(onCenteredDayChanged)
     val hourlyListState = rememberUpdatedState(hourlyList)
 
     AndroidView(
@@ -740,6 +771,26 @@ private fun HourlyForecastChart(
                     if (hourly == null || adapter.highlightedPosition == position) null else Pair(hourly.date, hourly)
                 )
             }
+            // Live-reports which day is centered as the user scrolls this multi-day strip, so
+            // the day-tab row above can follow along across midnight without changing the rest
+            // of the page (see the onCenteredDayChanged kdoc above).
+            trendRecyclerView.addOnScrollListener(
+                object : RecyclerView.OnScrollListener() {
+                    private var lastReportedDayIndex: Int? = null
+
+                    override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                        val callback = onCenteredDayChangedState.value ?: return
+                        val list = hourlyListState.value
+                        val centeredDate = recyclerView.centeredItemDate(list) ?: return
+                        val dayIndex = dailyDates.indexOfLast { it.time <= centeredDate.time }
+                            .takeIf { it >= 0 } ?: return
+                        if (dayIndex != lastReportedDayIndex) {
+                            lastReportedDayIndex = dayIndex
+                            callback(dayIndex)
+                        }
+                    }
+                }
+            )
             trendRecyclerView.setLineColor(
                 context.getThemeColor(com.google.android.material.R.attr.colorOutline)
             )
@@ -754,10 +805,63 @@ private fun HourlyForecastChart(
                 SettingsManager.getInstance(context).isTrendHorizontalLinesEnabled
             )
             adapter.bindBackgroundForHost(trendRecyclerView)
+            // Same "center on current hour" behavior as the main-page hourly card (see
+            // DailyViewHolder.centerOnHour) -- the strip starts at midnight, so without this it
+            // opens scrolled all the way to the start instead of showing "now".
+            trendRecyclerView.centerOnHour(initialCenterIndex)
             trendRecyclerView
         },
         update = { trendRecyclerView ->
             (trendRecyclerView.adapter as HourlyTemperatureAdapter).setHighlightedPosition(highlightedPosition)
         }
     )
+}
+
+/**
+ * Scrolls so [index] is centered in this RecyclerView's visible width. Right after
+ * adapter/layoutManager assignment the RecyclerView's width is still 0 (its measure/layout pass
+ * hasn't run yet), so this re-posts itself until a real width is available -- same approach as
+ * [com.liveweatherwallpaperapp.ui.main.adapters.main.holder.DailyViewHolder.centerOnHour].
+ */
+private fun TrendRecyclerView.centerOnHour(index: Int, attemptsLeft: Int = 10) {
+    val layoutManager = layoutManager as? TrendLayoutManager ?: return
+    val itemCount = adapter?.itemCount ?: 0
+    if (index < 0 || index >= itemCount) return
+    val width = width
+    if (width <= 0) {
+        if (attemptsLeft > 0) {
+            post { centerOnHour(index, attemptsLeft - 1) }
+        }
+        return
+    }
+    val itemWidth = (
+        context.resources.getDimensionPixelSize(R.dimen.trend_item_width) * context.fontScaleToApply
+        ).roundToInt()
+    val offset = ((width - itemWidth) / 2).coerceAtLeast(0)
+    layoutManager.scrollToPositionWithOffset(index, offset)
+}
+
+/**
+ * The [Hourly.date] of whichever visible child's horizontal center is closest to this
+ * RecyclerView's own horizontal center, or null if nothing is laid out yet. Used to figure out
+ * which day is "centered" while the user scrolls the multi-day hourly strip.
+ */
+private fun RecyclerView.centeredItemDate(hourlyList: List<Hourly>): Date? {
+    val layoutManager = layoutManager as? TrendLayoutManager ?: return null
+    val first = layoutManager.findFirstVisibleItemPosition()
+    val last = layoutManager.findLastVisibleItemPosition()
+    if (first < 0 || last < 0) return null
+    val center = width / 2f
+    var bestPosition = -1
+    var bestDistance = Float.MAX_VALUE
+    for (position in first..last) {
+        val child = layoutManager.findViewByPosition(position) ?: continue
+        val childCenter = (child.left + child.right) / 2f
+        val distance = kotlin.math.abs(childCenter - center)
+        if (distance < bestDistance) {
+            bestDistance = distance
+            bestPosition = position
+        }
+    }
+    return hourlyList.getOrNull(bestPosition)?.date
 }

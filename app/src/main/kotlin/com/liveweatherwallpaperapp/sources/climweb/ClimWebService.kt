@@ -279,6 +279,9 @@ abstract class ClimWebService : HttpSource(), WeatherSource, ConfigurableSource,
         }
     }
 
+    // The trailing `as Map<Month, Normals>` cast below is unchecked at compile time (generics are
+    // erased), but is safe: the preceding filter already removed every null value.
+    @Suppress("UNCHECKED_CAST")
     private fun getNormals(
         normalsResult: List<ClimWebNormals>,
     ): Map<Month, Normals>? {

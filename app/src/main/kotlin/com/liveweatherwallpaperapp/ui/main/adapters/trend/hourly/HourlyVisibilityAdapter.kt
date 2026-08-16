@@ -61,7 +61,7 @@ class HourlyVisibilityAdapter(
             val talkBackBuilder = StringBuilder(activity.getString(R.string.tag_visibility))
             super.onBindView(activity, location, talkBackBuilder, position)
             val weather = location.weather!!
-            val hourly = weather.nextHourlyForecast[position]
+            val hourly = weather.hourlyTrendForecast[position]
             hourly.visibility?.let {
                 talkBackBuilder.append(activity.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
                     .append(it.formatMeasure(activity, unitWidth = UnitWidth.LONG))
@@ -135,11 +135,11 @@ class HourlyVisibilityAdapter(
 
     init {
         val weather = location.weather!!
-        mVisibilities = arrayOfNulls(max(0, weather.nextHourlyForecast.size * 2 - 1))
+        mVisibilities = arrayOfNulls(max(0, weather.hourlyTrendForecast.size * 2 - 1))
         run {
             var i = 0
             while (i < mVisibilities.size) {
-                mVisibilities[i] = weather.nextHourlyForecast.getOrNull(i / 2)?.visibility?.value?.toFloat()
+                mVisibilities[i] = weather.hourlyTrendForecast.getOrNull(i / 2)?.visibility?.value?.toFloat()
                 i += 2
             }
         }
@@ -154,7 +154,7 @@ class HourlyVisibilityAdapter(
                 i += 2
             }
         }
-        weather.nextHourlyForecast
+        weather.hourlyTrendForecast
             .forEach { hourly ->
                 hourly.visibility?.value?.let {
                     if (mHighestVisibility == null || it > mHighestVisibility!!) {
@@ -173,7 +173,7 @@ class HourlyVisibilityAdapter(
         (holder as ViewHolder).onBindView(activity, location, position)
     }
 
-    override fun getItemCount() = location.weather!!.nextHourlyForecast.size
+    override fun getItemCount() = location.weather!!.hourlyTrendForecast.size
 
     override fun isValid(location: Location): Boolean {
         return mHighestVisibility != null

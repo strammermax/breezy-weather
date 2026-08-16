@@ -371,7 +371,9 @@ class RemoveSkyProvider(
     /** Current FCM registration token, or null if unavailable (no Play Services, no
      * network yet, etc.) -- never throws, upload must proceed either way. */
     private fun fcmTokenOrNull(): String? = try {
-        Tasks.await(FirebaseMessaging.getInstance().token)
+        // .token is the deprecated firebase-messaging-ktx extension property; getToken() is the
+        // same underlying call without the deprecated ktx artifact.
+        Tasks.await(FirebaseMessaging.getInstance().getToken())
     } catch (e: Exception) {
         null
     }

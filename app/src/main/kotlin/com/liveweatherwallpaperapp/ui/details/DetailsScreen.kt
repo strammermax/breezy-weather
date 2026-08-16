@@ -161,7 +161,7 @@ internal fun DailyWeatherScreen(
                 BWCenterAlignedTopAppBar(
                     title = detailsUiState.selectedChart.getName(context),
                     onBackPressed = onBackPressed,
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color.Transparent,
                         scrolledContainerColor = Color.Transparent,
                         titleContentColor = glassContentColor,
@@ -196,6 +196,15 @@ internal fun DailyWeatherScreen(
                 val pagerPage by remember {
                     derivedStateOf { pagerState.currentPage }
                 }
+
+                // Follows the day-tab highlight while the user scrolls the "Conditions" hourly
+                // strip across a midnight boundary (see HourlyForecastChart/onCenteredDayChanged
+                // in DetailsConditions.kt), without touching the rest of the page -- that stays
+                // bound to pagerPage, i.e. whichever day was actually navigated to. Re-synced
+                // to pagerPage whenever the pager itself changes (swipe or tab tap), so it
+                // doesn't stay stuck on a day the user scrolled past but didn't navigate to.
+                var centeredDayIndex by remember { mutableStateOf(pagerPage) }
+                LaunchedEffect(pagerPage) { centeredDayIndex = pagerPage }
 
                 // ACT-014: like the home screen, replace the static sky-gradient background
                 // (set in DetailsActivity.onCreate as a fallback) with a one-time snapshot of
@@ -339,7 +348,7 @@ internal fun DailyWeatherScreen(
                     ) {
                         DailyPagerIndicator(
                             pages = pages,
-                            selected = pagerPage,
+                            selected = centeredDayIndex,
                             location = loc,
                             onClick = {
                                 scope.launch {
@@ -366,7 +375,8 @@ internal fun DailyWeatherScreen(
                                     setSelectedPollutant = { pollutant ->
                                         detailsViewModel.setSelectedPollutant(pollutant)
                                     },
-                                    pollenIndexSource = detailsViewModel.getPollenIndexSource(loc)
+                                    pollenIndexSource = detailsViewModel.getPollenIndexSource(loc),
+                                    onCenteredDayChanged = { centeredDayIndex = it }
                                 )
                             }
                         }
@@ -544,6 +554,7 @@ fun DailyPagerContent(
     setSelectedPollutant: (PollutantIndex?) -> Unit,
     pollenIndexSource: PollenIndexSource?,
     modifier: Modifier = Modifier,
+    onCenteredDayChanged: ((Int) -> Unit)? = null,
 ) {
     val daily = remember(selected) {
         location.weather!!.dailyForecast[selected]
@@ -592,7 +603,8 @@ fun DailyPagerContent(
                     daily,
                     location.weather?.normals?.getOrElse(daily.date.getCalendarMonth(location)) { null },
                     selectedChart,
-                    { setSelectedChart(if (it) DetailScreen.TAG_CONDITIONS else DetailScreen.TAG_FEELS_LIKE) }
+                    { setSelectedChart(if (it) DetailScreen.TAG_CONDITIONS else DetailScreen.TAG_FEELS_LIKE) },
+                    onCenteredDayChanged = onCenteredDayChanged
                 )
             }
             DetailScreen.TAG_PRECIPITATION -> {

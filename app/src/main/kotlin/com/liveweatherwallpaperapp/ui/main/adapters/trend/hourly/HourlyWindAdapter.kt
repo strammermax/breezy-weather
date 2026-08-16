@@ -58,7 +58,7 @@ class HourlyWindAdapter(
         fun onBindView(activity: BreezyActivity, location: Location, position: Int) {
             val talkBackBuilder = StringBuilder()
             super.onBindView(activity, location, talkBackBuilder, position)
-            val hourly = location.weather!!.nextHourlyForecast[position]
+            val hourly = location.weather!!.hourlyTrendForecast[position]
 
             if (hourly.wind?.isValid == true) {
                 talkBackBuilder
@@ -77,7 +77,10 @@ class HourlyWindAdapter(
                 null, null,
                 null, null,
                 hourly.wind?.speed?.value?.toFloat() ?: 0f,
-                hourly.wind?.speed?.formatValue(activity),
+                // Empty (not null) label: keeps the histogram bar itself visible while
+                // dropping the numeric speed value that used to be printed under the
+                // wind direction arrow (redundant with the arrow's color-coded speed).
+                "",
                 mHighestWindSpeed, 0f
             )
             mPolylineAndHistogramView.setLineColors(
@@ -100,7 +103,7 @@ class HourlyWindAdapter(
     }
 
     init {
-        location.weather!!.nextHourlyForecast
+        location.weather!!.hourlyTrendForecast
             .mapNotNull { it.wind?.speed?.value }
             .maxOrNull()
             ?.let {
@@ -120,10 +123,10 @@ class HourlyWindAdapter(
     }
 
     override fun getItemCount(): Int {
-        return location.weather!!.nextHourlyForecast.size
+        return location.weather!!.hourlyTrendForecast.size
     }
 
-    override fun isValid(location: Location) = location.weather!!.nextHourlyForecast.any {
+    override fun isValid(location: Location) = location.weather!!.hourlyTrendForecast.any {
         it.wind?.speed != null
     }
 

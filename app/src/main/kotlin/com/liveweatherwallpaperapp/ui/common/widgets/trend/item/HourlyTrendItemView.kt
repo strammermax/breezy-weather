@@ -64,10 +64,6 @@ class HourlyTrendItemView @JvmOverloads constructor(
         isAntiAlias = true
         textAlign = Paint.Align.LEFT
     }
-    private val mUVTextPaint = Paint().apply {
-        isAntiAlias = true
-        textAlign = Paint.Align.CENTER
-    }
     private var mHourText: String? = null
     private var mPrecipitationText: String? = null
     private val mPrecipitationIconDrawable: Drawable? = ContextCompat.getDrawable(
@@ -77,7 +73,6 @@ class HourlyTrendItemView @JvmOverloads constructor(
     private val mPrecipitationIconSize: Int
     private var mWindIconDrawable: Drawable? = null
     private var mWindForceText: String? = null
-    private var mUVText: String? = null
     private val mWindIconSize: Int
 
     @IntDef(INVISIBLE, GONE)
@@ -98,8 +93,6 @@ class HourlyTrendItemView @JvmOverloads constructor(
     private var mPrecipitationRowHeight = 0f
     private var mWindRowTop = 0f
     private var mWindRowHeight = 0f
-    private var mUVRowTop = 0f
-    private var mUVRowHeight = 0f
     private val mIconSize: Int
     override var chartTop: Int = 0
         private set
@@ -117,10 +110,6 @@ class HourlyTrendItemView @JvmOverloads constructor(
             textSize = getContext().resources.getDimensionPixelSize(R.dimen.subtitle_text_size).toFloat()
         }
         mWindForceTextPaint.apply {
-            typeface = getContext().getTypefaceFromTextAppearance(R.style.content_text)
-            textSize = getContext().resources.getDimensionPixelSize(R.dimen.subtitle_text_size).toFloat()
-        }
-        mUVTextPaint.apply {
             typeface = getContext().getTypefaceFromTextAppearance(R.style.content_text)
             textSize = getContext().resources.getDimensionPixelSize(R.dimen.subtitle_text_size).toFloat()
         }
@@ -174,15 +163,6 @@ class HourlyTrendItemView @JvmOverloads constructor(
         mWindRowHeight = mWindIconSize.toFloat()
         mWindRowTop = y
         y += mWindRowHeight
-        y += textMargin
-
-        // UV index row, below the wind row — extra margin so it reads as its own row instead
-        // of crowding the wind row above it.
-        y += textMargin
-        val uvFontMetrics = mUVTextPaint.fontMetrics
-        mUVRowHeight = uvFontMetrics.bottom - uvFontMetrics.top
-        mUVRowTop = y
-        y += mUVRowHeight
         y += textMargin
 
         // margin bottom.
@@ -277,17 +257,6 @@ class HourlyTrendItemView @JvmOverloads constructor(
                 )
             }
         }
-
-        // UV index, centered below the wind row.
-        mUVText?.let { text ->
-            val textFontMetrics = mUVTextPaint.fontMetrics
-            canvas.drawText(
-                text,
-                measuredWidth / 2f,
-                mUVRowTop - textFontMetrics.top,
-                mUVTextPaint
-            )
-        }
     }
 
     override fun dispatchDraw(canvas: Canvas) {
@@ -337,12 +306,6 @@ class HourlyTrendItemView @JvmOverloads constructor(
 
     fun setWindForceTextColor(@ColorInt color: Int) {
         mWindForceTextPaint.color = color
-        invalidate()
-    }
-
-    fun setUVIndex(text: String?, @ColorInt color: Int) {
-        mUVText = text
-        mUVTextPaint.color = color
         invalidate()
     }
 

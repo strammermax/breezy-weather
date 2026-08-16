@@ -69,6 +69,26 @@ data class Weather(
         emptyList()
     }
 
+    // Used by the main screen's hourly trend blocks: unlike [nextHourlyForecast] (which starts
+    // at the current hour and is capped at 24h), this always starts at the beginning of today
+    // (00:00, based on the first daily forecast entry) and extends across as many full days as
+    // the hourly forecast provides, so the trend always reads from midnight to midnight.
+    val hourlyTrendForecast: List<Hourly> = run {
+        val startOfToday = dailyForecastStartingToday.firstOrNull()?.date ?: today?.date
+        if (startOfToday != null) {
+            hourlyForecast.filter { it.date.time >= startOfToday.time }
+        } else {
+            fullNextHourlyForecast
+        }
+    }
+
+    // Index of the current hour within [hourlyTrendForecast], so the UI can highlight/center on
+    // "now" instead of always highlighting index 0 (which is midnight, not necessarily now).
+    val hourlyTrendCurrentIndex: Int = hourlyTrendForecast.indexOfFirst {
+        // Example: 15:01 -> starts at 15:00, 15:59 -> starts at 15:00
+        it.date.time >= System.currentTimeMillis() - 1.hours.inWholeMilliseconds
+    }.let { if (it == -1) 0 else it }
+
     fun isValid(pollingIntervalHours: Duration?): Boolean {
         val updateTime = base.refreshTime?.time ?: 0
         val currentTime = System.currentTimeMillis()

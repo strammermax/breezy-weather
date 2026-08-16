@@ -32,12 +32,16 @@ class EventBus private constructor() {
     private val liveDataMap = HashMap<String, BusLiveData<Any>>()
     private val mainHandler = Handler(Looper.getMainLooper())
 
+    @Suppress("UNCHECKED_CAST")
     fun <T> with(type: Class<T>): BusLiveData<T> {
         val key = key(type = type)
 
         if (!liveDataMap.containsKey(key)) {
             liveDataMap[key] = BusLiveData(mainHandler)
         }
+        // Type safety here is guaranteed by construction (each key is only ever populated via
+        // with(type: Class<T>) for that exact T), not by the compiler -- generics are erased, so
+        // this cast is unavoidable.
         return liveDataMap[key] as BusLiveData<T>
     }
 

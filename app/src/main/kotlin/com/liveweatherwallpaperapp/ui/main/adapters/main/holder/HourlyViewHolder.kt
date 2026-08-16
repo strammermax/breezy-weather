@@ -26,6 +26,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonGroup
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
+import com.liveweatherwallpaperapp.common.extensions.fontScaleToApply
 import com.liveweatherwallpaperapp.common.extensions.getThemeColor
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.ui.common.adapters.ButtonAdapter
@@ -36,6 +37,7 @@ import com.liveweatherwallpaperapp.ui.main.widgets.TrendRecyclerViewScrollBar
 import com.liveweatherwallpaperapp.ui.theme.ThemeManager
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import livewallpaperweather.domain.location.model.Location
+import kotlin.math.roundToInt
 
 class HourlyViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
     LayoutInflater.from(parent.context).inflate(R.layout.container_main_hourly_trend_card, parent, false)
@@ -148,6 +150,41 @@ class HourlyViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
             SettingsManager.getInstance(context).isTrendHorizontalLinesEnabled
         )
 
+        // Center the current hour in the visible area on open, instead of leaving the list
+        // scrolled to its start (which is now midnight, not "now" — see hourlyTrendCurrentIndex).
+        centerOnHour(weather.hourlyTrendCurrentIndex)
+
         scrollBar.resetColor(activity)
+    }
+
+    /**
+     * Scrolls so [index] is centered in [trendRecyclerView]'s visible width. Right after
+     * adapter/layoutManager assignment the RecyclerView's width is still 0 (its measure/layout
+     * pass hasn't run yet), so this re-posts itself until a real width is available.
+     */
+    private fun centerOnHour(index: Int, attemptsLeft: Int = MAX_CENTER_ATTEMPTS) {
+        val layoutManager = trendRecyclerView.layoutManager as? TrendLayoutManager ?: return
+        val itemCount = trendRecyclerView.adapter?.itemCount ?: 0
+        if (index < 0 || index >= itemCount) return
+        val width = trendRecyclerView.width
+        if (width <= 0) {
+            if (attemptsLeft > 0) {
+                trendRecyclerView.post { centerOnHour(index, attemptsLeft - 1) }
+            }
+            return
+        }
+        val itemWidth = (
+            context.resources.getDimensionPixelSize(R.dimen.trend_item_width) * context.fontScaleToApply
+            ).roundToInt()
+        val offset = ((width - itemWidth) / 2).coerceAtLeast(0)
+        android.util.Log.d(
+            "HourlyCenterDebug",
+            "scrollToPositionWithOffset index=$index offset=$offset itemWidth=$itemWidth width=$width"
+        )
+        layoutManager.scrollToPositionWithOffset(index, offset)
+    }
+
+    companion object {
+        private const val MAX_CENTER_ATTEMPTS = 10
     }
 }

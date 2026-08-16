@@ -575,7 +575,7 @@ object WallpaperSceneStateFactory {
         } else {
             0.45f + (beaufort - 8f) / 4f * 0.45f
         }.coerceIn(0f, 0.90f)
-        val angleRadians = Math.toRadians((tiltFraction * 90.0).toDouble())
+        val angleRadians = Math.toRadians(tiltFraction * 90.0)
         val magnitude = tan(angleRadians).toFloat()
         val direction = normalizeDegrees(windDirectionDegrees)
         val sign = if (direction == null || cos(Math.toRadians(direction.toDouble())) >= 0.0) 1f else -1f

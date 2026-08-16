@@ -27,7 +27,6 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
-import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
 import com.liveweatherwallpaperapp.common.extensions.formatPercent
 import com.liveweatherwallpaperapp.common.extensions.getCalendarMonth
@@ -35,14 +34,12 @@ import com.liveweatherwallpaperapp.common.extensions.getThemeColor
 import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.domain.weather.model.drawableArrow
 import com.liveweatherwallpaperapp.domain.weather.model.getColor
-import com.liveweatherwallpaperapp.domain.weather.model.getUVColor
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendRecyclerView
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.chart.PolylineAndHistogramView
 import com.liveweatherwallpaperapp.ui.theme.ThemeManager
 import com.liveweatherwallpaperapp.ui.theme.resource.ResourceHelper
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
-import com.liveweatherwallpaperapp.unit.formatting.format
 import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.millimeters
 import com.liveweatherwallpaperapp.unit.temperature.TemperatureUnit
 import livewallpaperweather.domain.location.model.Location
@@ -99,7 +96,7 @@ class HourlyTemperatureAdapter(
                 hourlyItem.setHighlighted(position == highlightedPosition)
             }
             val weather = location.weather!!
-            val hourly = weather.nextHourlyForecast[position]
+            val hourly = weather.hourlyTrendForecast[position]
             hourly.temperature?.temperature?.let {
                 talkBackBuilder.append(activity.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
                     .append(it.formatMeasure(activity, temperatureUnit, unitWidth = UnitWidth.LONG))
@@ -211,10 +208,6 @@ class HourlyTemperatureAdapter(
             hourlyItem.setWindForceTextColor(
                 activity.getThemeColor(R.attr.colorTitleText)
             )
-            hourlyItem.setUVIndex(
-                hourly.uV?.index?.format(decimals = 0, locale = activity.currentLocale),
-                hourly.uV?.getUVColor(activity) ?: activity.getThemeColor(R.attr.colorTitleText)
-            )
             hourlyItem.contentDescription = talkBackBuilder.toString()
             hourlyItem.setOnClickListener {
                 val listener = onHourClicked
@@ -246,12 +239,12 @@ class HourlyTemperatureAdapter(
 
     init {
         val weather = location.weather!!
-        mTemperatures = arrayOfNulls(max(0, weather.nextHourlyForecast.size * 2 - 1))
+        mTemperatures = arrayOfNulls(max(0, weather.hourlyTrendForecast.size * 2 - 1))
         run {
             var i = 0
             while (i < mTemperatures.size) {
                 mTemperatures[i] =
-                    weather.nextHourlyForecast.getOrNull(i / 2)?.temperature?.temperature?.value?.toFloat()
+                    weather.hourlyTrendForecast.getOrNull(i / 2)?.temperature?.temperature?.value?.toFloat()
                 i += 2
             }
         }
@@ -266,12 +259,12 @@ class HourlyTemperatureAdapter(
                 i += 2
             }
         }
-        mFeelsLikeTemperatures = arrayOfNulls(max(0, weather.nextHourlyForecast.size * 2 - 1))
+        mFeelsLikeTemperatures = arrayOfNulls(max(0, weather.hourlyTrendForecast.size * 2 - 1))
         if (showFeelsLikeLine) {
             var i = 0
             while (i < mFeelsLikeTemperatures.size) {
                 mFeelsLikeTemperatures[i] =
-                    weather.nextHourlyForecast.getOrNull(i / 2)?.temperature?.feelsLikeTemperature?.value?.toFloat()
+                    weather.hourlyTrendForecast.getOrNull(i / 2)?.temperature?.feelsLikeTemperature?.value?.toFloat()
                 i += 2
             }
             i = 1
@@ -288,7 +281,7 @@ class HourlyTemperatureAdapter(
             mHighestTemperature = normals.daytimeTemperature?.value?.toFloat()
             mLowestTemperature = normals.nighttimeTemperature?.value?.toFloat()
         }
-        weather.nextHourlyForecast
+        weather.hourlyTrendForecast
             .forEach { hourly ->
                 hourly.temperature?.temperature?.value?.let {
                     if (mHighestTemperature == null || it > mHighestTemperature!!) {
@@ -309,11 +302,11 @@ class HourlyTemperatureAdapter(
                     }
                 }
             }
-        mHourlyPrecipitation = arrayOfNulls(max(0, weather.nextHourlyForecast.size * 2 - 1))
+        mHourlyPrecipitation = arrayOfNulls(max(0, weather.hourlyTrendForecast.size * 2 - 1))
         run {
             var i = 0
             while (i < mHourlyPrecipitation.size) {
-                val precip = weather.nextHourlyForecast.getOrNull(i / 2)?.precipitation?.total
+                val precip = weather.hourlyTrendForecast.getOrNull(i / 2)?.precipitation?.total
                 mHourlyPrecipitation[i] = precip?.inMicrometers?.toFloat()
                 i += 2
             }
@@ -329,7 +322,7 @@ class HourlyTemperatureAdapter(
                 i += 2
             }
         }
-        weather.nextHourlyForecast.forEach { hourly ->
+        weather.hourlyTrendForecast.forEach { hourly ->
             hourly.precipitation?.total?.inMicrometers?.let {
                 if (it > mHighestHourlyPrecipitation) {
                     mHighestHourlyPrecipitation = it.toFloat()
@@ -355,7 +348,7 @@ class HourlyTemperatureAdapter(
         (holder as ViewHolder).onBindView(activity, location, position)
     }
 
-    override fun getItemCount() = location.weather!!.nextHourlyForecast.size
+    override fun getItemCount() = location.weather!!.hourlyTrendForecast.size
 
     // FIXME
     override fun isValid(location: Location) = true

@@ -61,7 +61,7 @@ class HourlyPrecipitationAdapter(
             val talkBackBuilder = StringBuilder(activity.getString(R.string.tag_precipitation))
             super.onBindView(activity, location, talkBackBuilder, position)
             val weather = location.weather!!
-            val hourly = weather.nextHourlyForecast[position]
+            val hourly = weather.hourlyTrendForecast[position]
 
             hourlyItem.setIconDrawable(
                 hourly.weatherCode?.let {
@@ -121,7 +121,7 @@ class HourlyPrecipitationAdapter(
     }
 
     init {
-        location.weather!!.nextHourlyForecast
+        location.weather!!.hourlyTrendForecast
             .mapNotNull { it.precipitation?.total }
             .maxOrNull()
             ?.let {
@@ -141,10 +141,10 @@ class HourlyPrecipitationAdapter(
     }
 
     override fun getItemCount(): Int {
-        return location.weather!!.nextHourlyForecast.size
+        return location.weather!!.hourlyTrendForecast.size
     }
 
-    override fun isValid(location: Location) = location.weather!!.nextHourlyForecast.any {
+    override fun isValid(location: Location) = location.weather!!.hourlyTrendForecast.any {
         it.precipitation?.total != null
     }
 
