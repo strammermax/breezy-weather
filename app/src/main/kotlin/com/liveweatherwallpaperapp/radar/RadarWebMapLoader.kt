@@ -67,10 +67,16 @@ internal object RadarWebMapLoader {
      * params, but in practice it checks that it's actually running inside an iframe and, loaded
      * either directly or inside our own wrapper `<iframe>`, its map canvas fails to size itself
      * correctly (0×0, per its own console errors) — so instead this loads the regular site directly,
-     * same as [loadBuienradar]. [page] selects which layer is shown by default (Ventusky uses a
-     * distinct page per layer, e.g. `weerradar-kaart` for precipitation radar, `windsnelheid-kaart`
-     * for wind speed -- see [VentuskyDetailTile] for the ones used per details screen). The `p`
-     * (position) param centers it on the given location.
+     * same as [loadBuienradar]. [layer] selects which layer is shown (Ventusky's internal layer
+     * code, set via the `l` query param -- e.g. `radar` for precipitation, `wind-10m` for wind
+     * speed -- see [VentuskyDetailTile] for the ones used per details screen). This -- not the
+     * SEO-friendly `/nl/{dutch-name}-kaart` path pages used previously -- is the reliable way to
+     * pick a layer: several of those Dutch slugs turned out to be simply wrong (guessed, never
+     * verified against the live site) and silently 302-redirected to the homepage default
+     * (temperature) instead of 404ing, so a details page could end up always showing a temperature
+     * map with no visible error. The `l` codes here were confirmed one-by-one against the live site
+     * (checking the page's own inlined `MapOptions.layer` value after each request) before use. The
+     * `p` (position) param centers it on the given location.
      *
      * [targetMonth]/[targetDay] (Calendar.MONTH, 0-based, and day-of-month) select a specific day
      * on Ventusky's own date-tab strip instead of leaving it on "now" -- there's no URL param for
@@ -84,25 +90,18 @@ internal object RadarWebMapLoader {
         latitude: Double? = null,
         longitude: Double? = null,
         compact: Boolean = false,
-        page: String = VENTUSKY_RADAR_PAGE,
+        layer: String = VENTUSKY_RADAR_LAYER,
         targetMonth: Int? = null,
         targetDay: Int? = null,
     ) {
         configureVentusky(webView, compact, targetMonth, targetDay)
-        val baseUrl = "https://www.ventusky.com/nl/$page"
-        val url = if (latitude != null && longitude != null) {
-            String.format(
-                Locale.US,
-                "%s?p=%.4f;%.4f;%d",
-                baseUrl,
-                latitude,
-                longitude,
-                VENTUSKY_DEFAULT_ZOOM
-            )
+        val baseUrl = "https://www.ventusky.com/nl"
+        val position = if (latitude != null && longitude != null) {
+            String.format(Locale.US, "&p=%.4f;%.4f;%d", latitude, longitude, VENTUSKY_DEFAULT_ZOOM)
         } else {
-            baseUrl
+            ""
         }
-        webView.loadUrl(url)
+        webView.loadUrl("$baseUrl?l=$layer$position")
     }
 
     private fun configure(webView: WebView) {
@@ -184,7 +183,7 @@ internal object RadarWebMapLoader {
         }
     }
 
-    const val VENTUSKY_RADAR_PAGE = "weerradar-kaart"
+    const val VENTUSKY_RADAR_LAYER = "radar"
     private const val VENTUSKY_DEFAULT_ZOOM = 7
 
     // Removing these nodes outright (el.remove()) broke the webcam markers' own click handler —
@@ -241,17 +240,35 @@ internal object RadarWebMapLoader {
         return """
             (function() {
                 var pattern = new RegExp('$monthAbbreviation\\s*0?$dayOfMonth(?!\\d)');
+                // Any short piece of text containing a month abbreviation + day number could be a
+                // match elsewhere on the page (e.g. a weather-records mention like "warmste dag:
+                // 19 aug"), and clicking one of those can navigate the WebView away entirely,
+                // landing back on Ventusky's own homepage default (temperature) -- wrong for every
+                // layer page. Requiring most of the candidate's siblings to *also* look like day
+                // tabs restricts this to the real date-tab <ul>, not a one-off mention.
+                var genericDatePattern = /(jan|feb|mrt|apr|mei|jun|jul|aug|sep|okt|nov|dec)\s*\d{1,2}/;
                 function finish() {
                     $hideClutterJs
                 }
                 function attempt(triesLeft) {
-                    var items = document.querySelectorAll('li');
-                    for (var i = 0; i < items.length; i++) {
-                        var text = (items[i].textContent || '').toLowerCase();
-                        if (pattern.test(text)) {
-                            items[i].click();
-                            finish();
-                            return;
+                    var lists = document.querySelectorAll('ul');
+                    for (var u = 0; u < lists.length; u++) {
+                        var items = lists[u].children;
+                        if (items.length < 3 || items.length > 12) continue;
+                        var dateLikeCount = 0;
+                        for (var i = 0; i < items.length; i++) {
+                            if (genericDatePattern.test((items[i].textContent || '').toLowerCase())) {
+                                dateLikeCount++;
+                            }
+                        }
+                        if (dateLikeCount < items.length - 1) continue;
+                        for (var i = 0; i < items.length; i++) {
+                            var text = (items[i].textContent || '').toLowerCase();
+                            if (pattern.test(text)) {
+                                items[i].click();
+                                finish();
+                                return;
+                            }
                         }
                     }
                     if (triesLeft > 0) {

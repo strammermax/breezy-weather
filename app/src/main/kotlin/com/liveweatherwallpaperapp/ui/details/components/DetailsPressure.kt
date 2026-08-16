@@ -164,7 +164,7 @@ fun DetailsPressure(
             val target = daily.ventuskyTargetDate(location)
             VentuskyDetailTile(
                 location,
-                ventuskyPage = "luchtdruk-kaart",
+                ventuskyLayer = "pressure",
                 targetMonth = target?.first,
                 targetDayOfMonth = target?.second
             )

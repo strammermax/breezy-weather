@@ -191,7 +191,7 @@ fun DetailsWind(
             val target = daily.ventuskyTargetDate(location)
             VentuskyDetailTile(
                 location,
-                ventuskyPage = "windsnelheid-kaart",
+                ventuskyLayer = "wind-10m",
                 targetMonth = target?.first,
                 targetDayOfMonth = target?.second
             )

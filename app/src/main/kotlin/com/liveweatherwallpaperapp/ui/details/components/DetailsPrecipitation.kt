@@ -251,7 +251,7 @@ fun DetailsPrecipitation(
             val target = daily.ventuskyTargetDate(location)
             VentuskyDetailTile(
                 location,
-                ventuskyPage = RadarWebMapLoader.VENTUSKY_RADAR_PAGE,
+                ventuskyLayer = RadarWebMapLoader.VENTUSKY_RADAR_LAYER,
                 targetMonth = target?.first,
                 targetDayOfMonth = target?.second
             )

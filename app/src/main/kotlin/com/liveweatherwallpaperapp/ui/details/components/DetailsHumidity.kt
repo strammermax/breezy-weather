@@ -222,7 +222,7 @@ fun DetailsHumidity(
             val target = daily.ventuskyTargetDate(location)
             VentuskyDetailTile(
                 location,
-                ventuskyPage = "luchtvochtigheid-kaart",
+                ventuskyLayer = "humidity-2m",
                 targetMonth = target?.first,
                 targetDayOfMonth = target?.second
             )

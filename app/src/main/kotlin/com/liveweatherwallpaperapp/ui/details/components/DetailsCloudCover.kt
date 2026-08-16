@@ -186,7 +186,7 @@ fun DetailsCloudCover(
             val target = daily.ventuskyTargetDate(location)
             VentuskyDetailTile(
                 location,
-                ventuskyPage = "bewolking-kaart",
+                ventuskyLayer = "clouds-total",
                 targetMonth = target?.first,
                 targetDayOfMonth = target?.second
             )

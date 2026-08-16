@@ -403,15 +403,15 @@ fun DetailsConditions(
                 Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
             }
             item {
-                val ventuskyPage = if (selectedChart == DetailScreen.TAG_FEELS_LIKE) {
-                    "gevoelstemperatuur-kaart"
+                val ventuskyLayer = if (selectedChart == DetailScreen.TAG_FEELS_LIKE) {
+                    "feel"
                 } else {
-                    "temperatuur-kaart"
+                    "temperature-2m"
                 }
                 val target = daily.ventuskyTargetDate(location)
                 VentuskyDetailTile(
                     location,
-                    ventuskyPage = ventuskyPage,
+                    ventuskyLayer = ventuskyLayer,
                     targetMonth = target?.first,
                     targetDayOfMonth = target?.second
                 )

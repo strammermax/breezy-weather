@@ -451,12 +451,15 @@ fun TextFixedHeight(
 }
 
 /**
- * Compact, non-interactive Ventusky map preview for a details screen (e.g. "windsnelheid-kaart"
- * for the wind screen, see call sites) -- the same "tap opens the full radar screen" pattern as
- * the main screen's own radar tile ([com.liveweatherwallpaperapp.ui.main.adapters.main.holder.
+ * Compact, non-interactive Ventusky map preview for a details screen (e.g. "wind-10m" for the wind
+ * screen, see call sites) -- the same "tap opens the full radar screen" pattern as the main
+ * screen's own radar tile ([com.liveweatherwallpaperapp.ui.main.adapters.main.holder.
  * RadarViewHolder]), just embedded at the bottom of the relevant details screen instead. Always
  * opens on the Ventusky tab of the full radar screen (which only shows the precipitation layer;
  * there's no way to deep-link it to this tile's specific layer).
+ *
+ * [ventuskyLayer] is Ventusky's internal layer code (passed through to [RadarWebMapLoader
+ * .loadVentusky] as its `l` query param) -- not a URL path/slug. See that function's doc for why.
  *
  * [targetDayOfMonth]/[targetMonth] (Calendar.MONTH, 0-based), when given, make the tile jump to
  * that day on Ventusky's own date-tab strip instead of showing "now" -- pass null/null for today.
@@ -465,7 +468,7 @@ fun TextFixedHeight(
 @Composable
 fun VentuskyDetailTile(
     location: Location,
-    ventuskyPage: String,
+    ventuskyLayer: String,
     modifier: Modifier = Modifier,
     targetMonth: Int? = null,
     targetDayOfMonth: Int? = null,
@@ -481,9 +484,9 @@ fun VentuskyDetailTile(
             factory = { ctx ->
                 WebView(ctx).apply {
                     // Ventusky's site remembers the last-viewed layer client-side (cookies/local
-                    // storage) and re-applies it on load, regardless of which page slug is
-                    // requested -- without this, every tile after the first ends up showing
-                    // whichever layer was viewed most recently instead of its own configured one.
+                    // storage) and re-applies it on load, regardless of which layer is requested --
+                    // without this, every tile after the first ends up showing whichever layer was
+                    // viewed most recently instead of its own configured one.
                     android.webkit.CookieManager.getInstance().removeAllCookies(null)
                     clearCache(true)
                     RadarWebMapLoader.loadVentusky(
@@ -491,7 +494,7 @@ fun VentuskyDetailTile(
                         location.latitude,
                         location.longitude,
                         compact = true,
-                        page = ventuskyPage,
+                        layer = ventuskyLayer,
                         targetMonth = targetMonth,
                         targetDay = targetDayOfMonth
                     )

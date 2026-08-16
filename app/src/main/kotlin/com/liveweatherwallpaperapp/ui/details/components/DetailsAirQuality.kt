@@ -351,7 +351,7 @@ fun DetailsAirQuality(
             val target = daily.ventuskyTargetDate(location)
             VentuskyDetailTile(
                 location,
-                ventuskyPage = "luchtkwaliteit-kaart",
+                ventuskyLayer = "aqi",
                 targetMonth = target?.first,
                 targetDayOfMonth = target?.second
             )
