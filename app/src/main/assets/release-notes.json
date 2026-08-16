@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+3)",
+    "version": "Niet uitgebracht (+4)",
     "date": "",
     "changes": [
+      "Apply the frosted-glass background treatment to the radar screen",
       "Bump Gradle wrapper to 9.7.0 and AGP to 9.3.1, enable parallel tooling sync",
       "Show the Details tile grid on the details page too, keyed to the selected hour",
       "Improve hourly forecast trend: midnight-to-midnight range, current-hour centering, day sync"
