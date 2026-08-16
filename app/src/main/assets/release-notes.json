@@ -3,6 +3,13 @@
     "version": "Niet uitgebracht (+1)",
     "date": "",
     "changes": [
+      "Improve hourly forecast trend: midnight-to-midnight range, current-hour centering, day sync"
+    ]
+  },
+  {
+    "version": "2026.08.02.511",
+    "date": "2026-08-02",
+    "changes": [
       "other grafiek"
     ]
   },
@@ -84,14 +91,6 @@
     "date": "2026-07-27",
     "changes": [
       "Temporarily disable Find my phone (clap/whistle detection)"
-    ]
-  },
-  {
-    "version": "2026.07.27.443",
-    "date": "2026-07-27",
-    "changes": [
-      "Move docs/*.md into docs/Eisen/ and commit the updated content that was sitting there uncommitted",
-      "Add docs/APP_FUNCTIES.md: full app feature overview"
     ]
   }
 ]
