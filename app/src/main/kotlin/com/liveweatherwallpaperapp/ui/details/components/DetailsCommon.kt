@@ -16,6 +16,9 @@
 
 package com.liveweatherwallpaperapp.ui.details.components
 
+import android.annotation.SuppressLint
+import android.view.MotionEvent
+import android.webkit.WebView
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -71,11 +74,15 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.pxToDp
 import com.liveweatherwallpaperapp.common.extensions.spToPx
+import com.liveweatherwallpaperapp.radar.RadarActivity
+import com.liveweatherwallpaperapp.radar.RadarWebMapLoader
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3ExpressiveCardListItem
 import kotlinx.coroutines.launch
+import livewallpaperweather.domain.location.model.Location
 import kotlin.math.roundToInt
 
 @Composable
@@ -441,6 +448,60 @@ fun TextFixedHeight(
         onTextLayout,
         style
     )
+}
+
+/**
+ * Compact, non-interactive Ventusky map preview for a details screen (e.g. "windsnelheid-kaart"
+ * for the wind screen, see call sites) -- the same "tap opens the full radar screen" pattern as
+ * the main screen's own radar tile ([com.liveweatherwallpaperapp.ui.main.adapters.main.holder.
+ * RadarViewHolder]), just embedded at the bottom of the relevant details screen instead. Always
+ * opens on the Ventusky tab of the full radar screen (which only shows the precipitation layer;
+ * there's no way to deep-link it to this tile's specific layer).
+ */
+@SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
+@Composable
+fun VentuskyDetailTile(
+    location: Location,
+    ventuskyPage: String,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    Material3ExpressiveCardListItem(
+        isFirst = true,
+        isLast = true,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        AndroidView(
+            modifier = Modifier.fillMaxWidth().height(320.dp),
+            factory = { ctx ->
+                WebView(ctx).apply {
+                    // Ventusky's site remembers the last-viewed layer client-side (cookies/local
+                    // storage) and re-applies it on load, regardless of which page slug is
+                    // requested -- without this, every tile after the first ends up showing
+                    // whichever layer was viewed most recently instead of its own configured one.
+                    android.webkit.CookieManager.getInstance().removeAllCookies(null)
+                    clearCache(true)
+                    RadarWebMapLoader.loadVentusky(
+                        this,
+                        location.latitude,
+                        location.longitude,
+                        compact = true,
+                        page = ventuskyPage
+                    )
+                    // Non-interactive preview: swallow the tap (like the WebView's own map drag)
+                    // and forward it as a single click that opens the full radar screen instead --
+                    // same fix as RadarViewHolder's home-screen radar tile.
+                    setOnClickListener {
+                        context.startActivity(RadarActivity.createIntent(context, location, "ventusky"))
+                    }
+                    setOnTouchListener { _, event ->
+                        if (event.action == MotionEvent.ACTION_UP) performClick()
+                        true
+                    }
+                }
+            }
+        )
+    }
 }
 
 /**

@@ -178,6 +178,12 @@ fun DetailsCloudCover(
         item {
             CloudCoverScale()
         }
+        item {
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
+        }
+        item {
+            VentuskyDetailTile(location, ventuskyPage = "bewolking-kaart")
+        }
         bottomDetailsInset()
     }
 }

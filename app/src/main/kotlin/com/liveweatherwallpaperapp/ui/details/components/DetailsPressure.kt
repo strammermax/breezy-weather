@@ -156,6 +156,12 @@ fun DetailsPressure(
                 text2 = stringResource(R.string.pressure_about_description2)
             )
         }
+        item {
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
+        }
+        item {
+            VentuskyDetailTile(location, ventuskyPage = "luchtdruk-kaart")
+        }
         bottomDetailsInset()
     }
 }

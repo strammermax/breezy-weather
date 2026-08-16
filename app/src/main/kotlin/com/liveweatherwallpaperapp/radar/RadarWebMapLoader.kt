@@ -66,24 +66,33 @@ internal object RadarWebMapLoader {
      * Ventusky's "how to embed" guide describes an `embed.ventusky.com` subdomain driven by URL
      * params, but in practice it checks that it's actually running inside an iframe and, loaded
      * either directly or inside our own wrapper `<iframe>`, its map canvas fails to size itself
-     * correctly (0×0, per its own console errors) — so instead this loads the regular site's radar
-     * page directly, same as [loadBuienradar]. It already defaults to the radar layer, so it needs
-     * only the `p` (position) param to center on the given location.
+     * correctly (0×0, per its own console errors) — so instead this loads the regular site directly,
+     * same as [loadBuienradar]. [page] selects which layer is shown by default (Ventusky uses a
+     * distinct page per layer, e.g. `weerradar-kaart` for precipitation radar, `windsnelheid-kaart`
+     * for wind speed -- see [VentuskyDetailTile] for the ones used per details screen). The `p`
+     * (position) param centers it on the given location.
      */
     @SuppressLint("SetJavaScriptEnabled")
-    fun loadVentusky(webView: WebView, latitude: Double? = null, longitude: Double? = null, compact: Boolean = false) {
+    fun loadVentusky(
+        webView: WebView,
+        latitude: Double? = null,
+        longitude: Double? = null,
+        compact: Boolean = false,
+        page: String = VENTUSKY_RADAR_PAGE,
+    ) {
         configureVentusky(webView, compact)
+        val baseUrl = "https://www.ventusky.com/nl/$page"
         val url = if (latitude != null && longitude != null) {
             String.format(
                 Locale.US,
                 "%s?p=%.4f;%.4f;%d",
-                VENTUSKY_RADAR_URL,
+                baseUrl,
                 latitude,
                 longitude,
                 VENTUSKY_DEFAULT_ZOOM
             )
         } else {
-            VENTUSKY_RADAR_URL
+            baseUrl
         }
         webView.loadUrl(url)
     }
@@ -158,7 +167,7 @@ internal object RadarWebMapLoader {
         }
     }
 
-    private const val VENTUSKY_RADAR_URL = "https://www.ventusky.com/nl/weerradar-kaart"
+    const val VENTUSKY_RADAR_PAGE = "weerradar-kaart"
     private const val VENTUSKY_DEFAULT_ZOOM = 7
 
     // Removing these nodes outright (el.remove()) broke the webcam markers' own click handler —

@@ -48,6 +48,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
 import com.liveweatherwallpaperapp.R
+import com.liveweatherwallpaperapp.radar.RadarWebMapLoader
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
 import com.liveweatherwallpaperapp.common.extensions.formatPercent
 import com.liveweatherwallpaperapp.common.extensions.formatTime
@@ -241,6 +242,12 @@ fun DetailsPrecipitation(
                     daily.night?.precipitationDuration
                 )
             }
+        }
+        item {
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
+        }
+        item {
+            VentuskyDetailTile(location, ventuskyPage = RadarWebMapLoader.VENTUSKY_RADAR_PAGE)
         }
         bottomDetailsInset()
     }

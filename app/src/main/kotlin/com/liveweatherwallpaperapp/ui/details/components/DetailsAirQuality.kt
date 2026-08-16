@@ -343,6 +343,12 @@ fun DetailsAirQuality(
         item {
             AirQualityScale(selectedPollutant)
         }
+        item {
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
+        }
+        item {
+            VentuskyDetailTile(location, ventuskyPage = "luchtkwaliteit-kaart")
+        }
         bottomDetailsInset()
     }
 }

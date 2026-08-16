@@ -398,6 +398,17 @@ fun DetailsConditions(
                     onNavigate = { chart -> onNavigateToChart?.invoke(chart) }
                 )
             }
+            item {
+                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
+            }
+            item {
+                val ventuskyPage = if (selectedChart == DetailScreen.TAG_FEELS_LIKE) {
+                    "gevoelstemperatuur-kaart"
+                } else {
+                    "temperatuur-kaart"
+                }
+                VentuskyDetailTile(location, ventuskyPage = ventuskyPage)
+            }
         }
         bottomDetailsInset()
     }
