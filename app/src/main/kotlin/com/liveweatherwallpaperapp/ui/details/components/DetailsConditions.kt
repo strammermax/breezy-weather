@@ -114,6 +114,7 @@ fun DetailsConditions(
     setShowRealTemp: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     onCenteredDayChanged: ((Int) -> Unit)? = null,
+    onNavigateToChart: ((DetailScreen) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val resources = LocalResources.current
@@ -134,6 +135,18 @@ fun DetailsConditions(
             .toImmutableMap()
     }
     var activeItem: Pair<Date, Hourly>? by remember { mutableStateOf(null) }
+
+    // Feeds the "Details" tile grid at the bottom of this tab: the tapped hour if there is one,
+    // otherwise "now" for today's page, or this day's first hour for any other day.
+    val defaultOverviewHourly = remember(hourlyList, daily) {
+        if (daily.isToday(location)) {
+            val now = System.currentTimeMillis()
+            hourlyList.lastOrNull { it.date.time <= now } ?: hourlyList.firstOrNull()
+        } else {
+            hourlyList.firstOrNull()
+        }
+    }
+    val overviewHourly = activeItem?.second ?: defaultOverviewHourly
 
     val mappedProbabilityValues = remember(hourlyList) {
         hourlyList
@@ -366,6 +379,23 @@ fun DetailsConditions(
                 PrecipitationProbabilityDetails(
                     daily.day?.precipitationProbability,
                     daily.night?.precipitationProbability
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.small_margin)))
+            }
+            item {
+                DetailsSectionDivider()
+            }
+            item {
+                // Same "Details" tile grid as the main screen's overview card, but fed the
+                // selected/centered hour from the strip above (see overviewHourly) instead of
+                // "now" -- sun/moon/pollen stay day-level since they aren't hourly concepts.
+                DetailsOverviewGrid(
+                    location = location,
+                    source = DetailsOverviewSource.ofHourly(overviewHourly),
+                    daily = daily,
+                    onNavigate = { chart -> onNavigateToChart?.invoke(chart) }
                 )
             }
         }

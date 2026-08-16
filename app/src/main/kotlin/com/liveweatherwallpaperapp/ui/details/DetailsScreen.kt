@@ -604,7 +604,8 @@ fun DailyPagerContent(
                     location.weather?.normals?.getOrElse(daily.date.getCalendarMonth(location)) { null },
                     selectedChart,
                     { setSelectedChart(if (it) DetailScreen.TAG_CONDITIONS else DetailScreen.TAG_FEELS_LIKE) },
-                    onCenteredDayChanged = onCenteredDayChanged
+                    onCenteredDayChanged = onCenteredDayChanged,
+                    onNavigateToChart = setSelectedChart
                 )
             }
             DetailScreen.TAG_PRECIPITATION -> {
