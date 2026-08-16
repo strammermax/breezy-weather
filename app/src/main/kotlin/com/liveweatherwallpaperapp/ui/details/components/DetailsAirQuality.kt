@@ -85,6 +85,7 @@ import com.liveweatherwallpaperapp.domain.weather.model.getConcentration
 import com.liveweatherwallpaperapp.domain.weather.model.getDescription
 import com.liveweatherwallpaperapp.domain.weather.model.getIndex
 import com.liveweatherwallpaperapp.domain.weather.model.getName
+import com.liveweatherwallpaperapp.domain.weather.model.ventuskyTargetDate
 import com.liveweatherwallpaperapp.ui.common.charts.BreezyLineChart
 import com.liveweatherwallpaperapp.ui.common.charts.SpecificVerticalAxisItemPlacer
 import com.liveweatherwallpaperapp.ui.common.charts.TimeTopAxisItemPlacer
@@ -347,7 +348,13 @@ fun DetailsAirQuality(
             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
         }
         item {
-            VentuskyDetailTile(location, ventuskyPage = "luchtkwaliteit-kaart")
+            val target = daily.ventuskyTargetDate(location)
+            VentuskyDetailTile(
+                location,
+                ventuskyPage = "luchtkwaliteit-kaart",
+                targetMonth = target?.first,
+                targetDayOfMonth = target?.second
+            )
         }
         bottomDetailsInset()
     }

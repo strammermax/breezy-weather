@@ -71,6 +71,12 @@ internal object RadarWebMapLoader {
      * distinct page per layer, e.g. `weerradar-kaart` for precipitation radar, `windsnelheid-kaart`
      * for wind speed -- see [VentuskyDetailTile] for the ones used per details screen). The `p`
      * (position) param centers it on the given location.
+     *
+     * [targetMonth]/[targetDay] (Calendar.MONTH, 0-based, and day-of-month) select a specific day
+     * on Ventusky's own date-tab strip instead of leaving it on "now" -- there's no URL param for
+     * this (checked), but the strip is real, always-present DOM (just hidden via CSS in [compact]
+     * mode), so [selectVentuskyDateJs] finds the matching tab by its rendered text and clicks it,
+     * exactly like a user tapping through days on the full radar screen would.
      */
     @SuppressLint("SetJavaScriptEnabled")
     fun loadVentusky(
@@ -79,8 +85,10 @@ internal object RadarWebMapLoader {
         longitude: Double? = null,
         compact: Boolean = false,
         page: String = VENTUSKY_RADAR_PAGE,
+        targetMonth: Int? = null,
+        targetDay: Int? = null,
     ) {
-        configureVentusky(webView, compact)
+        configureVentusky(webView, compact, targetMonth, targetDay)
         val baseUrl = "https://www.ventusky.com/nl/$page"
         val url = if (latitude != null && longitude != null) {
             String.format(
@@ -111,7 +119,7 @@ internal object RadarWebMapLoader {
             "?width=700&height=700&renderBackground=True&renderBranding=False&renderText=True"
 
     @SuppressLint("SetJavaScriptEnabled")
-    private fun configureVentusky(webView: WebView, compact: Boolean) {
+    private fun configureVentusky(webView: WebView, compact: Boolean, targetMonth: Int? = null, targetDay: Int? = null) {
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
         webView.settings.javaScriptCanOpenWindowsAutomatically = true
@@ -119,11 +127,20 @@ internal object RadarWebMapLoader {
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
                 view.evaluateJavascript(HIDE_VENTUSKY_CHROME_JS, null)
-                if (compact) {
+                if (compact && targetMonth != null && targetDay != null) {
+                    // Try the date-tab click while the strip is still visible/full-width -- hiding
+                    // it first (below) risks the site's own layout only rendering a shorter window
+                    // of days while collapsed, which would make the target day unreachable. The
+                    // clutter-hide runs as part of this script instead, once the click attempt is
+                    // done (whether or not it found a match).
+                    view.evaluateJavascript(selectVentuskyDateJs(targetMonth, targetDay, hideClutterAfter = true), null)
+                } else if (compact) {
                     // The tile is small, so place/precipitation labels, webcam markers, the radar
                     // type badge and the date/time strip are just clutter there — full detail is
                     // still available in the full-screen radar view.
                     view.evaluateJavascript(HIDE_VENTUSKY_TILE_CLUTTER_JS, null)
+                } else if (targetMonth != null && targetDay != null) {
+                    view.evaluateJavascript(selectVentuskyDateJs(targetMonth, targetDay, hideClutterAfter = false), null)
                 }
                 // The very first WebView load of the app's lifetime (right after a cold start) can
                 // leave Ventusky's own loading spinner stuck forever — its map data fetch appears to
@@ -196,4 +213,55 @@ internal object RadarWebMapLoader {
             document.head.appendChild(style);
         })();
     """
+
+    // Ventusky (nl) abbreviates months as these three-letter forms in its date-tab strip, e.g.
+    // "zoaug 16" for a Sunday 16 August tab (weekday abbreviation immediately followed by "aug 16").
+    private val DUTCH_MONTH_ABBREVIATIONS = arrayOf(
+        "jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"
+    )
+
+    /**
+     * The day tabs are plain `<li>` elements (their id/class attributes are single/double-letter
+     * build hashes that aren't stable across Ventusky deploys, confirmed live via WebView devtools
+     * -- e.g. `#d` turned out to belong to something else entirely on inspection), so this matches
+     * them the same way a human would: by the rendered "aug 16" text, not by selector. `.click()`
+     * on a real DOM element reaches the site's own handlers whether or not the element is currently
+     * hidden by [HIDE_VENTUSKY_TILE_CLUTTER_JS]'s stylesheet rule. The list itself is populated
+     * asynchronously after the page's own data fetch, so this polls for up to ~8s before giving up.
+     */
+    private fun selectVentuskyDateJs(month: Int, dayOfMonth: Int, hideClutterAfter: Boolean): String {
+        val monthAbbreviation = DUTCH_MONTH_ABBREVIATIONS[month]
+        val hideClutterJs = if (hideClutterAfter) {
+            "var style = document.createElement('style'); " +
+                "style.textContent = '#i, .aa.jz, .aa.rc, #r, #d { display: none !important; }'; " +
+                "document.head.appendChild(style);"
+        } else {
+            ""
+        }
+        return """
+            (function() {
+                var pattern = new RegExp('$monthAbbreviation\\s*0?$dayOfMonth(?!\\d)');
+                function finish() {
+                    $hideClutterJs
+                }
+                function attempt(triesLeft) {
+                    var items = document.querySelectorAll('li');
+                    for (var i = 0; i < items.length; i++) {
+                        var text = (items[i].textContent || '').toLowerCase();
+                        if (pattern.test(text)) {
+                            items[i].click();
+                            finish();
+                            return;
+                        }
+                    }
+                    if (triesLeft > 0) {
+                        setTimeout(function() { attempt(triesLeft - 1); }, 400);
+                    } else {
+                        finish();
+                    }
+                }
+                attempt(20);
+            })();
+        """.trimIndent()
+    }
 }

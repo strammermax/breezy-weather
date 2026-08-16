@@ -57,6 +57,7 @@ import com.liveweatherwallpaperapp.common.extensions.toDate
 import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.common.utils.UnitUtils
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
+import com.liveweatherwallpaperapp.domain.weather.model.ventuskyTargetDate
 import com.liveweatherwallpaperapp.ui.common.charts.BreezyLineChart
 import com.liveweatherwallpaperapp.ui.common.charts.TimeTopAxisItemPlacer
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
@@ -160,7 +161,13 @@ fun DetailsPressure(
             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
         }
         item {
-            VentuskyDetailTile(location, ventuskyPage = "luchtdruk-kaart")
+            val target = daily.ventuskyTargetDate(location)
+            VentuskyDetailTile(
+                location,
+                ventuskyPage = "luchtdruk-kaart",
+                targetMonth = target?.first,
+                targetDayOfMonth = target?.second
+            )
         }
         bottomDetailsInset()
     }

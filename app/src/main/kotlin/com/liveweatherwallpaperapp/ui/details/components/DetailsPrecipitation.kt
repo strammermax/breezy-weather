@@ -59,6 +59,7 @@ import com.liveweatherwallpaperapp.common.extensions.toDate
 import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.common.utils.UnitUtils
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
+import com.liveweatherwallpaperapp.domain.weather.model.ventuskyTargetDate
 import com.liveweatherwallpaperapp.ui.common.charts.BreezyBarChart
 import com.liveweatherwallpaperapp.ui.common.charts.BreezyLineChart
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
@@ -247,7 +248,13 @@ fun DetailsPrecipitation(
             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
         }
         item {
-            VentuskyDetailTile(location, ventuskyPage = RadarWebMapLoader.VENTUSKY_RADAR_PAGE)
+            val target = daily.ventuskyTargetDate(location)
+            VentuskyDetailTile(
+                location,
+                ventuskyPage = RadarWebMapLoader.VENTUSKY_RADAR_PAGE,
+                targetMonth = target?.first,
+                targetDayOfMonth = target?.second
+            )
         }
         bottomDetailsInset()
     }

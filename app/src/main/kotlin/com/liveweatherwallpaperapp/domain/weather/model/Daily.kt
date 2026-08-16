@@ -97,6 +97,18 @@ fun Daily.isToday(location: Location): Boolean {
         current[Calendar.DAY_OF_YEAR] == thisDay[Calendar.DAY_OF_YEAR]
 }
 
+/**
+ * This day's (Calendar.MONTH, day-of-month) pair, or null when it's today -- for
+ * [com.liveweatherwallpaperapp.ui.details.components.VentuskyDetailTile], which only needs to
+ * navigate its embedded map away from "now" when browsing a different day.
+ */
+fun Daily.ventuskyTargetDate(location: Location): Pair<Int, Int>? {
+    if (isToday(location)) return null
+    val thisDay = Calendar.getInstance(location.timeZone)
+    thisDay.time = date
+    return thisDay[Calendar.MONTH] to thisDay[Calendar.DAY_OF_MONTH]
+}
+
 fun Daily.getTrendTemperature(context: Context, temperatureUnit: TemperatureUnit): String? {
     if (day?.temperature?.temperature == null || night?.temperature?.temperature == null) {
         return null

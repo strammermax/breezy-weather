@@ -457,6 +457,9 @@ fun TextFixedHeight(
  * RadarViewHolder]), just embedded at the bottom of the relevant details screen instead. Always
  * opens on the Ventusky tab of the full radar screen (which only shows the precipitation layer;
  * there's no way to deep-link it to this tile's specific layer).
+ *
+ * [targetDayOfMonth]/[targetMonth] (Calendar.MONTH, 0-based), when given, make the tile jump to
+ * that day on Ventusky's own date-tab strip instead of showing "now" -- pass null/null for today.
  */
 @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
 @Composable
@@ -464,6 +467,8 @@ fun VentuskyDetailTile(
     location: Location,
     ventuskyPage: String,
     modifier: Modifier = Modifier,
+    targetMonth: Int? = null,
+    targetDayOfMonth: Int? = null,
 ) {
     val context = LocalContext.current
     Material3ExpressiveCardListItem(
@@ -486,7 +491,9 @@ fun VentuskyDetailTile(
                         location.latitude,
                         location.longitude,
                         compact = true,
-                        page = ventuskyPage
+                        page = ventuskyPage,
+                        targetMonth = targetMonth,
+                        targetDay = targetDayOfMonth
                     )
                     // Non-interactive preview: swallow the tap (like the WebView's own map drag)
                     // and forward it as a single click that opens the full radar screen instead --

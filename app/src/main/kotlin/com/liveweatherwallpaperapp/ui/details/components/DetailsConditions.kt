@@ -80,6 +80,7 @@ import com.liveweatherwallpaperapp.common.extensions.toDate
 import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.domain.weather.model.isToday
+import com.liveweatherwallpaperapp.domain.weather.model.ventuskyTargetDate
 import com.liveweatherwallpaperapp.ui.common.widgets.AnimatableIconView
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendLayoutManager
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendRecyclerView
@@ -407,7 +408,13 @@ fun DetailsConditions(
                 } else {
                     "temperatuur-kaart"
                 }
-                VentuskyDetailTile(location, ventuskyPage = ventuskyPage)
+                val target = daily.ventuskyTargetDate(location)
+                VentuskyDetailTile(
+                    location,
+                    ventuskyPage = ventuskyPage,
+                    targetMonth = target?.first,
+                    targetDayOfMonth = target?.second
+                )
             }
         }
         bottomDetailsInset()

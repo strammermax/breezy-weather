@@ -51,6 +51,7 @@ import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.domain.weather.model.getFullLabel
 import com.liveweatherwallpaperapp.domain.weather.model.getRangeContentDescriptionSummary
 import com.liveweatherwallpaperapp.domain.weather.model.getRangeSummary
+import com.liveweatherwallpaperapp.domain.weather.model.ventuskyTargetDate
 import com.liveweatherwallpaperapp.ui.common.charts.BreezyLineChart
 import com.liveweatherwallpaperapp.ui.common.charts.TimeTopAxisItemPlacer
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
@@ -218,7 +219,13 @@ fun DetailsHumidity(
             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
         }
         item {
-            VentuskyDetailTile(location, ventuskyPage = "luchtvochtigheid-kaart")
+            val target = daily.ventuskyTargetDate(location)
+            VentuskyDetailTile(
+                location,
+                ventuskyPage = "luchtvochtigheid-kaart",
+                targetMonth = target?.first,
+                targetDayOfMonth = target?.second
+            )
         }
         bottomDetailsInset()
     }

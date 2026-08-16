@@ -63,6 +63,7 @@ import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.domain.weather.model.getFullLabel
 import com.liveweatherwallpaperapp.domain.weather.model.getRangeDescriptionSummary
 import com.liveweatherwallpaperapp.domain.weather.model.getRangeSummary
+import com.liveweatherwallpaperapp.domain.weather.model.ventuskyTargetDate
 import com.liveweatherwallpaperapp.ui.common.charts.BreezyLineChart
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3ExpressiveCardListItem
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
@@ -182,7 +183,13 @@ fun DetailsCloudCover(
             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.normal_margin)))
         }
         item {
-            VentuskyDetailTile(location, ventuskyPage = "bewolking-kaart")
+            val target = daily.ventuskyTargetDate(location)
+            VentuskyDetailTile(
+                location,
+                ventuskyPage = "bewolking-kaart",
+                targetMonth = target?.first,
+                targetDayOfMonth = target?.second
+            )
         }
         bottomDetailsInset()
     }
