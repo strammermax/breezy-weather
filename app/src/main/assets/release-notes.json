@@ -1,8 +1,9 @@
 [
   {
-    "version": "Niet uitgebracht (+2)",
+    "version": "Niet uitgebracht (+3)",
     "date": "",
     "changes": [
+      "Sync Ventusky detail-page tile to the browsed forecast day",
       "Add a per-metric Ventusky map tile to relevant details screens",
       "Remove RainViewer as a radar source"
     ]
