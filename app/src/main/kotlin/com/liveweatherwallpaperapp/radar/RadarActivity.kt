@@ -91,6 +91,7 @@ import com.liveweatherwallpaperapp.wallpaper.WallpaperEffectView
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSceneSnapshot
 import com.liveweatherwallpaperapp.wallpaper.WallpaperSceneStateFactory
 import com.liveweatherwallpaperapp.wallpaper.photo.WallpaperRepository
+import com.liveweatherwallpaperapp.wallpaper.toFrostedBackground
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -278,15 +279,29 @@ class RadarActivity : BreezyActivity() {
                     WallpaperSceneSnapshot.render(Canvas(it), width, height, photo, sceneState, resources, depth)
             }
         }
+        // ACT-013: same frosted-glass treatment as the details screen (DetailsScreen.kt), so the
+        // radar's cards/tabs read as glass over a soft background instead of a sharp photo.
+        val settings = SettingsManager.getInstance(this)
+        val (preparedBackground, preparedForeground) = withContext(Dispatchers.Default) {
+            if (settings.appBackgroundFrosted) {
+                bitmap.toFrostedBackground(settings.appBackgroundFrostStrength) to
+                    nearPhoto?.toFrostedBackground(settings.appBackgroundFrostStrength)
+            } else {
+                bitmap to nearPhoto
+            }
+        }
         effectView.setForegroundPhoto(
-            nearPhoto,
+            preparedForeground,
             if (sceneState.usesGreyscalePhoto) sceneState.photoGreyscaleAmount else 0f
         )
         // Crossfade instead of a hard swap -- the `from` layer is nothing yet (the translucent
         // window lets the previous screen show through) on first load.
         val previous = window.decorView.background
         val crossfade = TransitionDrawable(
-            arrayOf(previous ?: android.graphics.Color.TRANSPARENT.toDrawable(), bitmap.toDrawable(resources))
+            arrayOf(
+                previous ?: android.graphics.Color.TRANSPARENT.toDrawable(),
+                preparedBackground.toDrawable(resources)
+            )
         )
         window.setBackgroundDrawable(crossfade)
         crossfade.startTransition(BACKGROUND_CROSSFADE_DURATION_MILLIS)
