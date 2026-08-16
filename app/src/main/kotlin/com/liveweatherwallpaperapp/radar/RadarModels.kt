@@ -26,32 +26,3 @@ data class RainTrendPoint(
     /** Predicted precipitation intensity in millimetres per hour. */
     val intensityMmH: Double,
 )
-
-/**
- * A single radar map frame from RainViewer: a timestamp plus the path used to build tile URLs.
- * @see RainViewerRadarSource
- */
-data class RadarFrame(
-    val timeSeconds: Long,
-    val path: String,
-    val isForecast: Boolean,
-)
-
-/**
- * The set of radar frames available from RainViewer for animation, with the tile host.
- * Tile URL template: `$host$path/$size/{z}/{x}/{y}/$color/$options.png`.
- */
-data class RadarFrames(
-    val host: String,
-    val frames: List<RadarFrame>,
-) {
-    fun tileUrl(
-        frame: RadarFrame,
-        z: Int,
-        x: Int,
-        y: Int,
-        size: Int = 256,
-        color: Int = 2,
-        options: String = "1_1",
-    ): String = "$host${frame.path}/$size/$z/$x/$y/$color/$options.png"
-}

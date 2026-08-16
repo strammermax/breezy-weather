@@ -65,8 +65,7 @@ data class AppearanceDefaults(
 
 @Serializable
 data class WeatherSourcesDefaults(
-    val radarTileSource: String = "rainviewer",
-    val radarTileMapStyle: String = "auto",
+    val radarTileSource: String = "ventusky",
     val autoUpdateSourcesPerLocation: Boolean = false,
 )
 

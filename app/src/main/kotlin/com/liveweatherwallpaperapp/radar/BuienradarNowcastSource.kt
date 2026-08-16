@@ -32,7 +32,7 @@ import kotlin.math.pow
  * mm/h is `10^((value - 109) / 32)`.
  *
  * Attribution: when using Buienradar data you must credit buienradar.nl in the app.
- * Coverage is limited to NL/Benelux; outside that area use [RainViewerRadarSource] instead.
+ * Coverage is limited to NL/Benelux; outside that area use the Ventusky radar tab instead.
  */
 class BuienradarNowcastSource(
     private val client: OkHttpClient = defaultClient(),

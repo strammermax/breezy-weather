@@ -418,13 +418,6 @@ class SettingsManager private constructor(
         }
         get() = config.getString("radar_tile_source", null) ?: AppDefaults.weatherSources.radarTileSource
 
-    var radarTileMapStyle: String
-        set(value) {
-            config.edit().putString("radar_tile_map_style", value).apply()
-            notifySettingsChanged()
-        }
-        get() = config.getString("radar_tile_map_style", null) ?: AppDefaults.weatherSources.radarTileMapStyle
-
     // Tracks which app version last showed its release notes on launch (see ReleaseNotesActivity /
     // MainActivity.onCreate), so it's shown once per update rather than on every cold start. No
     // notifySettingsChanged() -- this is internal bookkeeping, not a user-facing setting.

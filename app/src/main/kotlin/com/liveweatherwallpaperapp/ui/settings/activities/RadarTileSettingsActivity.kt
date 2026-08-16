@@ -31,7 +31,6 @@ import com.liveweatherwallpaperapp.ui.common.widgets.insets.FitStatusBarTopAppBa
 import com.liveweatherwallpaperapp.ui.settings.preference.bottomInsetItem
 import com.liveweatherwallpaperapp.ui.settings.preference.composables.ListPreferenceViewWithCard
 import com.liveweatherwallpaperapp.ui.settings.preference.composables.PreferenceScreen
-import com.liveweatherwallpaperapp.ui.settings.preference.largeSeparatorItem
 import com.liveweatherwallpaperapp.ui.settings.preference.listPreferenceItem
 import com.liveweatherwallpaperapp.ui.theme.compose.BreezyWeatherTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -53,11 +52,8 @@ class RadarTileSettingsActivity : BreezyActivity() {
         val settings = SettingsManager.getInstance(this)
         val scrollBehavior = generateCollapsedScrollBehavior()
         var source by remember { mutableStateOf(settings.radarTileSource) }
-        var mapStyle by remember { mutableStateOf(settings.radarTileMapStyle) }
         val sourceValues = stringArrayResource(R.array.radar_tile_source_values)
         val sourceNames = stringArrayResource(R.array.radar_tile_sources)
-        val styleValues = stringArrayResource(R.array.radar_tile_map_style_values)
-        val styleNames = stringArrayResource(R.array.radar_tile_map_styles)
 
         Material3Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -90,24 +86,6 @@ class RadarTileSettingsActivity : BreezyActivity() {
                     )
                 }
 
-                if (source == "rainviewer") {
-                    largeSeparatorItem()
-                    listPreferenceItem(R.string.settings_radar_tile_world_style) {
-                        ListPreferenceViewWithCard(
-                            title = stringResource(it),
-                            summary = { _, value -> styleNames.getOrNull(styleValues.indexOf(value)) ?: value },
-                            selectedKey = mapStyle,
-                            valueArray = styleValues,
-                            nameArray = styleNames,
-                            isFirst = true,
-                            isLast = true,
-                            onValueChanged = { newValue ->
-                                mapStyle = newValue
-                                settings.radarTileMapStyle = newValue
-                            }
-                        )
-                    }
-                }
                 bottomInsetItem()
             }
         }

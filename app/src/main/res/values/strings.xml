@@ -794,20 +794,12 @@
     <string name="forecast_toggle_hourly" translatable="false">per uur</string>
     <string name="radar_title">Precipitation radar</string>
     <string name="radar_section_rain_trend">Rain trend (Buienradar)</string>
-    <string name="radar_section_rain_trend_general">Rain trend</string>
-<string name="radar_frames_unavailable">Radar frames unavailable</string>
-    <string name="radar_attribution">Data: RainViewer.com</string>
     <string name="radar_attribution_buienradar">Data: Buienradar.nl</string>
 <string name="radar_buienradar_coverage_area" translatable="false">NL/BE</string>
-    <string name="radar_source_world">RainViewer</string>
 <string name="radar_source_buienradar">Buienradar</string>
     <string name="radar_source_ventusky">Ventusky</string>
     <string name="settings_radar_tile_title">Rain radar tile</string>
     <string name="settings_radar_tile_source">Radar source</string>
-    <string name="settings_radar_tile_world_style">Worldwide map style</string>
-    <string name="radar_map_style_auto">Automatic</string>
-    <string name="radar_map_style_dark">Black</string>
-    <string name="radar_map_style_light">White</string>
     <!-- Settings (new design) -->
     <string name="settings_section_general">General</string>
     <string name="settings_background_updates">Background updates</string>

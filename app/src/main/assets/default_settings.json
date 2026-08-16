@@ -35,8 +35,7 @@
     "useMeasureFormat": true
   },
   "weatherSources": {
-    "radarTileSource": "rainviewer",
-    "radarTileMapStyle": "auto",
+    "radarTileSource": "ventusky",
     "autoUpdateSourcesPerLocation": false
   },
   "wallpaper": {

@@ -509,24 +509,12 @@
     </integer-array>
 
     <string-array name="radar_tile_sources">
-        <item>@string/radar_source_world</item>
         <item>@string/radar_source_buienradar</item>
         <item>@string/radar_source_ventusky</item>
     </string-array>
     <string-array name="radar_tile_source_values">
-        <item>rainviewer</item>
         <item>buienradar</item>
         <item>ventusky</item>
-    </string-array>
-    <string-array name="radar_tile_map_styles">
-        <item>@string/radar_map_style_auto</item>
-        <item>@string/radar_map_style_dark</item>
-        <item>@string/radar_map_style_light</item>
-    </string-array>
-    <string-array name="radar_tile_map_style_values">
-        <item>auto</item>
-        <item>dark</item>
-        <item>light</item>
     </string-array>
 
 </resources>

@@ -9,7 +9,6 @@
 package com.liveweatherwallpaperapp.ui.main.adapters.main.holder
 
 import android.annotation.SuppressLint
-import android.content.res.Configuration
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ViewGroup
@@ -19,7 +18,6 @@ import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.radar.RadarActivity
 import com.liveweatherwallpaperapp.radar.RadarWebMapLoader
-import com.liveweatherwallpaperapp.radar.RainViewerMap
 import com.liveweatherwallpaperapp.ui.theme.resource.providers.ResourceProvider
 import livewallpaperweather.domain.location.model.Location
 
@@ -42,18 +40,8 @@ class RadarViewHolder(parent: ViewGroup) : AbstractMainCardViewHolder(
         val settings = SettingsManager.getInstance(context)
         when (settings.radarTileSource) {
             "buienradar" -> RadarWebMapLoader.loadBuienradar(radarMap)
-            "ventusky" ->
+            else ->
                 RadarWebMapLoader.loadVentusky(radarMap, location.latitude, location.longitude, compact = true)
-            else -> {
-                val dark = when (settings.radarTileMapStyle) {
-                    "dark" -> true
-                    "light" -> false
-                    else ->
-                        context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
-                            Configuration.UI_MODE_NIGHT_YES
-                }
-                RainViewerMap.load(radarMap, location.latitude, location.longitude, dark, compact = true)
-            }
         }
 
         itemView.contentDescription = context.getString(R.string.action_radar)
