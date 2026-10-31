@@ -89,7 +89,7 @@ Wees voorzichtig met code.+-----------------------------------------------------
 - **Response HTTP 204:** No Content (app is up-to-date, start normaal op).
 
 #### 3. SSL/TLS Afhandeling (Lokale HTTPS Server)
-Indien de server gebruikmaakt van een *self-signed* certificaat op het IP `192.168.1.154`, dient de `OkHttpClient` geconfigureerd te worden met een aangepaste `X509TrustManager` en `HostnameVerifier` die dit specifieke IP accepteert, om `SSLHandshakeException` te voorkomen.
+Indien de server gebruikmaakt van een *self-signed* certificaat op het IP `remvebg.home`, dient de `OkHttpClient` geconfigureerd te worden met een aangepaste `X509TrustManager` en `HostnameVerifier` die dit specifieke IP accepteert, om `SSLHandshakeException` te voorkomen.
 
 ## 8. Toepassing per component
 
