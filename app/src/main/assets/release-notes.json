@@ -1,7 +1,14 @@
 [
   {
-    "version": "Niet uitgebracht (+4)",
+    "version": "Niet uitgebracht (+1)",
     "date": "",
+    "changes": [
+      "docs: ACT-016 refer to remvebg.home instead of fixed IP"
+    ]
+  },
+  {
+    "version": "2026.08.16.525",
+    "date": "2026-08-16",
     "changes": [
       "Fix Ventusky detail tiles always showing the temperature map",
       "Sync Ventusky detail-page tile to the browsed forecast day",
@@ -86,17 +93,6 @@
       "Rename app to Weather Vista",
       "Reduce Android lint errors",
       "Remove microphone foreground service declaration"
-    ]
-  },
-  {
-    "version": "2026.07.28.455",
-    "date": "2026-07-28",
-    "changes": [
-      "update icons",
-      "Update LiveWeather Android app icons",
-      "Documenteer removesky-sessie: locatie-autocomplete, tabel-scrollbar, kaarthoogte, test-pagina model-selector",
-      "Add communication summary docs for bug review session",
-      "Add communication summary for spotless build fix session"
     ]
   }
 ]
