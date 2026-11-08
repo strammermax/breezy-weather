@@ -60,3 +60,4 @@ keystore.properties
 play-service-account.json
 app/google-services.json
 docs/~$*.xlsx
+graphify-out/
