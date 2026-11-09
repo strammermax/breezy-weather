@@ -387,7 +387,7 @@
     <string name="notification_channel_widget">Widget</string>
     <string name="location_message_reverse_geocoding_failed">Furnizorul meteo nu a găsit locația potrivită</string>
     <string name="action_undo">Anulează</string>
-    <string name="settings_modules_live_wallpaper_error">Nu s-a putut lansa selectorul de imagini de fundal. Poți activa în continuare imaginea de fundal %s alegând \"Imagine de fundal live\" în selectorul de imagini de fundal pentru ecranul de pornire.</string>
+    <string name="settings_modules_live_wallpaper_error">Nu s-a putut lansa selectorul de imagini de fundal. Poți activa în continuare imaginea de fundal %s alegând “Imagine de fundal live” în selectorul de imagini de fundal pentru ecranul de pornire.</string>
     <string name="null_data_text">N/A</string>
     <string name="temperature_degree_day_heating">Gradul de încălzire a zilei</string>
     <string name="temperature_degree_day_cooling">Gradul de răcire a zilei</string>
@@ -884,4 +884,5 @@
     <string name="weather_kind_fog_light">Ceață ușoară</string>
     <string name="weather_kind_fog_heavy">Ceață densă</string>
     <string name="settings_weather_source_no_longer_exists">%s (nu mai există)</string>
+    <string name="action_reset_to_default">Resetare la implicit</string>
 </resources>

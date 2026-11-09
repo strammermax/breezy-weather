@@ -643,7 +643,6 @@
     <string name="data_sources">Duomenų šaltiniai</string>
     <string name="weather_source_recommended">Rekomendacijos</string>
     <string name="action_change">Keisti</string>
-
     <!-- Recent app strings -->
     <string name="details_overview">Išsami informacija</string>
     <string name="details_overview_select">Pasirinkite detales</string>
@@ -779,4 +778,8 @@
     <string name="about_fork_title">Remiantis</string>
     <string name="weather_kind_fog_light">Lengvas rūkas</string>
     <string name="weather_kind_fog_heavy">Stiprus rūkas</string>
+    <string name="ephemeris_about_rise">Pakylimo laikas yra tada, kai saulė arba mėnulis visiškai pakyla virš horizonto.</string>
+    <string name="ephemeris_about_set">Nusileidimo laikas yra tada, kai saulė arba mėnulis visiškai nusileidžia žemiau horizonto.</string>
+    <string name="ephemeris_about">Apie pakylimo ir nusileidimo laikus</string>
+    <string name="ephemeris_about_dusk">Sutemos yra tamsiausia prieblandos stadija, prieš pat išnykstant paskutiniajai matomai šviesai.</string>
 </resources>

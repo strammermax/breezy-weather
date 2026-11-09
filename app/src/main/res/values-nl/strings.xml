@@ -710,7 +710,7 @@
     <string name="settings_appearance_dark_mode_locations_dark">Altijd donker als de app in donkere modus staat</string>
     <string name="wind_strength_scale">Schaal van Beaufort</string>
     <string name="uv_index_about">Over UV-index</string>
-    <string name="uv_index_about_description">De UV-index meet de sterkte van de ultraviolette straling van de zon. Hoe hoger het is, hoe sterker en sneller het zonnebrand, huidkanker en oogbeschadiging kan veroorzaken.</string>
+    <string name="uv_index_about_description">De UV-index meet de sterkte van de ultraviolette straling van de zon. Hoe hoger deze is, hoe groter en sneller het zonnebrand, huidkanker en oogschade kan veroorzaken.</string>
     <string name="uv_index_scale">UV-indexschaal</string>
 <string name="air_quality_index_short">LKI</string>
     <string name="air_quality_index_about">Over de luchtkwaliteitsindex</string>
@@ -748,7 +748,7 @@
     <string name="precipitation_snow_total_day">Sneeuw overdag</string>
     <string name="precipitation_snow_total_night">Sneeuw ’s nachts</string>
     <string name="wind_speed_about">Over windsnelheid en -vlagen</string>
-    <string name="wind_speed_about_description">De windsnelheid wordt gemeten door de windsnelheden over een bepaalde periode te middelen. Windvlagen zijn plotselinge windstoten die doorgaans minder dan 20 seconden aanhouden.</string>
+    <string name="wind_speed_about_description">De windsnelheid wordt bepaald door geregistreerde waarden over een periode te middelen. Windvlagen zijn plotselinge windstoten die doorgaans minder dan 20 seconden aanhouden.</string>
     <string name="wind_gusts_short">Vlagen</string>
     <string name="wind_origin">Vanuit %s</string>
     <string name="wind_direction">Windrichting</string>
@@ -1001,7 +1001,6 @@
     <string name="wallpaper_photo_meta_season_summer">zomer</string>
     <string name="wallpaper_photo_meta_season_autumn">herfst</string>
 <string name="about_fork_title">Gebaseerd op</string>
-
     <!-- Recent app strings -->
     <string name="widget_tile">Widget</string>
     <string name="widget_tile_select">Kies widget</string>
@@ -1158,4 +1157,5 @@
     <string name="fmi_weather_text_ice_pellets_heavy">Zware ijskorrels</string>
     <string name="fmi_weather_text_ice_crystals">@string/nws_weather_text_ice_crystals</string>
     <string name="colon_separator">:\u0020</string>
+    <string name="action_reset_to_default">Herstellen naar standaard</string>
 </resources>

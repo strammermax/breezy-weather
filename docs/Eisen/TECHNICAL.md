@@ -43,7 +43,7 @@ In Android Studio, this can be set up in the configuration of the `app` module, 
 4) Update versionCode and versionName in `app/build.gradle`.
 5) Write changelog in `CHANGELOG.md`.
 6) Commit all changes.
-7) Tag version beginning with a `v` (example: `git tag v6.2.2 -m "Version 6.2.2"`).
+7) Tag version beginning with a `v` (example: `git tag v6.2.3 -m "Version 6.2.3"`).
 8) Push with `git push --tags`
 9) GitHub action will run and sign the release.
 10) Update GitHub release notes draft and publish.
@@ -102,7 +102,7 @@ When a translation is added, add the CLDR data for this locale in the weather-un
 
 Gradle must always be updated that way (replace with new version number):
 ```
-./gradlew wrapper --gradle-version=9.6.1 --gradle-distribution-sha256-sum=9c0f7faeeb306cb14e4279a3e084ca6b596894089a0638e68a07c945a32c9e14
+./gradlew wrapper --gradle-version=9.8.2 --gradle-distribution-sha256-sum=21bd5da2de49b642904077f38c0efdc7778e92b3ed0889392dca61b97e389607
 ```
 
 You can find the newer checksum of the binary-only (-bin) ZIP on https://gradle.org/release-checksums/

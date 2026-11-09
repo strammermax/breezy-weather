@@ -300,7 +300,7 @@
     <string name="settings_notifications_forecast_tomorrow_title">Notifikácia s predpoveďou na nasledujúci deň</string>
     <string name="settings_follow_system">Systémový</string>
     <string name="notification_precipitation_continuing">Zrážky</string>
-    <string name="notification_precipitation_starting">Očakávané zrážky v blízkej dobe</string>
+    <string name="notification_precipitation_starting">Zrážky v blízkej dobe</string>
     <string name="notification_style_native">Natívne</string>
     <string name="settings_main_section_animations">Animácie</string>
     <string name="settings_main_background_animation_title">Animácia pozadia</string>
@@ -736,7 +736,6 @@
     <string name="message_please_wait_refresh">Prosím počkajte na dokončenie obnovenia</string>
     <string name="settings_main_background_title">Pozadie podľa počasia</string>
     <string name="settings_weather_source_no_longer_exists">%s (už neexistuje)</string>
-
     <!-- Recent app strings -->
     <string name="details_overview">Podrobnosti</string>
     <string name="details_overview_select">Vyberte podrobnosti</string>
@@ -872,4 +871,5 @@
     <string name="about_fork_title">Na základe</string>
     <string name="weather_kind_fog_light">Ľahká hmla</string>
     <string name="weather_kind_fog_heavy">Hustá hmla</string>
+    <string name="action_reset_to_default">Resetovať na predvolené</string>
 </resources>

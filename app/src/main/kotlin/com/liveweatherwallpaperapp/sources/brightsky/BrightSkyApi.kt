@@ -18,6 +18,7 @@ package com.liveweatherwallpaperapp.sources.brightsky
 
 import com.liveweatherwallpaperapp.sources.brightsky.json.BrightSkyAlertsResult
 import com.liveweatherwallpaperapp.sources.brightsky.json.BrightSkyCurrentWeatherResult
+import com.liveweatherwallpaperapp.sources.brightsky.json.BrightSkyRadarResult
 import com.liveweatherwallpaperapp.sources.brightsky.json.BrightSkyWeatherResult
 import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
@@ -43,4 +44,13 @@ interface BrightSkyApi {
         @Query("lat") lat: Double,
         @Query("lon") lon: Double,
     ): Observable<BrightSkyAlertsResult>
+
+    @GET("radar")
+    fun getRadar(
+        @Query("lat") lat: Double,
+        @Query("lon") lon: Double,
+        @Query("distance") distance: Int,
+        @Query("format") format: String,
+        @Query("last_date") lastDate: String,
+    ): Observable<BrightSkyRadarResult>
 }

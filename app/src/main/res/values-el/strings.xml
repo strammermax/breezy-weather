@@ -741,7 +741,6 @@
     <string name="message_please_wait_refresh">Παρακαλώ περιμένετε μέχρι να ολοκληρωθεί η ανανέωση</string>
     <string name="settings_source_api_key_invalid">Η τιμή δεν είναι στην αναμενόμενη μορφή</string>
     <string name="settings_main_background_title">Φόντο βάσει καιρού</string>
-
     <!-- Recent app strings -->
     <string name="details_overview">Λεπτομέρειες</string>
     <string name="details_overview_select">Επιλέξτε λεπτομέρειες</string>
@@ -877,4 +876,6 @@
     <string name="about_fork_title">Με βάση</string>
     <string name="weather_kind_fog_light">Ελαφριά ομίχλη</string>
     <string name="weather_kind_fog_heavy">Πυκνή ομίχλη</string>
+    <string name="settings_weather_source_no_longer_exists">%s (δεν υπάρχει πια)</string>
+    <string name="action_reset_to_default">Επαναφορά στην προεπιλογή</string>
 </resources>

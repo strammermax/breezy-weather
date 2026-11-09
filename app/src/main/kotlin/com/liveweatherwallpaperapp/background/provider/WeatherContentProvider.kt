@@ -27,6 +27,7 @@ import android.util.Log
 import androidx.annotation.ColorInt
 import androidx.core.graphics.ColorUtils
 import com.liveweatherwallpaperapp.BuildConfig
+import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.getBeaufortScaleColor
 import com.liveweatherwallpaperapp.common.extensions.getBeaufortScaleStrength
 import com.liveweatherwallpaperapp.common.extensions.getCloudCoverDescription
@@ -35,6 +36,31 @@ import com.liveweatherwallpaperapp.common.extensions.gzipCompress
 import com.liveweatherwallpaperapp.common.extensions.roundDecimals
 import com.liveweatherwallpaperapp.common.source.HttpSource
 import com.liveweatherwallpaperapp.common.source.PollenIndexSource
+import org.breezyweather.datasharing.json.BreezyAirQuality
+import org.breezyweather.datasharing.json.BreezyAlert
+import org.breezyweather.datasharing.json.BreezyBulletin
+import org.breezyweather.datasharing.json.BreezyCurrent
+import org.breezyweather.datasharing.json.BreezyDaily
+import org.breezyweather.datasharing.json.BreezyDailyUnit
+import org.breezyweather.datasharing.json.BreezyDegreeDay
+import org.breezyweather.datasharing.json.BreezyHalfDay
+import org.breezyweather.datasharing.json.BreezyHourly
+import org.breezyweather.datasharing.json.BreezyMinutely
+import org.breezyweather.datasharing.json.BreezyNormals
+import org.breezyweather.datasharing.json.BreezyPollen
+import org.breezyweather.datasharing.json.BreezyPollenLevel
+import org.breezyweather.datasharing.json.BreezyPollutant
+import org.breezyweather.datasharing.json.BreezyPrecipitation
+import org.breezyweather.datasharing.json.BreezyPrecipitationDuration
+import org.breezyweather.datasharing.json.BreezyPrecipitationProbability
+import org.breezyweather.datasharing.json.BreezySource
+import org.breezyweather.datasharing.json.BreezyTemperature
+import org.breezyweather.datasharing.json.BreezyUnit
+import org.breezyweather.datasharing.json.BreezyWeather
+import org.breezyweather.datasharing.json.BreezyWind
+import org.breezyweather.datasharing.provider.ProviderLocation
+import org.breezyweather.datasharing.provider.ProviderUri
+import org.breezyweather.datasharing.provider.ProviderVersion
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.domain.source.resourceName
 import com.liveweatherwallpaperapp.domain.weather.index.PollutantIndex
@@ -86,30 +112,6 @@ import livewallpaperweather.domain.weather.model.PrecipitationProbability
 import livewallpaperweather.domain.weather.model.UV
 import livewallpaperweather.domain.weather.model.Wind
 import livewallpaperweather.domain.weather.reference.Month
-import org.breezyweather.datasharing.json.BreezyAirQuality
-import org.breezyweather.datasharing.json.BreezyAlert
-import org.breezyweather.datasharing.json.BreezyBulletin
-import org.breezyweather.datasharing.json.BreezyCurrent
-import org.breezyweather.datasharing.json.BreezyDaily
-import org.breezyweather.datasharing.json.BreezyDailyUnit
-import org.breezyweather.datasharing.json.BreezyDegreeDay
-import org.breezyweather.datasharing.json.BreezyHalfDay
-import org.breezyweather.datasharing.json.BreezyHourly
-import org.breezyweather.datasharing.json.BreezyMinutely
-import org.breezyweather.datasharing.json.BreezyNormals
-import org.breezyweather.datasharing.json.BreezyPollen
-import org.breezyweather.datasharing.json.BreezyPollutant
-import org.breezyweather.datasharing.json.BreezyPrecipitation
-import org.breezyweather.datasharing.json.BreezyPrecipitationDuration
-import org.breezyweather.datasharing.json.BreezyPrecipitationProbability
-import org.breezyweather.datasharing.json.BreezySource
-import org.breezyweather.datasharing.json.BreezyTemperature
-import org.breezyweather.datasharing.json.BreezyUnit
-import org.breezyweather.datasharing.json.BreezyWeather
-import org.breezyweather.datasharing.json.BreezyWind
-import org.breezyweather.datasharing.provider.ProviderLocation
-import org.breezyweather.datasharing.provider.ProviderUri
-import org.breezyweather.datasharing.provider.ProviderVersion
 import kotlin.time.Duration
 
 class WeatherContentProvider : ContentProvider() {
@@ -455,7 +457,14 @@ class WeatherContentProvider : ContentProvider() {
                     weather.normals,
                     temperatureUnit
                 ),
-                sources = getSources(location)
+                sources = getSources(location),
+                pollenLevels = pollenIndexSource?.let { pis ->
+                    context!!.resources.getStringArray(pis.pollenLabels).map {
+                        BreezyPollenLevel(it)
+                    }
+                } ?: context!!.resources.getStringArray(R.array.pollen_levels).map {
+                    BreezyPollenLevel(it)
+                }
             )
         }
     }

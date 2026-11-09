@@ -65,6 +65,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.recyclerview.widget.RecyclerView
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Daily
+import livewallpaperweather.domain.weather.model.Hourly
+import livewallpaperweather.domain.weather.model.Normals
+import livewallpaperweather.domain.weather.reference.WeatherCode
+import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.compose.cartesian.data.lineModel
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarker
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerVisibilityListener
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.coroutines.launch
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.activities.BreezyActivity
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -81,6 +98,8 @@ import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.liveweatherwallpaperapp.domain.weather.model.isToday
 import com.liveweatherwallpaperapp.domain.weather.model.ventuskyTargetDate
+import com.liveweatherwallpaperapp.ui.common.charts.compose.BreezyLineChart
+import com.liveweatherwallpaperapp.ui.common.charts.compose.IconCartesianMarker
 import com.liveweatherwallpaperapp.ui.common.widgets.AnimatableIconView
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendLayoutManager
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendRecyclerView
@@ -93,17 +112,10 @@ import com.liveweatherwallpaperapp.unit.temperature.TemperatureUnit
 import com.liveweatherwallpaperapp.unit.temperature.toTemperature
 import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
 import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarkerVisibilityListener
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.toImmutableMap
-import kotlinx.coroutines.launch
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Daily
-import livewallpaperweather.domain.weather.model.Hourly
-import livewallpaperweather.domain.weather.model.Normals
-import livewallpaperweather.domain.weather.reference.WeatherCode
 import java.util.Date
 import kotlin.math.roundToInt
+import kotlin.math.max
+import kotlin.math.min
 
 @Composable
 fun DetailsConditions(
@@ -123,17 +135,19 @@ fun DetailsConditions(
         SettingsManager.getInstance(context).getTemperatureUnit(context)
     }
     val mappedValues = remember(hourlyList, selectedChart) {
-        hourlyList
-            .filter {
-                it.temperature?.temperature != null &&
+        buildMap(hourlyList.size) {
+            hourlyList.forEach { hourly ->
+                val isValid = hourly.temperature?.temperature != null &&
                     if (selectedChart != DetailScreen.TAG_FEELS_LIKE) {
                         true
                     } else {
-                        it.temperature?.feelsLikeTemperature != null
+                        hourly.temperature?.feelsLikeTemperature != null
                     }
+                if (isValid) {
+                    put(hourly.date.time, hourly)
+                }
             }
-            .associateBy { it.date.time }
-            .toImmutableMap()
+        }.toImmutableMap()
     }
     var activeItem: Pair<Date, Hourly>? by remember { mutableStateOf(null) }
 
@@ -150,10 +164,12 @@ fun DetailsConditions(
     val overviewHourly = activeItem?.second ?: defaultOverviewHourly
 
     val mappedProbabilityValues = remember(hourlyList) {
-        hourlyList
-            .filter { it.precipitationProbability?.total != null }
-            .associate { it.date.time to it.precipitationProbability!!.total!! }
-            .toImmutableMap()
+        buildMap(hourlyList.size) {
+            hourlyList.forEach { hourly ->
+                val precipitationProbabilityTotal = hourly.precipitationProbability?.total ?: return@forEach
+                put(hourly.date.time, precipitationProbabilityTotal)
+            }
+        }.toImmutableMap()
     }
     var activeProbabilityItem: Pair<Date, Ratio>? by remember { mutableStateOf(null) }
     val probabilityMarkerVisibilityListener = remember {

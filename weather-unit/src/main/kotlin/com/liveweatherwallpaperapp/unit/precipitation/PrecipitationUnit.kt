@@ -18,8 +18,6 @@ package com.liveweatherwallpaperapp.unit.precipitation
 
 import android.content.Context
 import android.icu.util.MeasureUnit
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.liveweatherwallpaperapp.unit.R
 import com.liveweatherwallpaperapp.unit.WeatherUnit
 import com.liveweatherwallpaperapp.unit.formatting.UnitDecimals
@@ -27,7 +25,6 @@ import com.liveweatherwallpaperapp.unit.formatting.UnitTranslation
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.formatting.formatWithMeasureFormat
 import com.liveweatherwallpaperapp.unit.formatting.formatWithNumberFormatter
-import com.liveweatherwallpaperapp.unit.supportsMeasureFormat
 import com.liveweatherwallpaperapp.unit.supportsMeasureFormatPerUnit
 import com.liveweatherwallpaperapp.unit.supportsNumberFormatter
 import java.util.Locale
@@ -124,7 +121,6 @@ enum class PrecipitationUnit(
     ),
     ;
 
-    @RequiresApi(Build.VERSION_CODES.N)
     override fun getMeasureUnit(): MeasureUnit? {
         return when (this) {
             MICROMETER -> MeasureUnit.MICROMETER
@@ -135,7 +131,6 @@ enum class PrecipitationUnit(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     override fun getPerMeasureUnit(): MeasureUnit? {
         return when (this) {
             LITER_PER_SQUARE_METER -> MeasureUnit.SQUARE_METER
@@ -210,8 +205,7 @@ enum class PrecipitationUnit(
         useNumberFormatter: Boolean = true,
         useMeasureFormat: Boolean = true,
     ): String {
-        if (supportsMeasureFormat() &&
-            getMeasureUnit() != null &&
+        if (getMeasureUnit() != null &&
             getPerMeasureUnit() == null && // Liter per square meter would have 2 “per”, so not supported!
             supportsMeasureFormatPerUnit() &&
             (useNumberFormatter || useMeasureFormat)

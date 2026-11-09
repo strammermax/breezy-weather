@@ -25,6 +25,7 @@ import androidx.annotation.ColorInt
 import androidx.core.view.isNotEmpty
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.dpToPx
+import com.liveweatherwallpaperapp.common.extensions.fontScaleToApply
 import com.liveweatherwallpaperapp.common.extensions.getTypefaceFromTextAppearance
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.item.AbsTrendItemView
 import com.liveweatherwallpaperapp.ui.main.widgets.NestedHorizontalRecyclerView
@@ -70,7 +71,8 @@ class TrendRecyclerView @JvmOverloads constructor(
     init {
         setWillNotDraw(false)
         mPaint.typeface = getContext().getTypefaceFromTextAppearance(R.style.subtitle_text)
-        mTextSize = getContext().dpToPx(TEXT_SIZE_DIP.toFloat()).toInt()
+        mTextSize = getContext().dpToPx(TEXT_SIZE_DIP.toFloat())
+            .times(getContext().fontScaleToApply).toInt()
         mTextMargin = getContext().dpToPx(TEXT_MARGIN_DIP.toFloat()).toInt()
         mLineWidth = getContext().dpToPx(LINE_WIDTH_DIP.toFloat()).toInt()
         mDrawingBoundaryTop = -1
@@ -80,8 +82,8 @@ class TrendRecyclerView @JvmOverloads constructor(
         mKeyLineList = mutableListOf()
     }
 
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
+    override fun dispatchDraw(canvas: Canvas) {
+        super.dispatchDraw(canvas)
         drawKeyLines(canvas)
     }
 

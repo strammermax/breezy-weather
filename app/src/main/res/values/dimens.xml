@@ -19,10 +19,16 @@
     <dimen name="material3_card_settings_small_separator">2dp</dimen>
     <dimen name="material3_card_settings_large_separator">16dp</dimen>
     <dimen name="material3_card_list_item_corner_radius">16dp</dimen>
-<dimen name="material3_widget_corner_radius">16dp</dimen>
-<dimen name="trend_item_width">67dp</dimen>
-<dimen name="daily_trend_item_height">440dp</dimen>
+    <dimen name="material3_widget_corner_radius">16dp</dimen>
+    <dimen name="trend_item_width">67dp</dimen>
+    <dimen name="daily_trend_item_height">440dp</dimen>
     <dimen name="hourly_trend_item_height">270dp</dimen>
+    <dimen name="material3_card_list_item_inner_radius">12dp</dimen>
+    <dimen name="material3_widget_inner_radius">12dp</dimen>
+    <dimen name="spinner_drop_width">150dp</dimen>
+    <dimen name="share_view_height">260dp</dimen>
+    <dimen name="progress_view_size">36dp</dimen>
+    <dimen name="trend_item_height_min">144dp</dimen>
     <dimen name="nowcasting_chart_height">150dp</dimen>
     <dimen name="action_bar_height">64dp</dimen>
 

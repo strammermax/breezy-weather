@@ -736,7 +736,6 @@
     <string name="pressure_standard">Standardni</string>
     <string name="message_please_wait_refresh">Pričekajte da se osvježavanje završi</string>
     <string name="settings_source_api_key_invalid">Vrijednost nije u očekivanom formatu</string>
-
     <!-- Recent app strings -->
     <string name="details_overview">Detalji</string>
     <string name="details_overview_select">Odaberite detalje</string>
@@ -872,4 +871,7 @@
     <string name="about_fork_title">Na temelju</string>
     <string name="weather_kind_fog_light">Lagana magla</string>
     <string name="weather_kind_fog_heavy">Gusta magla</string>
+    <string name="action_reset_to_default">Resetiraj na standardne vrijednosti</string>
+    <string name="settings_weather_source_no_longer_exists">%s (više ne postoji)</string>
+    <string name="settings_main_background_title">Pozadina temeljena na vremenskim uvjetima</string>
 </resources>

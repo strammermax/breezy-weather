@@ -46,6 +46,19 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Daily
+import livewallpaperweather.domain.weather.model.Hourly
+import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.compose.cartesian.data.lineModel
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarker
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerVisibilityListener
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableMap
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.CLOUD_COVER_BKN
 import com.liveweatherwallpaperapp.common.extensions.CLOUD_COVER_FEW
@@ -60,11 +73,12 @@ import com.liveweatherwallpaperapp.common.extensions.getFormattedTime
 import com.liveweatherwallpaperapp.common.extensions.is12Hour
 import com.liveweatherwallpaperapp.common.extensions.toDate
 import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
+import com.liveweatherwallpaperapp.domain.weather.model.getConcentration
 import com.liveweatherwallpaperapp.domain.weather.model.getFullLabel
 import com.liveweatherwallpaperapp.domain.weather.model.getRangeDescriptionSummary
 import com.liveweatherwallpaperapp.domain.weather.model.getRangeSummary
 import com.liveweatherwallpaperapp.domain.weather.model.ventuskyTargetDate
-import com.liveweatherwallpaperapp.ui.common.charts.BreezyLineChart
+import com.liveweatherwallpaperapp.ui.common.charts.compose.BreezyLineChart
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3ExpressiveCardListItem
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.ratio.Ratio
@@ -74,14 +88,6 @@ import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
 import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarkerVisibilityListener
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toImmutableMap
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Daily
-import livewallpaperweather.domain.weather.model.Hourly
 import java.util.Date
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
@@ -95,10 +101,12 @@ fun DetailsCloudCover(
     modifier: Modifier = Modifier,
 ) {
     val mappedValues = remember(hourlyList) {
-        hourlyList
-            .filter { it.cloudCover != null }
-            .associate { it.date.time to it.cloudCover!! }
-            .toImmutableMap()
+        buildMap(hourlyList.size) {
+            hourlyList.forEach { hourly ->
+                val cloudCover = hourly.cloudCover ?: return@forEach
+                put(hourly.date.time, cloudCover)
+            }
+        }.toImmutableMap()
     }
     var activeItem: Pair<Date, Ratio>? by remember { mutableStateOf(null) }
     val markerVisibilityListener = remember {
@@ -284,9 +292,9 @@ private fun CloudCoverChart(
     val resources = LocalResources.current
 
     val modelProducer = remember { CartesianChartModelProducer() }
-    LaunchedEffect(location) {
+    LaunchedEffect(mappedValues) {
         modelProducer.runTransaction {
-            lineSeries {
+            lineModel {
                 series(
                     x = mappedValues.keys,
                     y = mappedValues.values.map { it.inPercent }

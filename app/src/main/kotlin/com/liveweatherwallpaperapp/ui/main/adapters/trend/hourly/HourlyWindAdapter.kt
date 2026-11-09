@@ -33,6 +33,7 @@ import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.domain.weather.model.drawableArrow
 import com.liveweatherwallpaperapp.domain.weather.model.getColor
 import com.liveweatherwallpaperapp.domain.weather.model.getContentDescription
+import com.liveweatherwallpaperapp.domain.weather.model.getGustsColor
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.TrendRecyclerView
 import com.liveweatherwallpaperapp.ui.common.widgets.trend.chart.PolylineAndHistogramView
 import com.liveweatherwallpaperapp.unit.speed.Speed.Companion.metersPerSecond
@@ -46,6 +47,7 @@ class HourlyWindAdapter(
     location: Location,
 ) : AbsHourlyTrendAdapter(activity, location) {
     private var mHighestWindSpeed = 15.metersPerSecond.inCentimetersPerSecond.toFloat() // TODO: Make this a const
+    private var mHasNotableGusts = false
 
     inner class ViewHolder(itemView: View) : AbsHourlyTrendAdapter.ViewHolder(itemView) {
         private val mPolylineAndHistogramView = PolylineAndHistogramView(itemView.context)
@@ -63,30 +65,39 @@ class HourlyWindAdapter(
             if (hourly.wind?.isValid == true) {
                 talkBackBuilder
                     .append(activity.getString(com.liveweatherwallpaperapp.unit.R.string.locale_separator))
-                    .append(hourly.wind!!.getContentDescription(activity))
+                    .append(hourly.wind!!.getContentDescription(activity, withGusts = true))
             }
             val windColor = hourly.wind?.getColor(activity) ?: Color.TRANSPARENT
+            val windGustsColor = hourly.wind?.getGustsColor(activity)
             val hourlyIcon = hourly.wind?.drawableArrow?.let {
                 AppCompatResources.getDrawable(activity, it)
             }
             hourlyIcon?.colorFilter = PorterDuffColorFilter(windColor, PorterDuff.Mode.SRC_ATOP)
             hourlyItem.setIconDrawable(hourlyIcon, missingIconVisibility = View.INVISIBLE)
 
+            val speed = hourly.wind?.speed
+            val gusts = hourly.wind?.gusts
+            val gustsStr = when {
+                gusts != null && speed != null && gusts > speed -> gusts.formatValue(activity)
+                mHasNotableGusts -> "" // Reserve space so bars stay aligned
+                else -> null
+            }
             mPolylineAndHistogramView.setData(
                 null, null,
                 null, null,
                 null, null,
-                hourly.wind?.speed?.value?.toFloat() ?: 0f,
-                // Empty (not null) label: keeps the histogram bar itself visible while
-                // dropping the numeric speed value that used to be printed under the
-                // wind direction arrow (redundant with the arrow's color-coded speed).
+                speed?.value?.toFloat() ?: 0f,
+                // Empty (not null) label: keeps the histogram bar visible while dropping the
+                // numeric speed value (redundant with the arrow's color-coded speed).
                 "",
-                mHighestWindSpeed, 0f
+                mHighestWindSpeed, 0f,
+                gusts?.value?.toFloat(), gustsStr
             )
             mPolylineAndHistogramView.setLineColors(
                 windColor,
                 windColor,
-                activity.getThemeColor(com.google.android.material.R.attr.colorOutline)
+                activity.getThemeColor(com.google.android.material.R.attr.colorOutline),
+                windGustsColor ?: windColor
             )
 
             mPolylineAndHistogramView.setTextColors(
@@ -104,13 +115,16 @@ class HourlyWindAdapter(
 
     init {
         location.weather!!.hourlyTrendForecast
-            .mapNotNull { it.wind?.speed?.value }
+            .flatMap { listOfNotNull(it.wind?.speed?.value, it.wind?.gusts?.value) }
             .maxOrNull()
             ?.let {
                 if (it > mHighestWindSpeed) {
                     mHighestWindSpeed = it.toFloat()
                 }
             }
+        mHasNotableGusts = location.weather!!.nextHourlyForecast.any {
+            it.wind?.speed != null && it.wind?.gusts != null && it.wind!!.gusts!! > it.wind!!.speed!!
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

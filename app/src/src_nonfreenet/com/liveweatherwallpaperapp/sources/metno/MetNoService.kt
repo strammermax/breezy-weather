@@ -18,7 +18,6 @@ package com.liveweatherwallpaperapp.sources.metno
 
 import android.content.Context
 import com.liveweatherwallpaperapp.BreezyWeather
-import com.liveweatherwallpaperapp.BuildConfig
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.code
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -224,7 +223,8 @@ class MetNoService @Inject constructor(
                 wind = if (currentTimeseries.instant?.details != null) {
                     Wind(
                         degree = currentTimeseries.instant.details.windFromDirection,
-                        speed = currentTimeseries.instant.details.windSpeed?.metersPerSecond
+                        speed = currentTimeseries.instant.details.windSpeed?.metersPerSecond,
+                        gusts = currentTimeseries.instant.details.windSpeedOfGust?.metersPerSecond
                     )
                 } else {
                     null
@@ -268,7 +268,8 @@ class MetNoService @Inject constructor(
                 wind = hourlyForecast.data?.instant?.details?.let { details ->
                     Wind(
                         degree = details.windFromDirection,
-                        speed = details.windSpeed?.metersPerSecond
+                        speed = details.windSpeed?.metersPerSecond,
+                        gusts = details.windSpeedOfGust?.metersPerSecond
                     )
                 },
                 uV = UV(index = hourlyForecast.data?.instant?.details?.ultravioletIndexClearSky),

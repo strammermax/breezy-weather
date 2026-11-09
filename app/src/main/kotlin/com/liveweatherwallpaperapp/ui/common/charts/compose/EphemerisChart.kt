@@ -14,7 +14,7 @@
  * along with Breezy Weather. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.liveweatherwallpaperapp.ui.common.charts
+package com.liveweatherwallpaperapp.ui.common.charts.compose
 
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -23,6 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import com.liveweatherwallpaperapp.R
@@ -34,24 +36,23 @@ import com.liveweatherwallpaperapp.common.extensions.toDate
 import com.liveweatherwallpaperapp.common.extensions.windowHeightInDp
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.Axis
+import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
+import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisGuidelineComponent
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLabelComponent
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLineComponent
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisTickComponent
-import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
-import com.patrykandpatrick.vico.compose.cartesian.axis.rememberEnd
-import com.patrykandpatrick.vico.compose.cartesian.layer.continuous
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianLayerRangeProvider
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
+import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerController
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
-import com.patrykandpatrick.vico.compose.common.fill
-import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
-import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
-import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
+import com.patrykandpatrick.vico.compose.common.Fill
 import kotlinx.collections.immutable.ImmutableList
 import livewallpaperweather.domain.location.model.Location
 import java.util.Date
@@ -76,7 +77,6 @@ fun EphemerisChart(
     endingDate: Long,
     modifier: Modifier = Modifier,
 ) {
-    val view = LocalView.current
     val context = LocalContext.current
 
     // 90 is the zenith, but add a safe-zone
@@ -96,28 +96,37 @@ fun EphemerisChart(
     val labelColor = glassStyle.content
 
     CartesianChartHost(
-        rememberCartesianChart(
+        chart = rememberCartesianChart(
             rememberLineCartesianLayer(
                 LineCartesianLayer.LineProvider.series(
                     lineColors.map { fillColor ->
                         LineCartesianLayer.rememberLine(
-                            fill = ScaleLineFill(
-                                mapOf(
-                                    0.1f to Color(fillColor),
-                                    -0.1f to Color(
-                                        ColorUtils.setAlphaComponent(fillColor, (255 * 0.5).roundToInt())
-                                    )
-                                )
-                            ),
-                            stroke = LineCartesianLayer.LineStroke.continuous(LINE_THICKNESS_DP.dp),
-                            areaFill = ScaleAreaFill(
-                                mapOf(
-                                    0.1f to Color(fillColor),
-                                    -0.1f to Color.Transparent
-                                ),
-                                context.isRtl
-                            ),
-                            pointConnector = LineCartesianLayer.PointConnector.cubic(
+                            fill = LineCartesianLayer.LineFill.colorScale(
+                                if (context.isRtl) {
+                                    Axis.Position.Vertical.Start
+                                } else {
+                                    Axis.Position.Vertical.End
+                                }
+                            ) {
+                                Color(fillColor) at 0.1f
+                                Color(
+                                    ColorUtils.setAlphaComponent(fillColor, (255 * 0.5).roundToInt())
+                                ) at -0.1f
+                            },
+                            stroke = LineCartesianLayer.LineStroke.Continuous(LINE_THICKNESS_DP.dp),
+                            areaFill = LineCartesianLayer.AreaFill.colorScale(
+                                if (context.isRtl) {
+                                    Axis.Position.Vertical.Start
+                                } else {
+                                    Axis.Position.Vertical.End
+                                }
+                            ) {
+                                Color(
+                                    ColorUtils.setAlphaComponent(fillColor, (255 * 0.5).roundToInt())
+                                ) at 0.1f
+                                Color.Transparent at -0.1f
+                            },
+                            interpolator = LineCartesianLayer.Interpolator.cubic(
                                 curvature = ((PI - 2.0) / PI).toFloat()
                             )
                         )
@@ -126,33 +135,33 @@ fun EphemerisChart(
                 rangeProvider = cartesianLayerRangeProvider
             ),
             endAxis = VerticalAxis.rememberEnd(
-                line = rememberAxisLineComponent(fill = fill(lineColor)),
-                label = rememberAxisLabelComponent(color = labelColor),
+                line = rememberAxisLineComponent(fill = Fill(lineColor)),
+                label = rememberAxisLabelComponent(style = TextStyle(color = labelColor)),
                 valueFormatter = endAxisValueFormatter,
-                tick = rememberAxisTickComponent(fill = fill(lineColor)),
-                guideline = rememberAxisGuidelineComponent(fill = fill(lineColor)),
+                tick = rememberAxisTickComponent(fill = Fill(lineColor)),
+                guideline = rememberAxisGuidelineComponent(fill = Fill(lineColor)),
                 itemPlacer = remember {
                     SpecificVerticalAxisItemPlacer(listOf(0.0, 90.0))
                 }
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
-                line = rememberAxisLineComponent(fill = fill(lineColor)),
-                label = rememberAxisLabelComponent(color = labelColor),
+                line = rememberAxisLineComponent(fill = Fill(lineColor)),
+                label = rememberAxisLabelComponent(style = TextStyle(color = labelColor)),
                 valueFormatter = timeValueFormatter,
-                tick = rememberAxisTickComponent(fill = fill(lineColor)),
-                guideline = rememberAxisGuidelineComponent(fill = fill(lineColor)),
+                tick = rememberAxisTickComponent(fill = Fill(lineColor)),
+                guideline = rememberAxisGuidelineComponent(fill = Fill(lineColor)),
                 itemPlacer = remember {
                     TimeHorizontalAxisItemPlacer(startingDate.toDate(), location.timeZone)
                 }
-            )
+            ),
+            markerController = CartesianMarkerController.rememberShowOnPress(consumeMoveEvents = true)
         ),
-        animateIn = SettingsManager.getInstance(context).isElementsAnimationEnabled,
         modelProducer = modelProducer,
-        scrollState = rememberVicoScrollState(scrollEnabled = false),
-        consumeMoveEvents = true,
         modifier = modifier
             .height(max(LINE_CHART_HEIGHT_MIN_DP.toFloat(), context.windowHeightInDp.div(4)).dp)
-            .withGlassChartBackground(glassStyle.background)
+            .withGlassChartBackground(glassStyle.background),
+        scrollState = rememberVicoScrollState(scrollEnabled = false),
+        animateIn = SettingsManager.getInstance(context).isElementsAnimationEnabled
     )
 }
 

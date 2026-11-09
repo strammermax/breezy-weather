@@ -43,6 +43,15 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Astro
+import livewallpaperweather.domain.weather.model.Daily
+import livewallpaperweather.domain.weather.model.MoonPhase
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.compose.cartesian.data.lineModel
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableMap
 import com.liveweatherwallpaperapp.BreezyWeather
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -55,7 +64,7 @@ import com.liveweatherwallpaperapp.common.extensions.toCalendarWithTimeZone
 import com.liveweatherwallpaperapp.common.extensions.toDate
 import com.liveweatherwallpaperapp.common.extensions.toTimezoneSpecificHour
 import com.liveweatherwallpaperapp.domain.weather.model.getDescription
-import com.liveweatherwallpaperapp.ui.common.charts.EphemerisChart
+import com.liveweatherwallpaperapp.ui.common.charts.compose.EphemerisChart
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3ExpressiveCardListItem
 import com.liveweatherwallpaperapp.ui.common.widgets.astro.MoonPhaseView
 import com.liveweatherwallpaperapp.ui.common.widgets.defaultCardListItemElevation
@@ -66,13 +75,6 @@ import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.temperature.TemperatureUnit
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableMap
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Astro
-import livewallpaperweather.domain.weather.model.Daily
-import livewallpaperweather.domain.weather.model.MoonPhase
 import org.shredzone.commons.suncalc.MoonPosition
 import org.shredzone.commons.suncalc.SunPosition
 import java.util.Calendar
@@ -178,9 +180,9 @@ fun EphemerisChart(
 
     val modelProducer = remember { CartesianChartModelProducer() }
 
-    LaunchedEffect(location) {
+    LaunchedEffect(mappedMoonValues, mappedSunValues) {
         modelProducer.runTransaction {
-            lineSeries {
+            lineModel {
                 if (mappedMoonValues.isNotEmpty()) {
                     series(
                         x = mappedMoonValues.keys,

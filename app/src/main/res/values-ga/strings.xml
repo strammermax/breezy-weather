@@ -736,7 +736,6 @@
     <string name="message_please_wait_refresh">Fan go dtí go mbeidh an t-athnuachan críochnaithe</string>
     <string name="settings_main_background_title">Cúlra bunaithe ar an aimsir</string>
     <string name="settings_weather_source_no_longer_exists">%s (níl sé ann a thuilleadh)</string>
-
     <!-- Recent app strings -->
     <string name="details_overview">Mionsonraí</string>
     <string name="details_overview_select">Roghnaigh sonraí</string>
@@ -872,4 +871,5 @@
     <string name="about_fork_title">Bunaithe ar</string>
     <string name="weather_kind_fog_light">Ceo éadrom</string>
     <string name="weather_kind_fog_heavy">Ceo trom</string>
+    <string name="action_reset_to_default">Athshocraigh go réamhshocraithe</string>
 </resources>

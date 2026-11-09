@@ -1,0 +1,101 @@
+name: Upstream sync
+
+# Daily attempt to merge Breezy Weather (upstream) main into this fork.
+# - No new upstream commits: nothing happens.
+# - Clean merge: branch sync/upstream-daily is pushed and one PR is opened/updated (never auto-merged).
+# - Conflicts: one issue is opened/updated with the conflicting files; nothing is pushed.
+# Note: a clean git merge still keeps upstream's org.breezyweather paths for new files; the PR
+# must be reviewed (and new files moved to com.liveweatherwallpaperapp) before merging.
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+env:
+  UPSTREAM_REPO: https://github.com/breezy-weather/breezy-weather.git
+  SYNC_BRANCH: sync/upstream-daily
+  PR_TITLE: Upstream sync (Breezy Weather)
+  ISSUE_TITLE: "Upstream sync: conflicten"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Fetch upstream
+        id: fetch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream "$UPSTREAM_REPO"
+          git fetch --no-tags upstream main
+          count=$(git rev-list --count HEAD..upstream/main)
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "Upstream commits not in main: $count"
+
+      - name: Try merge
+        id: merge
+        if: steps.fetch.outputs.count != '0'
+        run: |
+          git checkout -B "$SYNC_BRANCH" main
+          if git merge --no-edit --no-ff upstream/main -m "Merge upstream Breezy Weather main"; then
+            echo "result=clean" >> "$GITHUB_OUTPUT"
+          else
+            git diff --name-only --diff-filter=U > "$RUNNER_TEMP/conflicts.txt"
+            git merge --abort
+            echo "result=conflict" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push branch and open/update PR
+        if: steps.merge.outputs.result == 'clean'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COUNT: ${{ steps.fetch.outputs.count }}
+        run: |
+          git push --force origin "$SYNC_BRANCH"
+          body=$(printf 'Automatische merge van breezy-weather/breezy-weather `main` (%s nieuwe upstream-commits).\n\nNiet automatisch mergen: controleer of nieuwe bestanden onder `org/breezyweather` naar `com/liveweatherwallpaperapp` verplaatst moeten worden, en dat de CI groen is.' "$COUNT")
+          pr=$(gh pr list --head "$SYNC_BRANCH" --base main --state open --json number --jq '.[0].number')
+          if [ -n "$pr" ]; then
+            gh pr edit "$pr" --title "$PR_TITLE" --body "$body"
+          else
+            gh pr create --head "$SYNC_BRANCH" --base main --title "$PR_TITLE" --body "$body"
+          fi
+
+      - name: Open/update conflict issue
+        if: steps.merge.outputs.result == 'conflict'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COUNT: ${{ steps.fetch.outputs.count }}
+        run: |
+          {
+            echo "De dagelijkse merge van breezy-weather/breezy-weather \`main\` geeft conflicten."
+            echo
+            echo "- Upstream-commits die nog niet in \`main\` zitten: **$COUNT**"
+            echo "- Laatst gecontroleerd: $(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo "- Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo
+            echo "Bestanden met conflicten:"
+            echo
+            sed 's/^/- `/; s/$/`/' "$RUNNER_TEMP/conflicts.txt"
+          } > "$RUNNER_TEMP/issue.md"
+          issue=$(gh issue list --state open --search "in:title \"$ISSUE_TITLE\"" --json number,title --jq ".[] | select(.title == \"$ISSUE_TITLE\") | .number" | head -n1)
+          if [ -n "$issue" ]; then
+            gh issue edit "$issue" --body-file "$RUNNER_TEMP/issue.md"
+          else
+            gh issue create --title "$ISSUE_TITLE" --body-file "$RUNNER_TEMP/issue.md"
+          fi
