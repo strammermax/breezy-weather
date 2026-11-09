@@ -42,6 +42,7 @@ import com.liveweatherwallpaperapp.common.utils.helpers.IntentHelper
 import com.liveweatherwallpaperapp.databinding.ActivityCardDisplayManageBinding
 import com.liveweatherwallpaperapp.domain.settings.SettingsChangedMessage
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
+import com.liveweatherwallpaperapp.domain.settings.SettingsManager.Companion.DEFAULT_CARD_DISPLAY
 import com.liveweatherwallpaperapp.ui.common.adapters.TagAdapter
 import com.liveweatherwallpaperapp.ui.common.decorations.GridMarginsDecoration
 import com.liveweatherwallpaperapp.ui.common.decorations.ListDecoration
@@ -99,6 +100,31 @@ class CardDisplayManageActivity : BreezyActivity() {
                 (if (dY != 0f || isCurrentlyActive) mElevation else 0).toFloat()
             )
         }
+    }
+
+    private fun onResetIconClicked() {
+        val displayTags = CardDisplay
+            .toCardDisplayList(DEFAULT_CARD_DISPLAY)
+            .toMutableList()
+        mCardDisplayAdapter.reset(displayTags)
+
+        val otherTags = CardDisplay.entries.toMutableList()
+        for (i in otherTags.indices.reversed()) {
+            for (displayTag in displayTags) {
+                if (otherTags[i] === displayTag) {
+                    otherTags.removeAt(i)
+                    break
+                }
+            }
+        }
+        val tagList = mutableListOf<TagAdapter.Tag>()
+        for (tag in otherTags) {
+            tagList.add(CardTag(tag))
+        }
+
+        setResult(RESULT_OK)
+        mTagAdapter?.reset(tagList)
+        resetBottomBarVisibility()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

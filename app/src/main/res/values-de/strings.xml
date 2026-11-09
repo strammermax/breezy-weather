@@ -749,7 +749,6 @@
     <string name="message_please_wait_refresh">Bitte warten, bis die Aktualisierung abgeschlossen ist</string>
     <string name="settings_main_background_title">Wetterbasierter Hintergrund</string>
     <string name="settings_weather_source_no_longer_exists">%s (existiert nicht mehr)</string>
-
     <!-- Recent app strings -->
     <string name="details_overview">Einzelheiten</string>
     <string name="details_overview_select">Wählen Sie Details</string>
@@ -885,4 +884,5 @@
     <string name="about_fork_title">Basierend auf</string>
     <string name="weather_kind_fog_light">Leichter Nebel</string>
     <string name="weather_kind_fog_heavy">Dichter Nebel</string>
+    <string name="action_reset_to_default">Auf Standardwerte zurücksetzen</string>
 </resources>

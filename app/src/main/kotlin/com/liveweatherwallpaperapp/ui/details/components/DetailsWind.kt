@@ -16,11 +16,6 @@
 
 package com.liveweatherwallpaperapp.ui.details.components
 
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ImageSpan
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,9 +40,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -60,9 +56,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Daily
+import livewallpaperweather.domain.weather.model.Hourly
+import livewallpaperweather.domain.weather.model.Wind
+import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.compose.cartesian.data.lineModel
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarker
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerVisibilityListener
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableMap
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
-import com.liveweatherwallpaperapp.common.extensions.dpToPx
 import com.liveweatherwallpaperapp.common.extensions.formatMeasure
 import com.liveweatherwallpaperapp.common.extensions.getBeaufortScaleColor
 import com.liveweatherwallpaperapp.common.extensions.getBeaufortScaleStrength
@@ -70,6 +80,7 @@ import com.liveweatherwallpaperapp.common.extensions.getColorResource
 import com.liveweatherwallpaperapp.common.extensions.getFormattedTime
 import com.liveweatherwallpaperapp.common.extensions.is12Hour
 import com.liveweatherwallpaperapp.common.extensions.roundUpToNearestMultiplier
+import com.liveweatherwallpaperapp.common.extensions.toBitmap
 import com.liveweatherwallpaperapp.common.extensions.toDate
 import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.common.utils.UnitUtils
@@ -78,8 +89,9 @@ import com.liveweatherwallpaperapp.domain.weather.model.drawableArrow
 import com.liveweatherwallpaperapp.domain.weather.model.getDirection
 import com.liveweatherwallpaperapp.domain.weather.model.getIndex
 import com.liveweatherwallpaperapp.domain.weather.model.ventuskyTargetDate
-import com.liveweatherwallpaperapp.ui.common.charts.BreezyLineChart
-import com.liveweatherwallpaperapp.ui.common.charts.TimeTopAxisItemPlacer
+import com.liveweatherwallpaperapp.ui.common.charts.compose.BreezyLineChart
+import com.liveweatherwallpaperapp.ui.common.charts.compose.TimeTopAxisItemPlacer
+import com.liveweatherwallpaperapp.ui.common.charts.compose.IconCartesianMarker
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3ExpressiveCardListItem
 import com.liveweatherwallpaperapp.unit.formatting.UnitWidth
 import com.liveweatherwallpaperapp.unit.formatting.format
@@ -94,19 +106,8 @@ import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
 import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarkerVisibilityListener
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toImmutableMap
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Daily
-import livewallpaperweather.domain.weather.model.Hourly
-import livewallpaperweather.domain.weather.model.Wind
 import java.util.Date
 import kotlin.math.max
-import kotlin.math.roundToInt
 
 @Composable
 fun DetailsWind(
@@ -117,10 +118,14 @@ fun DetailsWind(
     modifier: Modifier = Modifier,
 ) {
     val mappedValues = remember(hourlyList) {
-        hourlyList
-            .filter { it.wind?.speed != null }
-            .associate { it.date.time to it.wind!! }
-            .toImmutableMap()
+        buildMap(hourlyList.size) {
+            hourlyList.forEach { hourly ->
+                val wind = hourly.wind ?: return@forEach
+                if (wind.speed != null) {
+                    put(hourly.date.time, wind)
+                }
+            }
+        }.toImmutableMap()
     }
     var activeItem: Pair<Date, Wind>? by remember { mutableStateOf(null) }
     val markerVisibilityListener = remember {
@@ -363,12 +368,13 @@ private fun WindChart(
         ).metersPerSecond.toDouble(speedUnit).roundUpToNearestMultiplier(step)
     }
     val iconColor = MaterialTheme.colorScheme.onSurface
+    val iconSizePx = with(LocalDensity.current) { IconCartesianMarker.DEFAULT_ICON_SIZE.roundToPx() }
 
     val modelProducer = remember { CartesianChartModelProducer() }
 
-    LaunchedEffect(location) {
+    LaunchedEffect(mappedValues) {
         modelProducer.runTransaction {
-            lineSeries {
+            lineModel {
                 series(
                     x = mappedValues.keys,
                     y = mappedValues.values.map { it.speed!!.toDouble(speedUnit) }
@@ -390,10 +396,22 @@ private fun WindChart(
         modelProducer = modelProducer,
         theDay = daily.date,
         maxY = maxY,
-        topAxisItemPlacer = remember(mappedValues) {
-            TimeTopAxisItemPlacer(mappedValues.keys.toImmutableList())
+        topIconValues = remember(mappedValues) { mappedValues.keys.toImmutableList() },
+        topIconTint = iconColor,
+        topIconProvider = remember(mappedValues, iconSizePx) {
+            { x: Long ->
+                mappedValues[x]?.let { wind ->
+                    wind.drawableArrow?.let { drawableArrow ->
+                        AppCompatResources.getDrawable(context, drawableArrow)?.let {
+                            // Clear the vector's own baked-in `android:tint`
+                            it.mutate()
+                            it.setTintList(null)
+                            it.toBitmap(iconSizePx, iconSizePx).asImageBitmap()
+                        }
+                    }
+                }
+            }
         },
-        topAxisSize = BaseAxis.Size.fixed(23.dp),
         endAxisValueFormatter = { _, value, _ -> value.toSpeed(speedUnit).formatMeasure(context) },
         colors = remember {
             persistentListOf(
@@ -468,28 +486,6 @@ private fun WindChart(
                         context.getColorResource(R.color.windStrength_bf0).copy(alpha = 160f.div(255f))
                 )
             )
-        },
-        topAxisValueFormatter = { _, value, _ ->
-            mappedValues.getOrElse(value.toLong()) { null }?.let { wind ->
-                if (wind.degree == null) {
-                    "-"
-                } else {
-                    val d = AppCompatResources.getDrawable(context, wind.drawableArrow!!)
-                    if (d != null) {
-                        val ss = SpannableString("abc")
-                        d.setBounds(0, 0, context.dpToPx(18f).roundToInt(), context.dpToPx(18f).roundToInt())
-                        d.colorFilter = PorterDuffColorFilter(
-                            iconColor.toArgb(),
-                            PorterDuff.Mode.SRC_ATOP
-                        )
-                        val span = ImageSpan(d, ImageSpan.ALIGN_BASELINE)
-                        ss.setSpan(span, 0, 3, Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
-                        ss
-                    } else {
-                        wind.arrow ?: "-"
-                    }
-                }
-            } ?: "-"
         },
         trendHorizontalLines = buildMap {
             if (maxY > 7.beaufort.toDouble(speedUnit)) {

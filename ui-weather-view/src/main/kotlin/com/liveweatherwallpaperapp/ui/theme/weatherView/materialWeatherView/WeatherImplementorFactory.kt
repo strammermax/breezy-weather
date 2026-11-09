@@ -48,7 +48,8 @@ object WeatherImplementorFactory {
             WeatherView.WEATHER_KIND_CLEAR -> if (daytime) {
                 SunImplementor(
                     sizes,
-                    animate
+                    animate,
+                    darkMode
                 )
             } else {
                 MeteorShowerImplementor(

@@ -31,6 +31,7 @@ import androidx.annotation.Size
 import androidx.core.graphics.ColorUtils
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.dpToPx
+import com.liveweatherwallpaperapp.common.extensions.fontScaleToApply
 import com.liveweatherwallpaperapp.common.extensions.getTypefaceFromTextAppearance
 import com.liveweatherwallpaperapp.ui.common.widgets.DayNightShaderWrapper
 
@@ -41,6 +42,7 @@ class PolylineAndHistogramView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
+    hasTopPolylineLabel: Boolean = false,
 ) : AbsChartItemView(context, attrs, defStyleAttr) {
     private val mPaint = Paint().apply {
         strokeCap = Paint.Cap.ROUND
@@ -71,12 +73,15 @@ class PolylineAndHistogramView @JvmOverloads constructor(
     private var mLowestPrecipValue: Float? = null
     private var mPrecipRegionTopFraction: Float = PRECIP_REGION_TOP_FRACTION
     private var mPrecipAsBars = false
+    private var mSecondaryHistogramValue: Float? = null
+    private var mSecondaryHistogramValueStr: String? = null
+    private var mSecondaryHistogramTextColor = Color.BLACK
     private val mHighPolylineY = IntArray(3)
     private val mLowPolylineY = IntArray(3)
     private val mPrecipPolylineY = IntArray(3)
     private var mHistogramY = 0
+    private var mSecondaryHistogramY = 0
     override val marginTop: Int
-    override val marginBottom: Int
     private val mPolylineWidth: Int
     private val mPolylineTextSize: Int
     private val mHistogramWidth: Int
@@ -84,7 +89,11 @@ class PolylineAndHistogramView @JvmOverloads constructor(
     private val mChartLineWidth: Int
     private val mTextMargin: Int
     private val mDotRadius: Float
-    private val mLineColors: IntArray = intArrayOf(Color.BLACK, Color.DKGRAY, Color.LTGRAY)
+    private val mSecondaryHistogramTextSize: Int
+    private val mSecondaryHistogramPaddingHorizontal: Int
+    private val mSecondaryHistogramPaddingVertical: Int
+    private val mSecondaryHistogramMarginBottom: Int
+    private val mLineColors: IntArray = intArrayOf(Color.BLACK, Color.DKGRAY, Color.LTGRAY, Color.BLACK)
     private val mShadowColors: IntArray = intArrayOf(Color.BLACK, Color.WHITE)
     private var mHighTextColor = 0
     private var mLowTextColor = 0
@@ -95,19 +104,35 @@ class PolylineAndHistogramView @JvmOverloads constructor(
     private var mPrecipColor = 0
     private var mPrecipTextColor = 0
 
+    override val marginBottom: Int
+        get() = getContext().dpToPx(
+            if (mSecondaryHistogramValueStr != null) {
+                MARGIN_BOTTOM_DIP + SECONDARY_HISTOGRAM_PILL_RESERVED_SPACE_DIP
+            } else {
+                MARGIN_BOTTOM_DIP // Makes the histogram value the last element drawn
+            }
+        ).times(getContext().fontScaleToApply).toInt()
+
     init {
         setTextColors(Color.BLACK, Color.DKGRAY, Color.GRAY)
         setHistogramColor(Color.WHITE)
         setHistogramAlpha(0.33f)
-        marginTop = getContext().dpToPx(MARGIN_TOP_DIP).toInt()
-        marginBottom = getContext().dpToPx(MARGIN_BOTTOM_DIP).toInt()
-        mPolylineTextSize = getContext().dpToPx(POLYLINE_TEXT_SIZE_DIP).toInt()
-        mHistogramTextSize = getContext().dpToPx(HISTOGRAM_TEXT_SIZE_DIP).toInt()
+        marginTop = getContext().dpToPx(if (hasTopPolylineLabel) MARGIN_TOP_DIP else MARGIN_TOP_COMPACT_DIP)
+            .times(getContext().fontScaleToApply).toInt()
+        mPolylineTextSize = getContext().dpToPx(POLYLINE_TEXT_SIZE_DIP)
+            .times(getContext().fontScaleToApply).toInt()
+        mHistogramTextSize = getContext().dpToPx(HISTOGRAM_TEXT_SIZE_DIP)
+            .times(getContext().fontScaleToApply).toInt()
         mPolylineWidth = getContext().dpToPx(POLYLINE_SIZE_DIP).toInt()
         mHistogramWidth = getContext().dpToPx(HISTOGRAM_WIDTH_DIP).toInt()
         mChartLineWidth = getContext().dpToPx(CHART_LINE_SIZE_DIP).toInt()
         mTextMargin = getContext().dpToPx(TEXT_MARGIN_DIP).toInt()
         mDotRadius = getContext().dpToPx(DOT_RADIUS_DIP)
+        mSecondaryHistogramTextSize = getContext().dpToPx(SECONDARY_HISTOGRAM_PILL_TEXT_SIZE_DIP).toInt()
+        mSecondaryHistogramPaddingHorizontal =
+            getContext().dpToPx(SECONDARY_HISTOGRAM_PILL_PADDING_HORIZONTAL_DIP).toInt()
+        mSecondaryHistogramPaddingVertical = getContext().dpToPx(SECONDARY_HISTOGRAM_PILL_PADDING_VERTICAL_DIP).toInt()
+        mSecondaryHistogramMarginBottom = getContext().dpToPx(SECONDARY_HISTOGRAM_PILL_MARGIN_BOTTOM_DIP).toInt()
         mPaint.typeface = getContext().getTypefaceFromTextAppearance(R.style.title_text)
         mShaderWrapper = DayNightShaderWrapper(measuredWidth, measuredHeight)
         setShadowColors(Color.BLACK, Color.GRAY, true)
@@ -118,6 +143,15 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         ensureShader(mShaderWrapper.isLightTheme)
         computeCoordinates()
         drawTimeLine(canvas)
+        if (mSecondaryHistogramValue != null &&
+            mHistogramValue != null &&
+            mSecondaryHistogramValue!! > mHistogramValue!! &&
+            mSecondaryHistogramValueStr != null &&
+            mHighestHistogramValue != null &&
+            mLowestHistogramValue != null
+        ) {
+            drawSecondaryHistogram(canvas)
+        }
         if (mHistogramValue != null &&
             (mHistogramValue != 0f || (mHighestPolylineValue == null && mLowestPolylineValue == null)) &&
             mHistogramValueStr != null &&
@@ -144,6 +178,9 @@ class PolylineAndHistogramView @JvmOverloads constructor(
             } else {
                 drawPrecipPolyline(canvas)
             }
+        }
+        if (!mSecondaryHistogramValueStr.isNullOrEmpty()) {
+            drawSecondaryHistogramPill(canvas)
         }
     }
 
@@ -450,6 +487,27 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         canvas.drawPath(mPath, mPaint)
     }
 
+    private fun drawSecondaryHistogram(canvas: Canvas) {
+        mPaint.apply {
+            shader = null
+            color = mLineColors[3]
+            alpha = (255 * SECONDARY_HISTOGRAM_ALPHA).toInt()
+            style = Paint.Style.FILL
+        }
+        canvas.drawRoundRect(
+            RectF(
+                (measuredWidth / 2.0 - mHistogramWidth).toFloat(),
+                mSecondaryHistogramY.toFloat(),
+                (measuredWidth / 2.0 + mHistogramWidth).toFloat(),
+                (measuredHeight - marginBottom).toFloat()
+            ),
+            mHistogramWidth.toFloat(),
+            mHistogramWidth.toFloat(),
+            mPaint
+        )
+        mPaint.alpha = 255
+    }
+
     private fun drawHistogram(canvas: Canvas) {
         assert(mHistogramValueStr != null)
         mPaint.apply {
@@ -626,6 +684,25 @@ class PolylineAndHistogramView @JvmOverloads constructor(
             mPaint
         )
         mPaint.setShadowLayer(0f, 0f, 0f, Color.TRANSPARENT)
+    private fun drawSecondaryHistogramPill(canvas: Canvas) {
+        val text = mSecondaryHistogramValueStr ?: return
+            textSize = mSecondaryHistogramTextSize.toFloat()
+            setShadowLayer(0f, 0f, 0f, Color.TRANSPARENT)
+        val fontMetrics = mPaint.fontMetrics
+        val textWidth = mPaint.measureText(text)
+        val pillHeight = fontMetrics.bottom - fontMetrics.top + 2f * mSecondaryHistogramPaddingVertical
+        val pillWidth = maxOf(pillHeight, textWidth + 2f * mSecondaryHistogramPaddingHorizontal)
+        val centerX = measuredWidth / 2f
+        val bottom = (measuredHeight - mSecondaryHistogramMarginBottom).toFloat()
+        val top = bottom - pillHeight
+        mPaint.color = mLineColors[3]
+        canvas.drawRoundRect(
+            RectF(centerX - pillWidth / 2f, top, centerX + pillWidth / 2f, bottom),
+            pillHeight / 2f,
+            pillHeight / 2f,
+        mPaint.color = mSecondaryHistogramTextColor
+            text,
+            bottom - mSecondaryHistogramPaddingVertical - fontMetrics.bottom,
     }
 
     // control.
@@ -640,6 +717,8 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         histogramValueStr: String?,
         highestHistogramValue: Float?,
         lowestHistogramValue: Float?,
+        secondaryHistogramValue: Float? = null,
+        secondaryHistogramValueStr: String? = null,
     ) {
         mHighPolylineValues = highPolylineValues
         mLowPolylineValues = lowPolylineValues
@@ -651,6 +730,8 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         mHistogramValueStr = histogramValueStr
         mHighestHistogramValue = highestHistogramValue
         mLowestHistogramValue = lowestHistogramValue
+        mSecondaryHistogramValue = secondaryHistogramValue
+        mSecondaryHistogramValueStr = secondaryHistogramValueStr
         invalidate()
     }
 
@@ -658,10 +739,12 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         @ColorInt colorHigh: Int,
         @ColorInt colorLow: Int,
         @ColorInt colorSubLine: Int,
+        @ColorInt secondaryLineColor: Int? = null,
     ) {
         mLineColors[0] = colorHigh
         mLineColors[1] = colorLow
         mLineColors[2] = colorSubLine
+        mLineColors[3] = secondaryLineColor ?: colorHigh
         invalidate()
     }
 
@@ -809,6 +892,13 @@ class PolylineAndHistogramView @JvmOverloads constructor(
                     }
                 }
             }
+        if (mSecondaryHistogramValue != null && mHighestHistogramValue != null && mLowestHistogramValue != null) {
+            mSecondaryHistogramY = computeSingleCoordinate(
+                canvasHeight,
+                mSecondaryHistogramValue!!,
+                mHighestHistogramValue!!,
+                mLowestHistogramValue!!
+            )
         }
     }
 
@@ -846,6 +936,7 @@ class PolylineAndHistogramView @JvmOverloads constructor(
 
     companion object {
         private const val MARGIN_TOP_DIP = 0f
+        private const val MARGIN_TOP_COMPACT_DIP = 0f
         private const val MARGIN_BOTTOM_DIP = 36f
         private const val POLYLINE_SIZE_DIP = 1.5f
         private const val POLYLINE_TEXT_SIZE_DIP = 14f
@@ -873,5 +964,14 @@ class PolylineAndHistogramView @JvmOverloads constructor(
         // The precipitation display only uses the bottom 24% of the chart's height, keeping
         // it visually separate from the temperature lines above it.
         private const val PRECIP_REGION_TOP_FRACTION = 0.76f
+        private const val SECONDARY_HISTOGRAM_PILL_TEXT_SIZE_DIP = 10f
+        private const val SECONDARY_HISTOGRAM_PILL_PADDING_HORIZONTAL_DIP = 6f
+        private const val SECONDARY_HISTOGRAM_PILL_PADDING_VERTICAL_DIP = 3f
+        private const val SECONDARY_HISTOGRAM_PILL_MARGIN_BOTTOM_DIP = 2f
+        private const val SECONDARY_HISTOGRAM_PILL_RESERVED_SPACE_DIP =
+            SECONDARY_HISTOGRAM_PILL_TEXT_SIZE_DIP + 2 * SECONDARY_HISTOGRAM_PILL_PADDING_VERTICAL_DIP +
+                SECONDARY_HISTOGRAM_PILL_MARGIN_BOTTOM_DIP +
+                4f
+        private const val SECONDARY_HISTOGRAM_ALPHA = 0.3f
     }
 }

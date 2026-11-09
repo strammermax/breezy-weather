@@ -744,7 +744,6 @@
     <string name="common_weather_text_blowing_snow">Neu bufada alta</string>
     <string name="common_weather_text_drifting_snow">Neu bufada suaument</string>
     <string name="common_weather_text_glaze">Glaçada</string>
-
     <!-- Recent app strings -->
     <string name="details_overview">Detalls</string>
     <string name="details_overview_select">Trieu els detalls</string>
@@ -880,8 +879,9 @@
     <string name="about_fork_title">Basat en</string>
     <string name="weather_kind_fog_light">Boira lleugera</string>
     <string name="weather_kind_fog_heavy">Boira intensa</string>
-    <string name="message_please_wait_refresh">Espereu que es completi l\'actualització</string>
+    <string name="message_please_wait_refresh">Espereu que es completi l’actualització</string>
     <string name="settings_weather_source_no_longer_exists">%s (ja no existeix)</string>
     <string name="settings_source_api_key_invalid">El valor no està en el format esperat</string>
     <string name="settings_main_background_title">Fons basat en el temps</string>
+    <string name="action_reset_to_default">Reinicia als valors per defecte</string>
 </resources>

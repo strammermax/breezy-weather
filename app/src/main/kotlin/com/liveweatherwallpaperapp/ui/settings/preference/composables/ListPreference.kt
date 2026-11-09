@@ -16,11 +16,12 @@
 
 package com.liveweatherwallpaperapp.ui.settings.preference.composables
 
+import android.app.LocaleManager
 import android.content.Context
 import android.os.Build
+import android.os.LocaleList
 import androidx.annotation.ArrayRes
 import androidx.annotation.DrawableRes
-import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.clickable
@@ -62,6 +63,7 @@ import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.options.appearance.CalendarHelper
 import com.liveweatherwallpaperapp.common.options.appearance.LocaleHelper
 import com.liveweatherwallpaperapp.domain.settings.SettingsManager
+import com.liveweatherwallpaperapp.domain.source.SelectableSource
 import com.liveweatherwallpaperapp.ui.common.composables.AlertDialogNoPadding
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3ExpressiveCardListItem
 import com.liveweatherwallpaperapp.ui.common.widgets.defaultCardListItemElevation
@@ -175,6 +177,7 @@ fun ListPreferenceView(
     colors: ListItemColors = ListItemDefaults.colors(),
     withState: Boolean = true,
     dismissButton: @Composable (() -> Unit)? = null,
+    trailingContent: @Composable ((String) -> Unit)? = null, // value -> trailing content
     onValueChanged: (String) -> Unit,
 ) {
     val listSelectedState = remember { mutableStateOf(selectedKey) }
@@ -232,6 +235,13 @@ fun ListPreferenceView(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
+            }
+        } else {
+            null
+        },
+        trailingContent = if (trailingContent != null) {
+            {
+                trailingContent(if (withState) listSelectedState.value else selectedKey)
             }
         } else {
             null
@@ -319,13 +329,14 @@ fun ListPreferenceWithGroupsView(
     title: String,
     summary: (Context, String) -> String?, // value -> summary.
     selectedKey: String,
-    values: ImmutableMap<String?, ImmutableList<Triple<String, String, Boolean>>>,
+    values: ImmutableMap<String?, ImmutableList<SelectableSource>>,
     modifier: Modifier = Modifier,
     @DrawableRes iconId: Int? = null,
     enabled: Boolean = true,
     colors: ListItemColors = ListItemDefaults.colors(),
     withState: Boolean = true,
     dismissButton: @Composable (() -> Unit)? = null,
+    trailingContent: @Composable ((String) -> Unit)? = null, // value -> trailing content
     onValueChanged: (String) -> Unit,
 ) {
     val keyList = mutableListOf<String>()
@@ -340,10 +351,10 @@ fun ListPreferenceWithGroupsView(
             nameList.add("")
             enableList.add(false)
         }
-        for (triple in v1) {
-            keyList.add(triple.first)
-            nameList.add(triple.second)
-            enableList.add(triple.third)
+        for (selectableSource in v1) {
+            keyList.add(selectableSource.id)
+            nameList.add(selectableSource.displayName)
+            enableList.add(selectableSource.enabled)
         }
     }
 
@@ -360,6 +371,7 @@ fun ListPreferenceWithGroupsView(
         colors = colors,
         withState = withState,
         dismissButton = dismissButton,
+        trailingContent = trailingContent,
         onValueChanged = onValueChanged
     )
 }
@@ -429,12 +441,16 @@ fun LanguagePreferenceView(
         } else {
             LocaleListCompat.forLanguageTags(it)
         }
+        // Since Android 13, if a night mode is persisted for the app, a new app-specific language is
+        // only persisted if it was previously reset to "follow system". See BreezyWeather.updateDayNightMode()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !locale.isEmpty) {
+            context.getSystemService(LocaleManager::class.java)?.applicationLocales = LocaleList.getEmptyLocaleList()
+        }
         AppCompatDelegate.setApplicationLocales(locale)
         SettingsManager.getInstance(context).languageUpdateLastTimestamp = Date().time
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.N)
 @Composable
 fun CalendarPreferenceView(
     @StringRes titleId: Int,

@@ -774,7 +774,6 @@
     <string name="message_please_wait_refresh">새로고침이 끝날 때까지 기다려 주세요</string>
     <string name="settings_main_background_title">날씨 기반 배경</string>
     <string name="settings_weather_source_no_longer_exists">%s (더는 존재하지 않음)</string>
-
     <!-- Recent app strings -->
     <string name="details_overview">세부정보</string>
     <string name="details_overview_select">세부정보 선택</string>
@@ -910,4 +909,5 @@
     <string name="about_fork_title">기반</string>
     <string name="weather_kind_fog_light">를 기반으로 함 옅은 안개</string>
     <string name="weather_kind_fog_heavy">짙은 안개</string>
+    <string name="action_reset_to_default">기본값으로 초기화</string>
 </resources>

@@ -1,26 +1,26 @@
 # Weather sources
 
-This is a user-end guide to weather sources available in Breezy Weather. If you are a developer looking to add a new source in Breezy Weather, have a look at [contribute](../CONTRIBUTE.md). Unless otherwise mentioned, **the information below is valid assuming you’re using the latest version of Breezy Weather**.
+This is a user-end guide to weather sources available in Breezy Weather. If you are a developer looking to add a new source in Breezy Weather, have a look at [contributing](../CONTRIBUTING.md). Unless otherwise mentioned, **the information below is valid assuming you’re using the latest version of Breezy Weather**.
 
 By default, when you add a location manually, Breezy Weather will auto-suggest your national weather source if we have support for it, and combine it with other secondary weather sources for missing features. When we don’t have support for your national weather source, we suggest **Open-Meteo** which is the only free and open source weather source on this list, and probably also the most privacy-friendly.
 
 Below, you can find details about the support and implementation status for features on each weather source. Note that no forecast above 7 days is reliable, so you should not decide based on the highest number of days available.
 
 ## Summary
-| Country/Territory                  | Source                                                                                            | Supported features                                                                   |
-|------------------------------------|---------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| 🌐 Worldwide                       | [Open-Meteo](#open-meteo)                                                                         | Forecast, Current, Air quality, Pollen, Search                                       |
-| 🌐 Worldwide                       | [AccuWeather](#accuweather) 🔓                                                                    | Forecast, Current, Air quality, Pollen, Nowcasting, Alerts, Normals, Search, Address |
-| 🌐 Worldwide                       | [Android](#android)                                                                               | Address                                                                              |
-| 🌐 Worldwide                       | [GeoNames](#geonames) 🔐                                                                          | Search                                                                               |
-| 🌐 Worldwide                       | [FOSS Public Alert Server](#foss-public-alert-server)                                             | Alerts                                                                               |
-| 🌐 Worldwide                       | [NCEI](#national-centers-for-environmental-information)                                           | Normals                                                                              |
-| 🌐 Worldwide                       | [Nominatim](#nominatim)                                                                           | Address                                                                              |
-| 🌐 Worldwide                       | [OpenWeather](#openweather) 🔓                                                                    | Forecast, Current, Air quality                                                       |
-| 🌐 Worldwide                       | [Pirate Weather](#pirate-weather) 🔐                                                              | Forecast, Current, Nowcasting, Alerts                                                |
-| 🌐 Worldwide                       | [WMO Severe Weather](#wmo-severe-weather)                                                         | Alerts                                                                               |
+| Country/Territory                | Source                                                                                            | Supported features                                                                   |
+|----------------------------------|---------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| 🌐 Worldwide                     | [Open-Meteo](#open-meteo)                                                                         | Forecast, Current, Air quality, Pollen, Search                                       |
+| 🌐 Worldwide                     | [AccuWeather](#accuweather) 🔓                                                                    | Forecast, Current, Air quality, Pollen, Nowcasting, Alerts, Normals, Search, Address |
+| 🌐 Worldwide                     | [Android](#android)                                                                               | Address                                                                              |
+| 🌐 Worldwide                     | [GeoNames](#geonames) 🔐                                                                          | Search                                                                               |
+| 🌐 Worldwide                     | [FOSS Public Alert Server](#foss-public-alert-server)                                             | Alerts                                                                               |
+| 🌐 Worldwide                     | [NCEI](#national-centers-for-environmental-information)                                           | Normals                                                                              |
+| 🌐 Worldwide                     | [Nominatim](#nominatim)                                                                           | Address                                                                              |
+| 🌐 Worldwide                     | [OpenWeather](#openweather) 🔓                                                                    | Forecast, Current, Air quality                                                       |
+| 🌐 Worldwide                     | [Pirate Weather](#pirate-weather) 🔐                                                              | Forecast, Current, Nowcasting, Alerts                                                |
+| 🌐 Worldwide                     | [WMO Severe Weather](#wmo-severe-weather)                                                         | Alerts                                                                               |
 | 🇦🇽 Åland Islands                 | [FMI](#finnish-meteorological-institute)                                                          | Forecast, Current, Air quality, Alerts, Normals                                      |
-| 🌐 Worldwide                       | [Infoplaza](#infoplaza) 🔐                                                                        | Forecast, Current, Nowcasting                                                        |
+| 🌐 Worldwide                     | [Infoplaza](#infoplaza) 🔐                                                                        | Forecast, Current, Nowcasting                                                        |
 | 🇦🇩 Andorra                       | [Météo-France](#météo-france)                                                                     | Forecast, Alert, Normals, Address                                                    |
 | 🇦🇹 Austria                       | [GeoSphere Austria](#geosphere-austria)                                                           | Forecast, Air quality, Nowcasting, Alerts                                            |
 | 🇧🇩 Bangladesh                    | [BMD](#bangladesh-meteorological-department)                                                      | Forecast, Address                                                                    |
@@ -30,6 +30,7 @@ Below, you can find details about the support and implementation status for feat
 | 🇨🇦 Canada                        | [ECCC](#environment-and-climate-change-canada)                                                    | Forecast, Current, Alerts, Normals, Address                                          |
 | 🇹🇩 Chad                          | [ClimWeb](#climweb)                                                                               | Alerts, Normals                                                                      |
 | 🇨🇳 China                         | [China](#china)                                                                                   | Forecast, Current, Air quality, Nowcasting, Alerts, Address                          |
+| 🇨🇾 Cyprus                        | [Cyprus Department of Meteorology](#cyprus-department-of-meteorology)                             | Current                                                                              |
 | 🇨🇩 Democratic Republic of Congo  | [ClimWeb](#climweb)                                                                               | Alerts                                                                               |
 | 🇩🇰 Denmark                       | [DMI](#danmarks-meteorologiske-institut)                                                          | Forecast, Alerts, Address                                                            |
 | 🇪🇪 Estonia                       | [Ilmateenistus](#ilmateenistus)                                                                   | Forecast, Address                                                                    |
@@ -48,7 +49,7 @@ Below, you can find details about the support and implementation status for feat
 | 🇬🇫 French Guiana                 | [Météo-France](#météo-france)                                                                     | Forecast, Alert, Normals, Address                                                    |
 | 🇵🇫 French Polynesia              | [Météo-France](#météo-france)                                                                     | Forecast, Alert, Normals, Address                                                    |
 | 🇬🇲 Gambia                        | [ClimWeb](#climweb)                                                                               | Alerts                                                                               |
-| 🇩🇪 Germany                       | [Bright Sky](#bright-sky)                                                                         | Forecast, Current, Alerts                                                            |
+| 🇩🇪 Germany                       | [Bright Sky](#bright-sky)                                                                         | Forecast, Current, Nowcasting, Alerts                                                |
 | 🇬🇭 Ghana                         | [ClimWeb](#climweb)                                                                               | Alerts                                                                               |
 | 🇬🇮 Gibraltar                     | [Met Office](#met-office) 🔐                                                                      | Forecast, Address                                                                    |
 | 🇬🇱 Greenland                     | [DMI](#danmarks-meteorologiske-institut)                                                          | Forecast, Alerts, Address                                                            |
@@ -136,7 +137,7 @@ Below, you can find details about the support and implementation status for feat
 | Precipitation Probability | ✅         | Sunshine Duration | ✅         |
 | Precipitation Duration    | ❌         | Cloud Cover       | ✅         |
 | Wind                      | ✅         | Visibility        | ✅         |
-| Pressure                  | ✅         | Ceiling           | ❌         |
+| Pressure                  | ❌         | Ceiling           | ❌         |
 </details>
 
 <details><summary><h4>Details of available pollens from Open-Meteo</h4></summary>
@@ -373,18 +374,18 @@ Unless otherwise specified, features in the following sources will only work for
 ### Bright Sky
 **[Bright Sky](https://brightsky.dev/)** is a JSON API provider of open weather data from the [Deutsche Wetterdienst](https://www.dwd.de/) (DWD), the official meteorological service of Germany.
 
-| Feature                        | Detail                                                           |
-|--------------------------------|------------------------------------------------------------------|
-| 🗺️ **Coverage**               | 🇩🇪 Germany                                                     |
-| 📆 **Daily forecast**          | Up to 10 days                                                    |
-| ⏱️ **Hourly forecast**         | Up to 10 days                                                    |
-| ▶️ **Current observation**     | Available: can complement another source as a **Current Source** |
-| 😶‍🌫️ **Air quality**         | Not available                                                    |
-| 🤧 **Pollen**                  | Not available                                                    |
-| ☔ **Precipitation nowcasting** | Not available                                                    |
-| ⚠️ **Alerts**                  | Available in both English and German                             |
-| 📊 **Normals**                 | Not available                                                    |
-| 🧭 **Address lookup**          | Not available                                                    |
+| Feature                         | Detail                                                           |
+|---------------------------------|------------------------------------------------------------------|
+| 🗺️ **Coverage**                 | 🇩🇪 Germany                                                       |
+| 📆 **Daily forecast**           | Up to 10 days                                                    |
+| ⏱️ **Hourly forecast**           | Up to 10 days                                                    |
+| ▶️ **Current observation**       | Available: can complement another source as a **Current Source** |
+| 😶‍🌫️ **Air quality**              | Not available                                                    |
+| 🤧 **Pollen**                   | Not available                                                    |
+| ☔ **Precipitation nowcasting** | Available from v6.2.3                                            |
+| ⚠️ **Alerts**                   | Available in both English and German                             |
+| 📊 **Normals**                  | Not available                                                    |
+| 🧭 **Address lookup**           | Not available                                                    |
 
 <details><summary><h4>Details of available data from Bright Sky</h4></summary>
 
@@ -457,6 +458,35 @@ This source aggregates data from Beijing Meteorological Service, ColorfulClouds 
 | Precipitation Duration    | ❌         | Cloud Cover       | ❌           |
 | Wind                      | ✅         | Visibility        | ✅ (Current) |
 | Pressure                  | ❌         | Ceiling           | ❌           |
+</details>
+
+### Cyprus Department of Meteorology
+**[Cyprus Department of Meteorology](https://www.moa.gov.cy/moa/dm/dm.nsf/home_en/home_en?openform)** (CyDoM) is the official meteorological service of Cyprus.
+
+| Feature                         | Detail                                                              |
+|---------------------------------|---------------------------------------------------------------------|
+| 🗺️ **Coverage**                 | 🇨🇾 Cyprus                                                           |
+| 📆 **Daily forecast**           | Not available, *may be added in the future*                         |
+| ⏱️ **Hourly forecast**           | Not available, *may be added in the future with 3 hour granularity* |
+| ▶️ **Current observation**       | Available: can complement another source as a **Current Source**    |
+| 😶‍🌫️ **Air quality**              | Not available                                                       |
+| 🤧 **Pollen**                   | Not available                                                       |
+| ☔ **Precipitation nowcasting** | Not available                                                       |
+| ⚠️ **Alerts**                   | Not available                                                       |
+| 📊 **Normals**                  | Not available                                                       |
+| 🧭 **Address lookup**           | Not available                                                       |
+
+<details><summary><h4>Details of available data from Cyprus Department of Meteorology source</h4></summary>
+
+| Data                      | Available | Data              | Available |
+|---------------------------|-----------|-------------------|-----------|
+| Weather Condition         | ❌        | Humidity          | ✅        |
+| Temperature               | ✅        | Dew Point         | ✅        |
+| Precipitation             | ❌        | UV Index          | ❌        |
+| Precipitation Probability | ❌        | Sunshine Duration | ❌        |
+| Precipitation Duration    | ❌        | Cloud Cover       | ❌        |
+| Wind                      | ✅        | Visibility        | ❌        |
+| Pressure                  | ✅        | Ceiling           | ❌        |
 </details>
 
 ### Danmarks Meteorologiske Institut

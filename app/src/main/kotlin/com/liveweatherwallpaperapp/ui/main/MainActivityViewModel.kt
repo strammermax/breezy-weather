@@ -33,7 +33,6 @@ import com.liveweatherwallpaperapp.common.activities.livedata.BusLiveData
 import com.liveweatherwallpaperapp.common.extensions.hasPermission
 import com.liveweatherwallpaperapp.common.extensions.launchIO
 import com.liveweatherwallpaperapp.common.source.RefreshError
-import com.liveweatherwallpaperapp.common.utils.helpers.AsyncHelper
 import com.liveweatherwallpaperapp.common.utils.helpers.SnackbarHelper
 import com.liveweatherwallpaperapp.domain.location.model.applyDefaultPreset
 import com.liveweatherwallpaperapp.domain.location.model.isCloseTo
@@ -137,6 +136,7 @@ class MainActivityViewModel @Inject constructor(
                 _currentLocation.value = DayNightLocation(location = it)
             }
             _validLocationList.value = validList
+            postUpdate(validList)
 
             _loading.value = false
             _indicator.value = Indicator(
@@ -163,6 +163,7 @@ class MainActivityViewModel @Inject constructor(
         }
 
         updateInnerData(valid)
+        postUpdate(validLocationList.value, arrayOf(location.formattedId))
     }
 
     /**
@@ -250,6 +251,34 @@ class MainActivityViewModel @Inject constructor(
             setCurrentLocation(null)
             _validLocationList.value = newValid
         }
+    }
+
+    /**
+     * A few things to do after an update to the list was done
+     * @param locationList the full list of locations
+     * @param updatedLocationIds list of locations which received a weather updated. Make empty if it was an added,
+     * swapped, or removed locations. If you just want a refresh, leave null.
+     */
+    private fun postUpdate(locationList: List<Location>, updatedLocationIds: Array<String>? = null) {
+        if (locationList.isNotEmpty()) {
+            viewModelScope.launchIO {
+                refreshHelper.updateWidgetIfNecessary(getApplication(), locationList)
+                refreshHelper.updateNotificationIfNecessary(getApplication(), locationList)
+
+                // If it's null, it's not coming from an update, so no need to broadcast anything
+                if (updatedLocationIds != null) {
+                    refreshHelper.broadcastDataIfNecessary(getApplication(), locationList, updatedLocationIds)
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                    refreshHelper.refreshShortcuts(getApplication(), locationList)
+                }
+            }
+        }
+    }
+
+    fun refreshBackgroundViews(locationList: List<Location>) {
+        postUpdate(locationList)
     }
 
     private fun setCurrentLocation(location: Location?) {
@@ -534,6 +563,7 @@ class MainActivityViewModel @Inject constructor(
 
         updateInnerData(valid)
         writeLocationList(locationList = valid, refreshWallpaperAfterWrite = true)
+        postUpdate(valid, emptyArray())
 
         _locationListLoading.value = false
 
@@ -597,17 +627,17 @@ class MainActivityViewModel @Inject constructor(
         updateInnerData(valid)
 
         // The live wallpaper always reads the first location in this list (it has no reactive
-        // listener of its own -- see the setCurrentLocation callsite above). Without this,
-        // switching which location is first (e.g. Rome <-> Current location) left the wallpaper
-        // showing whatever was active before until the next scheduled tick, up to
-        // photoRefreshIntervalMinutes (default 30 min) later.
+        // listener of its own). Without this, switching which location is first left the
+        // wallpaper showing whatever was active before until the next scheduled tick.
         val activeAfter = valid.getOrNull(0)?.formattedId
         writeLocationList(
             locationList = validLocationList.value,
             refreshWallpaperAfterWrite = activeAfter != null && activeAfter != activeBefore
         )
+        postUpdate(validLocationList.value, emptyArray())
     }
 
+    // Settings updates of the location: sources, per-location settings
     fun updateLocation(newLocation: Location, oldLocation: Location?) {
         // Same reasoning as swapLocations(): only matters when the edited entry is the one
         // actively driving the wallpaper (index 0) -- e.g. re-picking a fixed location's place
@@ -639,6 +669,7 @@ class MainActivityViewModel @Inject constructor(
 
         updateInnerData(valid)
         deleteLocation(location = location)
+        postUpdate(valid, emptyArray())
         // If we no longer have any current position locations, clear the current location store data9
         if (location.isCurrentPosition && !valid.any { it.isCurrentPosition }) {
             currentLocationStore.clearCurrentLocation()
@@ -774,24 +805,6 @@ class MainActivityViewModel @Inject constructor(
                 location,
                 listOf(RefreshError(RefreshErrorType.DATA_REFRESH_FAILED))
             )
-        }
-    }
-
-    fun refreshBackgroundViews(context: Context, locationList: List<Location>?) {
-        locationList?.let {
-            if (it.isNotEmpty()) {
-                viewModelScope.launchIO {
-                    AsyncHelper.delayRunOnIO({
-                        refreshHelper.updateWidgetIfNecessary(context, it)
-                        refreshHelper.updateNotificationIfNecessary(context, it)
-                        refreshHelper.broadcastDataIfNecessary(context, it)
-                    }, 1000)
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                        refreshHelper.refreshShortcuts(context, it)
-                    }
-                }
-            }
         }
     }
 

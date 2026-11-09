@@ -19,6 +19,23 @@ package com.liveweatherwallpaperapp.sources.brightsky
 import android.content.Context
 import android.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.source.SourceContinent
+import livewallpaperweather.domain.source.SourceFeature
+import livewallpaperweather.domain.weather.model.Alert
+import livewallpaperweather.domain.weather.model.Minutely
+import livewallpaperweather.domain.weather.model.Precipitation
+import livewallpaperweather.domain.weather.model.PrecipitationProbability
+import livewallpaperweather.domain.weather.model.Wind
+import livewallpaperweather.domain.weather.reference.AlertSeverity
+import livewallpaperweather.domain.weather.reference.WeatherCode
+import livewallpaperweather.domain.weather.wrappers.CurrentWrapper
+import livewallpaperweather.domain.weather.wrappers.DailyWrapper
+import livewallpaperweather.domain.weather.wrappers.HourlyWrapper
+import livewallpaperweather.domain.weather.wrappers.TemperatureWrapper
+import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.code
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
@@ -40,30 +57,16 @@ import com.liveweatherwallpaperapp.sources.brightsky.json.BrightSkyAlert
 import com.liveweatherwallpaperapp.sources.brightsky.json.BrightSkyAlertsResult
 import com.liveweatherwallpaperapp.sources.brightsky.json.BrightSkyCurrentWeather
 import com.liveweatherwallpaperapp.sources.brightsky.json.BrightSkyCurrentWeatherResult
+import com.liveweatherwallpaperapp.sources.brightsky.json.BrightSkyRadarResult
 import com.liveweatherwallpaperapp.sources.brightsky.json.BrightSkyWeather
 import com.liveweatherwallpaperapp.sources.brightsky.json.BrightSkyWeatherResult
 import com.liveweatherwallpaperapp.unit.distance.Distance.Companion.meters
+import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.micrometers
 import com.liveweatherwallpaperapp.unit.precipitation.Precipitation.Companion.millimeters
 import com.liveweatherwallpaperapp.unit.pressure.Pressure.Companion.hectopascals
 import com.liveweatherwallpaperapp.unit.ratio.Ratio.Companion.percent
 import com.liveweatherwallpaperapp.unit.speed.Speed.Companion.kilometersPerHour
 import com.liveweatherwallpaperapp.unit.temperature.Temperature.Companion.celsius
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.reactivex.rxjava3.core.Observable
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.source.SourceContinent
-import livewallpaperweather.domain.source.SourceFeature
-import livewallpaperweather.domain.weather.model.Alert
-import livewallpaperweather.domain.weather.model.Precipitation
-import livewallpaperweather.domain.weather.model.PrecipitationProbability
-import livewallpaperweather.domain.weather.model.Wind
-import livewallpaperweather.domain.weather.reference.AlertSeverity
-import livewallpaperweather.domain.weather.reference.WeatherCode
-import livewallpaperweather.domain.weather.wrappers.CurrentWrapper
-import livewallpaperweather.domain.weather.wrappers.DailyWrapper
-import livewallpaperweather.domain.weather.wrappers.HourlyWrapper
-import livewallpaperweather.domain.weather.wrappers.TemperatureWrapper
-import livewallpaperweather.domain.weather.wrappers.WeatherWrapper
 import retrofit2.Retrofit
 import java.util.Calendar
 import java.util.Date
@@ -95,6 +98,7 @@ class BrightSkyService @Inject constructor(
     override val supportedFeatures = mapOf(
         SourceFeature.FORECAST to weatherAttribution,
         SourceFeature.CURRENT to weatherAttribution,
+        SourceFeature.MINUTELY to weatherAttribution,
         SourceFeature.ALERT to weatherAttribution
     )
     override val attributionLinks = mapOf(
@@ -173,7 +177,27 @@ class BrightSkyService @Inject constructor(
             Observable.just(BrightSkyAlertsResult())
         }
 
-        return Observable.zip(weather, curWeather, alerts) { brightSkyWeather, brightSkyCurWeather, brightSkyAlerts ->
+        val radar = if (SourceFeature.MINUTELY in requestedFeatures) {
+            mApi.getRadar(
+                location.latitude,
+                location.longitude,
+                distance = 1,
+                format = "plain",
+                lastDate = "2099-01-01T00:00:00"
+            ).onErrorResumeNext {
+                failedFeatures[SourceFeature.MINUTELY] = it
+                Observable.just(BrightSkyRadarResult())
+            }
+        } else {
+            Observable.just(BrightSkyRadarResult())
+        }
+
+        return Observable.zip(weather, curWeather, alerts, radar) {
+                brightSkyWeather,
+                brightSkyCurWeather,
+                brightSkyAlerts,
+                brightSkyRadar,
+            ->
             val languageCode = context.currentLocale.code
             WeatherWrapper(
                 dailyForecast = if (SourceFeature.FORECAST in requestedFeatures) {
@@ -191,12 +215,32 @@ class BrightSkyService @Inject constructor(
                 } else {
                     null
                 },
+                minutelyForecast = if (SourceFeature.MINUTELY in requestedFeatures) {
+                    getMinutely(brightSkyRadar)
+                } else {
+                    null
+                },
                 alertList = if (SourceFeature.ALERT in requestedFeatures) {
                     getAlertList(brightSkyAlerts.alerts, languageCode)
                 } else {
                     null
                 },
                 failedFeatures = failedFeatures
+            )
+        }
+    }
+
+    private fun getMinutely(radarResult: BrightSkyRadarResult?): List<Minutely>? {
+        if (radarResult == null) return null
+        return radarResult.radar?.map {
+            Minutely(
+                date = it.timestamp,
+                minuteInterval = 5,
+                // 0.01 mm/5 min -> mm/h
+                precipitationIntensity = it.precipitation5?.getOrElse(0) { null }?.getOrNull(0)
+                    ?.times(12)
+                    ?.times(10)
+                    ?.micrometers
             )
         }
     }

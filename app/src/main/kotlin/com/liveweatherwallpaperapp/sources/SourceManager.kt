@@ -70,6 +70,7 @@ import com.liveweatherwallpaperapp.sources.climweb.SmaScService
 import com.liveweatherwallpaperapp.sources.climweb.SmaSuService
 import com.liveweatherwallpaperapp.sources.climweb.SsmsService
 import com.liveweatherwallpaperapp.sources.cwa.CwaService
+import com.liveweatherwallpaperapp.sources.cydom.CyDoMService
 import com.liveweatherwallpaperapp.sources.debug.DebugService
 import com.liveweatherwallpaperapp.sources.dmi.DmiService
 import com.liveweatherwallpaperapp.sources.eccc.EcccService
@@ -145,6 +146,7 @@ class SourceManager @Inject constructor(
     brightSkyService: BrightSkyService,
     chinaService: ChinaService,
     cwaService: CwaService,
+    cyDoMService: CyDoMService,
     dccmsService: DccmsService,
     debugService: DebugService,
     dmnNeService: DmnNeService,
@@ -247,6 +249,7 @@ class SourceManager @Inject constructor(
         bmdService,
         brightSkyService,
         chinaService,
+        cyDoMService,
         dmiService,
         ekukService,
         epdHkService,

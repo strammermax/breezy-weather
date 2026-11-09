@@ -528,7 +528,9 @@
 <string name="action_pull_down_to_refresh">Pull down to refresh</string>
     <string name="action_restart">Restart</string>
     <string name="action_more">More</string>
-<string name="action_change">Change</string>
+    <string name="action_change">Change</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_reset_to_default">Reset to default</string>
     <string name="action_delete">Delete</string>
     <string name="action_back">Back</string>
     <string name="action_next">Next</string>

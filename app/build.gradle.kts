@@ -32,7 +32,7 @@ configure<ApplicationExtension> {
 
     defaultConfig {
         applicationId = "com.liveweatherwallpaperapp"
-        // LiveWallpaperWeather's own version (fork of Breezy Weather 6.2.2).
+        // LiveWallpaperWeather's own version (fork of Breezy Weather, synced with upstream 6.2.3).
         // versionCode stays a monotonically increasing int (commits since the fork base +
         // Breezy base offset) - required by the Play Store, must never be derived from the date.
         // versionName is the user-visible yyyy.MM.dd.buildnr (e.g. 2026.07.13.842); the last
@@ -448,7 +448,7 @@ configure<ApplicationExtension> {
         }
         getByName("freenet") {
             kotlin.directories += "src/src_freenet"
-            res.directories += "src/res_freenet"
+            // res.directories += "src/res_freenet"
             if (Config.isBreezy) {
                 res.directories += "src/res_breezy"
             } else {

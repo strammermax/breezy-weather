@@ -782,7 +782,6 @@
     <string name="settings_source_api_key_invalid">Valoro ne estas en la atendata formo</string>
     <string name="message_please_wait_refresh">Bonvolu atendi ĝis la refreŝigo finiĝas</string>
     <string name="settings_main_background_title">Laŭvetera fono</string>
-
     <!-- Recent app strings -->
     <string name="details_overview">Detaloj</string>
     <string name="details_overview_select">Elektu detalojn</string>
@@ -918,4 +917,6 @@
     <string name="about_fork_title">Surbaze de</string>
     <string name="weather_kind_fog_light">Malpeza nebulo</string>
     <string name="weather_kind_fog_heavy">Peza nebulo</string>
+    <string name="action_reset_to_default">Restarigi al defaŭlto</string>
+    <string name="settings_weather_source_no_longer_exists">%s (ne plu ekzistas)</string>
 </resources>

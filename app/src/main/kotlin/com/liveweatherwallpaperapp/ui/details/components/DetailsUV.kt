@@ -48,6 +48,21 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import livewallpaperweather.domain.location.model.Location
+import livewallpaperweather.domain.weather.model.Daily
+import livewallpaperweather.domain.weather.model.Hourly
+import livewallpaperweather.domain.weather.model.UV
+import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.compose.cartesian.data.lineModel
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarker
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerVisibilityListener
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableMap
 import com.liveweatherwallpaperapp.R
 import com.liveweatherwallpaperapp.common.extensions.currentLocale
 import com.liveweatherwallpaperapp.common.extensions.getColorResource
@@ -56,11 +71,12 @@ import com.liveweatherwallpaperapp.common.extensions.is12Hour
 import com.liveweatherwallpaperapp.common.extensions.toDate
 import com.liveweatherwallpaperapp.common.options.appearance.DetailScreen
 import com.liveweatherwallpaperapp.common.utils.UnitUtils
+import com.liveweatherwallpaperapp.domain.weather.model.getConcentration
 import com.liveweatherwallpaperapp.domain.weather.model.getIndex
 import com.liveweatherwallpaperapp.domain.weather.model.getLevel
 import com.liveweatherwallpaperapp.domain.weather.model.getUVColor
-import com.liveweatherwallpaperapp.ui.common.charts.BreezyLineChart
-import com.liveweatherwallpaperapp.ui.common.charts.TimeTopAxisItemPlacer
+import com.liveweatherwallpaperapp.ui.common.charts.compose.BreezyLineChart
+import com.liveweatherwallpaperapp.ui.common.charts.compose.TimeTopAxisItemPlacer
 import com.liveweatherwallpaperapp.ui.common.widgets.Material3ExpressiveCardListItem
 import com.liveweatherwallpaperapp.unit.formatting.format
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
@@ -68,16 +84,6 @@ import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
 import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarkerVisibilityListener
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toImmutableMap
-import livewallpaperweather.domain.location.model.Location
-import livewallpaperweather.domain.weather.model.Daily
-import livewallpaperweather.domain.weather.model.Hourly
-import livewallpaperweather.domain.weather.model.UV
 import java.util.Date
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -91,10 +97,14 @@ fun DetailsUV(
     modifier: Modifier = Modifier,
 ) {
     val mappedValues = remember(hourlyList) {
-        hourlyList
-            .filter { it.uV?.isValid == true }
-            .associate { it.date.time to it.uV!! }
-            .toImmutableMap()
+        buildMap(hourlyList.size) {
+            hourlyList.forEach { hourly ->
+                val uV = hourly.uV ?: return@forEach
+                if (uV.isValid) {
+                    put(hourly.date.time, uV)
+                }
+            }
+        }.toImmutableMap()
     }
     var activeItem: Pair<Date, UV>? by remember { mutableStateOf(null) }
     val markerVisibilityListener = remember {
@@ -259,9 +269,9 @@ private fun UVChart(
 
     val modelProducer = remember { CartesianChartModelProducer() }
 
-    LaunchedEffect(location) {
+    LaunchedEffect(mappedValues) {
         modelProducer.runTransaction {
-            lineSeries {
+            lineModel {
                 series(
                     x = mappedValues.keys,
                     y = mappedValues.values.map { it.index ?: 0 }
@@ -294,10 +304,12 @@ private fun UVChart(
                 )
             )
         },
-        topAxisValueFormatter = { _, value, _ ->
-            mappedValues.getOrElse(value.toLong()) { null }?.index?.roundToInt()
-                ?.format(decimals = 0, locale = context.currentLocale)
-                ?: "-"
+        topAxisValueFormatter = remember(mappedValues) {
+            { _, value, _ ->
+                mappedValues.getOrElse(value.toLong()) { null }?.index?.roundToInt()
+                    ?.format(decimals = 0, locale = context.currentLocale)
+                    ?: "-"
+            }
         },
         trendHorizontalLines = persistentMapOf(
             UV.UV_INDEX_MIDDLE to stringResource(R.string.uv_alert_level)
